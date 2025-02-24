@@ -1,10 +1,34 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
+
+  const handleAuth = () => {
+    if (session) {
+      supabase.auth.signOut();
+    } else {
+      navigate("/auth");
+    }
+  };
 
   return (
     <nav className="fixed top-0 z-50 w-full backdrop-blur-lg bg-white/90 border-b border-gray-200/30">
@@ -19,7 +43,15 @@ const Navigation = () => {
             <a href="#courses" className="nav-link">Courses</a>
             <a href="#features" className="nav-link">Features</a>
             <a href="#pricing" className="nav-link">Pricing</a>
-            <Button variant="default" className="ml-4 bg-primary hover:bg-primary/90">Get Started</Button>
+            {!loading && (
+              <Button
+                variant="default"
+                className="ml-4 bg-primary hover:bg-primary/90"
+                onClick={handleAuth}
+              >
+                {session ? "Sign Out" : "Sign In"}
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -56,7 +88,14 @@ const Navigation = () => {
               >
                 Pricing
               </a>
-              <Button className="w-full mt-4 bg-primary hover:bg-primary/90">Get Started</Button>
+              {!loading && (
+                <Button
+                  className="w-full mt-4 bg-primary hover:bg-primary/90"
+                  onClick={handleAuth}
+                >
+                  {session ? "Sign Out" : "Sign In"}
+                </Button>
+              )}
             </div>
           </div>
         )}

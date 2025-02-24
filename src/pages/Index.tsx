@@ -1,7 +1,9 @@
-
 import Navigation from "@/components/Navigation";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 type Course = {
   title: string;
@@ -71,6 +73,27 @@ const popularCourses: Course[] = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
+
+  const handleAuthAction = () => {
+    if (!session) {
+      navigate("/auth");
+    }
+    // If logged in, handle the action based on the user's role
+    // This will be implemented in the next iteration
+  };
+
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -88,11 +111,20 @@ const Index = () => {
               Master in-demand programming languages with hands-on practice.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 bg-primary hover:bg-primary/90">
-                Start Learning
+              <Button
+                size="lg"
+                className="text-lg px-8 bg-primary hover:bg-primary/90"
+                onClick={handleAuthAction}
+              >
+                {session ? "Start Learning" : "Sign In to Start"}
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 border-primary text-primary hover:bg-primary/10">
-                View Courses
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 border-primary text-primary hover:bg-primary/10"
+                onClick={handleAuthAction}
+              >
+                {session ? "View Courses" : "Sign In to View Courses"}
               </Button>
             </div>
           </div>
@@ -115,8 +147,13 @@ const Index = () => {
             ))}
           </div>
           <div className="text-center mt-12">
-            <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/10">
-              View All Courses
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-primary text-primary hover:bg-primary/10"
+              onClick={handleAuthAction}
+            >
+              {session ? "View All Courses" : "Sign In to View All Courses"}
             </Button>
           </div>
         </div>
