@@ -41,6 +41,33 @@ const popularCourses: Course[] = [
     difficulty: "Advanced",
     category: "Software Engineering"
   },
+  {
+    title: "Data Science Fundamentals",
+    description: "Learn data analysis, visualization, and machine learning with Python and R",
+    duration: "14 weeks",
+    students: 1876,
+    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&q=80",
+    difficulty: "Intermediate",
+    category: "Data Science"
+  },
+  {
+    title: "React & Next.js Development",
+    description: "Build modern web applications with React and Next.js framework",
+    duration: "10 weeks",
+    students: 2341,
+    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80",
+    difficulty: "Advanced",
+    category: "Web Development"
+  },
+  {
+    title: "AI & Machine Learning",
+    description: "Dive into artificial intelligence and machine learning algorithms",
+    duration: "16 weeks",
+    students: 1432,
+    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80",
+    difficulty: "Advanced",
+    category: "Artificial Intelligence"
+  }
 ];
 
 const Index = () => {
@@ -86,6 +113,11 @@ const Index = () => {
             {popularCourses.map((course, index) => (
               <CourseCard key={index} {...course} />
             ))}
+          </div>
+          <div className="text-center mt-12">
+            <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/10">
+              View All Courses
+            </Button>
           </div>
         </div>
       </section>
