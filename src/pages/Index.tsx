@@ -10,6 +10,8 @@ const popularCourses = [
     duration: "8 weeks",
     students: 1234,
     image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&q=80",
+    difficulty: "Beginner",
+    category: "Programming Fundamentals"
   },
   {
     title: "Complete Web Development",
@@ -17,6 +19,8 @@ const popularCourses = [
     duration: "12 weeks",
     students: 2156,
     image: "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?auto=format&fit=crop&q=80",
+    difficulty: "Intermediate",
+    category: "Web Development"
   },
   {
     title: "Java Programming Masterclass",
@@ -24,6 +28,8 @@ const popularCourses = [
     duration: "10 weeks",
     students: 1589,
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80",
+    difficulty: "Advanced",
+    category: "Software Engineering"
   },
 ];
 
