@@ -3,7 +3,17 @@ import Navigation from "@/components/Navigation";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 
-const popularCourses = [
+type Course = {
+  title: string;
+  description: string;
+  duration: string;
+  students: number;
+  image: string;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  category: string;
+}
+
+const popularCourses: Course[] = [
   {
     title: "Python for Beginners",
     description: "Start your coding journey with Python, the most beginner-friendly programming language",
