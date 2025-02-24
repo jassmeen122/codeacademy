@@ -6,24 +6,24 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 210 40% 20%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --popover-foreground: 210 40% 20%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 20%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 210 40% 50%;
     --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent-foreground: 210 40% 20%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 199 89% 48%;
     --radius: 0.75rem;
   }
  
@@ -43,17 +43,17 @@
 
 @layer components {
   .glass-card {
-    @apply backdrop-blur-lg bg-white/30 border border-white/20 shadow-lg;
+    @apply backdrop-blur-lg bg-white/90 border border-white/20 shadow-lg hover:shadow-primary/10 transition-shadow;
   }
 
   .nav-link {
-    @apply relative px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-gray-900 
+    @apply relative px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-primary 
            after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left 
-           after:scale-x-0 after:bg-gray-900 after:transition-transform hover:after:scale-x-100;
+           after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100;
   }
 
   .hero-gradient {
-    @apply bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200;
+    @apply bg-gradient-to-br from-blue-50 via-white to-blue-50;
   }
 }
 

@@ -13,7 +13,7 @@ interface CourseCardProps {
 
 const CourseCard = ({ title, description, duration, students, image }: CourseCardProps) => {
   return (
-    <Card className="overflow-hidden transition-transform hover:scale-[1.02] animate-fadeIn glass-card">
+    <Card className="overflow-hidden transition-all hover:scale-[1.02] hover:-translate-y-1 duration-300 animate-fadeIn glass-card">
       <div className="aspect-video relative overflow-hidden">
         <img
           src={image}
@@ -22,7 +22,7 @@ const CourseCard = ({ title, description, duration, students, image }: CourseCar
         />
       </div>
       <CardHeader>
-        <CardTitle className="line-clamp-1">{title}</CardTitle>
+        <CardTitle className="line-clamp-1 text-xl">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground line-clamp-2 mb-4">{description}</p>
@@ -38,7 +38,7 @@ const CourseCard = ({ title, description, duration, students, image }: CourseCar
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">Enroll Now</Button>
+        <Button className="w-full bg-primary hover:bg-primary/90">Enroll Now</Button>
       </CardFooter>
     </Card>
   );
