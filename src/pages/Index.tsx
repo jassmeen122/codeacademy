@@ -116,22 +116,69 @@ const popularCourses: Course[] = [
 const Index = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({});
   const paths = Array.from(new Set(popularCourses.map(course => course.path))) as CoursePath[];
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    checkAuthAndRole();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) {
+        fetchUserRole(session.user.id);
+      } else {
+        setUserRole(null);
+      }
     });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const checkAuthAndRole = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setSession(session);
+    
+    if (session) {
+      await fetchUserRole(session.user.id);
+    }
+  };
+
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setUserRole(profile?.role || null);
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+    }
+  };
 
   const handleAuthAction = () => {
     if (!session) {
       navigate("/auth");
+    } else {
+      // Redirect based on role
+      switch (userRole) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'teacher':
+          navigate('/teacher');
+          break;
+        case 'student':
+          navigate('/student');
+          break;
+        default:
+          navigate('/');
+      }
     }
   };
 
@@ -149,6 +196,24 @@ const Index = () => {
     }
     return pathCourses;
   };
+
+  const renderAuthPrompt = () => (
+    <div className="text-center p-8 bg-primary/5 rounded-lg">
+      <h3 className="text-2xl font-bold mb-4">Sign In to Access Courses</h3>
+      <p className="text-gray-600 mb-6">
+        Please sign in or create an account to view our course catalog and start learning.
+      </p>
+      <Button 
+        size="lg"
+        className="bg-primary hover:bg-primary/90"
+        onClick={() => navigate("/auth")}
+      >
+        Sign In to Continue
+      </Button>
+    </div>
+  );
+
+  const canManageCourses = userRole === 'admin' || userRole === 'teacher';
 
   return (
     <div className="min-h-screen">
@@ -172,57 +237,67 @@ const Index = () => {
                 className="text-lg px-8 bg-primary hover:bg-primary/90"
                 onClick={handleAuthAction}
               >
-                {session ? "Start Learning" : "Sign In to Start"}
+                {session ? "Access Dashboard" : "Sign In to Start"}
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 border-primary text-primary hover:bg-primary/10"
-                onClick={handleAuthAction}
-              >
-                {session ? "View Courses" : "Sign In to View Courses"}
-              </Button>
+              {canManageCourses && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 border-primary text-primary hover:bg-primary/10"
+                  onClick={() => navigate(userRole === 'admin' ? '/admin' : '/teacher')}
+                >
+                  Manage Courses
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </section>
 
       {/* Learning Paths Section */}
-      {paths.map((path) => {
-        const pathCourses = getPathCourses(path);
-        const totalCourses = popularCourses.filter(course => course.path === path).length;
-        const showSeeMore = totalCourses > 4 && !expandedPaths[path];
+      {session ? (
+        paths.map((path) => {
+          const pathCourses = getPathCourses(path);
+          const totalCourses = popularCourses.filter(course => course.path === path).length;
+          const showSeeMore = totalCourses > 4 && !expandedPaths[path];
 
-        return (
-          <section key={path} className="py-16">
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold mb-4">{path} Path</h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Master {path.toLowerCase()} through our structured curriculum designed
-                  for all skill levels.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {pathCourses.map((course) => (
-                  <CourseCard key={course.id} {...course} />
-                ))}
-              </div>
-              {showSeeMore && (
-                <div className="text-center mt-8">
-                  <Button
-                    variant="outline"
-                    onClick={() => togglePathExpansion(path)}
-                    className="gap-2"
-                  >
-                    See More <ChevronDown className="h-4 w-4" />
-                  </Button>
+          return (
+            <section key={path} className="py-16">
+              <div className="container mx-auto px-4">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold mb-4">{path} Path</h2>
+                  <p className="text-gray-600 max-w-2xl mx-auto">
+                    Master {path.toLowerCase()} through our structured curriculum designed
+                    for all skill levels.
+                  </p>
                 </div>
-              )}
-            </div>
-          </section>
-        );
-      })}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {pathCourses.map((course) => (
+                    <CourseCard key={course.id} {...course} />
+                  ))}
+                </div>
+                {showSeeMore && (
+                  <div className="text-center mt-8">
+                    <Button
+                      variant="outline"
+                      onClick={() => togglePathExpansion(path)}
+                      className="gap-2"
+                    >
+                      See More <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </section>
+          );
+        })
+      ) : (
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            {renderAuthPrompt()}
+          </div>
+        </section>
+      )}
 
       {/* Features Section */}
       <section id="features" className="py-24 bg-blue-50/50">
