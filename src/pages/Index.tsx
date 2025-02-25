@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -142,8 +141,8 @@ const allCourses: Course[] = [
     students: 1567,
     image: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&q=80",
     difficulty: "Beginner",
-    path: "Programming Fundamentals",
-    category: "System Programming",
+    path: "Web Development",
+    category: "Programming Fundamentals",
     language: "C",
     professor: {
       name: "Prof. Hicham Alaoui",
