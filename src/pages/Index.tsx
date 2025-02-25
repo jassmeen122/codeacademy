@@ -5,13 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
 import type { Course, CoursePath } from "@/types/course";
 
-const popularCourses: Course[] = [
+const allCourses: Course[] = [
   {
     id: "1",
-    title: "Python for Beginners",
+    title: "Python Programming",
     description: "Start your coding journey with Python, the most beginner-friendly programming language",
     duration: "8 weeks",
     students: 1234,
@@ -20,6 +19,10 @@ const popularCourses: Course[] = [
     path: "Data Science",
     category: "Programming Fundamentals",
     language: "Python",
+    professor: {
+      name: "Prof. Ahmed El Amrani",
+      title: "Data Science Lead"
+    },
     materials: {
       videos: 24,
       pdfs: 12,
@@ -37,6 +40,10 @@ const popularCourses: Course[] = [
     path: "Web Development",
     category: "Frontend Development",
     language: "JavaScript",
+    professor: {
+      name: "Prof. Youssef Chraibi",
+      title: "Frontend Development Lead"
+    },
     materials: {
       videos: 36,
       pdfs: 15,
@@ -54,6 +61,10 @@ const popularCourses: Course[] = [
     path: "Web Development",
     category: "Backend Development",
     language: "Java",
+    professor: {
+      name: "Prof. Fatima Benjelloun",
+      title: "Enterprise Solutions Lead"
+    },
     materials: {
       videos: 28,
       pdfs: 18,
@@ -71,6 +82,10 @@ const popularCourses: Course[] = [
     path: "Data Science",
     category: "Data Analysis",
     language: "SQL",
+    professor: {
+      name: "Prof. Khadija Moussafir",
+      title: "Database Systems Lead"
+    },
     materials: {
       videos: 42,
       pdfs: 24,
@@ -88,6 +103,10 @@ const popularCourses: Course[] = [
     path: "Artificial Intelligence",
     category: "Programming Fundamentals",
     language: "C++",
+    professor: {
+      name: "Prof. Samira Idrissi",
+      title: "Game Development Lead"
+    },
     materials: {
       videos: 32,
       pdfs: 20,
@@ -105,20 +124,46 @@ const popularCourses: Course[] = [
     path: "Web Development",
     category: "Backend Development",
     language: "PHP",
+    professor: {
+      name: "Prof. Redouane Bekkali",
+      title: "Web Applications Lead"
+    },
     materials: {
       videos: 48,
       pdfs: 30,
       presentations: 20
     }
+  },
+  {
+    id: "7",
+    title: "C Programming Fundamentals",
+    description: "Master the fundamentals of C programming and system architecture",
+    duration: "10 weeks",
+    students: 1567,
+    image: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&q=80",
+    difficulty: "Beginner",
+    path: "Programming Fundamentals",
+    category: "System Programming",
+    language: "C",
+    professor: {
+      name: "Prof. Hicham Alaoui",
+      title: "Systems Programming Lead"
+    },
+    materials: {
+      videos: 40,
+      pdfs: 25,
+      presentations: 15
+    }
   }
 ];
+
+const initialCourses = allCourses.slice(0, 4);
 
 const Index = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({});
-  const paths = Array.from(new Set(popularCourses.map(course => course.path))) as CoursePath[];
+  const paths = Array.from(new Set(allCourses.map(course => course.path))) as CoursePath[];
 
   useEffect(() => {
     checkAuthAndRole();
@@ -161,47 +206,17 @@ const Index = () => {
     }
   };
 
-  const handleAuthAction = () => {
+  const handleViewAllCourses = () => {
     if (!session) {
       navigate("/auth");
-    } else {
-      // Redirect based on role
-      switch (userRole) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'teacher':
-          navigate('/teacher');
-          break;
-        case 'student':
-          navigate('/student');
-          break;
-        default:
-          navigate('/');
-      }
     }
-  };
-
-  const togglePathExpansion = (path: string) => {
-    setExpandedPaths(prev => ({
-      ...prev,
-      [path]: !prev[path]
-    }));
-  };
-
-  const getPathCourses = (path: string) => {
-    const pathCourses = popularCourses.filter(course => course.path === path);
-    if (!expandedPaths[path]) {
-      return pathCourses.slice(0, 4);
-    }
-    return pathCourses;
   };
 
   const renderAuthPrompt = () => (
     <div className="text-center p-8 bg-primary/5 rounded-lg">
-      <h3 className="text-2xl font-bold mb-4">Sign In to Access Courses</h3>
+      <h3 className="text-2xl font-bold mb-4">Sign In to Access All Courses</h3>
       <p className="text-gray-600 mb-6">
-        Please sign in or create an account to view our course catalog and start learning.
+        Please sign in or create an account to view our complete course catalog and start learning.
       </p>
       <Button 
         size="lg"
@@ -235,9 +250,9 @@ const Index = () => {
               <Button
                 size="lg"
                 className="text-lg px-8 bg-primary hover:bg-primary/90"
-                onClick={handleAuthAction}
+                onClick={() => session ? handleViewAllCourses() : navigate("/auth")}
               >
-                {session ? "Access Dashboard" : "Sign In to Start"}
+                {session ? "View All Courses" : "Sign In to Start"}
               </Button>
               {canManageCourses && (
                 <Button
@@ -254,50 +269,36 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Learning Paths Section */}
-      {session ? (
-        paths.map((path) => {
-          const pathCourses = getPathCourses(path);
-          const totalCourses = popularCourses.filter(course => course.path === path).length;
-          const showSeeMore = totalCourses > 4 && !expandedPaths[path];
-
-          return (
-            <section key={path} className="py-16">
-              <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold mb-4">{path} Path</h2>
-                  <p className="text-gray-600 max-w-2xl mx-auto">
-                    Master {path.toLowerCase()} through our structured curriculum designed
-                    for all skill levels.
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {pathCourses.map((course) => (
-                    <CourseCard key={course.id} {...course} />
-                  ))}
-                </div>
-                {showSeeMore && (
-                  <div className="text-center mt-8">
-                    <Button
-                      variant="outline"
-                      onClick={() => togglePathExpansion(path)}
-                      className="gap-2"
-                    >
-                      See More <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </section>
-          );
-        })
-      ) : (
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            {renderAuthPrompt()}
+      {/* Courses Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Featured Courses</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Start your journey with our most popular programming courses,
+              taught by experienced professors from leading institutions.
+            </p>
           </div>
-        </section>
-      )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            {(session ? allCourses : initialCourses).map((course) => (
+              <CourseCard key={course.id} {...course} />
+            ))}
+          </div>
+
+          {!session && (
+            <div className="text-center mt-8">
+              <Button
+                size="lg"
+                onClick={handleViewAllCourses}
+                className="bg-primary hover:bg-primary/90"
+              >
+                View All Courses
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Features Section */}
       <section id="features" className="py-24 bg-blue-50/50">

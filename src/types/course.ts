@@ -34,6 +34,10 @@ export interface Course {
   path: CoursePath;
   category: CourseCategory;
   language: ProgrammingLanguage;
+  professor: {
+    name: string;
+    title: string;
+  };
   materials: {
     videos?: number;
     pdfs?: number;

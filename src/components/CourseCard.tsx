@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Clock, Users, BarChart, Folder, FileVideo, FileText, Layout } from "lucide-react";
+import { Clock, Users, BarChart, Folder, FileVideo, FileText, Layout, User } from "lucide-react";
 import type { Course } from "@/types/course";
 
 const CourseCard = ({ 
@@ -13,7 +13,8 @@ const CourseCard = ({
   difficulty,
   category,
   path,
-  materials
+  materials,
+  professor
 }: Course) => {
   const difficultyColor = {
     Beginner: "text-green-600 bg-green-50",
@@ -45,6 +46,10 @@ const CourseCard = ({
         </div>
       </div>
       <CardHeader>
+        <div className="flex items-center gap-2 text-sm text-primary mb-2">
+          <User className="h-4 w-4" />
+          {professor.name}
+        </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <Folder className="h-4 w-4" />
           {category}
