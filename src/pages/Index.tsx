@@ -1,11 +1,12 @@
 
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
-import type { Course } from "@/types/course";
+import { ChevronDown } from "lucide-react";
+import type { Course, CoursePath } from "@/types/course";
 
 const popularCourses: Course[] = [
   {
@@ -16,8 +17,9 @@ const popularCourses: Course[] = [
     students: 1234,
     image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&q=80",
     difficulty: "Beginner",
-    path: "Programming Fundamentals",
+    path: "Data Science",
     category: "Programming Fundamentals",
+    language: "Python",
     materials: {
       videos: 24,
       pdfs: 12,
@@ -26,14 +28,15 @@ const popularCourses: Course[] = [
   },
   {
     id: "2",
-    title: "Complete Web Development",
-    description: "Master HTML, CSS, and JavaScript to create modern, responsive websites",
+    title: "Modern JavaScript Development",
+    description: "Master JavaScript and modern web development practices",
     duration: "12 weeks",
     students: 2156,
     image: "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?auto=format&fit=crop&q=80",
     difficulty: "Intermediate",
     path: "Web Development",
     category: "Frontend Development",
+    language: "JavaScript",
     materials: {
       videos: 36,
       pdfs: 15,
@@ -42,14 +45,15 @@ const popularCourses: Course[] = [
   },
   {
     id: "3",
-    title: "Machine Learning Fundamentals",
-    description: "Learn the basics of machine learning and AI with Python",
+    title: "Java Enterprise Applications",
+    description: "Build robust enterprise applications with Java",
     duration: "10 weeks",
     students: 1589,
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80",
-    difficulty: "Intermediate",
-    path: "Data Science",
-    category: "Machine Learning",
+    difficulty: "Advanced",
+    path: "Web Development",
+    category: "Backend Development",
+    language: "Java",
     materials: {
       videos: 28,
       pdfs: 18,
@@ -58,14 +62,15 @@ const popularCourses: Course[] = [
   },
   {
     id: "4",
-    title: "Data Science Essentials",
-    description: "Master data analysis, visualization, and machine learning with Python and R",
-    duration: "14 weeks",
+    title: "SQL Database Design",
+    description: "Master database design and SQL query optimization",
+    duration: "8 weeks",
     students: 1876,
     image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?auto=format&fit=crop&q=80",
     difficulty: "Intermediate",
     path: "Data Science",
     category: "Data Analysis",
+    language: "SQL",
     materials: {
       videos: 42,
       pdfs: 24,
@@ -74,14 +79,15 @@ const popularCourses: Course[] = [
   },
   {
     id: "5",
-    title: "Advanced React Development",
-    description: "Build modern web applications with React and Next.js framework",
-    duration: "10 weeks",
+    title: "C++ Game Development",
+    description: "Create games and understand game engine architecture with C++",
+    duration: "14 weeks",
     students: 2341,
     image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80",
     difficulty: "Advanced",
-    path: "Web Development",
-    category: "Frontend Development",
+    path: "Artificial Intelligence",
+    category: "Programming Fundamentals",
+    language: "C++",
     materials: {
       videos: 32,
       pdfs: 20,
@@ -90,14 +96,15 @@ const popularCourses: Course[] = [
   },
   {
     id: "6",
-    title: "Deep Learning & Neural Networks",
-    description: "Master deep learning concepts and build neural networks from scratch",
-    duration: "16 weeks",
+    title: "PHP Web Applications",
+    description: "Build dynamic web applications with PHP and MySQL",
+    duration: "10 weeks",
     students: 1432,
     image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80",
-    difficulty: "Advanced",
-    path: "Artificial Intelligence",
-    category: "AI Applications",
+    difficulty: "Intermediate",
+    path: "Web Development",
+    category: "Backend Development",
+    language: "PHP",
     materials: {
       videos: 48,
       pdfs: 30,
@@ -109,7 +116,8 @@ const popularCourses: Course[] = [
 const Index = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
-  const paths = Array.from(new Set(popularCourses.map(course => course.path)));
+  const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({});
+  const paths = Array.from(new Set(popularCourses.map(course => course.path))) as CoursePath[];
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -125,7 +133,21 @@ const Index = () => {
     if (!session) {
       navigate("/auth");
     }
-    // If logged in, handle the action based on the user's role
+  };
+
+  const togglePathExpansion = (path: string) => {
+    setExpandedPaths(prev => ({
+      ...prev,
+      [path]: !prev[path]
+    }));
+  };
+
+  const getPathCourses = (path: string) => {
+    const pathCourses = popularCourses.filter(course => course.path === path);
+    if (!expandedPaths[path]) {
+      return pathCourses.slice(0, 4);
+    }
+    return pathCourses;
   };
 
   return (
@@ -166,26 +188,41 @@ const Index = () => {
       </section>
 
       {/* Learning Paths Section */}
-      {paths.map((path) => (
-        <section key={path} className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">{path} Path</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Master {path.toLowerCase()} through our structured curriculum designed
-                for all skill levels.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {popularCourses
-                .filter(course => course.path === path)
-                .map((course) => (
+      {paths.map((path) => {
+        const pathCourses = getPathCourses(path);
+        const totalCourses = popularCourses.filter(course => course.path === path).length;
+        const showSeeMore = totalCourses > 4 && !expandedPaths[path];
+
+        return (
+          <section key={path} className="py-16">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold mb-4">{path} Path</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">
+                  Master {path.toLowerCase()} through our structured curriculum designed
+                  for all skill levels.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {pathCourses.map((course) => (
                   <CourseCard key={course.id} {...course} />
                 ))}
+              </div>
+              {showSeeMore && (
+                <div className="text-center mt-8">
+                  <Button
+                    variant="outline"
+                    onClick={() => togglePathExpansion(path)}
+                    className="gap-2"
+                  >
+                    See More <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
-        </section>
-      ))}
+          </section>
+        );
+      })}
 
       {/* Features Section */}
       <section id="features" className="py-24 bg-blue-50/50">
