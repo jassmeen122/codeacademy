@@ -18,34 +18,49 @@ import {
   Users,
   BarChart,
   Clock,
-  FileUpload,
+  Upload,
   CheckSquare,
   Code,
 } from "lucide-react";
 import { toast } from "sonner";
 
+type ExerciseType = 'mcq' | 'open_ended' | 'coding' | 'file_upload';
+type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
+type ExerciseStatus = 'draft' | 'published';
+
 interface Exercise {
   id: string;
+  teacher_id: string;
   title: string;
   description: string;
-  type: 'mcq' | 'open_ended' | 'coding' | 'file_upload';
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  timeLimit?: number;
-  status: 'draft' | 'published';
+  type: ExerciseType;
+  difficulty: DifficultyLevel;
+  time_limit: number;
+  status: ExerciseStatus;
   created_at: string;
+  updated_at: string;
+}
+
+interface NewExercise {
+  title: string;
+  description: string;
+  type: ExerciseType;
+  difficulty: DifficultyLevel;
+  time_limit: number;
+  status: ExerciseStatus;
 }
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [newExercise, setNewExercise] = useState({
+  const [newExercise, setNewExercise] = useState<NewExercise>({
     title: "",
     description: "",
-    type: "mcq" as const,
-    difficulty: "Beginner" as const,
-    timeLimit: 30,
-    status: "draft" as const,
+    type: "mcq",
+    difficulty: "Beginner",
+    time_limit: 30,
+    status: "draft",
   });
 
   useEffect(() => {
@@ -123,7 +138,7 @@ const TeacherDashboard = () => {
         description: "",
         type: "mcq",
         difficulty: "Beginner",
-        timeLimit: 30,
+        time_limit: 30,
         status: "draft",
       });
     } catch (error) {
@@ -180,7 +195,7 @@ const TeacherDashboard = () => {
                         <label className="text-sm font-medium text-gray-700">Type</label>
                         <Select
                           value={newExercise.type}
-                          onValueChange={(value: 'mcq' | 'open_ended' | 'coding' | 'file_upload') =>
+                          onValueChange={(value: ExerciseType) =>
                             setNewExercise({ ...newExercise, type: value })
                           }
                         >
@@ -199,7 +214,7 @@ const TeacherDashboard = () => {
                         <label className="text-sm font-medium text-gray-700">Difficulty</label>
                         <Select
                           value={newExercise.difficulty}
-                          onValueChange={(value: 'Beginner' | 'Intermediate' | 'Advanced') =>
+                          onValueChange={(value: DifficultyLevel) =>
                             setNewExercise({ ...newExercise, difficulty: value })
                           }
                         >
@@ -217,8 +232,8 @@ const TeacherDashboard = () => {
                         <label className="text-sm font-medium text-gray-700">Time Limit (minutes)</label>
                         <Input
                           type="number"
-                          value={newExercise.timeLimit}
-                          onChange={(e) => setNewExercise({ ...newExercise, timeLimit: parseInt(e.target.value) })}
+                          value={newExercise.time_limit}
+                          onChange={(e) => setNewExercise({ ...newExercise, time_limit: parseInt(e.target.value) })}
                           min={1}
                         />
                       </div>

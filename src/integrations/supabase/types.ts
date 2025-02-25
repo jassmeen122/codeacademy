@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      exercises: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_level"]
+          id: string
+          status: Database["public"]["Enums"]["exercise_status"]
+          teacher_id: string
+          time_limit: number | null
+          title: string
+          type: Database["public"]["Enums"]["exercise_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          status?: Database["public"]["Enums"]["exercise_status"]
+          teacher_id: string
+          time_limit?: number | null
+          title: string
+          type: Database["public"]["Enums"]["exercise_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"]
+          id?: string
+          status?: Database["public"]["Enums"]["exercise_status"]
+          teacher_id?: string
+          time_limit?: number | null
+          title?: string
+          type?: Database["public"]["Enums"]["exercise_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -47,6 +94,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      difficulty_level: "Beginner" | "Intermediate" | "Advanced"
+      exercise_status: "draft" | "published"
+      exercise_type: "mcq" | "open_ended" | "coding" | "file_upload"
       user_role: "admin" | "teacher" | "student"
     }
     CompositeTypes: {
