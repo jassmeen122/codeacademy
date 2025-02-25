@@ -5,14 +5,52 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  BookPlus,
+  Users,
+  BarChart,
+  Clock,
+  FileUpload,
+  CheckSquare,
+  Code,
+} from "lucide-react";
+import { toast } from "sonner";
+
+interface Exercise {
+  id: string;
+  title: string;
+  description: string;
+  type: 'mcq' | 'open_ended' | 'coding' | 'file_upload';
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  timeLimit?: number;
+  status: 'draft' | 'published';
+  created_at: string;
+}
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [newExercise, setNewExercise] = useState({
+    title: "",
+    description: "",
+    type: "mcq" as const,
+    difficulty: "Beginner" as const,
+    timeLimit: 30,
+    status: "draft" as const,
+  });
 
   useEffect(() => {
     checkUserRole();
+    fetchExercises();
   }, []);
 
   const checkUserRole = async () => {
@@ -34,11 +72,63 @@ const TeacherDashboard = () => {
         return;
       }
 
-      setUserRole(profile?.role);
       setLoading(false);
     } catch (error) {
       console.error('Error checking user role:', error);
       navigate('/auth');
+    }
+  };
+
+  const fetchExercises = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('teacher_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setExercises(data || []);
+    } catch (error) {
+      console.error('Error fetching exercises:', error);
+      toast.error("Failed to load exercises");
+    }
+  };
+
+  const handleCreateExercise = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('exercises')
+        .insert([
+          {
+            ...newExercise,
+            teacher_id: user.id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setExercises([data, ...exercises]);
+      toast.success("Exercise created successfully!");
+      setNewExercise({
+        title: "",
+        description: "",
+        type: "mcq",
+        difficulty: "Beginner",
+        timeLimit: 30,
+        status: "draft",
+      });
+    } catch (error) {
+      console.error('Error creating exercise:', error);
+      toast.error("Failed to create exercise");
     }
   };
 
@@ -54,23 +144,129 @@ const TeacherDashboard = () => {
           <p className="text-gray-600">Manage your courses and student progress</p>
         </div>
 
-        <Tabs defaultValue="courses" className="space-y-4">
+        <Tabs defaultValue="exercises" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="courses">My Courses</TabsTrigger>
+            <TabsTrigger value="exercises">Exercises</TabsTrigger>
             <TabsTrigger value="students">Students</TabsTrigger>
-            <TabsTrigger value="assignments">Assignments</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="courses">
-            <Card>
-              <CardHeader>
-                <CardTitle>My Courses</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button>Create New Course</Button>
-                {/* Course list and management interface will be implemented here */}
-              </CardContent>
-            </Card>
+          <TabsContent value="exercises">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Create New Exercise</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Title</label>
+                      <Input
+                        value={newExercise.title}
+                        onChange={(e) => setNewExercise({ ...newExercise, title: e.target.value })}
+                        placeholder="Exercise title"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Description</label>
+                      <Input
+                        value={newExercise.description}
+                        onChange={(e) => setNewExercise({ ...newExercise, description: e.target.value })}
+                        placeholder="Exercise description"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Type</label>
+                        <Select
+                          value={newExercise.type}
+                          onValueChange={(value: 'mcq' | 'open_ended' | 'coding' | 'file_upload') =>
+                            setNewExercise({ ...newExercise, type: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mcq">Multiple Choice</SelectItem>
+                            <SelectItem value="open_ended">Open Ended</SelectItem>
+                            <SelectItem value="coding">Coding Challenge</SelectItem>
+                            <SelectItem value="file_upload">File Upload</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Difficulty</label>
+                        <Select
+                          value={newExercise.difficulty}
+                          onValueChange={(value: 'Beginner' | 'Intermediate' | 'Advanced') =>
+                            setNewExercise({ ...newExercise, difficulty: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select difficulty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Beginner">Beginner</SelectItem>
+                            <SelectItem value="Intermediate">Intermediate</SelectItem>
+                            <SelectItem value="Advanced">Advanced</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700">Time Limit (minutes)</label>
+                        <Input
+                          type="number"
+                          value={newExercise.timeLimit}
+                          onChange={(e) => setNewExercise({ ...newExercise, timeLimit: parseInt(e.target.value) })}
+                          min={1}
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={handleCreateExercise} className="w-full md:w-auto">
+                      <BookPlus className="mr-2" />
+                      Create Exercise
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Exercises</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {exercises.map((exercise) => (
+                      <Card key={exercise.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="font-semibold">{exercise.title}</h3>
+                              <p className="text-sm text-gray-500">{exercise.description}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                exercise.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
+                                exercise.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {exercise.difficulty}
+                              </span>
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                exercise.status === 'draft' ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {exercise.status}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="students">
@@ -79,18 +275,20 @@ const TeacherDashboard = () => {
                 <CardTitle>Student Progress</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Student progress tracking interface will be implemented here */}
+                {/* Student progress tracking interface will be implemented in the next iteration */}
+                <p>Student progress tracking coming soon...</p>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="assignments">
+          <TabsContent value="analytics">
             <Card>
               <CardHeader>
-                <CardTitle>Assignments</CardTitle>
+                <CardTitle>Course Analytics</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Assignment management interface will be implemented here */}
+                {/* Analytics interface will be implemented in the next iteration */}
+                <p>Analytics dashboard coming soon...</p>
               </CardContent>
             </Card>
           </TabsContent>
