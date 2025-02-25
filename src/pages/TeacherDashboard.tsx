@@ -21,6 +21,8 @@ import {
   Upload,
   CheckSquare,
   Code,
+  Trash2,
+  Edit,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,6 +56,7 @@ const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [newExercise, setNewExercise] = useState<NewExercise>({
     title: "",
     description: "",
@@ -72,6 +75,7 @@ const TeacherDashboard = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        toast.error("Please sign in to access this page");
         navigate('/auth');
         return;
       }
@@ -82,14 +86,17 @@ const TeacherDashboard = () => {
         .eq('id', user.id)
         .single();
 
-      if (profile?.role !== 'teacher') {
+      if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
+        toast.error("You don't have permission to access this page");
         navigate('/');
         return;
       }
 
+      setUserRole(profile.role);
       setLoading(false);
     } catch (error) {
       console.error('Error checking user role:', error);
+      toast.error("Authentication error");
       navigate('/auth');
     }
   };
@@ -116,7 +123,10 @@ const TeacherDashboard = () => {
   const handleCreateExercise = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        toast.error("Please sign in to create exercises");
+        return;
+      }
 
       const { data, error } = await supabase
         .from('exercises')
@@ -147,6 +157,23 @@ const TeacherDashboard = () => {
     }
   };
 
+  const handleDeleteExercise = async (exerciseId: string) => {
+    try {
+      const { error } = await supabase
+        .from('exercises')
+        .delete()
+        .eq('id', exerciseId);
+
+      if (error) throw error;
+
+      setExercises(exercises.filter(ex => ex.id !== exerciseId));
+      toast.success("Exercise deleted successfully");
+    } catch (error) {
+      console.error('Error deleting exercise:', error);
+      toast.error("Failed to delete exercise");
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -155,7 +182,9 @@ const TeacherDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Teacher Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {userRole === 'admin' ? 'Administrator' : 'Teacher'} Dashboard
+          </h1>
           <p className="text-gray-600">Manage your courses and student progress</p>
         </div>
 
@@ -259,20 +288,32 @@ const TeacherDashboard = () => {
                             <div>
                               <h3 className="font-semibold">{exercise.title}</h3>
                               <p className="text-sm text-gray-500">{exercise.description}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  exercise.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
+                                  exercise.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
+                                }`}>
+                                  {exercise.difficulty}
+                                </span>
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  exercise.status === 'draft' ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {exercise.status}
+                                </span>
+                              </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                exercise.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
-                                exercise.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
-                              }`}>
-                                {exercise.difficulty}
-                              </span>
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                exercise.status === 'draft' ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {exercise.status}
-                              </span>
+                              <Button variant="outline" size="sm">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => handleDeleteExercise(exercise.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                         </CardContent>
