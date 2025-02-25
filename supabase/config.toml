@@ -1,9 +1,11 @@
 
-[workspaces]
-name = "Code Academy Platform"
+# This is a generic configuration file for Supabase Edge Functions
 
-[project]
-id = "tgjtkmduelappimtorwe"
+[functions]
+serve = true
+
+[auth]
+enabled = true
 
 [api]
 enabled = true
