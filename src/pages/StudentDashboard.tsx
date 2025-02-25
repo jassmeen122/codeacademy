@@ -34,16 +34,9 @@ const StudentDashboard = () => {
       const { data: enrolledCourses, error } = await supabase
         .from('courses')
         .select(`
-          id,
-          title,
-          description,
-          path,
-          category,
-          difficulty,
-          course_materials (
-            id,
-            type,
-            title
+          *,
+          teacher:teacher_id (
+            name:full_name
           )
         `)
         .order('created_at', { ascending: false });
@@ -52,7 +45,30 @@ const StudentDashboard = () => {
         toast.error("Failed to fetch courses");
         console.error("Error fetching courses:", error);
       } else if (enrolledCourses) {
-        setCourses(enrolledCourses as Course[]);
+        // Transform the data to match our Course type
+        const transformedCourses: Course[] = enrolledCourses.map(course => ({
+          id: course.id,
+          title: course.title,
+          description: course.description || "",
+          duration: "8 weeks", // Default duration
+          students: 0, // We'll need to implement this
+          image: "/placeholder.svg", // Default image
+          difficulty: course.difficulty,
+          path: course.path,
+          category: course.category,
+          language: "JavaScript", // Default language
+          professor: {
+            name: course.teacher?.name || "Unknown Professor",
+            title: "Course Instructor"
+          },
+          materials: {
+            videos: 0,
+            pdfs: 0,
+            presentations: 0
+          }
+        }));
+        
+        setCourses(transformedCourses);
       }
       
       setLoading(false);
