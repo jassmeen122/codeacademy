@@ -30,7 +30,13 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        console.log("Attempting signup with data:", {
+          email: formData.email,
+          fullName: formData.fullName,
+          role: formData.role
+        });
+        
+        const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -40,22 +46,44 @@ const Auth = () => {
             },
           },
         });
-        if (error) throw error;
+
+        if (error) {
+          console.error("Signup error:", error);
+          throw error;
+        }
+
+        console.log("Signup successful:", data);
         toast.success("Check your email to confirm your account!");
       } else {
+        console.log("Attempting signin with email:", formData.email);
+        
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error("Signin error:", error);
+          throw error;
+        }
+
+        if (!user) {
+          throw new Error("No user returned from signin");
+        }
 
         // Fetch user role and redirect accordingly
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
           .single();
+
+        if (profileError) {
+          console.error("Profile fetch error:", profileError);
+          throw profileError;
+        }
+
+        console.log("Profile data:", profile);
 
         if (profile) {
           switch (profile.role) {
@@ -69,14 +97,17 @@ const Auth = () => {
               navigate('/student');
               break;
             default:
+              console.log("Unknown role:", profile.role);
               navigate('/');
           }
         } else {
+          console.log("No profile found, redirecting to home");
           navigate('/');
         }
       }
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Auth error:", error);
+      toast.error(error.message || "An error occurred during authentication");
     } finally {
       setIsLoading(false);
     }
