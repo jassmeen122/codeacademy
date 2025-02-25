@@ -2,10 +2,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CodeEditorWrapper } from "@/components/CodeEditor/CodeEditorWrapper";
+import { Book, Code, FileCode, Terminal } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -13,51 +16,54 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Book, Code, FileCode, Terminal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { CodeEditorWrapper } from "@/components/CodeEditor/CodeEditorWrapper";
 import { toast } from "sonner";
+import type { Course } from "@/types/course";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
+  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    checkUserRole();
-  }, []);
-
-  const checkUserRole = async () => {
-    try {
+    const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Please sign in to access this page");
-        navigate('/auth');
+        navigate("/auth");
         return;
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      // Fetch enrolled courses
+      const { data: enrolledCourses, error } = await supabase
+        .from('courses')
+        .select(`
+          *,
+          course_materials (
+            type,
+            count
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-      if (profile?.role !== 'student') {
-        toast.error("This page is only accessible to students");
-        navigate('/');
-        return;
+      if (error) {
+        toast.error("Failed to fetch courses");
+        console.error("Error fetching courses:", error);
+      } else if (enrolledCourses) {
+        setCourses(enrolledCourses);
       }
-
-      setUserRole(profile?.role);
+      
       setLoading(false);
-    } catch (error) {
-      console.error('Error checking user role:', error);
-      toast.error("Authentication error");
-      navigate('/auth');
-    }
-  };
+    };
 
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
+    checkAuth();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
@@ -78,7 +84,9 @@ const StudentDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">Access your enrolled courses and track your progress.</p>
+              <p className="text-sm text-gray-600 mb-4">
+                Access your enrolled courses and track your progress.
+              </p>
               <Button className="w-full" variant="outline">
                 View My Courses
               </Button>
@@ -94,7 +102,9 @@ const StudentDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">Practice with coding exercises and complete projects.</p>
+              <p className="text-sm text-gray-600 mb-4">
+                Practice with coding exercises and complete projects.
+              </p>
               <Button className="w-full" variant="outline">
                 Start Practicing
               </Button>
@@ -110,7 +120,9 @@ const StudentDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">Write, run, and debug code with AI assistance.</p>
+              <p className="text-sm text-gray-600 mb-4">
+                Write, run, and debug code with AI assistance.
+              </p>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button className="w-full">
@@ -145,10 +157,22 @@ const StudentDashboard = () => {
                 <CardTitle>Enrolled Courses</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <p>You haven't enrolled in any courses yet.</p>
-                  <Button className="mt-4">Browse Courses</Button>
-                </div>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <p>Loading courses...</p>
+                  </div>
+                ) : courses.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {courses.map((course) => (
+                      <CourseCard key={course.id} {...course} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>You haven't enrolled in any courses yet.</p>
+                    <Button className="mt-4">Browse Courses</Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
