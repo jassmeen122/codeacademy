@@ -9,6 +9,88 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      course_materials: {
+        Row: {
+          content_url: string
+          course_id: string | null
+          created_at: string
+          id: string
+          order_index: number
+          title: string
+          type: string
+        }
+        Insert: {
+          content_url: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          order_index: number
+          title: string
+          type: string
+        }
+        Update: {
+          content_url?: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          order_index?: number
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_materials_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          category: Database["public"]["Enums"]["course_category"]
+          created_at: string
+          description: string | null
+          difficulty: Database["public"]["Enums"]["course_difficulty"]
+          id: string
+          path: Database["public"]["Enums"]["course_path"]
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["course_category"]
+          created_at?: string
+          description?: string | null
+          difficulty: Database["public"]["Enums"]["course_difficulty"]
+          id?: string
+          path: Database["public"]["Enums"]["course_path"]
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["course_category"]
+          created_at?: string
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["course_difficulty"]
+          id?: string
+          path?: Database["public"]["Enums"]["course_path"]
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           created_at: string
@@ -86,6 +168,51 @@ export type Database = {
         }
         Relationships: []
       }
+      student_progress: {
+        Row: {
+          completed_materials: Json | null
+          completion_percentage: number | null
+          course_id: string | null
+          id: string
+          last_accessed_at: string
+          started_at: string
+          student_id: string | null
+        }
+        Insert: {
+          completed_materials?: Json | null
+          completion_percentage?: number | null
+          course_id?: string | null
+          id?: string
+          last_accessed_at?: string
+          started_at?: string
+          student_id?: string | null
+        }
+        Update: {
+          completed_materials?: Json | null
+          completion_percentage?: number | null
+          course_id?: string | null
+          id?: string
+          last_accessed_at?: string
+          started_at?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_progress_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -94,6 +221,18 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      course_category:
+        | "Programming Fundamentals"
+        | "Frontend Development"
+        | "Backend Development"
+        | "Machine Learning"
+        | "Data Analysis"
+        | "AI Applications"
+      course_difficulty: "Beginner" | "Intermediate" | "Advanced"
+      course_path:
+        | "Web Development"
+        | "Data Science"
+        | "Artificial Intelligence"
       difficulty_level: "Beginner" | "Intermediate" | "Advanced"
       exercise_status: "draft" | "published"
       exercise_type: "mcq" | "open_ended" | "coding" | "file_upload"
