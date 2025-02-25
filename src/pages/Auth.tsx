@@ -43,12 +43,37 @@ const Auth = () => {
         if (error) throw error;
         toast.success("Check your email to confirm your account!");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
+        
         if (error) throw error;
-        navigate("/");
+
+        // Fetch user role and redirect accordingly
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          switch (profile.role) {
+            case 'admin':
+              navigate('/admin');
+              break;
+            case 'teacher':
+              navigate('/teacher');
+              break;
+            case 'student':
+              navigate('/student');
+              break;
+            default:
+              navigate('/');
+          }
+        } else {
+          navigate('/');
+        }
       }
     } catch (error: any) {
       toast.error(error.message);
