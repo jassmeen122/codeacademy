@@ -57,7 +57,11 @@ export default function AchievementsPage() {
         .gte('end_date', new Date().toISOString());
 
       setBadges(badgesData || []);
-      setChallenges(challengesData || []);
+      // Type assertion to ensure the data matches the Challenge interface
+      setChallenges((challengesData?.filter(challenge => 
+        challenge.type === 'daily' || challenge.type === 'weekly'
+      ) || []) as Challenge[]);
+
     } catch (error) {
       console.error('Error fetching achievements:', error);
     } finally {

@@ -35,7 +35,12 @@ export default function NotificationsPage() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setNotifications(data || []);
+      
+      // Type assertion to ensure the data matches the Notification interface
+      setNotifications((data?.filter(notification => 
+        ['announcement', 'reminder', 'achievement', 'message'].includes(notification.type)
+      ) || []) as Notification[]);
+
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {

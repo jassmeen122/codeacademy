@@ -20,6 +20,8 @@ import NotFound from "./pages/NotFound";
 import AchievementsPage from "./pages/student/AchievementsPage";
 import DiscussionPage from "./pages/student/DiscussionPage";
 import NotificationsPage from "./pages/student/NotificationsPage";
+import ProjectsPage from "./pages/student/ProjectsPage";
+import SettingsPage from "./pages/student/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -160,6 +162,18 @@ const App = () => (
           <Route path="/student/notifications" element={
             <ProtectedRoute allowedRoles={['student']}>
               <NotificationsPage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/student/projects" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <ProjectsPage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/student/settings" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <SettingsPage />
             </ProtectedRoute>
           } />
           
