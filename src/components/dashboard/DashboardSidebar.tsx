@@ -10,7 +10,13 @@ import {
   UserRound,
   Activity,
   FileCode,
-  Brain
+  Brain,
+  Users,
+  FilePlus,
+  Gauge,
+  School,
+  CircuitBoard,
+  Database
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,7 +28,72 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 
-const menuItems = [
+interface DashboardSidebarProps {
+  userRole: 'admin' | 'teacher' | 'student' | null;
+}
+
+const adminMenuItems = [
+  {
+    title: "Dashboard",
+    icon: Gauge,
+    href: "/admin",
+  },
+  {
+    title: "User Management",
+    icon: Users,
+    href: "/admin/users",
+  },
+  {
+    title: "Course Management",
+    icon: Book,
+    href: "/admin/courses",
+  },
+  {
+    title: "Analytics",
+    icon: Activity,
+    href: "/admin/analytics",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/admin/settings",
+  },
+];
+
+const teacherMenuItems = [
+  {
+    title: "Dashboard",
+    icon: School,
+    href: "/teacher",
+  },
+  {
+    title: "My Courses",
+    icon: Book,
+    href: "/teacher/courses",
+  },
+  {
+    title: "Create Exercise",
+    icon: FilePlus,
+    href: "/teacher/exercises/create",
+  },
+  {
+    title: "Student Progress",
+    icon: Activity,
+    href: "/teacher/progress",
+  },
+  {
+    title: "Discussion",
+    icon: MessageSquare,
+    href: "/teacher/discussion",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/teacher/settings",
+  },
+];
+
+const studentMenuItems = [
   {
     title: "Profile",
     icon: UserRound,
@@ -75,20 +146,61 @@ const menuItems = [
   },
 ];
 
-export const DashboardSidebar = () => {
+export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
   const location = useLocation();
 
+  const getMenuItems = () => {
+    switch (userRole) {
+      case 'admin':
+        return adminMenuItems;
+      case 'teacher':
+        return teacherMenuItems;
+      case 'student':
+        return studentMenuItems;
+      default:
+        return [];
+    }
+  };
+
+  const getRoleIcon = () => {
+    switch (userRole) {
+      case 'admin':
+        return Database;
+      case 'teacher':
+        return School;
+      case 'student':
+        return GraduationCap;
+      default:
+        return UserRound;
+    }
+  };
+
+  const getRoleTitle = () => {
+    switch (userRole) {
+      case 'admin':
+        return 'Admin Portal';
+      case 'teacher':
+        return 'Teacher Portal';
+      case 'student':
+        return 'Student Portal';
+      default:
+        return 'Loading...';
+    }
+  };
+
+  const RoleIcon = getRoleIcon();
+
   return (
-    <Sidebar className="border-r border-gray-200">
-      <SidebarHeader className="border-b border-gray-200 p-4">
+    <Sidebar className="border-r border-border">
+      <SidebarHeader className="border-b border-border p-4">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-lg">Student Portal</span>
+          <RoleIcon className="h-6 w-6 text-primary" />
+          <span className="font-semibold text-lg">{getRoleTitle()}</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <nav className="space-y-1 p-2">
-          {menuItems.map((item) => {
+          {getMenuItems().map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href;
             return (
@@ -105,7 +217,7 @@ export const DashboardSidebar = () => {
           })}
         </nav>
       </SidebarContent>
-      <SidebarFooter className="border-t border-gray-200 p-4">
+      <SidebarFooter className="border-t border-border p-4">
         <SidebarTrigger />
       </SidebarFooter>
     </Sidebar>
