@@ -63,13 +63,23 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
+        // Validate form data
+        if (!formData.email || !formData.password || !formData.fullName) {
+          throw new Error("Please fill in all fields");
+        }
+
+        if (formData.password.length < 6) {
+          throw new Error("Password must be at least 6 characters long");
+        }
+
         console.log("Attempting signup with data:", {
           email: formData.email,
           fullName: formData.fullName,
           role: formData.role
         });
         
-        const { data, error } = await supabase.auth.signUp({
+        // Sign up the user
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -77,24 +87,58 @@ const Auth = () => {
               full_name: formData.fullName,
               role: formData.role,
             },
+            emailRedirectTo: window.location.origin + '/auth'
           },
         });
 
-        if (error) throw error;
+        if (signUpError) throw signUpError;
 
-        toast.success("Check your email to confirm your account!");
+        if (data?.user?.identities?.length === 0) {
+          throw new Error("This email is already registered. Please sign in instead.");
+        }
+
+        // Check if email verification is required
+        const { data: authConfig } = await supabase.auth.getSession();
+        if (authConfig.session) {
+          // User is automatically signed in - email verification is disabled
+          toast.success("Account created successfully!");
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', authConfig.session.user.id)
+            .single();
+
+          if (profile) {
+            switch (profile.role) {
+              case 'admin':
+                navigate('/admin');
+                break;
+              case 'teacher':
+                navigate('/teacher');
+                break;
+              case 'student':
+                navigate('/student');
+                break;
+              default:
+                navigate('/');
+            }
+          }
+        } else {
+          // Email verification is required
+          toast.success("Please check your email to confirm your account!");
+        }
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         
-        if (error) throw error;
+        if (signInError) throw signInError;
 
         if (!user) {
-          throw new Error("No user returned from signin");
+          throw new Error("Invalid email or password");
         }
 
         toast.success("Successfully signed in!");
