@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,39 @@ const Auth = () => {
     role: "student" as "admin" | "teacher" | "student",
   });
 
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Fetch user role and redirect accordingly
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile) {
+          switch (profile.role) {
+            case 'admin':
+              navigate('/admin');
+              break;
+            case 'teacher':
+              navigate('/teacher');
+              break;
+            case 'student':
+              navigate('/student');
+              break;
+            default:
+              navigate('/');
+          }
+        }
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -47,12 +80,8 @@ const Auth = () => {
           },
         });
 
-        if (error) {
-          console.error("Signup error:", error);
-          throw error;
-        }
+        if (error) throw error;
 
-        console.log("Signup successful:", data);
         toast.success("Check your email to confirm your account!");
       } else {
         console.log("Attempting signin with email:", formData.email);
@@ -62,15 +91,14 @@ const Auth = () => {
           password: formData.password,
         });
         
-        if (error) {
-          console.error("Signin error:", error);
-          throw error;
-        }
+        if (error) throw error;
 
         if (!user) {
           throw new Error("No user returned from signin");
         }
 
+        toast.success("Successfully signed in!");
+        
         // Fetch user role and redirect accordingly
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -78,12 +106,7 @@ const Auth = () => {
           .eq('id', user.id)
           .single();
 
-        if (profileError) {
-          console.error("Profile fetch error:", profileError);
-          throw profileError;
-        }
-
-        console.log("Profile data:", profile);
+        if (profileError) throw profileError;
 
         if (profile) {
           switch (profile.role) {
@@ -97,12 +120,8 @@ const Auth = () => {
               navigate('/student');
               break;
             default:
-              console.log("Unknown role:", profile.role);
               navigate('/');
           }
-        } else {
-          console.log("No profile found, redirecting to home");
-          navigate('/');
         }
       }
     } catch (error: any) {
