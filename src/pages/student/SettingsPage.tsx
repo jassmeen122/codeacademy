@@ -6,15 +6,21 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bell, Moon, Sun, Lock, Mail } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 export default function SettingsPage() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [settings, setSettings] = useState({
     emailNotifications: true,
     pushNotifications: false,
-    darkMode: false,
     twoFactorAuth: false,
   });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSettingChange = (setting: keyof typeof settings) => {
     setSettings((prev) => ({
@@ -22,6 +28,8 @@ export default function SettingsPage() {
       [setting]: !prev[setting],
     }));
   };
+
+  if (!mounted) return null;
 
   return (
     <DashboardLayout>
@@ -76,8 +84,8 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <Switch
-                  checked={settings.darkMode}
-                  onCheckedChange={() => handleSettingChange("darkMode")}
+                  checked={theme === "dark"}
+                  onCheckedChange={() => setTheme(theme === "dark" ? "light" : "dark")}
                 />
               </div>
             </CardContent>

@@ -26,9 +26,31 @@
     --ring: 199 89% 48%;
     --radius: 0.75rem;
   }
- 
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+
   * {
-    @apply border-border;
+    @apply border-border selection:bg-primary/10 selection:text-primary;
   }
 
   body {
@@ -41,24 +63,16 @@
   }
 }
 
-@layer components {
-  .glass-card {
-    @apply backdrop-blur-lg bg-white/90 border border-white/20 shadow-lg hover:shadow-primary/10 transition-shadow;
-  }
-
-  .nav-link {
-    @apply relative px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:text-primary 
-           after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:origin-left 
-           after:scale-x-0 after:bg-primary after:transition-transform hover:after:scale-x-100;
-  }
-
-  .hero-gradient {
-    @apply bg-gradient-to-br from-blue-50 via-white to-blue-50;
-  }
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .glass-card {
+    @apply backdrop-blur-lg bg-white/90 dark:bg-black/50 border border-white/20 shadow-lg hover:shadow-primary/10 transition-shadow;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent;
   }
 }
