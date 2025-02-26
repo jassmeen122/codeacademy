@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
-import type { Course, CoursePath } from "@/types/course";
+import { CourseFilters } from "@/components/courses/CourseFilters";
+import type { Course, CoursePath, CourseLevel } from "@/types/course";
 
 const allCourses: Course[] = [
   {
@@ -162,6 +163,8 @@ const Index = () => {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<CourseLevel | "all">("all");
+  const [selectedPath, setSelectedPath] = useState<CoursePath | "all">("all");
   const paths = Array.from(new Set(allCourses.map(course => course.path))) as CoursePath[];
 
   useEffect(() => {
@@ -229,6 +232,12 @@ const Index = () => {
 
   const canManageCourses = userRole === 'admin' || userRole === 'teacher';
 
+  const filteredCourses = (session ? allCourses : initialCourses).filter(course => {
+    const matchesLevel = selectedLevel === "all" || course.difficulty === selectedLevel;
+    const matchesPath = selectedPath === "all" || course.path === selectedPath;
+    return matchesLevel && matchesPath;
+  });
+
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -279,8 +288,15 @@ const Index = () => {
             </p>
           </div>
           
+          <CourseFilters
+            selectedLevel={selectedLevel}
+            selectedPath={selectedPath}
+            onLevelChange={setSelectedLevel}
+            onPathChange={setSelectedPath}
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {(session ? allCourses : initialCourses).map((course) => (
+            {filteredCourses.map((course) => (
               <CourseCard key={course.id} {...course} />
             ))}
           </div>
