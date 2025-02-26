@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,9 @@ import AIAssistantPage from "./pages/student/AIAssistantPage";
 import ExercisesPage from "./pages/student/ExercisesPage";
 import ProgressPage from "./pages/student/ProgressPage";
 import NotFound from "./pages/NotFound";
+import AchievementsPage from "./pages/student/AchievementsPage";
+import DiscussionPage from "./pages/student/DiscussionPage";
+import NotificationsPage from "./pages/student/NotificationsPage";
 
 const queryClient = new QueryClient();
 
@@ -140,6 +142,24 @@ const App = () => (
           <Route path="/student/progress" element={
             <ProtectedRoute allowedRoles={['student']}>
               <ProgressPage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/student/achievements" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <AchievementsPage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/student/discussion" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <DiscussionPage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/student/notifications" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <NotificationsPage />
             </ProtectedRoute>
           } />
           
