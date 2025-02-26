@@ -15,12 +15,14 @@ import { CodeEditorWrapper } from "@/components/CodeEditor/CodeEditorWrapper";
 import { toast } from "sonner";
 import { NavigationCard } from "@/components/dashboard/NavigationCard";
 import { CourseTabs } from "@/components/dashboard/CourseTabs";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import type { Course } from "@/types/course";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -30,6 +32,20 @@ const StudentDashboard = () => {
         return;
       }
 
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        toast.error("Failed to fetch user profile");
+        console.error("Error fetching profile:", profileError);
+      } else {
+        setUserProfile(profile);
+      }
+
       // Fetch enrolled courses
       const { data: enrolledCourses, error } = await supabase
         .from('courses')
@@ -37,6 +53,11 @@ const StudentDashboard = () => {
           *,
           teacher:teacher_id (
             name:full_name
+          ),
+          course_materials (
+            id,
+            type,
+            title
           )
         `)
         .order('created_at', { ascending: false });
@@ -62,9 +83,9 @@ const StudentDashboard = () => {
             title: "Course Instructor"
           },
           materials: {
-            videos: 0,
-            pdfs: 0,
-            presentations: 0
+            videos: course.course_materials?.filter(m => m.type === 'video').length || 0,
+            pdfs: course.course_materials?.filter(m => m.type === 'pdf').length || 0,
+            presentations: course.course_materials?.filter(m => m.type === 'presentation').length || 0
           }
         }));
         
@@ -78,27 +99,29 @@ const StudentDashboard = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Student Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            Welcome back, {userProfile?.full_name || 'Student'}!
+          </h1>
           <p className="text-gray-600">Track your learning progress</p>
         </div>
 
-        {/* Main Navigation Cards */}
+        {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <NavigationCard
             icon={Book}
-            title="Courses"
-            description="Access your enrolled courses and track your progress."
-            buttonText="View My Courses"
+            title="Resume Learning"
+            description="Continue where you left off in your latest course."
+            buttonText="Continue Course"
           />
 
           <NavigationCard
             icon={FileCode}
-            title="Exercises & Projects"
-            description="Practice with coding exercises and complete projects."
-            buttonText="Start Practicing"
+            title="Daily Challenge"
+            description="Complete today's coding challenge to earn points."
+            buttonText="Start Challenge"
           />
 
           <NavigationCard
@@ -126,10 +149,10 @@ const StudentDashboard = () => {
           </NavigationCard>
         </div>
 
-        {/* Detailed Content Tabs */}
+        {/* Course Progress */}
         <CourseTabs courses={courses} loading={loading} />
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
