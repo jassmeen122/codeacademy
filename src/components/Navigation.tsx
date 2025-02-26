@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,19 +13,39 @@ const Navigation = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (!session) {
+        navigate('/auth');
+      }
     });
-  }, []);
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success('Signed out successfully');
+      navigate('/auth');
+    } catch (error: any) {
+      toast.error(error.message || 'Error signing out');
+    }
+  };
 
   const handleAuth = () => {
     if (session) {
-      supabase.auth.signOut();
+      handleSignOut();
     } else {
       navigate("/auth");
     }
@@ -35,14 +56,16 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
-            <span className="text-xl font-bold text-primary">CodeAcademy</span>
+            <Link to="/" className="text-xl font-bold text-primary">
+              CodeAcademy
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#courses" className="nav-link">Courses</a>
-            <a href="#features" className="nav-link">Features</a>
-            <a href="#pricing" className="nav-link">Pricing</a>
+            <Link to="/student" className="nav-link">Dashboard</Link>
+            <Link to="#courses" className="nav-link">Courses</Link>
+            <Link to="#features" className="nav-link">Features</Link>
             {!loading && (
               <Button
                 variant="default"
@@ -70,24 +93,24 @@ const Navigation = () => {
         {isOpen && (
           <div className="md:hidden animate-fadeIn">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <a
-                href="#courses"
+              <Link
+                to="/student"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="#courses"
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
               >
                 Courses
-              </a>
-              <a
-                href="#features"
+              </Link>
+              <Link
+                to="#features"
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
               >
                 Features
-              </a>
-              <a
-                href="#pricing"
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-              >
-                Pricing
-              </a>
+              </Link>
               {!loading && (
                 <Button
                   className="w-full mt-4 bg-primary hover:bg-primary/90"
