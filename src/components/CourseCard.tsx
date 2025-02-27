@@ -1,3 +1,5 @@
+
+import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -49,8 +51,15 @@ const CourseCard = ({
 
     if (error) {
       console.error('Error fetching course resources:', error);
-    } else {
-      setResources(data);
+    } else if (data) {
+      // Type check and filter the data to ensure it matches our CourseResource interface
+      const validResources = data.filter((resource): resource is CourseResource => {
+        return (
+          typeof resource.type === 'string' && 
+          ['video', 'pdf', 'presentation'].includes(resource.type)
+        );
+      });
+      setResources(validResources);
     }
     setLoading(false);
   };
@@ -187,7 +196,7 @@ const CourseCard = ({
                 <p className="text-muted-foreground">Loading course materials...</p>
               ) : resources.length > 0 ? (
                 <div className="space-y-4">
-                  {['video', 'pdf', 'presentation'].map(type => {
+                  {(['video', 'pdf', 'presentation'] as const).map(type => {
                     const typeResources = resources.filter(r => r.type === type);
                     if (typeResources.length === 0) return null;
 
@@ -195,8 +204,8 @@ const CourseCard = ({
                       <Card key={type}>
                         <CardHeader>
                           <CardTitle className="text-base flex items-center gap-2">
-                            {ResourceIcon[type as keyof typeof ResourceIcon] && 
-                              React.createElement(ResourceIcon[type as keyof typeof ResourceIcon], {
+                            {ResourceIcon[type] && 
+                              React.createElement(ResourceIcon[type], {
                                 className: "h-5 w-5"
                               })}
                             {type.charAt(0).toUpperCase() + type.slice(1)}s
