@@ -1,12 +1,22 @@
-
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Clock, Users, BarChart, Folder, FileVideo, FileText, Layout, User } from "lucide-react";
-import { useState } from "react";
+import { Clock, Users, BarChart, Folder, FileVideo, FileText, Layout, User, Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import type { Course } from "@/types/course";
 
+interface CourseResource {
+  id: string;
+  title: string;
+  description: string | null;
+  type: 'video' | 'pdf' | 'presentation';
+  file_url: string;
+  order_index: number;
+}
+
 const CourseCard = ({ 
+  id,
   title, 
   description, 
   duration, 
@@ -20,6 +30,30 @@ const CourseCard = ({
   language
 }: Course) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [resources, setResources] = useState<CourseResource[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isDialogOpen) {
+      fetchCourseResources();
+    }
+  }, [isDialogOpen]);
+
+  const fetchCourseResources = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('course_resources')
+      .select('*')
+      .eq('course_id', id)
+      .order('order_index');
+
+    if (error) {
+      console.error('Error fetching course resources:', error);
+    } else {
+      setResources(data);
+    }
+    setLoading(false);
+  };
 
   const difficultyColor = {
     Beginner: "text-green-600 bg-green-50",
@@ -32,6 +66,12 @@ const CourseCard = ({
     "Data Science": "text-purple-600 bg-purple-50",
     "Artificial Intelligence": "text-indigo-600 bg-indigo-50"
   }[path];
+
+  const ResourceIcon = {
+    video: FileVideo,
+    pdf: FileText,
+    presentation: Layout
+  };
 
   return (
     <>
@@ -143,44 +183,52 @@ const CourseCard = ({
 
             <div>
               <h3 className="text-lg font-semibold mb-2">Course Materials</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <FileVideo className="h-5 w-5" />
-                      Video Lectures
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{materials.videos}</p>
-                    <p className="text-sm text-muted-foreground">High-quality video lessons</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      PDF Resources
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{materials.pdfs}</p>
-                    <p className="text-sm text-muted-foreground">Comprehensive guides</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Layout className="h-5 w-5" />
-                      Presentations
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{materials.presentations}</p>
-                    <p className="text-sm text-muted-foreground">Slide presentations</p>
-                  </CardContent>
-                </Card>
-              </div>
+              {loading ? (
+                <p className="text-muted-foreground">Loading course materials...</p>
+              ) : resources.length > 0 ? (
+                <div className="space-y-4">
+                  {['video', 'pdf', 'presentation'].map(type => {
+                    const typeResources = resources.filter(r => r.type === type);
+                    if (typeResources.length === 0) return null;
+
+                    return (
+                      <Card key={type}>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            {ResourceIcon[type as keyof typeof ResourceIcon] && 
+                              React.createElement(ResourceIcon[type as keyof typeof ResourceIcon], {
+                                className: "h-5 w-5"
+                              })}
+                            {type.charAt(0).toUpperCase() + type.slice(1)}s
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            {typeResources.map(resource => (
+                              <div key={resource.id} className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium">{resource.title}</p>
+                                  {resource.description && (
+                                    <p className="text-sm text-muted-foreground">{resource.description}</p>
+                                  )}
+                                </div>
+                                <Button variant="outline" size="sm" asChild>
+                                  <a href={resource.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                                    <Download className="h-4 w-4" />
+                                    Download
+                                  </a>
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No course materials available yet.</p>
+              )}
             </div>
 
             <div>

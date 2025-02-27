@@ -146,6 +146,47 @@ export type Database = {
           },
         ]
       }
+      course_resources: {
+        Row: {
+          course_id: string | null
+          created_at: string | null
+          description: string | null
+          file_url: string
+          id: string
+          order_index: number
+          title: string
+          type: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_url: string
+          id?: string
+          order_index: number
+          title: string
+          type?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          file_url?: string
+          id?: string
+          order_index?: number
+          title?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_resources_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           category: Database["public"]["Enums"]["course_category"]
