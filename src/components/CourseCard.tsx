@@ -15,6 +15,8 @@ interface CourseResource {
   type: 'video' | 'pdf' | 'presentation';
   file_url: string;
   order_index: number;
+  course_id: string | null;
+  created_at: string | null;
 }
 
 const CourseCard = ({ 
