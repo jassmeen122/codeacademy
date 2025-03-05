@@ -3,54 +3,50 @@
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { Application, Router } from "https://deno.land/x/oak@v12.6.1/mod.ts";
+import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.24.0";
+import { corsHeaders } from "../_shared/cors.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: corsHeaders,
-    });
-  }
+// Create an Oak application (similar to Express)
+const app = new Application();
+const router = new Router();
 
-  // Get the path from the URL
-  const url = new URL(req.url);
-  const path = url.pathname.replace("/api", "");
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Add CORS middleware
+app.use(oakCors({ origin: "*", allowHeaders: Object.keys(corsHeaders).join(",") }));
 
-  try {
-    // Parse the request body if present
-    let body = {};
-    if (req.method !== "GET") {
-      const contentType = req.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        body = await req.json();
-      }
-    }
+// Log requests
+app.use(async (ctx, next) => {
+  console.log(`${ctx.request.method} ${ctx.request.url.pathname}`);
+  await next();
+});
 
-    // Route handling
-    if (path === "/courses" && req.method === "GET") {
+// Routes configuration
+router
+  .get("/courses", async (ctx) => {
+    try {
       const { data, error } = await supabase
         .from("courses")
         .select("*");
 
       if (error) throw error;
 
-      return new Response(
-        JSON.stringify({ success: true, data }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
-      );
+      ctx.response.body = { success: true, data };
+      ctx.response.type = "json";
+    } catch (error) {
+      ctx.response.status = 500;
+      ctx.response.body = { success: false, error: error.message };
+      ctx.response.type = "json";
     }
-    
-    if (path === "/courses" && req.method === "POST") {
+  })
+  .post("/courses", async (ctx) => {
+    try {
+      const body = await ctx.request.body({ type: "json" }).value;
+      
       const { data, error } = await supabase
         .from("courses")
         .insert(body)
@@ -58,17 +54,18 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      return new Response(
-        JSON.stringify({ success: true, data }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 201,
-        }
-      );
+      ctx.response.status = 201;
+      ctx.response.body = { success: true, data };
+      ctx.response.type = "json";
+    } catch (error) {
+      ctx.response.status = 500;
+      ctx.response.body = { success: false, error: error.message };
+      ctx.response.type = "json";
     }
-
-    if (path.match(/\/courses\/\w+/) && req.method === "GET") {
-      const id = path.split("/")[2];
+  })
+  .get("/courses/:id", async (ctx) => {
+    try {
+      const id = ctx.params.id;
       const { data, error } = await supabase
         .from("courses")
         .select("*")
@@ -77,26 +74,47 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      return new Response(
-        JSON.stringify({ success: true, data }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
-      );
+      ctx.response.body = { success: true, data };
+      ctx.response.type = "json";
+    } catch (error) {
+      ctx.response.status = 500;
+      ctx.response.body = { success: false, error: error.message };
+      ctx.response.type = "json";
     }
+  });
 
-    // Add more routes here as needed
+// Use the router
+app.use(router.routes());
+app.use(router.allowedMethods());
 
-    // Default 404 response for unmatched routes
-    return new Response(
-      JSON.stringify({ success: false, error: "Not found" }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 404,
-      }
-    );
-  } catch (error) {
+// 404 handler for unmatched routes
+app.use((ctx) => {
+  ctx.response.status = 404;
+  ctx.response.body = { success: false, error: "Not found" };
+  ctx.response.type = "json";
+});
+
+// Serve the application
+app.addEventListener("listen", ({ port }) => {
+  console.log(`Server running on port ${port}`);
+});
+
+// Handle requests using the Oak application
+Deno.serve(async (req) => {
+  // Handle OPTIONS pre-flight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  // Create a response using Oak
+  return await app.handle(req).then((response) => {
+    // Add CORS headers to all responses
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      response.headers.set(key, value);
+    }
+    return response;
+  }).catch((error) => {
+    console.error(error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       {
@@ -104,5 +122,5 @@ serve(async (req) => {
         status: 500,
       }
     );
-  }
+  });
 });

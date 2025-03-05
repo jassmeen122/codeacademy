@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CourseTabs } from "@/components/dashboard/CourseTabs";
 import type { Course } from "@/types/course";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ApiService } from "@/services/api";
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -16,24 +16,14 @@ const CoursesPage = () => {
 
   const fetchCourses = async () => {
     try {
-      const { data: enrolledCourses, error } = await supabase
-        .from('courses')
-        .select(`
-          *,
-          teacher:teacher_id (
-            name:full_name
-          ),
-          course_materials (
-            id,
-            type,
-            title
-          )
-        `)
-        .order('created_at', { ascending: false });
+      setLoading(true);
+      const response = await ApiService.getCourses();
+      
+      if (!response.success) {
+        throw new Error("Failed to fetch courses");
+      }
 
-      if (error) throw error;
-
-      const transformedCourses: Course[] = enrolledCourses.map(course => ({
+      const transformedCourses: Course[] = response.data.map((course: any) => ({
         id: course.id,
         title: course.title,
         description: course.description || "",
@@ -49,9 +39,9 @@ const CoursesPage = () => {
           title: "Course Instructor"
         },
         materials: {
-          videos: course.course_materials?.filter(m => m.type === 'video').length || 0,
-          pdfs: course.course_materials?.filter(m => m.type === 'pdf').length || 0,
-          presentations: course.course_materials?.filter(m => m.type === 'presentation').length || 0
+          videos: course.course_materials?.filter((m: any) => m.type === 'video').length || 0,
+          pdfs: course.course_materials?.filter((m: any) => m.type === 'pdf').length || 0,
+          presentations: course.course_materials?.filter((m: any) => m.type === 'presentation').length || 0
         }
       }));
       
