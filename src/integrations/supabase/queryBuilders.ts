@@ -1,5 +1,5 @@
+
 import { getCollection } from "@/integrations/mongodb/client";
-import { Sort } from "mongodb";
 import { 
   QueryBuilder, 
   CountBuilder, 
@@ -8,13 +8,17 @@ import {
   CountResponse 
 } from "./types.client";
 
+// Define a proper Sort type that supports array operations
+type SortOption = [string, 1 | -1];
+type SortArray = SortOption[];
+
 // MongoDB-based query builder
 export class MongoQueryBuilder<T = any> implements QueryBuilder<T> {
   private collection: string;
   private filters: Record<string, any> = {};
-  private sortOptions: Sort = [];
+  private sortOptions: SortArray = [];
 
-  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: Sort = []) {
+  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: SortArray = []) {
     this.collection = collection;
     this.filters = filters;
     this.sortOptions = sortOptions;
@@ -36,7 +40,7 @@ export class MongoQueryBuilder<T = any> implements QueryBuilder<T> {
   }
 
   order(field: string, { ascending }: { ascending: boolean }): QueryBuilder<T> {
-    const newSortOptions = this.sortOptions ? [...this.sortOptions] : [];
+    const newSortOptions = [...this.sortOptions];
     newSortOptions.push([field, ascending ? 1 : -1]);
     return new MongoQueryBuilder<T>(this.collection, this.filters, newSortOptions);
   }
@@ -44,7 +48,7 @@ export class MongoQueryBuilder<T = any> implements QueryBuilder<T> {
   async single(): DataResponse<T> {
     try {
       const collection = await getCollection(this.collection);
-      const options = this.sortOptions && this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
+      const options = this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
       const data = await collection.findOne(this.filters, options) as T;
       return { data, error: null };
     } catch (error) {
@@ -57,7 +61,7 @@ export class MongoQueryBuilder<T = any> implements QueryBuilder<T> {
   ): Promise<R> {
     try {
       const collection = await getCollection(this.collection);
-      const options = this.sortOptions && this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
+      const options = this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
       const data = await collection.find(this.filters, options).toArray() as T[];
       return onfulfilled!({ data, error: null });
     } catch (error) {
@@ -108,9 +112,9 @@ export class MongoCountBuilder implements CountBuilder {
 export class MongoSelectBuilder<T = any> implements SelectBuilder<T> {
   private collection: string;
   private filters: Record<string, any> = {};
-  private sortOptions: Sort = [];
+  private sortOptions: SortArray = [];
 
-  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: Sort = []) {
+  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: SortArray = []) {
     this.collection = collection;
     this.filters = filters;
     this.sortOptions = sortOptions;
@@ -132,7 +136,7 @@ export class MongoSelectBuilder<T = any> implements SelectBuilder<T> {
   }
 
   order(field: string, { ascending }: { ascending: boolean }): QueryBuilder<T> {
-    const newSortOptions = this.sortOptions ? [...this.sortOptions] : [];
+    const newSortOptions = [...this.sortOptions];
     newSortOptions.push([field, ascending ? 1 : -1]);
     return new MongoQueryBuilder<T>(this.collection, this.filters, newSortOptions);
   }
@@ -140,7 +144,7 @@ export class MongoSelectBuilder<T = any> implements SelectBuilder<T> {
   async single(): DataResponse<T> {
     try {
       const collection = await getCollection(this.collection);
-      const options = this.sortOptions && this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
+      const options = this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
       const data = await collection.findOne(this.filters, options) as T;
       return { data, error: null };
     } catch (error) {
@@ -153,7 +157,7 @@ export class MongoSelectBuilder<T = any> implements SelectBuilder<T> {
   ): Promise<R> {
     try {
       const collection = await getCollection(this.collection);
-      const options = this.sortOptions && this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
+      const options = this.sortOptions.length > 0 ? { sort: this.sortOptions } : {};
       const data = await collection.find(this.filters, options).toArray() as T[];
       return onfulfilled!({ data, error: null });
     } catch (error) {
