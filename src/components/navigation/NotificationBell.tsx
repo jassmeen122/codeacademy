@@ -22,9 +22,9 @@ export const NotificationBell = ({ userId }: NotificationBellProps) => {
 
   const fetchNotificationCount = async (userId: string) => {
     try {
-      const { count } = await supabase
+      const { count, error } = await supabase
         .from('notifications')
-        .select('*', { count: 'exact', head: true })
+        .count()
         .eq('user_id', userId)
         .eq('read', false);
       

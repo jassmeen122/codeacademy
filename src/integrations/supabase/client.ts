@@ -35,7 +35,7 @@ export const supabase = {
         }
       };
     },
-    signInWithPassword: async () => {
+    signInWithPassword: async (credentials: any = {}) => {
       // Mock implementation - should be replaced with actual authentication
       return {
         data: {
@@ -44,7 +44,7 @@ export const supabase = {
         error: new Error("Authentication using MongoDB is not implemented yet")
       };
     },
-    signUp: async () => {
+    signUp: async (credentials: any = {}) => {
       // Mock implementation - should be replaced with actual authentication
       return {
         data: {
@@ -87,7 +87,6 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          // Add more query methods as needed
           order: (field: string, { ascending }: { ascending: boolean }) => {
             // This is a chainable method that returns an object with query methods
             return {
@@ -102,7 +101,17 @@ export const supabase = {
                   return { data: null, error };
                 }
               },
-              // Add more methods to support chaining
+              // Support for chaining with single method
+              single: async () => {
+                try {
+                  const collection = await getCollection(table);
+                  const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+                  const data = await collection.findOne({}, { sort: sortOptions });
+                  return { data, error: null };
+                } catch (error) {
+                  return { data: null, error };
+                }
+              },
               gte: async (field: string, value: any) => {
                 try {
                   const collection = await getCollection(table);
@@ -127,7 +136,6 @@ export const supabase = {
               }
             };
           },
-          // Add direct methods to the select result
           gte: async (field: string, value: any) => {
             try {
               const collection = await getCollection(table);
@@ -188,7 +196,6 @@ export const supabase = {
           }
         };
       },
-      // Add direct methods that don't require select() first
       count: (column: string = "*") => {
         return {
           eq: async (field: string, value: any) => {
@@ -219,6 +226,61 @@ export const supabase = {
             }
           }
         };
+      },
+      // Fix for direct method access without select()
+      eq: async (field: string, value: any) => {
+        try {
+          const collection = await getCollection(table);
+          const query = { [field]: value };
+          const data = await collection.find(query).toArray();
+          return { data, error: null };
+        } catch (error) {
+          return { data: null, error };
+        }
+      },
+      single: async () => {
+        try {
+          const collection = await getCollection(table);
+          const data = await collection.findOne({});
+          return { data, error: null };
+        } catch (error) {
+          return { data: null, error };
+        }
+      },
+      order: (field: string, { ascending }: { ascending: boolean }) => {
+        return {
+          eq: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const query = { [field]: value };
+              const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+              const data = await collection.find(query).sort(sortOptions).toArray();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          }
+        };
+      },
+      gte: async (field: string, value: any) => {
+        try {
+          const collection = await getCollection(table);
+          const query = { [field]: { $gte: value } };
+          const data = await collection.find(query).toArray();
+          return { data, error: null };
+        } catch (error) {
+          return { data: null, error };
+        }
+      },
+      gt: async (field: string, value: any) => {
+        try {
+          const collection = await getCollection(table);
+          const query = { [field]: { $gt: value } };
+          const data = await collection.find(query).toArray();
+          return { data, error: null };
+        } catch (error) {
+          return { data: null, error };
+        }
       }
     };
   },
