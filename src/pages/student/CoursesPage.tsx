@@ -24,7 +24,7 @@ const CoursesPage = () => {
       }
 
       const transformedCourses: Course[] = response.data.map((course: any) => ({
-        id: course.id,
+        id: course._id?.toString() || course.id || "",
         title: course.title,
         description: course.description || "",
         duration: "8 weeks",

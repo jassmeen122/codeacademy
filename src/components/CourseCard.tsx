@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -45,25 +44,35 @@ const CourseCard = ({
 
   const fetchCourseResources = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('course_resources')
-      .select('*')
-      .eq('course_id', id)
-      .order('order_index');
+    try {
+      // First try to use the MongoDB _id format
+      let courseId = id;
+      
+      const { data, error } = await supabase
+        .from('course_resources')
+        .select('*')
+        .eq('course_id', courseId)
+        .order('order_index');
 
-    if (error) {
-      console.error('Error fetching course resources:', error);
-    } else if (data) {
-      // Type check and filter the data to ensure it matches our CourseResource interface
-      const validResources = data.filter((resource): resource is CourseResource => {
-        return (
-          typeof resource.type === 'string' && 
-          ['video', 'pdf', 'presentation'].includes(resource.type)
-        );
-      });
-      setResources(validResources);
+      if (error) {
+        console.error('Error fetching course resources:', error);
+        setResources([]);
+      } else if (data) {
+        // Type check and filter the data to ensure it matches our CourseResource interface
+        const validResources = data.filter((resource): resource is CourseResource => {
+          return (
+            typeof resource.type === 'string' && 
+            ['video', 'pdf', 'presentation'].includes(resource.type)
+          );
+        });
+        setResources(validResources);
+      }
+    } catch (error) {
+      console.error('Error in fetchCourseResources:', error);
+      setResources([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const difficultyColor = {

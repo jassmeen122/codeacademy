@@ -5,12 +5,26 @@
 
 import { Application, Router } from "https://deno.land/x/oak@v12.6.1/mod.ts";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.24.0";
+import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// MongoDB connection string - in a real app, use environment variables
+const MONGODB_URI = Deno.env.get("MONGODB_URI") || "mongodb://localhost:27017";
+const DB_NAME = "learning_platform";
+
+// Create the MongoDB client
+const client = new MongoClient();
+
+// Connect to MongoDB
+try {
+  await client.connect(MONGODB_URI);
+  console.log("Connected to MongoDB");
+} catch (err) {
+  console.error("Error connecting to MongoDB:", err);
+}
+
+const db = client.database(DB_NAME);
+const coursesCollection = db.collection("courses");
 
 // Create an Oak application (similar to Express)
 const app = new Application();
@@ -29,15 +43,12 @@ app.use(async (ctx, next) => {
 router
   .get("/courses", async (ctx) => {
     try {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*");
+      const courses = await coursesCollection.find().toArray();
 
-      if (error) throw error;
-
-      ctx.response.body = { success: true, data };
+      ctx.response.body = { success: true, data: courses };
       ctx.response.type = "json";
     } catch (error) {
+      console.error("Error fetching courses:", error);
       ctx.response.status = 500;
       ctx.response.body = { success: false, error: error.message };
       ctx.response.type = "json";
@@ -47,17 +58,17 @@ router
     try {
       const body = await ctx.request.body({ type: "json" }).value;
       
-      const { data, error } = await supabase
-        .from("courses")
-        .insert(body)
-        .select();
-
-      if (error) throw error;
+      const result = await coursesCollection.insertOne(body);
+      const insertedId = result.insertedId;
+      
+      // Fetch the inserted document
+      const insertedDoc = await coursesCollection.findOne({ _id: insertedId });
 
       ctx.response.status = 201;
-      ctx.response.body = { success: true, data };
+      ctx.response.body = { success: true, data: insertedDoc };
       ctx.response.type = "json";
     } catch (error) {
+      console.error("Error creating course:", error);
       ctx.response.status = 500;
       ctx.response.body = { success: false, error: error.message };
       ctx.response.type = "json";
@@ -66,17 +77,28 @@ router
   .get("/courses/:id", async (ctx) => {
     try {
       const id = ctx.params.id;
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("id", id)
-        .single();
+      
+      let query = {};
+      try {
+        // Try to use the id as ObjectId
+        query = { _id: new ObjectId(id) };
+      } catch (e) {
+        // If it's not a valid ObjectId, use it as is
+        query = { id: id };
+      }
+      
+      const course = await coursesCollection.findOne(query);
 
-      if (error) throw error;
+      if (!course) {
+        ctx.response.status = 404;
+        ctx.response.body = { success: false, error: "Course not found" };
+        return;
+      }
 
-      ctx.response.body = { success: true, data };
+      ctx.response.body = { success: true, data: course };
       ctx.response.type = "json";
     } catch (error) {
+      console.error("Error fetching course:", error);
       ctx.response.status = 500;
       ctx.response.body = { success: false, error: error.message };
       ctx.response.type = "json";
