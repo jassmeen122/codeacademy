@@ -1,20 +1,15 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { getCollection } from "@/integrations/mongodb/client";
+import { ObjectId } from "mongodb";
 
 export const ApiService = {
   // Courses
   async getCourses() {
     try {
-      const response = await supabase.functions.invoke('api', {
-        method: 'GET',
-        body: { path: '/courses' }
-      });
+      const coursesCollection = await getCollection("courses");
+      const courses = await coursesCollection.find().toArray();
       
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-      
-      return response.data;
+      return { success: true, data: courses };
     } catch (error) {
       console.error("Error fetching courses:", error);
       throw error;
@@ -23,16 +18,24 @@ export const ApiService = {
   
   async getCourse(id: string) {
     try {
-      const response = await supabase.functions.invoke('api', {
-        method: 'GET',
-        body: { path: `/courses/${id}` }
-      });
+      const coursesCollection = await getCollection("courses");
       
-      if (response.error) {
-        throw new Error(response.error.message);
+      let query = {};
+      try {
+        // Try to use the id as ObjectId
+        query = { _id: new ObjectId(id) };
+      } catch (e) {
+        // If it's not a valid ObjectId, use it as is
+        query = { id: id };
       }
       
-      return response.data;
+      const course = await coursesCollection.findOne(query);
+      
+      if (!course) {
+        throw new Error("Course not found");
+      }
+      
+      return { success: true, data: course };
     } catch (error) {
       console.error(`Error fetching course ${id}:`, error);
       throw error;
@@ -41,19 +44,13 @@ export const ApiService = {
   
   async createCourse(courseData: any) {
     try {
-      const response = await supabase.functions.invoke('api', {
-        method: 'POST',
-        body: { 
-          path: '/courses',
-          data: courseData 
-        }
-      });
+      const coursesCollection = await getCollection("courses");
+      const result = await coursesCollection.insertOne(courseData);
       
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
+      // Fetch the inserted document
+      const insertedDoc = await coursesCollection.findOne({ _id: result.insertedId });
       
-      return response.data;
+      return { success: true, data: insertedDoc };
     } catch (error) {
       console.error("Error creating course:", error);
       throw error;
@@ -62,16 +59,10 @@ export const ApiService = {
   
   async getCourseResources(courseId: string) {
     try {
-      const response = await supabase.functions.invoke('api', {
-        method: 'GET',
-        body: { path: `/courses/${courseId}/resources` }
-      });
+      const resourcesCollection = await getCollection("course_resources");
+      const resources = await resourcesCollection.find({ course_id: courseId.toString() }).toArray();
       
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-      
-      return response.data;
+      return { success: true, data: resources };
     } catch (error) {
       console.error(`Error fetching resources for course ${courseId}:`, error);
       throw error;
