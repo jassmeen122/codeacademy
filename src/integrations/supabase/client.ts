@@ -1,9 +1,10 @@
+
 // This is a compatibility layer to support existing components that use supabase
 // while actually using MongoDB under the hood
 
 // Re-export necessary functionality from the MongoDB client
 import { getDatabase, getCollection } from "@/integrations/mongodb/client";
-import { Sort, Document, WithId } from "mongodb";
+import { Document, WithId } from "mongodb";
 
 // Type definitions to improve type safety
 type DataResponse<T = any> = Promise<{ data: T; error: null } | { data: null; error: any }>;
@@ -53,9 +54,9 @@ interface TableQueryBuilder<T = any> {
 class MongoQueryBuilder<T = any> implements QueryBuilder<T> {
   private collection: string;
   private filters: Record<string, any> = {};
-  private sortOptions: Sort = [];
+  private sortOptions: Array<[string, number]> = [];
 
-  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: Sort = []) {
+  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: Array<[string, number]> = []) {
     this.collection = collection;
     this.filters = filters;
     this.sortOptions = sortOptions;
@@ -148,9 +149,9 @@ class MongoCountBuilder implements CountBuilder {
 class MongoSelectBuilder<T = any> implements SelectBuilder<T> {
   private collection: string;
   private filters: Record<string, any> = {};
-  private sortOptions: Sort = [];
+  private sortOptions: Array<[string, number]> = [];
 
-  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: Sort = []) {
+  constructor(collection: string, filters: Record<string, any> = {}, sortOptions: Array<[string, number]> = []) {
     this.collection = collection;
     this.filters = filters;
     this.sortOptions = sortOptions;
@@ -173,7 +174,7 @@ class MongoSelectBuilder<T = any> implements SelectBuilder<T> {
 
   order(field: string, { ascending }: { ascending: boolean }): QueryBuilder<T> {
     const newSortOptions = [...this.sortOptions, [field, ascending ? 1 : -1]];
-    return new MongoQueryBuilder<T>(this.collection, newFilters, newSortOptions);
+    return new MongoQueryBuilder<T>(this.collection, this.filters, newSortOptions);
   }
 
   async single(): DataResponse<T> {
