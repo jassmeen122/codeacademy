@@ -15,6 +15,7 @@ export class SupabaseQueryBuilder<T = any> implements QueryBuilder<T> {
   private filters: Record<string, any> = {};
   private sortField: string | null = null;
   private sortAscending: boolean = true;
+  private limitValue: number | null = null;
 
   constructor(table: string, filters: Record<string, any> = {}, sortField: string | null = null, sortAscending: boolean = true) {
     this.table = table;
@@ -38,6 +39,12 @@ export class SupabaseQueryBuilder<T = any> implements QueryBuilder<T> {
 
   order(field: string, { ascending }: { ascending: boolean }): QueryBuilder<T> {
     return new SupabaseQueryBuilder<T>(this.table, this.filters, field, ascending);
+  }
+
+  limit(value: number): QueryBuilder<T> {
+    const result = new SupabaseQueryBuilder<T>(this.table, this.filters, this.sortField, this.sortAscending);
+    result.limitValue = value;
+    return result;
   }
 
   async single(): DataResponse<T> {
@@ -75,6 +82,11 @@ export class SupabaseQueryBuilder<T = any> implements QueryBuilder<T> {
       // Apply sorting
       if (this.sortField) {
         query = query.order(this.sortField, { ascending: this.sortAscending });
+      }
+      
+      // Apply limit if set
+      if (this.limitValue !== null) {
+        query = query.limit(this.limitValue);
       }
       
       const { data, error } = await query;
@@ -119,8 +131,9 @@ export class SupabaseCountBuilder implements CountBuilder {
         query = query.eq(field, value);
       });
       
-      const { data, error, count } = await query;
-      return onfulfilled!({ count: count || 0, error });
+      const result = await query;
+      // The count is available in the response metadata
+      return onfulfilled!({ count: result.count || 0, error: result.error });
     } catch (error) {
       return onfulfilled!({ count: null, error: error as PostgrestError });
     }
@@ -134,6 +147,7 @@ export class SupabaseSelectBuilder<T = any> implements SelectBuilder<T> {
   private sortField: string | null = null;
   private sortAscending: boolean = true;
   private columns: string;
+  private limitValue: number | null = null;
 
   constructor(table: string, columns: string = "*", filters: Record<string, any> = {}, sortField: string | null = null, sortAscending: boolean = true) {
     this.table = table;
@@ -154,6 +168,12 @@ export class SupabaseSelectBuilder<T = any> implements SelectBuilder<T> {
 
   gt(field: string, value: any): QueryBuilder<T> {
     return new SupabaseQueryBuilder<T>(this.table, this.filters, this.sortField, this.sortAscending);
+  }
+
+  limit(value: number): QueryBuilder<T> {
+    const result = new SupabaseQueryBuilder<T>(this.table, this.filters, this.sortField, this.sortAscending);
+    result.limit(value);
+    return result;
   }
 
   order(field: string, { ascending }: { ascending: boolean }): QueryBuilder<T> {
@@ -195,6 +215,11 @@ export class SupabaseSelectBuilder<T = any> implements SelectBuilder<T> {
       // Apply sorting
       if (this.sortField) {
         query = query.order(this.sortField, { ascending: this.sortAscending });
+      }
+      
+      // Apply limit if set
+      if (this.limitValue !== null) {
+        query = query.limit(this.limitValue);
       }
       
       const { data, error } = await query;

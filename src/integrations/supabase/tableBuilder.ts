@@ -29,13 +29,13 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
         .insert(data);
       
       // If insertion is successful, fetch the inserted record
-      if (!error && insertedData) {
-        const { data: fetchedData, error: fetchError } = await supabase
+      if (!error) {
+        const query = supabase
           .from(this.table)
           .select('*')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+          .order('created_at', { ascending: false });
+        
+        const { data: fetchedData, error: fetchError } = await query.limit(1).single();
         
         return { data: fetchedData as T, error: fetchError };
       }
@@ -94,6 +94,11 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
 
   gt(field: string, value: any): QueryBuilder<T> {
     return new SupabaseQueryBuilder<T>(this.table);
+  }
+
+  limit(value: number): QueryBuilder<T> {
+    const queryBuilder = new SupabaseQueryBuilder<T>(this.table);
+    return queryBuilder.limit(value);
   }
 
   async single(): DataResponse<T> {

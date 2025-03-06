@@ -48,13 +48,13 @@ export const ApiService = {
       if (error) throw error;
 
       // Fetch the newly created course
-      const { data: newCourse, error: fetchError } = await supabase
+      const query = supabase
         .from("courses")
         .select()
         .eq("title", courseData.title)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+        .order('created_at', { ascending: false });
+      
+      const { data: newCourse, error: fetchError } = await query.limit(1).single();
       
       if (fetchError) throw fetchError;
       

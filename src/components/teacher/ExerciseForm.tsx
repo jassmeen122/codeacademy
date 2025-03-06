@@ -46,13 +46,13 @@ const ExerciseForm = ({ onExerciseCreated }: ExerciseFormProps) => {
       if (error) throw error;
 
       // Fetch the newly created exercise
-      const { data: createdExercise, error: fetchError } = await supabase
+      const query = supabase
         .from('exercises')
         .select('*')
         .eq('teacher_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+        .order('created_at', { ascending: false });
+      
+      const { data: createdExercise, error: fetchError } = await query.limit(1).single();
 
       if (fetchError) throw fetchError;
 

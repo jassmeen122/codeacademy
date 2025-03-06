@@ -10,6 +10,7 @@ export interface QueryBuilder<T = any> {
   eq: (field: string, value: any) => QueryBuilder<T>;
   gte: (field: string, value: any) => QueryBuilder<T>;
   gt: (field: string, value: any) => QueryBuilder<T>;
+  limit: (value: number) => QueryBuilder<T>;
   single: () => DataResponse<T>;
   order: (field: string, options: { ascending: boolean }) => QueryBuilder<T>;
   then: <R>(onfulfilled?: ((value: { data: T[] | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null) => Promise<R>;
@@ -26,6 +27,7 @@ export interface SelectBuilder<T = any> {
   eq: (field: string, value: any) => QueryBuilder<T>;
   gte: (field: string, value: any) => QueryBuilder<T>;
   gt: (field: string, value: any) => QueryBuilder<T>;
+  limit: (value: number) => QueryBuilder<T>;
   single: () => DataResponse<T>;
   order: (field: string, options: { ascending: boolean }) => QueryBuilder<T>;
   then: <R>(onfulfilled?: ((value: { data: T[] | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null) => Promise<R>;
@@ -42,5 +44,6 @@ export interface TableQueryBuilder<T = any> {
   order: (field: string, options: { ascending: boolean }) => QueryBuilder<T>;
   gte: (field: string, value: any) => QueryBuilder<T>;
   gt: (field: string, value: any) => QueryBuilder<T>;
+  limit: (value: number) => QueryBuilder<T>;
   then: <R>(onfulfilled?: ((value: { data: T[] | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null) => Promise<R>;
 }
