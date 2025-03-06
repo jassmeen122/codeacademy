@@ -2,9 +2,7 @@
 # This is a generic configuration file for Supabase Edge Functions
 
 [functions]
-[functions.serve]
-port = 54321
-watch = true
+serve = true  # Changed from object format to boolean
 
 [auth]
 enabled = true
