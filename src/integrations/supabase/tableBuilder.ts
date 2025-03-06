@@ -26,10 +26,21 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
     try {
       const { data: insertedData, error } = await supabase
         .from(this.table)
-        .insert(data)
-        .select();
+        .insert(data);
       
-      return { data: insertedData?.[0] as T, error };
+      // If insertion is successful, fetch the inserted record
+      if (!error && insertedData) {
+        const { data: fetchedData, error: fetchError } = await supabase
+          .from(this.table)
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        return { data: fetchedData as T, error: fetchError };
+      }
+      
+      return { data: null, error };
     } catch (error) {
       return { data: null, error: error as PostgrestError };
     }

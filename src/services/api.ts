@@ -43,13 +43,22 @@ export const ApiService = {
     try {
       const { data: insertedCourse, error } = await supabase
         .from("courses")
-        .insert(courseData)
-        .select()
-        .single();
+        .insert(courseData);
       
       if (error) throw error;
+
+      // Fetch the newly created course
+      const { data: newCourse, error: fetchError } = await supabase
+        .from("courses")
+        .select()
+        .eq("title", courseData.title)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
       
-      return { success: true, data: insertedCourse };
+      if (fetchError) throw fetchError;
+      
+      return { success: true, data: newCourse };
     } catch (error) {
       console.error("Error creating course:", error);
       throw error;

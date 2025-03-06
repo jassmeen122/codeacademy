@@ -112,14 +112,14 @@ export class SupabaseCountBuilder implements CountBuilder {
     onfulfilled?: ((value: { count: number | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null
   ): Promise<R> {
     try {
-      let query = supabase.from(this.table).select('*', { count: 'exact', head: true });
+      let query = supabase.from(this.table).select('*', { count: 'exact' });
       
       // Apply filters
       Object.entries(this.filters).forEach(([field, value]) => {
         query = query.eq(field, value);
       });
       
-      const { count, error } = await query;
+      const { data, error, count } = await query;
       return onfulfilled!({ count: count || 0, error });
     } catch (error) {
       return onfulfilled!({ count: null, error: error as PostgrestError });

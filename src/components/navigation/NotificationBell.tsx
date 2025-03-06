@@ -24,7 +24,7 @@ export const NotificationBell = ({ userId }: NotificationBellProps) => {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*', { count: 'exact' })
+        .select('*')
         .eq('user_id', userId)
         .eq('read', false);
       

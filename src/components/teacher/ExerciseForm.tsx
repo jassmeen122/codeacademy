@@ -38,18 +38,26 @@ const ExerciseForm = ({ onExerciseCreated }: ExerciseFormProps) => {
 
       const { data, error } = await supabase
         .from('exercises')
-        .insert([
-          {
-            ...newExercise,
-            teacher_id: user.id,
-          },
-        ])
-        .select();
+        .insert({
+          ...newExercise,
+          teacher_id: user.id,
+        });
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
-        onExerciseCreated(data[0]);
+      // Fetch the newly created exercise
+      const { data: createdExercise, error: fetchError } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('teacher_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (createdExercise) {
+        onExerciseCreated(createdExercise);
         toast.success("Exercise created successfully!");
         setNewExercise({
           title: "",
