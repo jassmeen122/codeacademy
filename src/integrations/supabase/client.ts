@@ -6,6 +6,25 @@
 import { getDatabase, getCollection } from "@/integrations/mongodb/client";
 import { Sort, Document, WithId } from "mongodb";
 
+// Type definitions to improve type safety
+type DataResponse<T = any> = { data: T; error: null } | { data: null; error: any };
+type CountResponse = { count: number; error: null } | { count: null; error: any };
+
+// Helper types for chaining
+interface QueryBuilder<T = any> {
+  eq: (field: string, value: any) => Promise<DataResponse<T[]>>;
+  gte: (field: string, value: any) => Promise<DataResponse<T[]>>;
+  gt: (field: string, value: any) => Promise<DataResponse<T[]>>;
+  single: () => Promise<DataResponse<T>>;
+  order: (field: string, options: { ascending: boolean }) => QueryBuilder<T>;
+}
+
+interface CountBuilder {
+  eq: (field: string, value: any) => Promise<CountResponse>;
+  gte: (field: string, value: any) => Promise<CountResponse>;
+  gt: (field: string, value: any) => Promise<CountResponse>;
+}
+
 // Mock the Supabase client structure with MongoDB functionality
 export const supabase = {
   auth: {
@@ -65,9 +84,9 @@ export const supabase = {
   from: (table: string) => {
     // Create a MongoDB-based implementation of Supabase's from() method
     return {
-      select: (columns: string = "*") => {
+      select: (columns: string = "*"): QueryBuilder => {
         // This object needs to support various query methods that can be chained
-        return {
+        const queryBuilder: QueryBuilder = {
           eq: async (field: string, value: any) => {
             try {
               const collection = await getCollection(table);
@@ -88,8 +107,8 @@ export const supabase = {
             }
           },
           order: (field: string, { ascending }: { ascending: boolean }) => {
-            // This is a chainable method that returns an object with query methods
-            return {
+            // This is a chainable method that returns the query builder with methods
+            const orderQueryBuilder: QueryBuilder = {
               eq: async (field: string, value: any) => {
                 try {
                   const collection = await getCollection(table);
@@ -101,7 +120,6 @@ export const supabase = {
                   return { data: null, error };
                 }
               },
-              // Support for chaining with single method
               single: async () => {
                 try {
                   const collection = await getCollection(table);
@@ -133,8 +151,13 @@ export const supabase = {
                 } catch (error) {
                   return { data: null, error };
                 }
+              },
+              order: (field: string, options: { ascending: boolean }) => {
+                // Return self to support further chaining
+                return orderQueryBuilder;
               }
             };
+            return orderQueryBuilder;
           },
           gte: async (field: string, value: any) => {
             try {
@@ -157,6 +180,7 @@ export const supabase = {
             }
           }
         };
+        return queryBuilder;
       },
       insert: async (data: any) => {
         try {
@@ -196,8 +220,8 @@ export const supabase = {
           }
         };
       },
-      count: (column: string = "*") => {
-        return {
+      count: (column: string = "*"): CountBuilder => {
+        const countBuilder: CountBuilder = {
           eq: async (field: string, value: any) => {
             try {
               const collection = await getCollection(table);
@@ -226,8 +250,9 @@ export const supabase = {
             }
           }
         };
+        return countBuilder;
       },
-      // Fix for direct method access without select()
+      // Direct method implementations without going through select()
       eq: async (field: string, value: any) => {
         try {
           const collection = await getCollection(table);
@@ -247,8 +272,8 @@ export const supabase = {
           return { data: null, error };
         }
       },
-      order: (field: string, { ascending }: { ascending: boolean }) => {
-        return {
+      order: (field: string, { ascending }: { ascending: boolean }): QueryBuilder => {
+        const orderQueryBuilder: QueryBuilder = {
           eq: async (field: string, value: any) => {
             try {
               const collection = await getCollection(table);
@@ -259,8 +284,45 @@ export const supabase = {
             } catch (error) {
               return { data: null, error };
             }
+          },
+          single: async () => {
+            try {
+              const collection = await getCollection(table);
+              const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+              const data = await collection.findOne({}, { sort: sortOptions });
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          },
+          gte: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const query = { [field]: { $gte: value } };
+              const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+              const data = await collection.find(query).sort(sortOptions).toArray();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          },
+          gt: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const query = { [field]: { $gt: value } };
+              const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+              const data = await collection.find(query).sort(sortOptions).toArray();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          },
+          order: (field: string, options: { ascending: boolean }) => {
+            // Return self to support further chaining
+            return orderQueryBuilder;
           }
         };
+        return orderQueryBuilder;
       },
       gte: async (field: string, value: any) => {
         try {
@@ -288,7 +350,6 @@ export const supabase = {
   functions: {
     invoke: async (functionName: string, options: any = {}) => {
       // This is a mock implementation that redirects to MongoDB
-      // In a real implementation, you'd map these function calls to MongoDB operations
       console.log(`Mock function call: ${functionName}`, options);
       
       // Example implementation for the 'execute-code' function
