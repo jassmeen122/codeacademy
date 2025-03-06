@@ -1,13 +1,15 @@
 
-import { getCollection } from "@/integrations/mongodb/client";
-import { ObjectId } from "mongodb";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ApiService = {
   // Courses
   async getCourses() {
     try {
-      const coursesCollection = await getCollection("courses");
-      const courses = await coursesCollection.find().toArray();
+      const { data: courses, error } = await supabase
+        .from("courses")
+        .select();
+      
+      if (error) throw error;
       
       return { success: true, data: courses };
     } catch (error) {
@@ -18,18 +20,13 @@ export const ApiService = {
   
   async getCourse(id: string) {
     try {
-      const coursesCollection = await getCollection("courses");
+      const { data: course, error } = await supabase
+        .from("courses")
+        .select()
+        .eq("id", id)
+        .single();
       
-      let query = {};
-      try {
-        // Try to use the id as ObjectId
-        query = { _id: new ObjectId(id) };
-      } catch (e) {
-        // If it's not a valid ObjectId, use it as is
-        query = { id: id };
-      }
-      
-      const course = await coursesCollection.findOne(query);
+      if (error) throw error;
       
       if (!course) {
         throw new Error("Course not found");
@@ -44,13 +41,15 @@ export const ApiService = {
   
   async createCourse(courseData: any) {
     try {
-      const coursesCollection = await getCollection("courses");
-      const result = await coursesCollection.insertOne(courseData);
+      const { data: insertedCourse, error } = await supabase
+        .from("courses")
+        .insert(courseData)
+        .select()
+        .single();
       
-      // Fetch the inserted document
-      const insertedDoc = await coursesCollection.findOne({ _id: result.insertedId });
+      if (error) throw error;
       
-      return { success: true, data: insertedDoc };
+      return { success: true, data: insertedCourse };
     } catch (error) {
       console.error("Error creating course:", error);
       throw error;
@@ -59,8 +58,12 @@ export const ApiService = {
   
   async getCourseResources(courseId: string) {
     try {
-      const resourcesCollection = await getCollection("course_resources");
-      const resources = await resourcesCollection.find({ course_id: courseId.toString() }).toArray();
+      const { data: resources, error } = await supabase
+        .from("course_resources")
+        .select()
+        .eq("course_id", courseId);
+      
+      if (error) throw error;
       
       return { success: true, data: resources };
     } catch (error) {

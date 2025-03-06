@@ -1,56 +1,14 @@
 
-// Authentication mock implementation for Supabase-MongoDB compatibility layer
+// Authentication methods for Supabase
+import { supabase } from "@supabase/supabase-js";
+
 export const authMethods = {
-  getSession: async () => {
-    // Mock implementation - should be replaced with actual authentication
-    return {
-      data: {
-        session: null
-      }
-    };
-  },
-  getUser: async () => {
-    // Mock implementation - should be replaced with actual authentication
-    return {
-      data: {
-        user: null
-      }
-    };
-  },
-  onAuthStateChange: (callback: any) => {
-    // Mock implementation - should be replaced with actual authentication
-    return {
-      data: {
-        subscription: {
-          unsubscribe: () => {}
-        }
-      }
-    };
-  },
-  signInWithPassword: async (credentials: any = {}) => {
-    // Mock implementation - should be replaced with actual authentication
-    return {
-      data: {
-        user: null
-      },
-      error: new Error("Authentication using MongoDB is not implemented yet")
-    };
-  },
-  signUp: async (credentials: any = {}) => {
-    // Mock implementation - should be replaced with actual authentication
-    return {
-      data: {
-        user: { 
-          identities: [] 
-        }
-      },
-      error: new Error("Authentication using MongoDB is not implemented yet")
-    };
-  },
-  signOut: async () => {
-    // Mock implementation - should be replaced with actual authentication
-    return {
-      error: null
-    };
-  }
+  // All these methods are implementation stubs
+  // The actual methods will be overridden in client.ts with the real Supabase client
+  getSession: async () => ({ data: { session: null } }),
+  getUser: async () => ({ data: { user: null } }),
+  onAuthStateChange: (callback: any) => ({ data: { subscription: { unsubscribe: () => {} } } }),
+  signInWithPassword: async (credentials: any = {}) => ({ data: { user: null }, error: null }),
+  signUp: async (credentials: any = {}) => ({ data: { user: { identities: [] } }, error: null }),
+  signOut: async () => ({ error: null })
 };
