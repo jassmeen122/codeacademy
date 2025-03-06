@@ -44,12 +44,12 @@ const ExerciseForm = ({ onExerciseCreated }: ExerciseFormProps) => {
             teacher_id: user.id,
           },
         ])
-        .then(result => ({ data: result.data?.[0], error: result.error }));
+        .select();
 
       if (error) throw error;
 
-      if (data) {
-        onExerciseCreated(data);
+      if (data && data.length > 0) {
+        onExerciseCreated(data[0]);
         toast.success("Exercise created successfully!");
         setNewExercise({
           title: "",

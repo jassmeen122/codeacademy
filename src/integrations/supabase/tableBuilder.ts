@@ -8,6 +8,7 @@ import {
 } from "./types.client";
 import { supabase } from "./client";
 import { SupabaseQueryBuilder, SupabaseCountBuilder, SupabaseSelectBuilder } from "./queryBuilders";
+import { PostgrestError } from "@supabase/supabase-js";
 
 // Supabase-based table query builder
 export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> {
@@ -26,12 +27,11 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
       const { data: insertedData, error } = await supabase
         .from(this.table)
         .insert(data)
-        .select()
-        .single();
+        .select();
       
-      return { data: insertedData as T, error };
+      return { data: insertedData?.[0] as T, error };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as PostgrestError };
     }
   }
 
@@ -46,7 +46,7 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
           
           return { error };
         } catch (error) {
-          return { error };
+          return { error: error as PostgrestError };
         }
       }
     };
@@ -63,7 +63,7 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
           
           return { error };
         } catch (error) {
-          return { error };
+          return { error: error as PostgrestError };
         }
       }
     };
@@ -92,9 +92,9 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
         .select()
         .single();
       
-      return { data: data as T, error };
+      return { data, error };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as PostgrestError };
     }
   }
 
@@ -103,16 +103,16 @@ export class SupabaseTableQueryBuilder<T = any> implements TableQueryBuilder<T> 
   }
 
   async then<R>(
-    onfulfilled?: ((value: { data: T[]; error: null } | { data: null; error: any }) => R | PromiseLike<R>) | null
+    onfulfilled?: ((value: { data: T[] | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null
   ): Promise<R> {
     try {
       const { data, error } = await supabase
         .from(this.table)
         .select();
       
-      return onfulfilled!({ data: data as T[], error: null });
+      return onfulfilled!({ data: data as T[], error });
     } catch (error) {
-      return onfulfilled!({ data: null, error });
+      return onfulfilled!({ data: null, error: error as PostgrestError });
     }
   }
 }

@@ -22,16 +22,15 @@ export const NotificationBell = ({ userId }: NotificationBellProps) => {
 
   const fetchNotificationCount = async (userId: string) => {
     try {
-      const countBuilder = supabase
+      const { data, error } = await supabase
         .from('notifications')
-        .count()
+        .select('*', { count: 'exact' })
         .eq('user_id', userId)
         .eq('read', false);
       
-      const { count, error } = await countBuilder;
-      
       if (error) throw error;
-      setNotificationCount(count || 0);
+      
+      setNotificationCount(data?.length || 0);
     } catch (error) {
       console.error('Error fetching notification count:', error);
     }

@@ -8,18 +8,18 @@ import { functionsMethods } from "./functions";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseInstance = createClient(supabaseUrl, supabaseKey);
 
 // Add the compatibility layer
-const compatibleClient = {
+export const supabase = {
   auth: {
     ...authMethods,
-    getSession: async () => supabase.auth.getSession(),
-    getUser: async () => supabase.auth.getUser(),
-    onAuthStateChange: (callback: any) => supabase.auth.onAuthStateChange(callback),
-    signInWithPassword: async (credentials: any) => supabase.auth.signInWithPassword(credentials),
-    signUp: async (credentials: any) => supabase.auth.signUp(credentials),
-    signOut: async () => supabase.auth.signOut()
+    getSession: async () => supabaseInstance.auth.getSession(),
+    getUser: async () => supabaseInstance.auth.getUser(),
+    onAuthStateChange: (callback: any) => supabaseInstance.auth.onAuthStateChange(callback),
+    signInWithPassword: async (credentials: any) => supabaseInstance.auth.signInWithPassword(credentials),
+    signUp: async (credentials: any) => supabaseInstance.auth.signUp(credentials),
+    signOut: async () => supabaseInstance.auth.signOut()
   },
   from: (table: string) => {
     return new SupabaseTableQueryBuilder(table);
@@ -28,9 +28,6 @@ const compatibleClient = {
     ...functionsMethods
   },
   // Pass through any other methods directly to the real client
-  storage: supabase.storage,
-  rpc: supabase.rpc.bind(supabase)
+  storage: supabaseInstance.storage,
+  rpc: supabaseInstance.rpc.bind(supabaseInstance)
 };
-
-// Re-export the compatible client as supabase
-export { compatibleClient as supabase };

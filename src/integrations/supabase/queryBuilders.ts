@@ -7,6 +7,7 @@ import {
   CountResponse 
 } from "./types.client";
 import { supabase } from "./client";
+import { PostgrestError } from "@supabase/supabase-js";
 
 // Supabase-based query builder
 export class SupabaseQueryBuilder<T = any> implements QueryBuilder<T> {
@@ -54,14 +55,14 @@ export class SupabaseQueryBuilder<T = any> implements QueryBuilder<T> {
       }
       
       const { data, error } = await query.single();
-      return { data: data as T, error };
+      return { data, error };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as PostgrestError };
     }
   }
 
   async then<R>(
-    onfulfilled?: ((value: { data: T[]; error: null } | { data: null; error: any }) => R | PromiseLike<R>) | null
+    onfulfilled?: ((value: { data: T[] | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null
   ): Promise<R> {
     try {
       let query = supabase.from(this.table).select();
@@ -77,9 +78,9 @@ export class SupabaseQueryBuilder<T = any> implements QueryBuilder<T> {
       }
       
       const { data, error } = await query;
-      return onfulfilled!({ data: data as T[], error: null });
+      return onfulfilled!({ data: data as T[], error });
     } catch (error) {
-      return onfulfilled!({ data: null, error });
+      return onfulfilled!({ data: null, error: error as PostgrestError });
     }
   }
 }
@@ -108,7 +109,7 @@ export class SupabaseCountBuilder implements CountBuilder {
   }
 
   async then<R>(
-    onfulfilled?: ((value: { count: number; error: null } | { count: null; error: any }) => R | PromiseLike<R>) | null
+    onfulfilled?: ((value: { count: number | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null
   ): Promise<R> {
     try {
       let query = supabase.from(this.table).select('*', { count: 'exact', head: true });
@@ -119,9 +120,9 @@ export class SupabaseCountBuilder implements CountBuilder {
       });
       
       const { count, error } = await query;
-      return onfulfilled!({ count: count || 0, error: null });
+      return onfulfilled!({ count: count || 0, error });
     } catch (error) {
-      return onfulfilled!({ count: null, error });
+      return onfulfilled!({ count: null, error: error as PostgrestError });
     }
   }
 }
@@ -174,14 +175,14 @@ export class SupabaseSelectBuilder<T = any> implements SelectBuilder<T> {
       }
       
       const { data, error } = await query.single();
-      return { data: data as T, error };
+      return { data, error };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as PostgrestError };
     }
   }
 
   async then<R>(
-    onfulfilled?: ((value: { data: T[]; error: null } | { data: null; error: any }) => R | PromiseLike<R>) | null
+    onfulfilled?: ((value: { data: T[] | null; error: PostgrestError | null }) => R | PromiseLike<R>) | null
   ): Promise<R> {
     try {
       let query = supabase.from(this.table).select(this.columns);
@@ -197,9 +198,9 @@ export class SupabaseSelectBuilder<T = any> implements SelectBuilder<T> {
       }
       
       const { data, error } = await query;
-      return onfulfilled!({ data: data as T[], error: null });
+      return onfulfilled!({ data: data as T[], error });
     } catch (error) {
-      return onfulfilled!({ data: null, error });
+      return onfulfilled!({ data: null, error: error as PostgrestError });
     }
   }
 }

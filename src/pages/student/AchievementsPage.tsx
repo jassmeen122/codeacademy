@@ -6,6 +6,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Award, Zap, Code, Users, Target, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  points: number;
+}
+
+interface UserBadge {
+  badge: Badge;
+  earned_at: string;
+}
+
 interface Challenge {
   id: string;
   title: string;
@@ -14,17 +27,6 @@ interface Challenge {
   points: number;
   start_date: string;
   end_date: string;
-}
-
-interface UserBadge {
-  badge: {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    points: number;
-  };
-  earned_at: string;
 }
 
 export default function AchievementsPage() {
@@ -56,7 +58,19 @@ export default function AchievementsPage() {
         .select('*')
         .gte('end_date', new Date().toISOString());
 
-      setBadges(badgesData || []);
+      // Transform badgesData to ensure it matches the UserBadge type
+      const typedBadges: UserBadge[] = badgesData ? badgesData.map((item: any) => ({
+        earned_at: item.earned_at,
+        badge: {
+          id: item.badge.id || '',
+          name: item.badge.name || '',
+          description: item.badge.description || '',
+          icon: item.badge.icon || 'trophy',
+          points: item.badge.points || 0
+        }
+      })) : [];
+
+      setBadges(typedBadges);
       // Type assertion to ensure the data matches the Challenge interface
       setChallenges((challengesData?.filter(challenge => 
         challenge.type === 'daily' || challenge.type === 'weekly'
