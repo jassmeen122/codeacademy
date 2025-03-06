@@ -25,6 +25,7 @@ try {
 
 const db = client.database(DB_NAME);
 const coursesCollection = db.collection("courses");
+const resourcesCollection = db.collection("course_resources");
 
 // Create an Oak application (similar to Express)
 const app = new Application();
@@ -99,6 +100,30 @@ router
       ctx.response.type = "json";
     } catch (error) {
       console.error("Error fetching course:", error);
+      ctx.response.status = 500;
+      ctx.response.body = { success: false, error: error.message };
+      ctx.response.type = "json";
+    }
+  })
+  .get("/courses/:id/resources", async (ctx) => {
+    try {
+      const id = ctx.params.id;
+      
+      let courseId;
+      try {
+        // Try to convert to ObjectId
+        courseId = new ObjectId(id);
+      } catch (e) {
+        // If not a valid ObjectId, use as is
+        courseId = id;
+      }
+      
+      const resources = await resourcesCollection.find({ course_id: courseId.toString() }).toArray();
+
+      ctx.response.body = { success: true, data: resources };
+      ctx.response.type = "json";
+    } catch (error) {
+      console.error("Error fetching course resources:", error);
       ctx.response.status = 500;
       ctx.response.body = { success: false, error: error.message };
       ctx.response.type = "json";

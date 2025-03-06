@@ -25,23 +25,23 @@ const CoursesPage = () => {
 
       const transformedCourses: Course[] = response.data.map((course: any) => ({
         id: course._id?.toString() || course.id || "",
-        title: course.title,
-        description: course.description || "",
-        duration: "8 weeks",
-        students: 0,
-        image: "/placeholder.svg",
-        difficulty: course.difficulty,
-        path: course.path,
-        category: course.category,
-        language: "JavaScript",
+        title: course.title || "Untitled Course",
+        description: course.description || "No description available",
+        duration: course.duration || "8 weeks",
+        students: course.students || 0,
+        image: course.image || "/placeholder.svg",
+        difficulty: course.difficulty || "Beginner",
+        path: course.path || "Web Development",
+        category: course.category || "Programming Fundamentals",
+        language: course.language || "JavaScript",
         professor: {
-          name: course.teacher?.name || "Unknown Professor",
-          title: "Course Instructor"
+          name: course.teacher?.name || course.professor?.name || "Unknown Professor",
+          title: course.teacher?.title || course.professor?.title || "Course Instructor"
         },
         materials: {
-          videos: course.course_materials?.filter((m: any) => m.type === 'video').length || 0,
-          pdfs: course.course_materials?.filter((m: any) => m.type === 'pdf').length || 0,
-          presentations: course.course_materials?.filter((m: any) => m.type === 'presentation').length || 0
+          videos: course.course_materials?.filter((m: any) => m.type === 'video').length || course.materials?.videos || 0,
+          pdfs: course.course_materials?.filter((m: any) => m.type === 'pdf').length || course.materials?.pdfs || 0,
+          presentations: course.course_materials?.filter((m: any) => m.type === 'presentation').length || course.materials?.presentations || 0
         }
       }));
       

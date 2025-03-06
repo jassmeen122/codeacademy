@@ -58,5 +58,23 @@ export const ApiService = {
       console.error("Error creating course:", error);
       throw error;
     }
+  },
+  
+  async getCourseResources(courseId: string) {
+    try {
+      const response = await supabase.functions.invoke('api', {
+        method: 'GET',
+        body: { path: `/courses/${courseId}/resources` }
+      });
+      
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching resources for course ${courseId}:`, error);
+      throw error;
+    }
   }
 };

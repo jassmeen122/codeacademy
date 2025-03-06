@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Clock, Users, BarChart, Folder, FileVideo, FileText, Layout, User, Download } from "lucide-react";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { ApiService } from "@/services/api";
 import type { Course } from "@/types/course";
 
 interface CourseResource {
@@ -14,8 +15,8 @@ interface CourseResource {
   type: 'video' | 'pdf' | 'presentation';
   file_url: string;
   order_index: number;
-  course_id: string | null;
-  created_at: string | null;
+  course_id: string;
+  created_at?: string | null;
 }
 
 const CourseCard = ({ 
@@ -37,35 +38,41 @@ const CourseCard = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isDialogOpen) {
+    if (isDialogOpen && id) {
       fetchCourseResources();
     }
-  }, [isDialogOpen]);
+  }, [isDialogOpen, id]);
 
   const fetchCourseResources = async () => {
+    if (!id) return;
+    
     setLoading(true);
     try {
-      // First try to use the MongoDB _id format
-      let courseId = id;
+      const response = await ApiService.getCourseResources(id);
       
-      const { data, error } = await supabase
-        .from('course_resources')
-        .select('*')
-        .eq('course_id', courseId)
-        .order('order_index');
-
-      if (error) {
-        console.error('Error fetching course resources:', error);
-        setResources([]);
-      } else if (data) {
+      if (response?.success && response?.data) {
         // Type check and filter the data to ensure it matches our CourseResource interface
-        const validResources = data.filter((resource): resource is CourseResource => {
+        const validResources = response.data.filter((resource: any): resource is CourseResource => {
           return (
+            typeof resource.title === 'string' &&
             typeof resource.type === 'string' && 
-            ['video', 'pdf', 'presentation'].includes(resource.type)
+            ['video', 'pdf', 'presentation'].includes(resource.type) &&
+            typeof resource.file_url === 'string'
           );
-        });
+        }).map((resource: any) => ({
+          id: resource._id?.toString() || resource.id,
+          title: resource.title,
+          description: resource.description || null,
+          type: resource.type as 'video' | 'pdf' | 'presentation',
+          file_url: resource.file_url,
+          order_index: resource.order_index || 0,
+          course_id: resource.course_id,
+          created_at: resource.created_at
+        }));
+        
         setResources(validResources);
+      } else {
+        setResources([]);
       }
     } catch (error) {
       console.error('Error in fetchCourseResources:', error);
@@ -79,13 +86,13 @@ const CourseCard = ({
     Beginner: "text-green-600 bg-green-50",
     Intermediate: "text-yellow-600 bg-yellow-50",
     Advanced: "text-red-600 bg-red-50"
-  }[difficulty];
+  }[difficulty || "Beginner"];
 
   const pathColor = {
     "Web Development": "text-blue-600 bg-blue-50",
     "Data Science": "text-purple-600 bg-purple-50",
     "Artificial Intelligence": "text-indigo-600 bg-indigo-50"
-  }[path];
+  }[path || "Web Development"];
 
   const ResourceIcon = {
     video: FileVideo,
