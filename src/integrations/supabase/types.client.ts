@@ -1,6 +1,5 @@
 
 // Type definitions for Supabase MongoDB compatibility layer
-import { Sort } from "mongodb";
 
 // Response type definitions
 export type DataResponse<T = any> = Promise<{ data: T; error: null } | { data: null; error: any }>;

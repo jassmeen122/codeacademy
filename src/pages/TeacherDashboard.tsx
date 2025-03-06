@@ -80,13 +80,13 @@ const TeacherDashboard = () => {
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
 
-      if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
+      if (error || !profile || (profile.role !== 'teacher' && profile.role !== 'admin')) {
         toast.error("You don't have permission to access this page");
         navigate('/');
         return;
@@ -136,21 +136,22 @@ const TeacherDashboard = () => {
             teacher_id: user.id,
           },
         ])
-        .select()
-        .single();
+        .then(result => ({ data: result.data?.[0], error: result.error }));
 
       if (error) throw error;
 
-      setExercises([data, ...exercises]);
-      toast.success("Exercise created successfully!");
-      setNewExercise({
-        title: "",
-        description: "",
-        type: "mcq",
-        difficulty: "Beginner",
-        time_limit: 30,
-        status: "draft",
-      });
+      if (data) {
+        setExercises([data, ...exercises]);
+        toast.success("Exercise created successfully!");
+        setNewExercise({
+          title: "",
+          description: "",
+          type: "mcq",
+          difficulty: "Beginner",
+          time_limit: 30,
+          status: "draft",
+        });
+      }
     } catch (error) {
       console.error('Error creating exercise:', error);
       toast.error("Failed to create exercise");
