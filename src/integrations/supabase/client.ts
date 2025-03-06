@@ -66,6 +66,7 @@ export const supabase = {
     // Create a MongoDB-based implementation of Supabase's from() method
     return {
       select: (columns: string = "*") => {
+        // This object needs to support various query methods that can be chained
         return {
           eq: async (field: string, value: any) => {
             try {
@@ -88,7 +89,7 @@ export const supabase = {
           },
           // Add more query methods as needed
           order: (field: string, { ascending }: { ascending: boolean }) => {
-            // This is a chainable method
+            // This is a chainable method that returns an object with query methods
             return {
               eq: async (field: string, value: any) => {
                 try {
@@ -125,6 +126,27 @@ export const supabase = {
                 }
               }
             };
+          },
+          // Add direct methods to the select result
+          gte: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const query = { [field]: { $gte: value } };
+              const data = await collection.find(query).toArray();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
+          },
+          gt: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const query = { [field]: { $gt: value } };
+              const data = await collection.find(query).toArray();
+              return { data, error: null };
+            } catch (error) {
+              return { data: null, error };
+            }
           }
         };
       },
@@ -138,7 +160,7 @@ export const supabase = {
           return { data: null, error };
         }
       },
-      update: async (data: any) => {
+      update: (data: any) => {
         return {
           eq: async (field: string, value: any) => {
             try {
@@ -162,6 +184,38 @@ export const supabase = {
               return { error: null };
             } catch (error) {
               return { error };
+            }
+          }
+        };
+      },
+      // Add direct methods that don't require select() first
+      count: (column: string = "*") => {
+        return {
+          eq: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const count = await collection.countDocuments({ [field]: value });
+              return { count, error: null };
+            } catch (error) {
+              return { count: null, error };
+            }
+          },
+          gte: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const count = await collection.countDocuments({ [field]: { $gte: value } });
+              return { count, error: null };
+            } catch (error) {
+              return { count: null, error };
+            }
+          },
+          gt: async (field: string, value: any) => {
+            try {
+              const collection = await getCollection(table);
+              const count = await collection.countDocuments({ [field]: { $gt: value } });
+              return { count, error: null };
+            } catch (error) {
+              return { count: null, error };
             }
           }
         };
