@@ -2,7 +2,7 @@
 # This is a generic configuration file for Supabase Edge Functions
 
 [functions]
-serve = true  # Changed from object format to boolean
+serve = true
 
 [auth]
 enabled = true

@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CourseTabs } from "@/components/dashboard/CourseTabs";
 import type { Course } from "@/types/course";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ApiService } from "@/services/api";
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -16,32 +16,42 @@ const CoursesPage = () => {
 
   const fetchCourses = async () => {
     try {
-      setLoading(true);
-      const response = await ApiService.getCourses();
-      
-      if (!response.success) {
-        throw new Error("Failed to fetch courses");
-      }
+      const { data: enrolledCourses, error } = await supabase
+        .from('courses')
+        .select(`
+          *,
+          teacher:teacher_id (
+            name:full_name
+          ),
+          course_materials (
+            id,
+            type,
+            title
+          )
+        `)
+        .order('created_at', { ascending: false });
 
-      const transformedCourses: Course[] = response.data.map((course: any) => ({
-        id: course._id?.toString() || course.id || "",
-        title: course.title || "Untitled Course",
-        description: course.description || "No description available",
-        duration: course.duration || "8 weeks",
-        students: course.students || 0,
-        image: course.image || "/placeholder.svg",
-        difficulty: course.difficulty || "Beginner",
-        path: course.path || "Web Development",
-        category: course.category || "Programming Fundamentals",
-        language: course.language || "JavaScript",
+      if (error) throw error;
+
+      const transformedCourses: Course[] = enrolledCourses.map(course => ({
+        id: course.id,
+        title: course.title,
+        description: course.description || "",
+        duration: "8 weeks",
+        students: 0,
+        image: "/placeholder.svg",
+        difficulty: course.difficulty,
+        path: course.path,
+        category: course.category,
+        language: "JavaScript",
         professor: {
-          name: course.teacher?.name || course.professor?.name || "Unknown Professor",
-          title: course.teacher?.title || course.professor?.title || "Course Instructor"
+          name: course.teacher?.name || "Unknown Professor",
+          title: "Course Instructor"
         },
         materials: {
-          videos: course.course_materials?.filter((m: any) => m.type === 'video').length || course.materials?.videos || 0,
-          pdfs: course.course_materials?.filter((m: any) => m.type === 'pdf').length || course.materials?.pdfs || 0,
-          presentations: course.course_materials?.filter((m: any) => m.type === 'presentation').length || course.materials?.presentations || 0
+          videos: course.course_materials?.filter(m => m.type === 'video').length || 0,
+          pdfs: course.course_materials?.filter(m => m.type === 'pdf').length || 0,
+          presentations: course.course_materials?.filter(m => m.type === 'presentation').length || 0
         }
       }));
       

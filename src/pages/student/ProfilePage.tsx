@@ -85,20 +85,7 @@ const ProfilePage = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      // Transform data to ensure it matches the UserBadge type
-      const typedBadges: UserBadge[] = data ? data.map((item: any) => ({
-        earned_at: item.earned_at,
-        badge: {
-          id: item.badge.id || '',
-          name: item.badge.name || '',
-          description: item.badge.description || '',
-          icon: item.badge.icon || 'trophy',
-          points: item.badge.points || 0
-        }
-      })) : [];
-
-      setBadges(typedBadges);
+      setBadges(data || []);
     } catch (error: any) {
       console.error('Error fetching badges:', error);
     }
