@@ -4,6 +4,7 @@
 
 // Re-export necessary functionality from the MongoDB client
 import { getDatabase, getCollection } from "@/integrations/mongodb/client";
+import { Sort, Document, WithId } from "mongodb";
 
 // Mock the Supabase client structure with MongoDB functionality
 export const supabase = {
@@ -24,7 +25,7 @@ export const supabase = {
         }
       };
     },
-    onAuthStateChange: () => {
+    onAuthStateChange: (callback: any) => {
       // Mock implementation - should be replaced with actual authentication
       return {
         data: {
@@ -93,8 +94,8 @@ export const supabase = {
                 try {
                   const collection = await getCollection(table);
                   const query = { [field]: value };
-                  const sort = { [field]: ascending ? 1 : -1 };
-                  const data = await collection.find(query).sort(sort).toArray();
+                  const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+                  const data = await collection.find(query).sort(sortOptions).toArray();
                   return { data, error: null };
                 } catch (error) {
                   return { data: null, error };
@@ -105,8 +106,8 @@ export const supabase = {
                 try {
                   const collection = await getCollection(table);
                   const query = { [field]: { $gte: value } };
-                  const sort = { [field]: ascending ? 1 : -1 };
-                  const data = await collection.find(query).sort(sort).toArray();
+                  const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+                  const data = await collection.find(query).sort(sortOptions).toArray();
                   return { data, error: null };
                 } catch (error) {
                   return { data: null, error };
@@ -116,8 +117,8 @@ export const supabase = {
                 try {
                   const collection = await getCollection(table);
                   const query = { [field]: { $gt: value } };
-                  const sort = { [field]: ascending ? 1 : -1 };
-                  const data = await collection.find(query).sort(sort).toArray();
+                  const sortOptions: Sort = [[field, ascending ? 1 : -1]];
+                  const data = await collection.find(query).sort(sortOptions).toArray();
                   return { data, error: null };
                 } catch (error) {
                   return { data: null, error };
