@@ -7,22 +7,43 @@ import { getDatabase, getCollection } from "@/integrations/mongodb/client";
 import { Sort, Document, WithId } from "mongodb";
 
 // Type definitions to improve type safety
-type DataResponse<T = any> = { data: T; error: null } | { data: null; error: any };
-type CountResponse = { count: number; error: null } | { count: null; error: any };
+type DataResponse<T = any> = Promise<{ data: T; error: null } | { data: null; error: any }>;
+type CountResponse = Promise<{ count: number; error: null } | { count: null; error: any }>;
 
-// Helper types for chaining
+// Helper interfaces for the query builder pattern
 interface QueryBuilder<T = any> {
-  eq: (field: string, value: any) => Promise<DataResponse<T[]>>;
-  gte: (field: string, value: any) => Promise<DataResponse<T[]>>;
-  gt: (field: string, value: any) => Promise<DataResponse<T[]>>;
-  single: () => Promise<DataResponse<T>>;
+  eq: (field: string, value: any) => DataResponse<T[]>;
+  gte: (field: string, value: any) => DataResponse<T[]>;
+  gt: (field: string, value: any) => DataResponse<T[]>;
+  single: () => DataResponse<T>;
   order: (field: string, options: { ascending: boolean }) => QueryBuilder<T>;
 }
 
 interface CountBuilder {
-  eq: (field: string, value: any) => Promise<CountResponse>;
-  gte: (field: string, value: any) => Promise<CountResponse>;
-  gt: (field: string, value: any) => Promise<CountResponse>;
+  eq: (field: string, value: any) => CountResponse;
+  gte: (field: string, value: any) => CountResponse;
+  gt: (field: string, value: any) => CountResponse;
+}
+
+interface SelectBuilder<T = any> {
+  eq: (field: string, value: any) => DataResponse<T[]>;
+  gte: (field: string, value: any) => DataResponse<T[]>;
+  gt: (field: string, value: any) => DataResponse<T[]>;
+  single: () => DataResponse<T>;
+  order: (field: string, options: { ascending: boolean }) => QueryBuilder<T>;
+}
+
+interface TableQueryBuilder<T = any> {
+  select: (columns?: string) => SelectBuilder<T>;
+  insert: (data: any) => DataResponse<T>;
+  update: (data: any) => { eq: (field: string, value: any) => Promise<{ error: null } | { error: any }> };
+  delete: () => { eq: (field: string, value: any) => Promise<{ error: null } | { error: any }> };
+  count: (column?: string) => CountBuilder;
+  eq: (field: string, value: any) => DataResponse<T[]>;
+  single: () => DataResponse<T>;
+  order: (field: string, options: { ascending: boolean }) => QueryBuilder<T>;
+  gte: (field: string, value: any) => DataResponse<T[]>;
+  gt: (field: string, value: any) => DataResponse<T[]>;
 }
 
 // Mock the Supabase client structure with MongoDB functionality
@@ -81,13 +102,13 @@ export const supabase = {
       };
     }
   },
-  from: (table: string) => {
+  from: (table: string): TableQueryBuilder => {
     // Create a MongoDB-based implementation of Supabase's from() method
     return {
-      select: (columns: string = "*"): QueryBuilder => {
+      select: (columns: string = "*"): SelectBuilder => {
         // This object needs to support various query methods that can be chained
-        const queryBuilder: QueryBuilder = {
-          eq: async (field: string, value: any) => {
+        const selectBuilder: SelectBuilder = {
+          eq: async (field: string, value: any): DataResponse => {
             try {
               const collection = await getCollection(table);
               const query = { [field]: value };
@@ -97,7 +118,7 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          single: async () => {
+          single: async (): DataResponse => {
             try {
               const collection = await getCollection(table);
               const data = await collection.findOne({});
@@ -106,10 +127,10 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          order: (field: string, { ascending }: { ascending: boolean }) => {
+          order: (field: string, { ascending }: { ascending: boolean }): QueryBuilder => {
             // This is a chainable method that returns the query builder with methods
             const orderQueryBuilder: QueryBuilder = {
-              eq: async (field: string, value: any) => {
+              eq: async (field: string, value: any): DataResponse => {
                 try {
                   const collection = await getCollection(table);
                   const query = { [field]: value };
@@ -120,7 +141,7 @@ export const supabase = {
                   return { data: null, error };
                 }
               },
-              single: async () => {
+              single: async (): DataResponse => {
                 try {
                   const collection = await getCollection(table);
                   const sortOptions: Sort = [[field, ascending ? 1 : -1]];
@@ -130,7 +151,7 @@ export const supabase = {
                   return { data: null, error };
                 }
               },
-              gte: async (field: string, value: any) => {
+              gte: async (field: string, value: any): DataResponse => {
                 try {
                   const collection = await getCollection(table);
                   const query = { [field]: { $gte: value } };
@@ -141,7 +162,7 @@ export const supabase = {
                   return { data: null, error };
                 }
               },
-              gt: async (field: string, value: any) => {
+              gt: async (field: string, value: any): DataResponse => {
                 try {
                   const collection = await getCollection(table);
                   const query = { [field]: { $gt: value } };
@@ -152,14 +173,14 @@ export const supabase = {
                   return { data: null, error };
                 }
               },
-              order: (field: string, options: { ascending: boolean }) => {
+              order: (field: string, options: { ascending: boolean }): QueryBuilder => {
                 // Return self to support further chaining
                 return orderQueryBuilder;
               }
             };
             return orderQueryBuilder;
           },
-          gte: async (field: string, value: any) => {
+          gte: async (field: string, value: any): DataResponse => {
             try {
               const collection = await getCollection(table);
               const query = { [field]: { $gte: value } };
@@ -169,7 +190,7 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          gt: async (field: string, value: any) => {
+          gt: async (field: string, value: any): DataResponse => {
             try {
               const collection = await getCollection(table);
               const query = { [field]: { $gt: value } };
@@ -180,9 +201,9 @@ export const supabase = {
             }
           }
         };
-        return queryBuilder;
+        return selectBuilder;
       },
-      insert: async (data: any) => {
+      insert: async (data: any): DataResponse => {
         try {
           const collection = await getCollection(table);
           const result = await collection.insertOne(data);
@@ -222,7 +243,7 @@ export const supabase = {
       },
       count: (column: string = "*"): CountBuilder => {
         const countBuilder: CountBuilder = {
-          eq: async (field: string, value: any) => {
+          eq: async (field: string, value: any): CountResponse => {
             try {
               const collection = await getCollection(table);
               const count = await collection.countDocuments({ [field]: value });
@@ -231,7 +252,7 @@ export const supabase = {
               return { count: null, error };
             }
           },
-          gte: async (field: string, value: any) => {
+          gte: async (field: string, value: any): CountResponse => {
             try {
               const collection = await getCollection(table);
               const count = await collection.countDocuments({ [field]: { $gte: value } });
@@ -240,7 +261,7 @@ export const supabase = {
               return { count: null, error };
             }
           },
-          gt: async (field: string, value: any) => {
+          gt: async (field: string, value: any): CountResponse => {
             try {
               const collection = await getCollection(table);
               const count = await collection.countDocuments({ [field]: { $gt: value } });
@@ -253,7 +274,7 @@ export const supabase = {
         return countBuilder;
       },
       // Direct method implementations without going through select()
-      eq: async (field: string, value: any) => {
+      eq: async (field: string, value: any): DataResponse => {
         try {
           const collection = await getCollection(table);
           const query = { [field]: value };
@@ -263,7 +284,7 @@ export const supabase = {
           return { data: null, error };
         }
       },
-      single: async () => {
+      single: async (): DataResponse => {
         try {
           const collection = await getCollection(table);
           const data = await collection.findOne({});
@@ -274,7 +295,7 @@ export const supabase = {
       },
       order: (field: string, { ascending }: { ascending: boolean }): QueryBuilder => {
         const orderQueryBuilder: QueryBuilder = {
-          eq: async (field: string, value: any) => {
+          eq: async (field: string, value: any): DataResponse => {
             try {
               const collection = await getCollection(table);
               const query = { [field]: value };
@@ -285,7 +306,7 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          single: async () => {
+          single: async (): DataResponse => {
             try {
               const collection = await getCollection(table);
               const sortOptions: Sort = [[field, ascending ? 1 : -1]];
@@ -295,7 +316,7 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          gte: async (field: string, value: any) => {
+          gte: async (field: string, value: any): DataResponse => {
             try {
               const collection = await getCollection(table);
               const query = { [field]: { $gte: value } };
@@ -306,7 +327,7 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          gt: async (field: string, value: any) => {
+          gt: async (field: string, value: any): DataResponse => {
             try {
               const collection = await getCollection(table);
               const query = { [field]: { $gt: value } };
@@ -317,14 +338,14 @@ export const supabase = {
               return { data: null, error };
             }
           },
-          order: (field: string, options: { ascending: boolean }) => {
+          order: (field: string, options: { ascending: boolean }): QueryBuilder => {
             // Return self to support further chaining
             return orderQueryBuilder;
           }
         };
         return orderQueryBuilder;
       },
-      gte: async (field: string, value: any) => {
+      gte: async (field: string, value: any): DataResponse => {
         try {
           const collection = await getCollection(table);
           const query = { [field]: { $gte: value } };
@@ -334,7 +355,7 @@ export const supabase = {
           return { data: null, error };
         }
       },
-      gt: async (field: string, value: any) => {
+      gt: async (field: string, value: any): DataResponse => {
         try {
           const collection = await getCollection(table);
           const query = { [field]: { $gt: value } };
