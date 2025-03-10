@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,6 +25,12 @@ import NotificationsPage from "./pages/student/NotificationsPage";
 import ProjectsPage from "./pages/student/ProjectsPage";
 import SettingsPage from "./pages/student/SettingsPage";
 import TeacherSettingsPage from "./pages/teacher/SettingsPage";
+
+// Teacher Pages
+import TeacherCoursesPage from "./pages/teacher/CoursesPage";
+import CreateCoursePage from "./pages/teacher/CreateCoursePage";
+import TeacherExercisesPage from "./pages/teacher/ExercisesPage";
+import CreateExercisePage from "./pages/teacher/CreateExercisePage";
 
 const queryClient = new QueryClient();
 
@@ -108,9 +115,34 @@ const App = () => (
               </ProtectedRoute>
             } />
             
+            {/* Teacher Routes */}
             <Route path="/teacher/settings" element={
               <ProtectedRoute allowedRoles={['teacher']}>
                 <TeacherSettingsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/teacher/courses" element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <TeacherCoursesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/teacher/courses/create" element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <CreateCoursePage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/teacher/exercises" element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <TeacherExercisesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/teacher/exercises/create" element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <CreateExercisePage />
               </ProtectedRoute>
             } />
             

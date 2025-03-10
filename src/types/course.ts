@@ -1,3 +1,4 @@
+
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export type CoursePath = 
@@ -49,7 +50,7 @@ export interface Course {
 export interface CourseResource {
   id: string;
   title: string;
-  description?: string;
+  description?: string | null;
   file_url: string;
   type: CourseResourceType;
   order_index: number;
