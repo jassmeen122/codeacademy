@@ -2,7 +2,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Users, BarChart, Folder, FileVideo, FileText, Layout, User } from "lucide-react";
-import type { Course } from "@/types/course";
+import type { Course, CourseResource, CourseResourceType } from "@/types/course";
 
 const CourseCard = ({ 
   title, 

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { UserProfile } from "@/hooks/useAuthState";
 
 export default function TeacherSettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -23,7 +24,12 @@ export default function TeacherSettingsPage() {
     twoFactorAuth: false,
     colorTheme: "blue"
   });
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<{
+    fullName: string;
+    bio: string;
+    specialization: string;
+    email: string;
+  }>({
     fullName: "",
     bio: "",
     specialization: "",

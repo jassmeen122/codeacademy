@@ -42,7 +42,14 @@ interface DashboardSidebarProps {
   userRole: 'admin' | 'teacher' | 'student' | null;
 }
 
-const adminMenuItems = [
+interface MenuItem {
+  title: string;
+  icon: React.ElementType;
+  href: string;
+  description?: string;
+}
+
+const adminMenuItems: MenuItem[] = [
   {
     title: "Dashboard",
     icon: Gauge,
@@ -75,7 +82,7 @@ const adminMenuItems = [
   },
 ];
 
-const teacherMenuItems = [
+const teacherMenuItems: MenuItem[] = [
   {
     title: "Dashboard",
     icon: School,
@@ -137,7 +144,7 @@ const teacherMenuItems = [
   },
 ];
 
-const studentMenuItems = [
+const studentMenuItems: MenuItem[] = [
   {
     title: "Profile",
     icon: UserRound,

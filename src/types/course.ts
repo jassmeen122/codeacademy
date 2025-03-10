@@ -1,4 +1,3 @@
-
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export type CoursePath = 
@@ -23,6 +22,8 @@ export type ProgrammingLanguage =
   | "PHP"
   | "SQL";
 
+export type CourseResourceType = "video" | "presentation" | "pdf";
+
 export interface Course {
   id: string;
   title: string;
@@ -43,4 +44,15 @@ export interface Course {
     pdfs?: number;
     presentations?: number;
   };
+}
+
+export interface CourseResource {
+  id: string;
+  title: string;
+  description?: string;
+  file_url: string;
+  type: CourseResourceType;
+  order_index: number;
+  course_id?: string;
+  created_at?: string;
 }
