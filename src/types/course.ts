@@ -1,4 +1,3 @@
-
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export type CoursePath = 
@@ -57,3 +56,5 @@ export interface CourseResource {
   course_id?: string;
   created_at?: string;
 }
+
+export type ExerciseStatus = "draft" | "published" | "archived";

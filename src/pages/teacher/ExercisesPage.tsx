@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -9,6 +8,7 @@ import { PlusCircle, Edit, Trash2, FileCode, Clock, BarChart } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
+import { ExerciseStatus } from "@/types/course";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +26,7 @@ interface Exercise {
   description: string | null;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   type: "mcq" | "open_ended" | "coding" | "file_upload";
-  status: "draft" | "published" | "archived";
+  status: ExerciseStatus;
   time_limit: number | null;
   created_at: string;
   teacher_id: string;
@@ -104,7 +104,7 @@ const ExercisesPage = () => {
     }
   };
 
-  const changeExerciseStatus = async (id: string, status: "draft" | "published" | "archived") => {
+  const changeExerciseStatus = async (id: string, status: ExerciseStatus) => {
     try {
       const { error } = await supabase
         .from('exercises')
