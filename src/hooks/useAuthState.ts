@@ -19,21 +19,61 @@ export interface UserProfile {
 export const useAuthState = () => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
+      
+      if (session?.user) {
+        try {
+          // Fetch user profile
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) {
+            console.error("Error fetching user profile:", error);
+          } else if (profile) {
+            setUser(profile as UserProfile);
+          }
+        } catch (error) {
+          console.error("Error in profile fetch:", error);
+        }
+      }
+      
       setLoading(false);
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      if (!session) {
+      
+      if (session?.user) {
+        try {
+          // Fetch user profile on auth state change
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) {
+            console.error("Error fetching user profile:", error);
+          } else if (profile) {
+            setUser(profile as UserProfile);
+          }
+        } catch (error) {
+          console.error("Error in profile fetch:", error);
+        }
+      } else {
+        setUser(null);
         navigate('/auth');
       }
     });
@@ -44,11 +84,13 @@ export const useAuthState = () => {
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    setUser(null);
     navigate('/auth');
   };
 
   return {
     session,
+    user,
     loading,
     handleSignOut
   };

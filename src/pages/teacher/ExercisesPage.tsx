@@ -104,7 +104,7 @@ const ExercisesPage = () => {
     }
   };
 
-  const changeExerciseStatus = async (id: string, status: Exercise['status']) => {
+  const changeExerciseStatus = async (id: string, status: "draft" | "published" | "archived") => {
     try {
       const { error } = await supabase
         .from('exercises')
