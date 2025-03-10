@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -106,9 +107,11 @@ const ExercisesPage = () => {
 
   const changeExerciseStatus = async (id: string, status: ExerciseStatus) => {
     try {
+      // Cast the status to the appropriate type accepted by the database
+      // This ensures TypeScript knows we're handling the type difference
       const { error } = await supabase
         .from('exercises')
-        .update({ status })
+        .update({ status: status as "draft" | "published" | "archived" })
         .eq('id', id);
       
       if (error) throw error;
