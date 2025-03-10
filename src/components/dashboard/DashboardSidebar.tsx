@@ -22,7 +22,11 @@ import {
   BarChart,
   Bell,
   Video,
-  FileText
+  FileText,
+  Folder,
+  PlusCircle,
+  ListChecks,
+  Pencil
 } from "lucide-react";
 import {
   Sidebar,
@@ -81,46 +85,55 @@ const teacherMenuItems = [
     title: "My Courses",
     icon: BookOpen,
     href: "/teacher/courses",
+    description: "Manage your courses"
   },
   {
     title: "Course Creator",
-    icon: Book,
+    icon: PlusCircle,
     href: "/teacher/courses/create",
+    description: "Create new courses"
   },
   {
     title: "Exercises",
     icon: ClipboardList,
     href: "/teacher/exercises",
+    description: "Manage exercises"
   },
   {
     title: "Create Exercise",
-    icon: FilePlus,
+    icon: Pencil,
     href: "/teacher/exercises/create",
+    description: "Create new exercises"
   },
   {
     title: "Student Progress",
     icon: BarChart,
     href: "/teacher/progress",
+    description: "Track student performance"
   },
   {
     title: "Discussion",
     icon: MessageSquare,
     href: "/teacher/discussion",
+    description: "Course forums"
   },
   {
     title: "Materials",
     icon: FileText,
     href: "/teacher/materials",
+    description: "Course resources"
   },
   {
     title: "Notifications",
     icon: Bell,
     href: "/teacher/notifications",
+    description: "Alerts and updates"
   },
   {
     title: "Settings",
     icon: Settings,
     href: "/teacher/settings",
+    description: "Personal preferences"
   },
 ];
 
@@ -239,6 +252,7 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
                 <Button
                   variant={isActive ? "secondary" : "ghost"}
                   className="w-full justify-start gap-2"
+                  title={item.description}
                 >
                   <Icon className="h-4 w-4" />
                   {item.title}
