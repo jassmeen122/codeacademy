@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Play, Lightbulb, Bug } from "lucide-react";
+import { Play, Lightbulb, Bug, Shield } from "lucide-react";
 import MonacoEditor from '@monaco-editor/react';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ProgrammingLanguage = "python" | "java" | "javascript" | "c" | "cpp" | "php" | "sql";
 
@@ -42,12 +43,15 @@ export const CodeEditorWrapper: React.FC<CodeEditorWrapperProps> = ({
   const [language, setLanguage] = useState<ProgrammingLanguage>(initialLanguage);
   const [code, setCode] = useState<string>(initialCode || defaultCode[initialLanguage]);
   const [output, setOutput] = useState<string>("");
+  const [analysis, setAnalysis] = useState<string>("");
   const [isRunning, setIsRunning] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"output" | "analysis">("output");
 
   const handleRunCode = async () => {
     setIsRunning(true);
     setOutput("");
+    setAnalysis("");
     
     try {
       const { data, error } = await supabase.functions.invoke('execute-code', {
@@ -61,9 +65,16 @@ export const CodeEditorWrapper: React.FC<CodeEditorWrapperProps> = ({
 
       setOutput(data.output || "Program executed successfully!");
       
-      if (data.error) {
+      // If analysis was provided, set it
+      if (data.analysis) {
+        setAnalysis(data.analysis);
+        setActiveTab("analysis"); // Switch to analysis tab automatically
+        toast.success("Code executed with AI analysis");
+      } else if (data.error) {
         // If there's an error, automatically get AI assistance
         handleGetAIHelp();
+      } else {
+        toast.success("Code executed successfully");
       }
     } catch (error) {
       console.error('Error executing code:', error);
@@ -87,7 +98,8 @@ export const CodeEditorWrapper: React.FC<CodeEditorWrapperProps> = ({
 
       if (error) throw error;
 
-      setOutput(prev => `${prev}\n\n🤖 AI Assistant:\n${data.analysis}`);
+      setAnalysis(data.analysis);
+      setActiveTab("analysis"); // Switch to analysis tab
     } catch (error) {
       console.error('Error getting AI help:', error);
       toast.error("Failed to get AI assistance");
@@ -157,13 +169,45 @@ export const CodeEditorWrapper: React.FC<CodeEditorWrapperProps> = ({
               }}
             />
           </div>
-          {/* Output Console */}
-          <div className="min-h-[400px] bg-black text-white p-4 font-mono text-sm rounded-lg overflow-auto">
-            <div className="flex items-center gap-2 mb-2 text-gray-400">
-              <Bug className="h-4 w-4" />
-              Output Console
-            </div>
-            <pre className="whitespace-pre-wrap">{output || "Program output will appear here..."}</pre>
+          {/* Output and Analysis Console with Tabs */}
+          <div className="min-h-[400px] bg-black text-white rounded-lg overflow-hidden flex flex-col">
+            <Tabs 
+              value={activeTab} 
+              onValueChange={(value) => setActiveTab(value as "output" | "analysis")}
+              className="h-full"
+            >
+              <div className="bg-gray-900 px-4 py-2">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="output" className="flex items-center gap-2">
+                    <Bug className="h-4 w-4" />
+                    Output
+                  </TabsTrigger>
+                  <TabsTrigger value="analysis" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    AI Analysis
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              <TabsContent value="output" className="h-[360px] p-4 overflow-auto">
+                <pre className="whitespace-pre-wrap">{output || "Program output will appear here..."}</pre>
+              </TabsContent>
+              <TabsContent value="analysis" className="h-[360px] p-4 overflow-auto">
+                {analysis ? (
+                  <div className="whitespace-pre-wrap">
+                    <div className="flex items-center gap-2 mb-2 text-blue-400">
+                      <Lightbulb className="h-4 w-4" />
+                      <span className="font-semibold">AI Code Analysis</span>
+                    </div>
+                    <div className="text-green-300">{analysis}</div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                    <Lightbulb className="h-8 w-8 mb-2 opacity-50" />
+                    <p>Run your code or click "Get AI Help" to receive code analysis</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </CardContent>
