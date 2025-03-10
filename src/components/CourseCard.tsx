@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -6,15 +5,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Clock, Users, BarChart, Folder, FileVideo, FileText, Layout, User, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Course } from "@/types/course";
+import type { Course, CourseResource, CourseResourceType } from "@/types/course";
 
-interface CourseResource {
+interface SupabaseCourseResource {
   id: string;
   title: string;
   description: string | null;
-  type: 'video' | 'pdf' | 'presentation';
+  type: string;
   file_url: string;
   order_index: number;
+  course_id: string;
+  created_at: string;
 }
 
 const CourseCard = ({ 
@@ -52,16 +53,29 @@ const CourseCard = ({
     if (error) {
       console.error('Error fetching course resources:', error);
     } else if (data) {
-      // Type check and filter the data to ensure it matches our CourseResource interface
-      const validResources = data.filter((resource): resource is CourseResource => {
-        return (
-          typeof resource.type === 'string' && 
-          ['video', 'pdf', 'presentation'].includes(resource.type)
-        );
-      });
+      const validResources: CourseResource[] = data
+        .filter((resource): resource is SupabaseCourseResource => !!resource)
+        .map(resource => ({
+          id: resource.id,
+          title: resource.title,
+          description: resource.description,
+          file_url: resource.file_url,
+          type: validateResourceType(resource.type),
+          order_index: resource.order_index,
+          course_id: resource.course_id,
+          created_at: resource.created_at
+        }));
+      
       setResources(validResources);
     }
     setLoading(false);
+  };
+
+  const validateResourceType = (type: string): CourseResourceType => {
+    if (type === 'video' || type === 'pdf' || type === 'presentation') {
+      return type;
+    }
+    return 'pdf';
   };
 
   const difficultyColor = {
@@ -196,7 +210,7 @@ const CourseCard = ({
                 <p className="text-muted-foreground">Loading course materials...</p>
               ) : resources.length > 0 ? (
                 <div className="space-y-4">
-                  {(['video', 'pdf', 'presentation'] as const).map(type => {
+                  {(['video', 'pdf', 'presentation'] as CourseResourceType[]).map(type => {
                     const typeResources = resources.filter(r => r.type === type);
                     if (typeResources.length === 0) return null;
 
