@@ -23,6 +23,7 @@ import DiscussionPage from "./pages/student/DiscussionPage";
 import NotificationsPage from "./pages/student/NotificationsPage";
 import ProjectsPage from "./pages/student/ProjectsPage";
 import SettingsPage from "./pages/student/SettingsPage";
+import TeacherSettingsPage from "./pages/teacher/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -93,94 +94,100 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          
-          <Route path="/admin" element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/teacher" element={
-            <ProtectedRoute allowedRoles={['teacher']}>
-              <TeacherDashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <StudentDashboard />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/profile" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <ProfilePage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/courses" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <CoursesPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/code-editor" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <CodeEditorPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/ai-assistant" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <AIAssistantPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/exercises" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <ExercisesPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/progress" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <ProgressPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/achievements" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <AchievementsPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/discussion" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <DiscussionPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/notifications" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <NotificationsPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/projects" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <ProjectsPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/student/settings" element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <SettingsPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="/auth" element={<Auth />} />
+            
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/teacher" element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/teacher/settings" element={
+              <ProtectedRoute allowedRoles={['teacher']}>
+                <TeacherSettingsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <StudentDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/profile" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/courses" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <CoursesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/code-editor" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <CodeEditorPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/ai-assistant" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <AIAssistantPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/exercises" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <ExercisesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/progress" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <ProgressPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/achievements" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <AchievementsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/discussion" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <DiscussionPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/notifications" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <NotificationsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/projects" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <ProjectsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/settings" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>

@@ -4,71 +4,33 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  BookPlus,
-  Users,
   BarChart,
+  Book,
+  CheckCircle,
   Clock,
-  Upload,
-  CheckSquare,
-  Code,
-  Trash2,
-  Edit,
+  FileText,
+  Users,
+  PlusCircle,
+  Calendar,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
-
-type ExerciseType = 'mcq' | 'open_ended' | 'coding' | 'file_upload';
-type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
-type ExerciseStatus = 'draft' | 'published';
-
-interface Exercise {
-  id: string;
-  teacher_id: string;
-  title: string;
-  description: string;
-  type: ExerciseType;
-  difficulty: DifficultyLevel;
-  time_limit: number;
-  status: ExerciseStatus;
-  created_at: string;
-  updated_at: string;
-}
-
-interface NewExercise {
-  title: string;
-  description: string;
-  type: ExerciseType;
-  difficulty: DifficultyLevel;
-  time_limit: number;
-  status: ExerciseStatus;
-}
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [newExercise, setNewExercise] = useState<NewExercise>({
-    title: "",
-    description: "",
-    type: "mcq",
-    difficulty: "Beginner",
-    time_limit: 30,
-    status: "draft",
-  });
+  const [courseCount, setCourseCount] = useState(0);
+  const [exerciseCount, setExerciseCount] = useState(0);
+  const [studentCount, setStudentCount] = useState(0);
+  const [pendingReviews, setPendingReviews] = useState(0);
+  const [recentExercises, setRecentExercises] = useState([]);
 
   useEffect(() => {
     checkUserRole();
-    fetchExercises();
+    fetchDashboardData();
   }, []);
 
   const checkUserRole = async () => {
@@ -92,7 +54,6 @@ const TeacherDashboard = () => {
         return;
       }
 
-      setUserRole(profile.role);
       setLoading(false);
     } catch (error) {
       console.error('Error checking user role:', error);
@@ -101,77 +62,54 @@ const TeacherDashboard = () => {
     }
   };
 
-  const fetchExercises = async () => {
+  const fetchDashboardData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // Fetch course count
+      const { count: courses } = await supabase
+        .from('courses')
+        .select('*', { count: 'exact', head: true })
+        .eq('teacher_id', user.id);
+      
+      setCourseCount(courses || 0);
+
+      // Fetch exercise count
+      const { count: exercises } = await supabase
+        .from('exercises')
+        .select('*', { count: 'exact', head: true })
+        .eq('teacher_id', user.id);
+      
+      setExerciseCount(exercises || 0);
+
+      // Fetch student count (this would typically be a count of enrollments in the teacher's courses)
+      // This is a placeholder - you would need a proper enrollment table for this
+      setStudentCount(0);
+
+      // Fetch recent exercises
+      const { data: recent } = await supabase
         .from('exercises')
         .select('*')
         .eq('teacher_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      setRecentExercises(recent || []);
 
-      if (error) throw error;
-      setExercises(data || []);
+      // Fetch pending reviews (placeholder)
+      setPendingReviews(0);
+
+      setLoading(false);
     } catch (error) {
-      console.error('Error fetching exercises:', error);
-      toast.error("Failed to load exercises");
+      console.error('Error fetching dashboard data:', error);
+      toast.error("Failed to load dashboard data");
+      setLoading(false);
     }
   };
 
-  const handleCreateExercise = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please sign in to create exercises");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('exercises')
-        .insert([
-          {
-            ...newExercise,
-            teacher_id: user.id,
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setExercises([data, ...exercises]);
-      toast.success("Exercise created successfully!");
-      setNewExercise({
-        title: "",
-        description: "",
-        type: "mcq",
-        difficulty: "Beginner",
-        time_limit: 30,
-        status: "draft",
-      });
-    } catch (error) {
-      console.error('Error creating exercise:', error);
-      toast.error("Failed to create exercise");
-    }
-  };
-
-  const handleDeleteExercise = async (exerciseId: string) => {
-    try {
-      const { error } = await supabase
-        .from('exercises')
-        .delete()
-        .eq('id', exerciseId);
-
-      if (error) throw error;
-
-      setExercises(exercises.filter(ex => ex.id !== exerciseId));
-      toast.success("Exercise deleted successfully");
-    } catch (error) {
-      console.error('Error deleting exercise:', error);
-      toast.error("Failed to delete exercise");
-    }
+  const navigateTo = (path) => {
+    navigate(path);
   };
 
   if (loading) {
@@ -179,178 +117,139 @@ const TeacherDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            {userRole === 'admin' ? 'Administrator' : 'Teacher'} Dashboard
-          </h1>
-          <p className="text-gray-600">Manage your courses and student progress</p>
+    <DashboardLayout>
+      <div className="container mx-auto p-6">
+        <header className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Teacher Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">Manage your courses and track student progress</p>
+        </header>
+
+        {/* Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6 flex flex-col items-center justify-center">
+              <div className="rounded-full bg-blue-100 dark:bg-blue-900 p-3 mb-4">
+                <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+              </div>
+              <CardTitle className="text-xl mb-1">{courseCount}</CardTitle>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Active Courses</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6 flex flex-col items-center justify-center">
+              <div className="rounded-full bg-purple-100 dark:bg-purple-900 p-3 mb-4">
+                <FileText className="h-6 w-6 text-purple-600 dark:text-purple-300" />
+              </div>
+              <CardTitle className="text-xl mb-1">{exerciseCount}</CardTitle>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Created Exercises</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6 flex flex-col items-center justify-center">
+              <div className="rounded-full bg-green-100 dark:bg-green-900 p-3 mb-4">
+                <Users className="h-6 w-6 text-green-600 dark:text-green-300" />
+              </div>
+              <CardTitle className="text-xl mb-1">{studentCount}</CardTitle>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Enrolled Students</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6 flex flex-col items-center justify-center">
+              <div className="rounded-full bg-amber-100 dark:bg-amber-900 p-3 mb-4">
+                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-300" />
+              </div>
+              <CardTitle className="text-xl mb-1">{pendingReviews}</CardTitle>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Pending Reviews</p>
+            </CardContent>
+          </Card>
         </div>
 
-        <Tabs defaultValue="exercises" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="exercises">Exercises</TabsTrigger>
-            <TabsTrigger value="students">Students</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
+        {/* Quick Actions */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Create and manage your educational content</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-4">
+            <Button onClick={() => navigateTo('/teacher/courses/create')} className="flex gap-2">
+              <Book className="h-4 w-4" />
+              Create New Course
+            </Button>
+            <Button onClick={() => navigateTo('/teacher/exercises/create')} className="flex gap-2">
+              <FileText className="h-4 w-4" />
+              Create Exercise
+            </Button>
+            <Button onClick={() => navigateTo('/teacher/progress')} className="flex gap-2">
+              <BarChart className="h-4 w-4" />
+              View Student Progress
+            </Button>
+            <Button onClick={() => navigateTo('/teacher/discussion')} className="flex gap-2">
+              <Users className="h-4 w-4" />
+              Discussion Forum
+            </Button>
+          </CardContent>
+        </Card>
 
-          <TabsContent value="exercises">
-            <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Create New Exercise</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Title</label>
-                      <Input
-                        value={newExercise.title}
-                        onChange={(e) => setNewExercise({ ...newExercise, title: e.target.value })}
-                        placeholder="Exercise title"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Description</label>
-                      <Input
-                        value={newExercise.description}
-                        onChange={(e) => setNewExercise({ ...newExercise, description: e.target.value })}
-                        placeholder="Exercise description"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Type</label>
-                        <Select
-                          value={newExercise.type}
-                          onValueChange={(value: ExerciseType) =>
-                            setNewExercise({ ...newExercise, type: value })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="mcq">Multiple Choice</SelectItem>
-                            <SelectItem value="open_ended">Open Ended</SelectItem>
-                            <SelectItem value="coding">Coding Challenge</SelectItem>
-                            <SelectItem value="file_upload">File Upload</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Difficulty</label>
-                        <Select
-                          value={newExercise.difficulty}
-                          onValueChange={(value: DifficultyLevel) =>
-                            setNewExercise({ ...newExercise, difficulty: value })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select difficulty" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Beginner">Beginner</SelectItem>
-                            <SelectItem value="Intermediate">Intermediate</SelectItem>
-                            <SelectItem value="Advanced">Advanced</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-700">Time Limit (minutes)</label>
-                        <Input
-                          type="number"
-                          value={newExercise.time_limit}
-                          onChange={(e) => setNewExercise({ ...newExercise, time_limit: parseInt(e.target.value) })}
-                          min={1}
-                        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Exercises */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Exercises</CardTitle>
+              <CardDescription>Your most recently created exercises</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {recentExercises.length > 0 ? (
+                <div className="space-y-4">
+                  {recentExercises.map((exercise) => (
+                    <div key={exercise.id} className="border-b pb-3 last:border-0">
+                      <h3 className="font-medium">{exercise.title}</h3>
+                      <div className="flex items-center gap-2 mt-1 text-sm">
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${
+                          exercise.difficulty === 'Beginner' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                          exercise.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
+                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                        }`}>
+                          {exercise.difficulty}
+                        </span>
+                        <span className="text-gray-500">
+                          {new Date(exercise.created_at).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
-                    <Button onClick={handleCreateExercise} className="w-full md:w-auto">
-                      <BookPlus className="mr-2" />
-                      Create Exercise
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No exercises created yet</p>
+                  <Button onClick={() => navigateTo('/teacher/exercises/create')} variant="outline" className="mt-2">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Create Your First Exercise
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>My Exercises</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    {exercises.map((exercise) => (
-                      <Card key={exercise.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-semibold">{exercise.title}</h3>
-                              <p className="text-sm text-gray-500">{exercise.description}</p>
-                              <div className="flex items-center gap-2 mt-2">
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  exercise.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
-                                  exercise.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  {exercise.difficulty}
-                                </span>
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  exercise.status === 'draft' ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'
-                                }`}>
-                                  {exercise.status}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="destructive" 
-                                size="sm"
-                                onClick={() => handleDeleteExercise(exercise.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="students">
-            <Card>
-              <CardHeader>
-                <CardTitle>Student Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Student progress tracking interface will be implemented in the next iteration */}
-                <p>Student progress tracking coming soon...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle>Course Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Analytics interface will be implemented in the next iteration */}
-                <p>Analytics dashboard coming soon...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          {/* Upcoming Schedule */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming Schedule</CardTitle>
+              <CardDescription>Your upcoming classes and deadlines</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                <p>No upcoming events</p>
+                <p className="text-sm mt-1">Schedule management coming soon</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

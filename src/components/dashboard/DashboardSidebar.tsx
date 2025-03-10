@@ -16,7 +16,13 @@ import {
   Gauge,
   School,
   CircuitBoard,
-  Database
+  Database,
+  BookOpen,
+  ClipboardList,
+  BarChart,
+  Bell,
+  Video,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,6 +55,11 @@ const adminMenuItems = [
     href: "/admin/courses",
   },
   {
+    title: "Exercises",
+    icon: FileCode,
+    href: "/admin/exercises",
+  },
+  {
     title: "Analytics",
     icon: Activity,
     href: "/admin/analytics",
@@ -68,8 +79,18 @@ const teacherMenuItems = [
   },
   {
     title: "My Courses",
-    icon: Book,
+    icon: BookOpen,
     href: "/teacher/courses",
+  },
+  {
+    title: "Course Creator",
+    icon: Book,
+    href: "/teacher/courses/create",
+  },
+  {
+    title: "Exercises",
+    icon: ClipboardList,
+    href: "/teacher/exercises",
   },
   {
     title: "Create Exercise",
@@ -78,13 +99,23 @@ const teacherMenuItems = [
   },
   {
     title: "Student Progress",
-    icon: Activity,
+    icon: BarChart,
     href: "/teacher/progress",
   },
   {
     title: "Discussion",
     icon: MessageSquare,
     href: "/teacher/discussion",
+  },
+  {
+    title: "Materials",
+    icon: FileText,
+    href: "/teacher/materials",
+  },
+  {
+    title: "Notifications",
+    icon: Bell,
+    href: "/teacher/notifications",
   },
   {
     title: "Settings",
