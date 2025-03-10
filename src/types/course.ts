@@ -57,4 +57,6 @@ export interface CourseResource {
   created_at?: string;
 }
 
+// We keep "archived" as a UI-only status, but in the database
+// it will be stored as "draft" with an additional metadata field
 export type ExerciseStatus = "draft" | "published" | "archived";

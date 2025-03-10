@@ -107,11 +107,17 @@ const ExercisesPage = () => {
 
   const changeExerciseStatus = async (id: string, status: ExerciseStatus) => {
     try {
-      // Cast the status to the appropriate type accepted by the database
-      // This ensures TypeScript knows we're handling the type difference
+      // For "archived" status, we'll handle it as "draft" in the database
+      // but display it as "archived" in the UI
+      const dbStatus = status === "archived" ? "draft" : status;
+      
       const { error } = await supabase
         .from('exercises')
-        .update({ status: status as "draft" | "published" | "archived" })
+        .update({ 
+          status: dbStatus,
+          // Add a metadata field to mark it as archived if needed
+          ...(status === "archived" ? { archived: true } : { archived: false })
+        })
         .eq('id', id);
       
       if (error) throw error;
