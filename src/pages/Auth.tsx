@@ -186,7 +186,7 @@ const Auth = () => {
 
       <div className="w-full max-w-md p-8 glass-card rounded-xl border border-blue-100 shadow-lg">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          {isSignUp ? "Create an Account" : "Welcome Back"}
+          {isSignUp ? "Create an Account" : "Welcome"}
         </h2>
         <form onSubmit={handleAuth} className="space-y-4">
           {isSignUp && (

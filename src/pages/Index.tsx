@@ -226,7 +226,7 @@ const Index = () => {
         className="bg-primary hover:bg-primary/90"
         onClick={() => navigate("/auth")}
       >
-        Sign In to Continue
+        Get Started Now
       </Button>
     </div>
   );
@@ -368,7 +368,7 @@ const Index = () => {
                   className="text-lg px-8 bg-primary hover:bg-primary/90"
                   onClick={() => navigate("/auth")}
                 >
-                  Sign In to Start
+                  Get Started Now
                 </Button>
               )}
             </div>
@@ -431,3 +431,4 @@ const Index = () => {
 };
 
 export default Index;
+
