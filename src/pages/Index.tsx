@@ -6,7 +6,7 @@ import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { CourseFilters } from "@/components/courses/CourseFilters";
 import type { Course, CoursePath, CourseLevel } from "@/types/course";
-import { School, GraduationCap, Database, ArrowRight } from "lucide-react";
+import { School, GraduationCap, Database, ArrowRight, MapPin } from "lucide-react";
 
 const allCourses: Course[] = [
   {
@@ -278,6 +278,43 @@ const Index = () => {
     );
   };
 
+  const renderMyPlaceButton = () => {
+    if (userRole) {
+      let icon;
+      let label = "My Place";
+      let destination = '/';
+      
+      switch(userRole) {
+        case 'admin':
+          icon = <Database className="h-5 w-5 mr-2" />;
+          destination = '/admin';
+          break;
+        case 'teacher':
+          icon = <School className="h-5 w-5 mr-2" />;
+          destination = '/teacher';
+          break;
+        case 'student':
+          icon = <GraduationCap className="h-5 w-5 mr-2" />;
+          destination = '/student';
+          break;
+        default:
+          icon = <MapPin className="h-5 w-5 mr-2" />;
+      }
+      
+      return (
+        <Button
+          size="lg"
+          className="flex items-center text-lg px-8 bg-blue-500 hover:bg-blue-600 ml-4"
+          onClick={() => navigate(destination)}
+        >
+          {icon}
+          {label}
+        </Button>
+      );
+    }
+    return null;
+  };
+
   const renderQuickAccessButton = () => {
     if (!session) return null;
     
@@ -321,7 +358,10 @@ const Index = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {session ? (
-                renderPortalButton()
+                <div className="flex flex-wrap justify-center gap-4">
+                  {renderPortalButton()}
+                  {renderMyPlaceButton()}
+                </div>
               ) : (
                 <Button
                   size="lg"
