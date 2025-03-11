@@ -9,7 +9,7 @@ import { PlusCircle, Edit, Trash2, FileCode, Clock, BarChart } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
-import { ExerciseStatus } from "@/types/course";
+import { ExerciseStatus, DatabaseExerciseStatus } from "@/types/course";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +31,7 @@ interface Exercise {
   time_limit: number | null;
   created_at: string;
   teacher_id: string;
+  archived?: boolean;
 }
 
 const ExercisesPage = () => {
@@ -109,14 +110,14 @@ const ExercisesPage = () => {
     try {
       // For "archived" status, we'll handle it as "draft" in the database
       // but display it as "archived" in the UI
-      const dbStatus = status === "archived" ? "draft" : status;
+      const dbStatus: DatabaseExerciseStatus = status === "archived" ? "draft" : status as DatabaseExerciseStatus;
       
       const { error } = await supabase
         .from('exercises')
         .update({ 
           status: dbStatus,
           // Add a metadata field to mark it as archived if needed
-          ...(status === "archived" ? { archived: true } : { archived: false })
+          archived: status === "archived"
         })
         .eq('id', id);
       

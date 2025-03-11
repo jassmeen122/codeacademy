@@ -1,3 +1,4 @@
+
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export type CoursePath = 
@@ -60,3 +61,6 @@ export interface CourseResource {
 // We keep "archived" as a UI-only status, but in the database
 // it will be stored as "draft" with an additional metadata field
 export type ExerciseStatus = "draft" | "published" | "archived";
+
+// This type represents what the database accepts for exercise status
+export type DatabaseExerciseStatus = "draft" | "published";
