@@ -6,6 +6,7 @@ import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { CourseFilters } from "@/components/courses/CourseFilters";
 import type { Course, CoursePath, CourseLevel } from "@/types/course";
+import { School, GraduationCap, Database } from "lucide-react";
 
 const allCourses: Course[] = [
   {
@@ -230,6 +231,53 @@ const Index = () => {
     </div>
   );
 
+  const navigateToPortal = () => {
+    if (userRole === 'admin') {
+      navigate('/admin');
+    } else if (userRole === 'teacher') {
+      navigate('/teacher');
+    } else if (userRole === 'student') {
+      navigate('/student');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const renderPortalButton = () => {
+    if (!userRole) return null;
+    
+    let icon;
+    let label;
+    
+    switch(userRole) {
+      case 'admin':
+        icon = <Database className="h-5 w-5 mr-2" />;
+        label = "Admin Portal";
+        break;
+      case 'teacher':
+        icon = <School className="h-5 w-5 mr-2" />;
+        label = "Teacher Portal";
+        break;
+      case 'student':
+        icon = <GraduationCap className="h-5 w-5 mr-2" />;
+        label = "Student Portal";
+        break;
+      default:
+        return null;
+    }
+    
+    return (
+      <Button
+        size="lg"
+        className="flex items-center text-lg px-8 bg-primary hover:bg-primary/90"
+        onClick={navigateToPortal}
+      >
+        {icon}
+        {label}
+      </Button>
+    );
+  };
+
   const canManageCourses = userRole === 'admin' || userRole === 'teacher';
 
   const filteredCourses = (session ? allCourses : initialCourses).filter(course => {
@@ -255,21 +303,15 @@ const Index = () => {
               Master in-demand programming skills through hands-on practice.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="text-lg px-8 bg-primary hover:bg-primary/90"
-                onClick={() => session ? handleViewAllCourses() : navigate("/auth")}
-              >
-                {session ? "View All Courses" : "Sign In to Start"}
-              </Button>
-              {canManageCourses && (
+              {session ? (
+                renderPortalButton()
+              ) : (
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="text-lg px-8 border-primary text-primary hover:bg-primary/10"
-                  onClick={() => navigate(userRole === 'admin' ? '/admin' : '/teacher')}
+                  className="text-lg px-8 bg-primary hover:bg-primary/90"
+                  onClick={() => navigate("/auth")}
                 >
-                  Manage Courses
+                  Sign In to Start
                 </Button>
               )}
             </div>
@@ -303,13 +345,7 @@ const Index = () => {
 
           {!session && (
             <div className="text-center mt-8">
-              <Button
-                size="lg"
-                onClick={handleViewAllCourses}
-                className="bg-primary hover:bg-primary/90"
-              >
-                View All Courses
-              </Button>
+              {renderAuthPrompt()}
             </div>
           )}
         </div>

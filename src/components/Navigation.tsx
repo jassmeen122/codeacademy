@@ -14,7 +14,7 @@ const Navigation = () => {
   const [mounted, setMounted] = useState(false);
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const { session, loading, handleSignOut } = useAuthState();
+  const { session, user, loading, handleSignOut } = useAuthState();
 
   useState(() => {
     setMounted(true);
@@ -29,6 +29,24 @@ const Navigation = () => {
       });
     } else {
       navigate("/auth");
+    }
+  };
+
+  const goToUserDashboard = () => {
+    if (!user) return;
+    
+    switch (user.role) {
+      case 'admin':
+        navigate('/admin');
+        break;
+      case 'teacher':
+        navigate('/teacher');
+        break;
+      case 'student':
+        navigate('/student');
+        break;
+      default:
+        navigate('/');
     }
   };
 
@@ -59,32 +77,28 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/student" 
-              className="text-foreground/60 hover:text-foreground transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link 
-              to="#courses" 
-              className="text-foreground/60 hover:text-foreground transition-colors"
-            >
-              Courses
-            </Link>
-            <Link 
-              to="#features" 
-              className="text-foreground/60 hover:text-foreground transition-colors"
-            >
-              Features
-            </Link>
+          <div className="hidden md:flex items-center space-x-4">
+            {!loading && user && (user.role === 'teacher' || user.role === 'admin') && (
+              <Button
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary/10"
+                onClick={() => navigate(user.role === 'admin' ? '/admin' : '/teacher')}
+              >
+                {user.role === 'admin' ? 'Admin Portal' : 'Teacher Portal'}
+              </Button>
+            )}
             {!loading && session && (
-              <NotificationBell userId={session.user.id} />
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="font-medium">{user?.full_name || 'User'}</p>
+                  <p className="text-xs text-muted-foreground">{user?.role || 'Loading...'}</p>
+                </div>
+                <NotificationBell userId={session.user.id} />
+              </div>
             )}
             {!loading && (
               <Button
                 variant="default"
-                className="ml-4"
                 onClick={handleAuth}
               >
                 {session ? "Sign Out" : "Sign In"}
@@ -112,6 +126,8 @@ const Navigation = () => {
           session={session}
           loading={loading}
           onAuth={handleAuth}
+          userRole={user?.role}
+          onPortalClick={goToUserDashboard}
         />
       </div>
     </nav>
