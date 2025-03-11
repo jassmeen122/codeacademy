@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Menu, X, Moon, Sun } from "lucide-react";
+import { Menu, X, Moon, Sun, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -78,6 +78,16 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
+            {!loading && session && (
+              <Button
+                variant="outline"
+                className="gap-2 border-primary text-primary hover:bg-primary/10"
+                onClick={goToUserDashboard}
+              >
+                <User className="h-4 w-4" />
+                Mon Profil
+              </Button>
+            )}
             {!loading && user && (user.role === 'teacher' || user.role === 'admin') && (
               <Button
                 variant="outline"
