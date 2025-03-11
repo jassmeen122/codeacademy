@@ -6,7 +6,7 @@ import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { CourseFilters } from "@/components/courses/CourseFilters";
 import type { Course, CoursePath, CourseLevel } from "@/types/course";
-import { School, GraduationCap, Database } from "lucide-react";
+import { School, GraduationCap, Database, ArrowRight } from "lucide-react";
 
 const allCourses: Course[] = [
   {
@@ -278,6 +278,23 @@ const Index = () => {
     );
   };
 
+  const renderQuickAccessButton = () => {
+    if (!session) return null;
+    
+    return (
+      <div className="fixed bottom-8 right-8 z-40">
+        <Button
+          size="lg"
+          className="rounded-full shadow-lg bg-primary hover:bg-primary/90 p-6"
+          onClick={navigateToPortal}
+          title="Accéder à votre tableau de bord"
+        >
+          <ArrowRight className="h-6 w-6" />
+        </Button>
+      </div>
+    );
+  };
+
   const canManageCourses = userRole === 'admin' || userRole === 'teacher';
 
   const filteredCourses = (session ? allCourses : initialCourses).filter(course => {
@@ -366,6 +383,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      {/* Bouton d'accès rapide */}
+      {renderQuickAccessButton()}
     </div>
   );
 };
