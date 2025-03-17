@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, PlusCircle, Edit, Trash2, RefreshCw, Clock, FileCode } from "lucide-react";
 import type { Exercise } from "@/types/exercise";
+import { changeExerciseStatus } from "@/services/exerciseService";
 
 const ExercisesPage = () => {
   const navigate = useNavigate();
@@ -78,15 +78,12 @@ const ExercisesPage = () => {
 
   const handleUpdateExerciseStatus = async (exerciseId: string, status: Exercise["status"]) => {
     try {
-      const { error } = await supabase
-        .from('exercises')
-        .update({ status })
-        .eq('id', exerciseId);
-        
-      if (error) throw error;
+      const success = await changeExerciseStatus(exerciseId, status);
       
-      toast.success(`Exercise status updated to ${status}`);
-      fetchExercises();
+      if (success) {
+        toast.success(`Exercise status updated to ${status}`);
+        fetchExercises();
+      }
     } catch (error: any) {
       toast.error(`Failed to update exercise status: ${error.message}`);
     }
