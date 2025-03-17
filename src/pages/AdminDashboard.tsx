@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, UserPlus, Edit, Trash2, RefreshCw, BookOpen, GraduationCap, Users } from "lucide-react";
 import type { UserProfile } from "@/hooks/useAuthState";
-import type { Course, ProgrammingLanguage } from "@/types/course";
+import type { Course } from "@/types/course";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -81,6 +82,7 @@ const AdminDashboard = () => {
 
       setUsers(data as UserProfile[]);
       
+      // Calculate stats
       const teachers = data.filter(user => user.role === 'teacher').length;
       const students = data.filter(user => user.role === 'student').length;
       const admins = data.filter(user => user.role === 'admin').length;
@@ -121,10 +123,11 @@ const AdminDashboard = () => {
           name: course.teacher?.full_name || "Unknown",
           title: "Course Instructor"
         },
-        language: "JavaScript" as ProgrammingLanguage,
+        // Mock data for the rest of the fields
         duration: "8 weeks",
         students: 0,
         image: "/placeholder.svg",
+        language: "JavaScript",
         materials: {
           videos: 0,
           pdfs: 0,
