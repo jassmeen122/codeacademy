@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,27 +24,23 @@ import NotificationsPage from "./pages/student/NotificationsPage";
 import ProjectsPage from "./pages/student/ProjectsPage";
 import SettingsPage from "./pages/student/SettingsPage";
 import TeacherSettingsPage from "./pages/teacher/SettingsPage";
-
-// Teacher Pages
 import TeacherCoursesPage from "./pages/teacher/CoursesPage";
 import CreateCoursePage from "./pages/teacher/CreateCoursePage";
 import TeacherExercisesPage from "./pages/teacher/ExercisesPage";
 import CreateExercisePage from "./pages/teacher/CreateExercisePage";
+import PaidCourseDetailsPage from "./pages/student/PaidCourseDetailsPage";
 
 const queryClient = new QueryClient();
 
-// Protected Route wrapper component
 const ProtectedRoute = ({ children, allowedRoles = [] }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        // Fetch user role from profiles
         supabase
           .from('profiles')
           .select('role')
@@ -62,7 +57,6 @@ const ProtectedRoute = ({ children, allowedRoles = [] }: { children: React.React
       }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (!session) {
@@ -82,7 +76,6 @@ const ProtectedRoute = ({ children, allowedRoles = [] }: { children: React.React
   }
 
   if (allowedRoles.length > 0 && userRole && !allowedRoles.includes(userRole)) {
-    // Redirect to appropriate dashboard based on role
     if (userRole === 'admin') return <Navigate to="/admin" />;
     if (userRole === 'teacher') return <Navigate to="/teacher" />;
     if (userRole === 'student') return <Navigate to="/student" />;
@@ -115,7 +108,6 @@ const App = () => (
               </ProtectedRoute>
             } />
             
-            {/* Teacher Routes */}
             <Route path="/teacher/settings" element={
               <ProtectedRoute allowedRoles={['teacher']}>
                 <TeacherSettingsPage />
@@ -161,6 +153,12 @@ const App = () => (
             <Route path="/student/courses" element={
               <ProtectedRoute allowedRoles={['student']}>
                 <CoursesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/student/courses/:courseId/details" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <PaidCourseDetailsPage />
               </ProtectedRoute>
             } />
             
