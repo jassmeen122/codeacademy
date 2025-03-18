@@ -1,14 +1,14 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Book, GraduationCap } from "lucide-react";
-import type { Course } from "@/types/course";
+import { GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Course } from "@/types/course";
+import { FeaturedCourses } from "@/components/student/FeaturedCourses";
+import { PremiumCourses } from "@/components/student/PremiumCourses";
+import { EnrolledCourses } from "@/components/student/EnrolledCourses";
 
 // Collection of programming language courses with YouTube links
 const programmingCourses = [
@@ -246,108 +246,6 @@ const CoursesPage = () => {
     }
   };
 
-  const renderProgrammingCourses = () => {
-    return (
-      <div className="mb-12">
-        <div className="flex items-center mb-6">
-          <Book className="text-primary mr-2 h-5 w-5" />
-          <h2 className="text-2xl font-bold">Featured Programming Courses</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredCourses.map((course) => (
-            <Card key={course.id} className="overflow-hidden transition-all hover:shadow-lg duration-300">
-              <div className="relative">
-                <img 
-                  src={course.image} 
-                  alt={course.title} 
-                  className="w-full h-48 object-cover"
-                />
-                <Badge className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600">
-                  {course.language}
-                </Badge>
-              </div>
-              <CardHeader>
-                <CardTitle className="line-clamp-1">{course.title}</CardTitle>
-                <div className="text-sm text-muted-foreground">
-                  {course.professor.name} • {course.difficulty}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                  {course.description}
-                </p>
-                <div className="flex justify-between items-center">
-                  <div className="text-sm font-medium">8 semaines</div>
-                  <Badge variant="outline">{course.path}</Badge>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  className="w-full" 
-                  onClick={() => navigate(`/student/courses/${course.id}/details`)}
-                >
-                  Voir Détails
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderPremiumCourses = () => {
-    return (
-      <div className="mb-12">
-        <div className="flex items-center mb-6">
-          <Sparkles className="text-yellow-500 mr-2 h-5 w-5" />
-          <h2 className="text-2xl font-bold">Premium AI Courses</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {premiumCourses.map((course) => (
-            <Card key={course.id} className="overflow-hidden transition-all hover:shadow-lg duration-300">
-              <div className="relative">
-                <img 
-                  src={course.image} 
-                  alt={course.title} 
-                  className="w-full h-48 object-cover"
-                />
-                <Badge className="absolute top-4 right-4 bg-yellow-500 hover:bg-yellow-600">
-                  Premium
-                </Badge>
-              </div>
-              <CardHeader>
-                <CardTitle className="line-clamp-1">{course.title}</CardTitle>
-                <div className="text-sm text-muted-foreground">
-                  {course.professor.name} • {course.difficulty}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                  {course.description}
-                </p>
-                <div className="flex justify-between items-center">
-                  <div className="text-xl font-bold">${course.price}</div>
-                  <Badge variant="outline">{course.path}</Badge>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  className="w-full" 
-                  onClick={() => navigate(`/student/courses/${course.id}/details`)}
-                >
-                  Voir Détails
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
@@ -359,83 +257,12 @@ const CoursesPage = () => {
           </Button>
         </div>
         
-        {renderProgrammingCourses()}
+        <FeaturedCourses courses={featuredCourses} />
         
-        {renderPremiumCourses()}
+        <PremiumCourses courses={premiumCourses} />
         
         <h2 className="text-2xl font-bold mb-6">Cours Inscrits</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {loading ? (
-            Array(4).fill(0).map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <div className="h-48 bg-gray-200" />
-                <CardHeader>
-                  <div className="h-6 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-100 rounded w-1/2 mt-2" />
-                </CardHeader>
-                <CardContent>
-                  <div className="h-12 bg-gray-100 rounded" />
-                  <div className="flex justify-between items-center mt-4">
-                    <div className="h-4 bg-gray-100 rounded w-1/4" />
-                    <div className="h-6 bg-gray-100 rounded w-1/3" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <div className="h-10 bg-gray-200 rounded w-full" />
-                </CardFooter>
-              </Card>
-            ))
-          ) : courses.length === 0 ? (
-            <div className="col-span-4 bg-gray-50 rounded-lg p-8 text-center">
-              <GraduationCap className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-xl font-medium text-gray-800 mb-2">Vous n'êtes inscrit à aucun cours</h3>
-              <p className="text-gray-600 mb-6">
-                Inscrivez-vous à un cours pour commencer votre apprentissage.
-              </p>
-              <Button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                Parcourir les cours
-              </Button>
-            </div>
-          ) : (
-            courses.slice(0, 4).map((course) => (
-              <Card key={course.id} className="overflow-hidden transition-all hover:shadow-lg duration-300">
-                <div className="relative">
-                  <img 
-                    src={course.image} 
-                    alt={course.title} 
-                    className="w-full h-48 object-cover"
-                  />
-                  <Badge className="absolute top-4 right-4 bg-primary hover:bg-primary/90">
-                    {course.language}
-                  </Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{course.title}</CardTitle>
-                  <div className="text-sm text-muted-foreground">
-                    {course.professor.name} • {course.difficulty}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {course.description}
-                  </p>
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm font-medium">{course.duration}</div>
-                    <Badge variant="outline">{course.path}</Badge>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => navigate(`/student/courses/${course.id}/details`)}
-                  >
-                    Continuer
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-          )}
-        </div>
+        <EnrolledCourses courses={courses} loading={loading} />
         
         {courses.length > 4 && (
           <div className="text-center">
