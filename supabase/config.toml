@@ -1,8 +1,7 @@
-
-# This is a generic configuration file for Supabase Edge Functions
+# A more structured config.toml file for Supabase Edge Functions
 
 [functions]
-port = 54321
+# Remove the port setting from here as it's causing parsing errors
 
 [auth]
 enabled = true

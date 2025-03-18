@@ -14,14 +14,29 @@ serve(async (req) => {
   }
 
   try {
+    // Check for API key before processing anything else
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
-      throw new Error('OpenAI API key is not configured');
+      console.error('OpenAI API key is not configured in Supabase secrets');
+      return new Response(
+        JSON.stringify({ error: 'OpenAI API key is not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
     
-    const { prompt, messageHistory, code, language } = await req.json();
-    console.log("Processing request with prompt:", prompt?.substring(0, 50));
-    console.log("Message history length:", messageHistory?.length || 0);
+    // Parse request body
+    const requestData = await req.json().catch(error => {
+      console.error('Failed to parse request JSON:', error);
+      throw new Error('Invalid request format');
+    });
+    
+    const { prompt, messageHistory, code, language } = requestData;
+    
+    console.log("Request details:");
+    console.log("- Prompt preview:", prompt ? prompt.substring(0, 50) + '...' : 'No prompt');
+    console.log("- Message history length:", messageHistory?.length || 0);
+    console.log("- Code assistance:", code ? 'Yes' : 'No');
+    console.log("- Language:", language || 'N/A');
     
     // Format system message based on whether this is code assistance
     let systemMessage;
@@ -42,7 +57,7 @@ serve(async (req) => {
       { role: "user", content: promptForAI }
     ];
 
-    console.log("Calling OpenAI API...");
+    console.log("Calling OpenAI API with model gpt-4o-mini...");
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -58,14 +73,26 @@ serve(async (req) => {
       }),
     });
 
+    // Handle API errors
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
+      } catch (parseError) {
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText.substring(0, 100)}`);
+      }
     }
 
     const data = await response.json();
-    console.log('OpenAI response received successfully');
+    console.log('OpenAI response received successfully:', data.choices ? 'Valid response' : 'Invalid response format');
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid response format from OpenAI:', data);
+      throw new Error('Invalid response format from OpenAI');
+    }
     
     const assistantReply = data.choices[0].message;
 
