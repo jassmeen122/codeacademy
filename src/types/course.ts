@@ -12,12 +12,13 @@ export interface CourseResource {
   created_at: string | null;
 }
 
-export type ProgrammingLanguage = "JavaScript" | "Python" | "Java" | "C++" | "Ruby" | "Go";
+export type ProgrammingLanguage = "JavaScript" | "Python" | "Java" | "C++" | "Ruby" | "Go" | "PHP" | "C" | "SQL";
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 export type CoursePath = "Web Development" | "Data Science" | "Artificial Intelligence" | "Machine Learning" | "Mobile Development";
-export type CourseCategory = "Frontend" | "Backend" | "Database" | "DevOps" | "Full Stack" | "UI/UX" | "Cloud Computing";
-export type ExerciseStatus = "pending" | "approved" | "rejected";
-export type DatabaseExerciseStatus = "pending" | "approved" | "rejected";
+export type CourseCategory = "Frontend" | "Backend" | "Database" | "DevOps" | "Full Stack" | "UI/UX" | "Cloud Computing" | 
+  "Programming Fundamentals" | "Frontend Development" | "Backend Development" | "Data Analysis" | "Machine Learning" | "AI Applications";
+export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | "draft" | "published";
+export type DatabaseExerciseStatus = "pending" | "approved" | "rejected" | "draft" | "published";
 
 export interface Course {
   id: string;
@@ -39,6 +40,7 @@ export interface Course {
     pdfs: number;
     presentations: number;
   };
+  price?: number;
 }
 
 export interface CourseLearnResponse {

@@ -14,7 +14,14 @@ export const fetchExercises = async (teacherId: string): Promise<Exercise[]> => 
 
     if (error) throw error;
     
-    return data || [];
+    // Transform the data to match our Exercise type with the correct status
+    const exercises = (data || []).map(exercise => ({
+      ...exercise,
+      status: exercise.status as ExerciseStatus,
+      archived: exercise.status === 'draft' && exercise.archived === true
+    }));
+    
+    return exercises as Exercise[];
   } catch (error: any) {
     toast.error("Failed to fetch exercises");
     console.error("Error fetching exercises:", error);
@@ -47,20 +54,33 @@ export const changeExerciseStatus = async (
   try {
     // For "archived" status, we'll handle it as "draft" in the database
     // but display it as "archived" in the UI
-    const dbStatus: DatabaseExerciseStatus = status === "archived" ? "draft" : status as DatabaseExerciseStatus;
+    let dbStatus: DatabaseExerciseStatus;
+    let isArchived = false;
+    
+    if (status === "archived") {
+      dbStatus = "draft";
+      isArchived = true;
+    } else {
+      dbStatus = status as DatabaseExerciseStatus;
+    }
     
     const { error } = await supabase
       .from('exercises')
       .update({ 
         status: dbStatus,
         // Add a metadata field to mark it as archived if needed
-        archived: status === "archived"
+        archived: isArchived
       })
       .eq('id', exerciseId);
     
     if (error) throw error;
     
-    toast.success(`Exercise ${status === 'published' ? 'published' : status === 'archived' ? 'archived' : 'saved as draft'} successfully`);
+    let statusMessage = "";
+    if (status === "published") statusMessage = "published";
+    else if (status === "archived") statusMessage = "archived";
+    else statusMessage = "saved as draft";
+    
+    toast.success(`Exercise ${statusMessage} successfully`);
     return true;
   } catch (error: any) {
     toast.error(`Failed to update exercise: ${error.message}`);
