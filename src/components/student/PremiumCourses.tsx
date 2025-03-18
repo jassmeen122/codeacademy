@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Clock } from "lucide-react";
 import type { Course } from "@/types/course";
 
 interface PremiumCoursesProps {
@@ -45,8 +45,11 @@ export const PremiumCourses = ({ courses }: PremiumCoursesProps) => {
                 {course.description}
               </p>
               <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2 text-sm font-medium">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{course.duration}</span>
+                </div>
                 <div className="text-xl font-bold">${course.price}</div>
-                <Badge variant="outline">{course.path}</Badge>
               </div>
             </CardContent>
             <CardFooter>
@@ -54,7 +57,7 @@ export const PremiumCourses = ({ courses }: PremiumCoursesProps) => {
                 className="w-full" 
                 onClick={() => navigate(`/student/courses/${course.id}/details`)}
               >
-                Voir Détails
+                Get Started
               </Button>
             </CardFooter>
           </Card>

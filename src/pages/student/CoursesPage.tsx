@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -15,72 +16,46 @@ const programmingCourses = [
   {
     id: "python-1",
     title: "Python Programming for Beginners",
-    description: "Learn Python programming from scratch. Perfect for beginners with no prior coding experience.",
+    description: "Python is a versatile programming language, ideal for beginners. It's used in many fields such as artificial intelligence, web development, and data analysis.",
     language: "Python",
     videoUrl: "https://www.youtube.com/watch?v=rfscVS0vtbw",
     difficulty: "Beginner",
     path: "Data Science",
     category: "Programming Fundamentals",
-  },
-  {
-    id: "javascript-1",
-    title: "Modern JavaScript Development",
-    description: "Master the fundamentals of JavaScript and learn modern ES6+ features.",
-    language: "JavaScript",
-    videoUrl: "https://www.youtube.com/watch?v=W6NZfCO5SIk",
-    difficulty: "Intermediate",
-    path: "Web Development",
-    category: "Frontend Development",
+    estimatedTime: "2-3 months"
   },
   {
     id: "java-1",
     title: "Java Programming Complete Course",
-    description: "Comprehensive Java course covering core concepts to advanced topics.",
+    description: "Java is one of the most popular programming languages, mainly used for developing Android applications and enterprise systems.",
     language: "Java",
     videoUrl: "https://www.youtube.com/watch?v=grEKMHGYyns",
     difficulty: "Intermediate",
     path: "Web Development",
     category: "Backend Development",
+    estimatedTime: "3-4 months"
   },
   {
-    id: "cplusplus-1",
-    title: "C++ Programming Tutorial",
-    description: "Learn C++ programming from the ground up with practical examples.",
-    language: "C++",
-    videoUrl: "https://www.youtube.com/watch?v=vLnPwxZdW4Y",
-    difficulty: "Advanced",
-    path: "Artificial Intelligence",
-    category: "Programming Fundamentals",
-  },
-  {
-    id: "php-1",
-    title: "PHP for Web Development",
-    description: "Learn PHP programming and server-side web development.",
-    language: "PHP",
-    videoUrl: "https://www.youtube.com/watch?v=OK_JCtrrv-c",
-    difficulty: "Beginner",
+    id: "javascript-1",
+    title: "Modern JavaScript Development",
+    description: "JavaScript is a programming language used to create interactive web pages. It is essential for any web developer who wants to build dynamic websites.",
+    language: "JavaScript",
+    videoUrl: "https://www.youtube.com/watch?v=W6NZfCO5SIk",
+    difficulty: "Intermediate",
     path: "Web Development",
-    category: "Backend Development",
-  },
-  {
-    id: "c-1",
-    title: "C Programming for Beginners",
-    description: "Comprehensive course on C programming language fundamentals.",
-    language: "C",
-    videoUrl: "https://www.youtube.com/watch?v=KJgsSFOSQv0",
-    difficulty: "Beginner",
-    path: "Data Science",
-    category: "Programming Fundamentals",
+    category: "Frontend Development",
+    estimatedTime: "2-3 months"
   },
   {
     id: "sql-1",
     title: "SQL Database Programming",
-    description: "Master SQL for database management and data analysis.",
+    description: "SQL is the standard language for managing and manipulating databases. It is crucial for developers working with relational database management systems.",
     language: "SQL",
     videoUrl: "https://www.youtube.com/watch?v=HXV3zeQKqGY",
     difficulty: "Intermediate",
     path: "Data Science",
     category: "Data Analysis",
+    estimatedTime: "1-2 months"
   }
 ];
 
@@ -126,7 +101,7 @@ const CoursesPage = () => {
         difficulty: course.difficulty,
         path: course.path,
         category: course.category,
-        language: course.language || "JavaScript",
+        language: "JavaScript", // Default language if not provided
         professor: {
           name: course.teacher?.name || "Unknown Professor",
           title: "Course Instructor"
@@ -139,11 +114,11 @@ const CoursesPage = () => {
       }));
       
       // Convert the programming language videos to featured courses
-      const featuredProgrammingCourses: Course[] = programmingCourses.slice(0, 4).map((course, index) => ({
+      const featuredProgrammingCourses: Course[] = programmingCourses.map((course, index) => ({
         id: course.id,
         title: course.title,
         description: course.description,
-        duration: "8 weeks",
+        duration: course.estimatedTime,
         students: 1000 + Math.floor(Math.random() * 2000),
         image: "/placeholder.svg",
         difficulty: course.difficulty as any,

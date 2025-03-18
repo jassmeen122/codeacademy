@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Clock } from "lucide-react";
 import type { Course } from "@/types/course";
 
 interface EnrolledCoursesProps {
@@ -80,9 +80,9 @@ export const EnrolledCourses = ({ courses, loading }: EnrolledCoursesProps) => {
             <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
               {course.description}
             </p>
-            <div className="flex justify-between items-center">
-              <div className="text-sm font-medium">{course.duration}</div>
-              <Badge variant="outline">{course.path}</Badge>
+            <div className="flex items-center space-x-2 text-sm font-medium">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span>Estimated Time: {course.duration}</span>
             </div>
           </CardContent>
           <CardFooter>
@@ -90,7 +90,7 @@ export const EnrolledCourses = ({ courses, loading }: EnrolledCoursesProps) => {
               className="w-full" 
               onClick={() => navigate(`/student/courses/${course.id}/details`)}
             >
-              Continuer
+              Get Started
             </Button>
           </CardFooter>
         </Card>
