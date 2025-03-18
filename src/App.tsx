@@ -1,5 +1,4 @@
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -38,6 +37,8 @@ import TeacherSettingsPage from "./pages/teacher/SettingsPage";
 
 // Admin Pages
 import AdminSettingsPage from "./pages/admin/SettingsPage";
+import { useEffect, useState } from "react";
+import { supabase } from "./integrations/supabase/client";
 
 // Create a new query client instance
 const queryClient = new QueryClient({
@@ -48,6 +49,62 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Protected route component
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        setIsAuthenticated(true);
+        
+        // Get user role from profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profile) {
+          setUserRole(profile.role);
+        }
+      }
+      
+      setLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" />;
+  }
+
+  if (userRole && !allowedRoles.includes(userRole)) {
+    // Redirect to appropriate dashboard based on role
+    if (userRole === 'admin') {
+      return <Navigate to="/admin" />;
+    } else if (userRole === 'teacher') {
+      return <Navigate to="/teacher" />;
+    } else if (userRole === 'student') {
+      return <Navigate to="/student" />;
+    }
+    
+    // Default fallback
+    return <Navigate to="/" />;
+  }
+
+  return <>{children}</>;
+};
 
 const App = () => {
   return (
@@ -61,34 +118,130 @@ const App = () => {
               <Route path="/auth" element={<Auth />} />
 
               {/* Student Routes */}
-              <Route path="/student" element={<StudentDashboard />} />
-              <Route path="/student/settings" element={<StudentSettingsPage />} />
-              <Route path="/student/courses" element={<CoursesPage />} />
-              <Route path="/student/courses/:courseId" element={<CourseDetailsPage />} />
-              <Route path="/student/paid-courses/:courseId" element={<PaidCourseDetailsPage />} />
-              <Route path="/student/learn/:courseId" element={<CourseLearnPage />} />
-              <Route path="/student/exercises" element={<ExercisesPage />} />
-              <Route path="/student/projects" element={<ProjectsPage />} />
-              <Route path="/student/progress" element={<ProgressPage />} />
-              <Route path="/student/achievements" element={<AchievementsPage />} />
-              <Route path="/student/discussion" element={<DiscussionPage />} />
-              <Route path="/student/notifications" element={<NotificationsPage />} />
-              <Route path="/student/profile" element={<ProfilePage />} />
-              <Route path="/student/ai-assistant" element={<AIAssistantPage />} />
-              <Route path="/student/code-editor" element={<CodeEditorPage />} />
+              <Route path="/student" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <StudentDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/settings" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <StudentSettingsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/courses" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <CoursesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/courses/:courseId" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <CourseDetailsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/paid-courses/:courseId" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <PaidCourseDetailsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/learn/:courseId" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <CourseLearnPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/exercises" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <ExercisesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/projects" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <ProjectsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/progress" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <ProgressPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/achievements" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <AchievementsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/discussion" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <DiscussionPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/notifications" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <NotificationsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/profile" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/ai-assistant" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <AIAssistantPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/student/code-editor" element={
+                <ProtectedRoute allowedRoles={['student', 'admin', 'teacher']}>
+                  <CodeEditorPage />
+                </ProtectedRoute>
+              } />
 
               {/* Teacher Routes */}
-              <Route path="/teacher" element={<TeacherDashboard />} />
-              <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
-              <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
-              <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
-              <Route path="/teacher/courses/create" element={<CreateCoursePage />} />
-              <Route path="/teacher/courses/edit/:courseId" element={<EditCoursePage />} />
-              <Route path="/teacher/exercises/create" element={<CreateExercisePage />} />
+              <Route path="/teacher" element={
+                <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <TeacherDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher/settings" element={
+                <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <TeacherSettingsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher/courses" element={
+                <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <TeacherCoursesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher/exercises" element={
+                <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <TeacherExercisesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher/courses/create" element={
+                <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <CreateCoursePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher/courses/edit/:courseId" element={
+                <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <EditCoursePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher/exercises/create" element={
+                <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <CreateExercisePage />
+                </ProtectedRoute>
+              } />
 
               {/* Admin Routes */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/settings" element={<AdminSettingsPage />} />
+              <Route path="/admin" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/settings" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminSettingsPage />
+                </ProtectedRoute>
+              } />
 
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -182,7 +181,7 @@ const CourseLearnPage = () => {
                     courseResources.map(resource => (
                       <a 
                         key={resource.id}
-                        href={resource.file_url}
+                        href={resource.url || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center p-2 rounded-md hover:bg-gray-100 transition-colors"

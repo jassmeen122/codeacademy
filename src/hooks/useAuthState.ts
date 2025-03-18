@@ -74,7 +74,6 @@ export const useAuthState = () => {
         }
       } else {
         setUser(null);
-        navigate('/auth');
       }
     });
 
@@ -82,10 +81,15 @@ export const useAuthState = () => {
   }, [navigate]);
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    setUser(null);
-    navigate('/auth');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      navigate('/auth');
+    } catch (error) {
+      console.error("Error signing out:", error);
+      throw error;
+    }
   };
 
   return {
