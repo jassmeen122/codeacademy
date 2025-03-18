@@ -24,11 +24,19 @@ export const useAIAssistant = () => {
     localStorage.setItem("ai-assistant-messages", JSON.stringify(messages));
   }, [messages]);
 
-  const sendMessage = async (userInput: string) => {
-    if (!userInput.trim() || isLoading) return;
+  const sendMessage = async (userInput: string, code?: string, language?: string) => {
+    if ((!userInput.trim() && !code?.trim()) || isLoading) return;
+
+    // Format user message including code if provided
+    let userContent = userInput;
+    if (code && language) {
+      userContent = userInput.trim() ? 
+        `${userInput}\n\n\`\`\`${language}\n${code}\n\`\`\`` : 
+        `Please help with this ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\``;
+    }
 
     // Add user message to chat
-    const userMessage: Message = { role: "user", content: userInput };
+    const userMessage: Message = { role: "user", content: userContent };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setErrorMessage(null);
@@ -46,7 +54,9 @@ export const useAIAssistant = () => {
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: { 
           prompt: userInput, 
-          messageHistory: messageHistory 
+          messageHistory: messageHistory,
+          code: code,
+          language: language
         }
       });
 

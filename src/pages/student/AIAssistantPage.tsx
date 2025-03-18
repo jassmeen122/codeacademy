@@ -2,7 +2,6 @@
 import React from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain } from "lucide-react";
 import { useAIAssistant } from "@/hooks/useAIAssistant";
 import { MessageDisplay } from "@/components/ai-assistant/MessageDisplay";
 import { InputForm } from "@/components/ai-assistant/InputForm";
