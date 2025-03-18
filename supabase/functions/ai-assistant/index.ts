@@ -20,6 +20,8 @@ serve(async (req) => {
     }
     
     const { prompt, messageHistory, code, language } = await req.json();
+    console.log("Processing request with prompt:", prompt?.substring(0, 50));
+    console.log("Message history length:", messageHistory?.length || 0);
     
     // Format system message based on whether this is code assistance
     let systemMessage;
@@ -40,7 +42,7 @@ serve(async (req) => {
       { role: "user", content: promptForAI }
     ];
 
-    console.log(`Processing ${code ? 'code assistance' : 'general'} request with prompt: "${promptForAI.substring(0, 50)}..." and ${messageHistory?.length || 0} previous messages`);
+    console.log("Calling OpenAI API...");
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -63,7 +65,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
+    console.log('OpenAI response received successfully');
     
     const assistantReply = data.choices[0].message;
 
@@ -74,7 +76,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in AI assistant function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || "Unknown error occurred" }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

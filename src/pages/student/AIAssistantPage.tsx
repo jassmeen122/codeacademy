@@ -4,10 +4,11 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Brain, SendHorizontal, UserCircle, RefreshCw, Trash } from "lucide-react";
+import { Brain, SendHorizontal, UserCircle, RefreshCw, Trash, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type Message = {
   role: "user" | "assistant";
@@ -59,6 +60,8 @@ const AIAssistantPage = () => {
         content: msg.content
       }));
 
+      console.log("Sending request to AI assistant...");
+      
       // Call Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: { 
@@ -66,6 +69,8 @@ const AIAssistantPage = () => {
           messageHistory: messageHistory 
         }
       });
+
+      console.log("Response received:", data, error);
 
       if (error) {
         console.error("Edge function error:", error);
@@ -78,6 +83,8 @@ const AIAssistantPage = () => {
           role: "assistant", 
           content: data.reply.content 
         }]);
+      } else if (data?.error) {
+        throw new Error(data.error);
       } else {
         throw new Error("Invalid response format from AI assistant");
       }
@@ -137,6 +144,19 @@ const AIAssistantPage = () => {
             </Button>
           </div>
         </div>
+
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {errorMessage}
+              <div className="mt-2 text-sm">
+                Make sure your OpenAI API key is configured correctly in Supabase Edge Function secrets.
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
         
         <Card className="h-[calc(100vh-12rem)]">
           <CardContent className="p-4 h-full flex flex-col">
@@ -179,25 +199,6 @@ const AIAssistantPage = () => {
                       <Skeleton className="h-3 w-3 rounded-full animate-pulse delay-100" />
                       <Skeleton className="h-3 w-3 rounded-full animate-pulse delay-200" />
                     </div>
-                  </div>
-                </div>
-              )}
-              {errorMessage && (
-                <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-                    <Brain className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="rounded-lg p-3 max-w-[85%] bg-red-50 text-red-600 border border-red-200">
-                    <p className="font-medium mb-1">Error</p>
-                    <p className="text-sm">{errorMessage}</p>
-                    <Button 
-                      variant="outline" 
-                      className="mt-2 bg-white text-red-600 text-xs py-1 h-auto"
-                      onClick={handleRetry}
-                    >
-                      <RefreshCw className="h-3 w-3 mr-1" />
-                      Retry Last Message
-                    </Button>
                   </div>
                 </div>
               )}
