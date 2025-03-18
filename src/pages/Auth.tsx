@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,8 @@ const Auth = () => {
     // Check if user is already logged in
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("Auth page - checking session:", session ? "exists" : "does not exist");
+      
       if (session) {
         // Fetch user role and redirect accordingly
         const { data: profile } = await supabase
@@ -38,6 +41,8 @@ const Auth = () => {
         if (profile) {
           console.log("User already authenticated, redirecting to dashboard:", profile.role);
           redirectToDashboard(profile.role);
+        } else {
+          console.log("User authenticated but no profile found");
         }
       }
     };
@@ -107,6 +112,8 @@ const Auth = () => {
         if (authConfig.session) {
           // User is automatically signed in - email verification is disabled
           toast.success("Account created successfully!");
+          console.log("Account created and signed in, session:", authConfig.session ? "exists" : "does not exist");
+          
           const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -114,11 +121,15 @@ const Auth = () => {
             .single();
 
           if (profile) {
+            console.log("Redirecting to dashboard after signup:", profile.role);
             redirectToDashboard(profile.role);
+          } else {
+            console.log("No profile found after signup");
           }
         } else {
           // Email verification is required
           toast.success("Please check your email to confirm your account!");
+          console.log("Email verification required, no automatic login");
         }
       } else {
         console.log("Attempting signin with email:", formData.email);
@@ -135,6 +146,7 @@ const Auth = () => {
         }
 
         toast.success("Successfully signed in!");
+        console.log("Sign in successful, session:", data.session ? "exists" : "does not exist");
         
         // Fetch user role and redirect accordingly
         const { data: profile, error: profileError } = await supabase
