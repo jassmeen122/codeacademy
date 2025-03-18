@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { File, Video, PresentationIcon, Trash2, ExternalLink } from "lucide-react";
+import { File, Video, PresentationIcon, Trash2, ExternalLink, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CourseResource } from "@/types/course";
@@ -22,6 +22,8 @@ export const CourseResourceItem = ({ resource, onDelete }: CourseResourceItemPro
         return <File className="h-6 w-6 text-red-500" />;
       case "video":
         return <Video className="h-6 w-6 text-blue-500" />;
+      case "youtube":
+        return <Youtube className="h-6 w-6 text-red-600" />;
       case "presentation":
         return <PresentationIcon className="h-6 w-6 text-green-500" />;
       default:
@@ -35,6 +37,8 @@ export const CourseResourceItem = ({ resource, onDelete }: CourseResourceItemPro
         return "Document PDF";
       case "video":
         return "Vidéo";
+      case "youtube":
+        return "Vidéo YouTube";
       case "presentation":
         return "Présentation";
       default:
@@ -46,13 +50,16 @@ export const CourseResourceItem = ({ resource, onDelete }: CourseResourceItemPro
     try {
       setIsDeleting(true);
       
-      // Extraire le chemin du fichier à partir de l'URL
-      const filePathMatch = resource.file_url.match(/course_materials\/([^?]+)/);
-      if (filePathMatch && filePathMatch[1]) {
-        // Supprimer le fichier du stockage
-        await supabase.storage
-          .from('course_materials')
-          .remove([filePathMatch[1]]);
+      // Si c'est une ressource stockée (pas YouTube), on supprime le fichier
+      if (resource.type !== "youtube") {
+        // Extraire le chemin du fichier à partir de l'URL
+        const filePathMatch = resource.file_url.match(/course_materials\/([^?]+)/);
+        if (filePathMatch && filePathMatch[1]) {
+          // Supprimer le fichier du stockage
+          await supabase.storage
+            .from('course_materials')
+            .remove([filePathMatch[1]]);
+        }
       }
       
       // Supprimer l'enregistrement de la base de données
@@ -65,6 +72,10 @@ export const CourseResourceItem = ({ resource, onDelete }: CourseResourceItemPro
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleOpenResource = () => {
+    window.open(resource.file_url, '_blank');
   };
 
   return (
@@ -85,10 +96,10 @@ export const CourseResourceItem = ({ resource, onDelete }: CourseResourceItemPro
               variant="outline" 
               size="sm" 
               className="flex items-center gap-1"
-              onClick={() => window.open(resource.file_url, '_blank')}
+              onClick={handleOpenResource}
             >
               <ExternalLink className="h-4 w-4" />
-              Ouvrir
+              {resource.type === "youtube" ? "Regarder" : "Ouvrir"}
             </Button>
             
             <AlertDialog>
@@ -101,7 +112,7 @@ export const CourseResourceItem = ({ resource, onDelete }: CourseResourceItemPro
                 <AlertDialogHeader>
                   <AlertDialogTitle>Supprimer cette ressource ?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Cette action est irréversible. Le fichier et ses métadonnées seront supprimés définitivement.
+                    Cette action est irréversible. {resource.type !== "youtube" ? "Le fichier et ses métadonnées seront supprimés définitivement." : "Le lien vers cette vidéo sera supprimé."}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -1,5 +1,5 @@
 
-export type CourseResourceType = "pdf" | "video" | "presentation";
+export type CourseResourceType = "pdf" | "video" | "presentation" | "youtube";
 
 export interface CourseResource {
   id: string;

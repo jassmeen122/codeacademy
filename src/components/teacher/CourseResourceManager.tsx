@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseResourceUpload } from "@/components/teacher/CourseResourceUpload";
 import { CourseResourceItem } from "@/components/teacher/CourseResourceItem";
 import { useCourseResources } from "@/hooks/useCourseResources";
-import { File, Video, PresentationIcon } from "lucide-react";
+import { File, Video, PresentationIcon, Youtube } from "lucide-react";
 import { CourseResource } from "@/types/course";
 
 interface CourseResourceManagerProps {
@@ -26,6 +26,7 @@ export const CourseResourceManager = ({ courseId }: CourseResourceManagerProps) 
         setActiveTab("documents");
         break;
       case "video":
+      case "youtube":
         setActiveTab("videos");
         break;
       case "presentation":
@@ -43,7 +44,7 @@ export const CourseResourceManager = ({ courseId }: CourseResourceManagerProps) 
   const filteredResources = {
     all: resources,
     documents: resources.filter(r => r.type === "pdf"),
-    videos: resources.filter(r => r.type === "video"),
+    videos: resources.filter(r => r.type === "video" || r.type === "youtube"),
     presentations: resources.filter(r => r.type === "presentation")
   };
 
