@@ -143,8 +143,8 @@ const CreateCoursePage = () => {
                       <SelectItem value="Programming Fundamentals">Programming Fundamentals</SelectItem>
                       <SelectItem value="Frontend Development">Frontend Development</SelectItem>
                       <SelectItem value="Backend Development">Backend Development</SelectItem>
-                      <SelectItem value="Machine Learning">Machine Learning</SelectItem>
                       <SelectItem value="Data Analysis">Data Analysis</SelectItem>
+                      <SelectItem value="Machine Learning">Machine Learning</SelectItem>
                       <SelectItem value="AI Applications">AI Applications</SelectItem>
                     </SelectContent>
                   </Select>

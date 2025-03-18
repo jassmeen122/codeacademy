@@ -11,6 +11,7 @@ export interface Exercise {
   time_limit: number | null;
   created_at: string;
   teacher_id: string;
+  updated_at: string;
   archived?: boolean;
 }
 

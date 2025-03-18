@@ -14,7 +14,8 @@ export interface CourseResource {
 
 export type ProgrammingLanguage = "JavaScript" | "Python" | "Java" | "C++" | "Ruby" | "Go" | "PHP" | "C" | "SQL";
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
-export type CoursePath = "Web Development" | "Data Science" | "Artificial Intelligence" | "Machine Learning" | "Mobile Development";
+// Update CoursePath to match what Supabase expects
+export type CoursePath = "Web Development" | "Data Science" | "Artificial Intelligence";
 // Update to match the exact values in the Supabase enum course_category
 export type CourseCategory = "Programming Fundamentals" | "Frontend Development" | "Backend Development" | "Data Analysis" | "Machine Learning" | "AI Applications";
 export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | "draft" | "published";

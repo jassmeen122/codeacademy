@@ -16,6 +16,9 @@ export const fetchExercises = async (teacherId: string): Promise<Exercise[]> => 
     
     // Transform the data to match our Exercise type with the correct status
     const exercises = (data || []).map(exercise => {
+      // Check if we have the archived field in the database record
+      const isArchived = 'archived' in exercise ? exercise.archived : false;
+      
       // Create a base exercise object with the properties from the database
       const baseExercise: Exercise = {
         id: exercise.id,
@@ -26,11 +29,12 @@ export const fetchExercises = async (teacherId: string): Promise<Exercise[]> => 
         status: exercise.status as ExerciseStatus,
         time_limit: exercise.time_limit,
         created_at: exercise.created_at,
+        updated_at: exercise.updated_at,
         teacher_id: exercise.teacher_id,
       };
       
-      // Add the archived property if the status is draft
-      if (exercise.status === 'draft' && exercise.archived === true) {
+      // Add the archived property if the status is draft and archived is true
+      if (exercise.status === 'draft' && isArchived) {
         return {
           ...baseExercise,
           status: 'archived' as ExerciseStatus, // Override the status
@@ -81,7 +85,10 @@ export const changeExerciseStatus = async (
       dbStatus = "draft";
       isArchived = true;
     } else if (status === "pending" || status === "approved" || status === "rejected" || status === "published") {
-      dbStatus = status;
+      // These are valid database statuses, ensure they match DatabaseExerciseStatus
+      if (status === "pending" || status === "approved" || status === "rejected" || status === "published") {
+        dbStatus = status;
+      }
     }
     
     const { error } = await supabase
