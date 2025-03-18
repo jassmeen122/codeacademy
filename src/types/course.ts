@@ -10,6 +10,7 @@ export type CourseCategory =
   | "Machine Learning";
 
 export type CourseResourceType = "video" | "pdf" | "presentation" | "youtube";
+export type ProgrammingLanguage = "JavaScript" | "Python" | "Java" | "C++" | "C" | "PHP" | "SQL" | "Other";
 
 export type ExerciseStatus = "draft" | "published" | "archived";
 export type DatabaseExerciseStatus = "draft" | "published" | "archived";
@@ -62,4 +63,10 @@ export interface CourseLearnResponse {
   order: number;
   created_at: string;
   updated_at: string;
+  // Adding missing properties used in CourseLearnPage.tsx
+  module_id: string;
+  module_title: string;
+  description: string;
+  video_url: string;
+  completed: boolean;
 }

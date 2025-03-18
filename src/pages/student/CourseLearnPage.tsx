@@ -31,24 +31,32 @@ const CourseLearnPage = () => {
       // In a real implementation, this would fetch actual course modules
       const mockModules: CourseLearnResponse[] = [
         {
+          id: "1",
           course_id: courseId || "",
           module_id: "module1",
           module_title: "Introduction to the Course",
           title: "Welcome to the Course",
           description: "An overview of what you'll learn in this course",
           video_url: "https://example.com/intro-video.mp4",
-          order_index: 1,
-          completed: true
+          order: 1,
+          completed: true,
+          content: "Welcome to the course content",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         },
         {
+          id: "2",
           course_id: courseId || "",
           module_id: "module2",
           module_title: "Getting Started",
           title: "Setting Up Your Environment",
           description: "Learn how to set up your development environment",
           video_url: "https://example.com/setup-video.mp4",
-          order_index: 2,
-          completed: false
+          order: 2,
+          completed: false,
+          content: "Setting up your environment content",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }
       ];
       
