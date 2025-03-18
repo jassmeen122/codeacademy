@@ -2,8 +2,7 @@
 # This is a generic configuration file for Supabase Edge Functions
 
 [functions]
-[functions.serve]
-port = 54321
+serve = { port = 54321 }
 
 [auth]
 enabled = true
