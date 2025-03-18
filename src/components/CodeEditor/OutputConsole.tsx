@@ -41,7 +41,11 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
           <pre className="whitespace-pre-wrap">{output || "Program output will appear here..."}</pre>
         </TabsContent>
         <TabsContent value="analysis" className="h-[360px] p-4 overflow-auto">
-          {analysis ? (
+          {isAnalyzing ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-pulse text-blue-400">Analyzing your code...</div>
+            </div>
+          ) : analysis ? (
             <div className="whitespace-pre-wrap">
               <div className="flex items-center gap-2 mb-2 text-blue-400">
                 <Lightbulb className="h-4 w-4" />

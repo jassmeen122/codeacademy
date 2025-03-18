@@ -29,7 +29,10 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
 
   const handleLanguageChange = (newLanguage: typeof language) => {
     setLanguage(newLanguage);
-    setCode(defaultCode[newLanguage]);
+    // Only change the code if it's currently the default for the previous language
+    if (code === defaultCode[language]) {
+      setCode(defaultCode[newLanguage]);
+    }
   };
 
   const handleRunCode = () => {

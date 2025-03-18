@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
+import { executeCode, getAICodeAssistance } from './CodeExecutionService';
 import { toast } from "sonner";
 import { ProgrammingLanguage } from './types';
 
@@ -14,56 +14,31 @@ export const useCodeExecution = () => {
   const runCode = async (code: string, language: ProgrammingLanguage) => {
     setIsRunning(true);
     setOutput("");
-    setAnalysis("");
     
     try {
-      const { data, error } = await supabase.functions.invoke('execute-code', {
-        body: {
-          language,
-          code
-        }
-      });
-
-      if (error) throw error;
-
-      setOutput(data.output || "Program executed successfully!");
+      const result = await executeCode(code, language);
+      setOutput(result.output || "Program executed successfully!");
+      toast.success("Code executed");
       
-      // If analysis was provided, set it
-      if (data.analysis) {
-        setAnalysis(data.analysis);
-        setActiveTab("analysis"); // Switch to analysis tab automatically
-        toast.success("Code executed with AI analysis");
-      } else if (data.error) {
-        // If there's an error, automatically get AI assistance
-        getAIHelp(code, language, data.output);
-      } else {
-        toast.success("Code executed successfully");
-      }
-    } catch (error) {
+      // After running code, automatically get some basic analysis
+      getAIHelp(code, language, "Analyze this code briefly.");
+    } catch (error: any) {
       console.error('Error executing code:', error);
-      setOutput('Error executing code. Please try again.');
+      setOutput(`Error executing code: ${error.message || 'Unknown error'}`);
       toast.error("Failed to execute code");
     } finally {
       setIsRunning(false);
     }
   };
 
-  const getAIHelp = async (code: string, language: ProgrammingLanguage, currentOutput: string = output) => {
+  const getAIHelp = async (code: string, language: ProgrammingLanguage, question: string = "") => {
     setIsAnalyzing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-code', {
-        body: {
-          language,
-          code,
-          output: currentOutput
-        }
-      });
-
-      if (error) throw error;
-
-      setAnalysis(data.analysis);
+      const reply = await getAICodeAssistance(code, language, question);
+      setAnalysis(reply.content);
       setActiveTab("analysis"); // Switch to analysis tab
-    } catch (error) {
+      toast.success("AI analysis complete");
+    } catch (error: any) {
       console.error('Error getting AI help:', error);
       toast.error("Failed to get AI assistance");
     } finally {

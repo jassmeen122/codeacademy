@@ -19,16 +19,28 @@ serve(async (req) => {
       throw new Error('OpenAI API key is not configured');
     }
     
-    const { prompt, messageHistory } = await req.json();
+    const { prompt, messageHistory, code, language } = await req.json();
+    
+    // Format system message based on whether this is code assistance
+    let systemMessage;
+    let promptForAI;
+    
+    if (code && language) {
+      systemMessage = "You are an expert programming teacher and code assistant. You help students understand code, fix bugs, and learn programming concepts. Be concise, clear, and give practical advice.";
+      promptForAI = `Please help me with this ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\`\n\n${prompt || "What does this code do and how can it be improved?"}`;
+    } else {
+      systemMessage = "You are a helpful programming assistant for a coding education platform. You provide clear, concise explanations about programming concepts, help debug code, and offer guidance on best practices.";
+      promptForAI = prompt;
+    }
     
     // Format messages for OpenAI
     const messages = [
-      { role: "system", content: "You are a helpful programming assistant for a coding education platform. You provide clear, concise explanations about programming concepts, help debug code, and offer guidance on best practices." },
-      ...messageHistory,
-      { role: "user", content: prompt }
+      { role: "system", content: systemMessage },
+      ...messageHistory || [],
+      { role: "user", content: promptForAI }
     ];
 
-    console.log(`Processing request with prompt: "${prompt.substring(0, 50)}..." and ${messageHistory.length} previous messages`);
+    console.log(`Processing ${code ? 'code assistance' : 'general'} request with prompt: "${promptForAI.substring(0, 50)}..." and ${messageHistory?.length || 0} previous messages`);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
