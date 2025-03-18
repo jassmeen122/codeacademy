@@ -28,6 +28,8 @@ serve(async (req) => {
       { role: "user", content: prompt }
     ];
 
+    console.log(`Processing request with prompt: "${prompt.substring(0, 50)}..." and ${messageHistory.length} previous messages`);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -42,12 +44,15 @@ serve(async (req) => {
       }),
     });
 
-    const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(data.error?.message || 'Failed to communicate with OpenAI');
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
     }
 
+    const data = await response.json();
+    console.log('OpenAI response received');
+    
     const assistantReply = data.choices[0].message;
 
     return new Response(
