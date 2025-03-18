@@ -1,39 +1,41 @@
+
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
-import { AuthPage } from '@/pages/AuthPage';
-import { IndexPage } from '@/pages/IndexPage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
+// Import des pages correctement
+import AuthPage from '@/pages/Auth';
+import IndexPage from '@/pages/Index';
+import NotFoundPage from '@/pages/NotFound';
 
 // Student Pages
-import { StudentDashboardPage } from '@/pages/student/DashboardPage';
-import { StudentCoursesPage } from '@/pages/student/CoursesPage';
+import StudentDashboard from '@/pages/StudentDashboard';
+import StudentCoursesPage from '@/pages/student/CoursesPage';
 import StudentCourseDetailsPage from '@/pages/student/CourseDetailsPage';
-import { StudentCourseLearnPage } from '@/pages/student/CourseLearnPage';
-import { StudentExercisesPage } from '@/pages/student/ExercisesPage';
-import { StudentDiscussionPage } from '@/pages/student/DiscussionPage';
-import { StudentProjectsPage } from '@/pages/student/ProjectsPage';
-import { StudentCodeEditorPage } from '@/pages/student/CodeEditorPage';
-import { StudentAIAssistantPage } from '@/pages/student/AIAssistantPage';
-import { StudentProgressPage } from '@/pages/student/ProgressPage';
-import { StudentAchievementsPage } from '@/pages/student/AchievementsPage';
-import { StudentProfilePage } from '@/pages/student/ProfilePage';
-import { StudentNotificationsPage } from '@/pages/student/NotificationsPage';
-import { StudentSettingsPage } from '@/pages/student/SettingsPage';
+import StudentCourseLearnPage from '@/pages/student/CourseLearnPage';
+import StudentExercisesPage from '@/pages/student/ExercisesPage';
+import StudentDiscussionPage from '@/pages/student/DiscussionPage';
+import StudentProjectsPage from '@/pages/student/ProjectsPage';
+import StudentCodeEditorPage from '@/pages/student/CodeEditorPage';
+import StudentAIAssistantPage from '@/pages/student/AIAssistantPage';
+import StudentProgressPage from '@/pages/student/ProgressPage';
+import StudentAchievementsPage from '@/pages/student/AchievementsPage';
+import StudentProfilePage from '@/pages/student/ProfilePage';
+import StudentNotificationsPage from '@/pages/student/NotificationsPage';
+import StudentSettingsPage from '@/pages/student/SettingsPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
 import TeacherCoursesPage from '@/pages/teacher/CoursesPage';
 import TeacherCreateCoursePage from '@/pages/teacher/CreateCoursePage';
 import TeacherEditCoursePage from '@/pages/teacher/EditCoursePage';
-import { TeacherExercisesPage } from '@/pages/teacher/ExercisesPage';
-import { TeacherCreateExercisePage } from '@/pages/teacher/CreateExercisePage';
-import { TeacherSettingsPage } from '@/pages/teacher/SettingsPage';
+import TeacherExercisesPage from '@/pages/teacher/ExercisesPage';
+import TeacherCreateExercisePage from '@/pages/teacher/CreateExercisePage';
+import TeacherSettingsPage from '@/pages/teacher/SettingsPage';
 
 // Admin Pages
-import { AdminDashboardPage } from '@/pages/admin/DashboardPage';
-import { AdminSettingsPage } from '@/pages/admin/SettingsPage';
+import AdminDashboardPage from '@/pages/AdminDashboard';
+import AdminSettingsPage from '@/pages/admin/SettingsPage';
 
 function App() {
   const isLoggedIn = false; // Replace with actual authentication check
@@ -47,7 +49,7 @@ function App() {
           <Route path="/not-found" element={<NotFoundPage />} />
 
           {/* Student Routes */}
-          <Route path="/student" element={<StudentDashboardPage />} />
+          <Route path="/student" element={<StudentDashboard />} />
           <Route path="/student/courses" element={<StudentCoursesPage />} />
           <Route path="/student/courses/:courseId/details" element={<StudentCourseDetailsPage />} />
           <Route path="/student/courses/:courseId/learn" element={<StudentCourseLearnPage />} />
