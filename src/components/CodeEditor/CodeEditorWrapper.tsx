@@ -22,6 +22,7 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
     isRunning,
     isAnalyzing,
     activeTab,
+    errorMessage,
     setActiveTab,
     runCode,
     getAIHelp
@@ -88,6 +89,7 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
             activeTab={activeTab}
             onTabChange={setActiveTab}
             isAnalyzing={isAnalyzing}
+            errorMessage={errorMessage}
           />
         </div>
       </CardContent>

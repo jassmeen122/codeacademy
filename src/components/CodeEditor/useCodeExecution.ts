@@ -10,10 +10,17 @@ export const useCodeExecution = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState<"output" | "analysis">("output");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const runCode = async (code: string, language: ProgrammingLanguage) => {
+    if (!code.trim()) {
+      toast.error("Please enter some code to execute");
+      return;
+    }
+    
     setIsRunning(true);
     setOutput("");
+    setErrorMessage(null);
     
     try {
       const result = await executeCode(code, language);
@@ -25,6 +32,7 @@ export const useCodeExecution = () => {
     } catch (error: any) {
       console.error('Error executing code:', error);
       setOutput(`Error executing code: ${error.message || 'Unknown error'}`);
+      setErrorMessage(error.message || 'Failed to execute code');
       toast.error("Failed to execute code");
     } finally {
       setIsRunning(false);
@@ -32,7 +40,14 @@ export const useCodeExecution = () => {
   };
 
   const getAIHelp = async (code: string, language: ProgrammingLanguage, question: string = "") => {
+    if (!code.trim()) {
+      toast.error("Please enter some code for analysis");
+      return;
+    }
+    
     setIsAnalyzing(true);
+    setErrorMessage(null);
+    
     try {
       const reply = await getAICodeAssistance(code, language, question);
       setAnalysis(reply.content);
@@ -40,6 +55,7 @@ export const useCodeExecution = () => {
       toast.success("AI analysis complete");
     } catch (error: any) {
       console.error('Error getting AI help:', error);
+      setErrorMessage(error.message || 'Failed to get AI assistance');
       toast.error("Failed to get AI assistance");
     } finally {
       setIsAnalyzing(false);
@@ -52,6 +68,7 @@ export const useCodeExecution = () => {
     isRunning,
     isAnalyzing,
     activeTab,
+    errorMessage,
     setActiveTab,
     runCode,
     getAIHelp

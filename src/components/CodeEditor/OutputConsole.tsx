@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bug, Lightbulb, Shield } from "lucide-react";
+import { Bug, Lightbulb, Shield, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface OutputConsoleProps {
   output: string;
@@ -9,6 +10,7 @@ interface OutputConsoleProps {
   activeTab: "output" | "analysis";
   onTabChange: (value: "output" | "analysis") => void;
   isAnalyzing: boolean;
+  errorMessage?: string | null;
 }
 
 export const OutputConsole: React.FC<OutputConsoleProps> = ({
@@ -16,7 +18,8 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
   analysis,
   activeTab,
   onTabChange,
-  isAnalyzing
+  isAnalyzing,
+  errorMessage
 }) => {
   return (
     <div className="min-h-[400px] bg-black text-white rounded-lg overflow-hidden flex flex-col">
@@ -37,6 +40,14 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
             </TabsTrigger>
           </TabsList>
         </div>
+
+        {errorMessage && (
+          <Alert variant="destructive" className="m-2 bg-red-900 border-red-800">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
+
         <TabsContent value="output" className="h-[360px] p-4 overflow-auto">
           <pre className="whitespace-pre-wrap">{output || "Program output will appear here..."}</pre>
         </TabsContent>
