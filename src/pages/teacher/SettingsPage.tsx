@@ -13,10 +13,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/hooks/useAuthState";
+import { useAuthState } from "@/hooks/useAuthState";
+import { ProfilePhotoUpload } from "@/components/ProfilePhotoUpload";
 
 export default function TeacherSettingsPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuthState();
   const [settings, setSettings] = useState({
     emailNotifications: true,
     assignmentNotifications: true,
@@ -129,6 +132,11 @@ export default function TeacherSettingsPage() {
     }
   };
 
+  const handleProfilePhotoChange = (url: string) => {
+    // This function is passed to the ProfilePhotoUpload component
+    // The database update is handled in the component itself
+  };
+
   if (!mounted) return null;
 
   return (
@@ -137,6 +145,19 @@ export default function TeacherSettingsPage() {
         <h1 className="text-3xl font-bold mb-8">Teacher Settings</h1>
 
         <div className="space-y-6">
+          {/* Profile Photo */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Photo</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <ProfilePhotoUpload 
+                user={user} 
+                onPhotoChange={handleProfilePhotoChange} 
+              />
+            </CardContent>
+          </Card>
+
           {/* Profile Settings */}
           <Card>
             <CardHeader>
