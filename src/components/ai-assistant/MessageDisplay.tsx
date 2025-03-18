@@ -2,6 +2,7 @@
 import React, { useRef, useEffect } from "react";
 import { Brain, UserCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FormattedMessage } from "./FormattedMessage";
 
 type Message = {
   role: "user" | "assistant";
@@ -40,13 +41,17 @@ export const MessageDisplay = ({ messages, isLoading }: MessageDisplayProps) => 
             </div>
           )}
           <div
-            className={`rounded-lg p-3 max-w-[85%] whitespace-pre-wrap ${
+            className={`rounded-lg p-3 max-w-[85%] ${
               message.role === "assistant"
                 ? "bg-muted"
                 : "bg-primary text-primary-foreground"
             }`}
           >
-            {message.content}
+            {message.role === "assistant" ? (
+              <FormattedMessage content={message.content} />
+            ) : (
+              <div className="whitespace-pre-wrap">{message.content}</div>
+            )}
           </div>
         </div>
       ))}
