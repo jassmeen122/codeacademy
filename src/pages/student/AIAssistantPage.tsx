@@ -1,231 +1,48 @@
 
-import { useEffect, useRef, useState } from "react";
+import React from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Brain, SendHorizontal, UserCircle, RefreshCw, Trash, AlertCircle } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
+import { Brain } from "lucide-react";
+import { useAIAssistant } from "@/hooks/useAIAssistant";
+import { MessageDisplay } from "@/components/ai-assistant/MessageDisplay";
+import { InputForm } from "@/components/ai-assistant/InputForm";
+import { ErrorDisplay } from "@/components/ai-assistant/ErrorDisplay";
+import { ChatActions } from "@/components/ai-assistant/ChatActions";
 
 const AIAssistantPage = () => {
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>(() => {
-    // Try to load messages from localStorage
-    const savedMessages = localStorage.getItem("ai-assistant-messages");
-    return savedMessages 
-      ? JSON.parse(savedMessages) 
-      : [{ role: "assistant", content: "Hi! I'm your AI programming assistant. How can I help you today?" }];
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Scroll to bottom whenever messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Save messages to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("ai-assistant-messages", JSON.stringify(messages));
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    // Add user message to chat
-    const userMessage: Message = { role: "user", content: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      // Format messages for the API (excluding the initial system message)
-      const messageHistory = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      console.log("Sending request to AI assistant...");
-      
-      // Call Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: { 
-          prompt: input, 
-          messageHistory: messageHistory 
-        }
-      });
-
-      console.log("Response received:", data, error);
-
-      if (error) {
-        console.error("Edge function error:", error);
-        throw new Error(error.message || "Failed to get a response from the AI assistant");
-      }
-
-      // Add AI response to chat
-      if (data?.reply) {
-        setMessages(prev => [...prev, { 
-          role: "assistant", 
-          content: data.reply.content 
-        }]);
-      } else if (data?.error) {
-        throw new Error(data.error);
-      } else {
-        throw new Error("Invalid response format from AI assistant");
-      }
-
-    } catch (error: any) {
-      console.error("Error calling AI assistant:", error);
-      setErrorMessage(error.message || "Failed to get a response from the AI assistant");
-      toast.error("Failed to get a response from the AI assistant. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Submit on Ctrl+Enter or Cmd+Enter
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      handleSubmit(e);
-    }
-  };
-
-  const handleClearChat = () => {
-    if (confirm("Are you sure you want to clear the chat history?")) {
-      setMessages([{ 
-        role: "assistant", 
-        content: "Chat history cleared. How can I help you today?" 
-      }]);
-      setErrorMessage(null);
-    }
-  };
-
-  const handleRetry = () => {
-    // Find the last user message
-    const lastUserMessageIndex = [...messages].reverse().findIndex(msg => msg.role === "user");
-    if (lastUserMessageIndex !== -1) {
-      const lastUserMessage = messages[messages.length - 1 - lastUserMessageIndex];
-      setInput(lastUserMessage.content);
-    }
-    // Remove the error message
-    setErrorMessage(null);
-  };
+  const {
+    messages,
+    isLoading,
+    errorMessage,
+    sendMessage,
+    clearChat,
+    retryLastMessage
+  } = useAIAssistant();
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">AI Programming Assistant</h1>
-          <div className="flex gap-2">
-            {errorMessage && (
-              <Button variant="outline" onClick={handleRetry}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleClearChat}>
-              <Trash className="h-4 w-4 mr-2" />
-              Clear Chat
-            </Button>
-          </div>
+          <ChatActions 
+            onClearChat={clearChat} 
+            onRetry={retryLastMessage} 
+            showRetry={!!errorMessage} 
+          />
         </div>
 
-        {errorMessage && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              {errorMessage}
-              <div className="mt-2 text-sm">
-                Make sure your OpenAI API key is configured correctly in Supabase Edge Function secrets.
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
+        <ErrorDisplay errorMessage={errorMessage} />
         
         <Card className="h-[calc(100vh-12rem)]">
           <CardContent className="p-4 h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex items-start gap-2 ${
-                    message.role === "assistant" ? "flex-row" : "flex-row-reverse"
-                  }`}
-                >
-                  {message.role === "assistant" ? (
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                      <Brain className="w-4 h-4 text-white" />
-                    </div>
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                      <UserCircle className="w-4 h-4 text-gray-700" />
-                    </div>
-                  )}
-                  <div
-                    className={`rounded-lg p-3 max-w-[85%] whitespace-pre-wrap ${
-                      message.role === "assistant"
-                        ? "bg-muted"
-                        : "bg-primary text-primary-foreground"
-                    }`}
-                  >
-                    {message.content}
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex items-start gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <Brain className="w-4 h-4 text-white animate-pulse" />
-                  </div>
-                  <div className="rounded-lg p-3 max-w-[85%] bg-muted">
-                    <div className="flex gap-1">
-                      <Skeleton className="h-3 w-3 rounded-full animate-pulse" />
-                      <Skeleton className="h-3 w-3 rounded-full animate-pulse delay-100" />
-                      <Skeleton className="h-3 w-3 rounded-full animate-pulse delay-200" />
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask me anything about programming..."
-                className="flex-1 min-h-[80px] resize-none"
-                disabled={isLoading}
-              />
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">
-                  Press Ctrl+Enter to send
-                </span>
-                <Button 
-                  type="submit" 
-                  disabled={isLoading}
-                >
-                  <SendHorizontal className="h-4 w-4 mr-2" />
-                  {isLoading ? "Thinking..." : "Send"}
-                </Button>
-              </div>
-            </form>
+            <MessageDisplay 
+              messages={messages} 
+              isLoading={isLoading} 
+            />
+            <InputForm 
+              onSubmit={sendMessage} 
+              isLoading={isLoading} 
+            />
           </CardContent>
         </Card>
       </div>
