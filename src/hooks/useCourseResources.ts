@@ -31,7 +31,14 @@ export const useCourseResources = (courseId: string) => {
     }
   };
 
-  const addResource = async (resource: Omit<CourseResource, 'id' | 'created_at'>) => {
+  const addResource = async (resource: {
+    title: string;
+    type: string;
+    description?: string;
+    file_url: string;
+    course_id: string;
+    order_index: number;
+  }) => {
     try {
       const { data, error } = await supabase
         .from('course_resources')
