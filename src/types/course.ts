@@ -41,6 +41,7 @@ export interface Course {
     presentations: number;
   };
   price?: number;
+  isPremium?: boolean;
 }
 
 export interface CourseLearnResponse {

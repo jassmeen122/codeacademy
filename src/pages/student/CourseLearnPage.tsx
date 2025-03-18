@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CourseLearnResponse, CourseResource } from "@/types/course";
+import { CourseLearnResponse, CourseResource, CourseResourceType } from "@/types/course";
 import { toast } from "sonner";
 import { FileText, Video, Presentation, Book, CheckCircle, Circle } from "lucide-react";
 
@@ -78,7 +78,13 @@ const CourseLearnPage = () => {
         
       if (error) throw error;
       
-      setCourseResources(data || []);
+      // Cast the type properly to match CourseResourceType
+      const typedResources = (data || []).map(resource => ({
+        ...resource,
+        type: resource.type as CourseResourceType
+      }));
+      
+      setCourseResources(typedResources);
     } catch (error) {
       console.error("Error fetching course resources:", error);
       toast.error("Failed to load course resources");

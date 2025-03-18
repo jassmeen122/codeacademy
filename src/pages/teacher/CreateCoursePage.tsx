@@ -34,14 +34,20 @@ const CreateCoursePage = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.from('courses').insert({
+      // Create a properly typed object for Supabase
+      const courseData = {
         title,
         description,
         difficulty,
         path,
         category,
         teacher_id: user?.id
-      }).select();
+      };
+      
+      const { data, error } = await supabase
+        .from('courses')
+        .insert(courseData)
+        .select();
 
       if (error) throw error;
       

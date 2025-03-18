@@ -15,13 +15,33 @@ export const fetchExercises = async (teacherId: string): Promise<Exercise[]> => 
     if (error) throw error;
     
     // Transform the data to match our Exercise type with the correct status
-    const exercises = (data || []).map(exercise => ({
-      ...exercise,
-      status: exercise.status as ExerciseStatus,
-      archived: exercise.status === 'draft' && exercise.archived === true
-    }));
+    const exercises = (data || []).map(exercise => {
+      // Create a base exercise object with the properties from the database
+      const baseExercise: Exercise = {
+        id: exercise.id,
+        title: exercise.title,
+        description: exercise.description,
+        difficulty: exercise.difficulty,
+        type: exercise.type,
+        status: exercise.status as ExerciseStatus,
+        time_limit: exercise.time_limit,
+        created_at: exercise.created_at,
+        teacher_id: exercise.teacher_id,
+      };
+      
+      // Add the archived property if the status is draft
+      if (exercise.status === 'draft' && exercise.archived === true) {
+        return {
+          ...baseExercise,
+          status: 'archived' as ExerciseStatus, // Override the status
+          archived: true
+        };
+      }
+      
+      return baseExercise;
+    });
     
-    return exercises as Exercise[];
+    return exercises;
   } catch (error: any) {
     toast.error("Failed to fetch exercises");
     console.error("Error fetching exercises:", error);
@@ -54,14 +74,14 @@ export const changeExerciseStatus = async (
   try {
     // For "archived" status, we'll handle it as "draft" in the database
     // but display it as "archived" in the UI
-    let dbStatus: DatabaseExerciseStatus;
+    let dbStatus: DatabaseExerciseStatus = "draft";
     let isArchived = false;
     
     if (status === "archived") {
       dbStatus = "draft";
       isArchived = true;
-    } else {
-      dbStatus = status as DatabaseExerciseStatus;
+    } else if (status === "pending" || status === "approved" || status === "rejected" || status === "published") {
+      dbStatus = status;
     }
     
     const { error } = await supabase
