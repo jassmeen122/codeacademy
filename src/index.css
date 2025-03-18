@@ -76,12 +76,8 @@
     @apply bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent;
   }
   
-  /* Theme transitions for smooth dark/light mode switch */
+  /* Ajout d'animations de transition pour le changement de thème */
   .theme-transition {
     @apply transition-colors duration-300 ease-in-out;
-  }
-  
-  html, body, #root, * {
-    @apply theme-transition;
   }
 }

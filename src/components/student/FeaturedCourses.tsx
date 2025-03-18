@@ -1,8 +1,10 @@
 
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, Play } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Book, Clock } from "lucide-react";
 import type { Course } from "@/types/course";
 
 interface FeaturedCoursesProps {
@@ -12,79 +14,52 @@ interface FeaturedCoursesProps {
 export const FeaturedCourses = ({ courses }: FeaturedCoursesProps) => {
   const navigate = useNavigate();
 
-  const openVideoUrl = (url: string) => {
-    window.open(url, '_blank');
-  };
-
-  const renderDifficultyBadge = (difficulty: string) => {
-    const colors = {
-      Beginner: "bg-green-100 text-green-800",
-      Intermediate: "bg-yellow-100 text-yellow-800",
-      Advanced: "bg-red-100 text-red-800"
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-md text-xs font-medium ${colors[difficulty as keyof typeof colors]}`}>
-        {difficulty}
-      </span>
-    );
-  };
-
   return (
-    <section className="mb-12">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Featured Programming Language Courses</h2>
+    <div className="mb-12">
+      <div className="flex items-center mb-6">
+        <Book className="text-primary mr-2 h-5 w-5" />
+        <h2 className="text-2xl font-bold">Featured Programming Courses</h2>
       </div>
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {courses.map((course) => (
-          <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="aspect-video bg-gray-100 relative overflow-hidden">
-              <img
-                src="/placeholder.svg"
-                alt={course.title}
-                className="object-cover w-full h-full"
+          <Card key={course.id} className="overflow-hidden transition-all hover:shadow-lg duration-300">
+            <div className="relative">
+              <img 
+                src={course.image} 
+                alt={course.title} 
+                className="w-full h-48 object-cover"
               />
-              <div className="absolute top-4 left-4">
-                {renderDifficultyBadge(course.difficulty)}
-              </div>
+              <Badge className="absolute top-4 right-4 bg-blue-500 hover:bg-blue-600">
+                {course.language}
+              </Badge>
             </div>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="line-clamp-1 text-lg">{course.title}</CardTitle>
-                <span className="text-sm font-medium text-primary">{course.language}</span>
+              <CardTitle className="line-clamp-1">{course.title}</CardTitle>
+              <div className="text-sm text-muted-foreground">
+                {course.professor.name} • {course.difficulty}
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground line-clamp-3 mb-4 text-sm">
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                 {course.description}
               </p>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <span className="inline-block px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                  {course.path}
-                </span>
+              <div className="flex items-center space-x-2 text-sm font-medium">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-primary">Estimated Time: {course.duration}</span>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-2">
+            <CardFooter>
               <Button 
-                className="w-full bg-primary hover:bg-primary/90 gap-2"
-                onClick={() => openVideoUrl(course.videoUrl || "#")}
+                className="w-full" 
+                onClick={() => navigate(`/student/courses/${course.id}/details`)}
               >
-                <Play className="h-4 w-4" />
-                Regarder la vidéo
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => navigate(`/student/courses/${course.id}`)}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Voir plus de détails
+                Get Started
               </Button>
             </CardFooter>
           </Card>
         ))}
       </div>
-    </section>
+    </div>
   );
 };

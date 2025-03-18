@@ -16,7 +16,7 @@ const programmingCourses = [
   {
     id: "python-1",
     title: "Python Programming for Beginners",
-    description: "Apprenez les bases de Python, un des langages les plus populaires pour le développement web, les scripts et l'intelligence artificielle.",
+    description: "Python is a versatile programming language, ideal for beginners. It's used in many fields such as artificial intelligence, web development, and data analysis.",
     language: "Python",
     videoUrl: "https://www.youtube.com/watch?v=rfscVS0vtbw",
     difficulty: "Beginner",
@@ -27,7 +27,7 @@ const programmingCourses = [
   {
     id: "java-1",
     title: "Java Programming Complete Course",
-    description: "Java est un langage polyvalent utilisé dans le développement d'applications d'entreprise, de sites web et plus encore.",
+    description: "Java is one of the most popular programming languages, mainly used for developing Android applications and enterprise systems.",
     language: "Java",
     videoUrl: "https://www.youtube.com/watch?v=grEKMHGYyns",
     difficulty: "Intermediate",
@@ -38,7 +38,7 @@ const programmingCourses = [
   {
     id: "javascript-1",
     title: "Modern JavaScript Development",
-    description: "JavaScript est un langage de programmation essentiel pour le développement web côté client.",
+    description: "JavaScript is a programming language used to create interactive web pages. It is essential for any web developer who wants to build dynamic websites.",
     language: "JavaScript",
     videoUrl: "https://www.youtube.com/watch?v=W6NZfCO5SIk",
     difficulty: "Intermediate",
@@ -47,42 +47,9 @@ const programmingCourses = [
     estimatedTime: "2-3 months"
   },
   {
-    id: "cpp-1",
-    title: "C++ Programming Tutorial",
-    description: "C++ est une extension du langage C, utilisé pour la programmation d'applications logicielles, de jeux et de systèmes.",
-    language: "C++",
-    videoUrl: "https://www.youtube.com/watch?v=vLnPwxZdW4Y",
-    difficulty: "Advanced",
-    path: "Artificial Intelligence",
-    category: "Programming Fundamentals",
-    estimatedTime: "3-4 months"
-  },
-  {
-    id: "c-1",
-    title: "C Programming for Beginners",
-    description: "Le langage C est à la base de nombreux autres langages de programmation et reste indispensable pour la programmation système.",
-    language: "C",
-    videoUrl: "https://www.youtube.com/watch?v=KJgsSFOSQv0",
-    difficulty: "Intermediate",
-    path: "Web Development",
-    category: "Programming Fundamentals",
-    estimatedTime: "2-3 months"
-  },
-  {
-    id: "php-1",
-    title: "PHP Web Development",
-    description: "PHP est principalement utilisé pour le développement de sites web dynamiques.",
-    language: "PHP",
-    videoUrl: "https://www.youtube.com/watch?v=OK_JCtrrv-c",
-    difficulty: "Beginner",
-    path: "Web Development",
-    category: "Backend Development",
-    estimatedTime: "1-2 months"
-  },
-  {
     id: "sql-1",
     title: "SQL Database Programming",
-    description: "SQL est un langage utilisé pour gérer et manipuler des bases de données relationnelles.",
+    description: "SQL is the standard language for managing and manipulating databases. It is crucial for developers working with relational database management systems.",
     language: "SQL",
     videoUrl: "https://www.youtube.com/watch?v=HXV3zeQKqGY",
     difficulty: "Intermediate",
@@ -158,7 +125,6 @@ const CoursesPage = () => {
         path: course.path as any,
         category: course.category as any,
         language: course.language as any,
-        videoUrl: course.videoUrl,
         professor: {
           name: "Prof. " + ["Ahmed El Amrani", "Fatima Benjelloun", "Youssef Chraibi", "Khadija Moussafir"][index % 4],
           title: "Programming Instructor"
