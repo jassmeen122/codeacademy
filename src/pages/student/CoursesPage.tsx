@@ -76,7 +76,7 @@ const CoursesPage = () => {
           difficulty: "Advanced",
           path: "Artificial Intelligence",
           category: "AI Applications",
-          language: "Python" as any,
+          language: "Python",
           professor: {
             name: "Dr. Sarah Chen",
             title: "AI Research Scientist"
@@ -99,7 +99,7 @@ const CoursesPage = () => {
           difficulty: "Intermediate",
           path: "Artificial Intelligence",
           category: "AI Applications",
-          language: "Python" as any,
+          language: "Python",
           professor: {
             name: "Prof. Michael Johnson",
             title: "NLP Specialist"
@@ -122,7 +122,7 @@ const CoursesPage = () => {
           difficulty: "Advanced",
           path: "Artificial Intelligence",
           category: "AI Applications",
-          language: "Python" as any,
+          language: "Python",
           professor: {
             name: "Dr. Emily Wong",
             title: "Computer Vision Expert"

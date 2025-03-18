@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, UserPlus, Edit, Trash2, RefreshCw, BookOpen, GraduationCap, Users } from "lucide-react";
 import type { UserProfile } from "@/hooks/useAuthState";
-import type { Course } from "@/types/course";
+import type { Course, ProgrammingLanguage } from "@/types/course";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
         duration: "8 weeks",
         students: 0,
         image: "/placeholder.svg",
-        language: "JavaScript",
+        language: "JavaScript" as ProgrammingLanguage,
         materials: {
           videos: 0,
           pdfs: 0,

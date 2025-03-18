@@ -45,6 +45,8 @@ export interface Course {
     pdfs?: number;
     presentations?: number;
   };
+  isPremium?: boolean;
+  price?: number;
 }
 
 export interface CourseResource {
