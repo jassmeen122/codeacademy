@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/hooks/useAuthState";
 import { toast } from "sonner";
-import { Camera, Upload, Trash2, User } from "lucide-react";
+import { Camera, Trash2, User } from "lucide-react";
 
 interface ProfilePhotoUploadProps {
   user: UserProfile | null;
@@ -28,20 +28,6 @@ export const ProfilePhotoUpload = ({ user, onPhotoChange }: ProfilePhotoUploadPr
       const file = event.target.files[0];
       const fileExt = file.name.split(".").pop();
       const filePath = `${user?.id}.${fileExt}`;
-
-      // Check if the storage bucket exists
-      const { data: bucketData, error: bucketError } = await supabase.storage.getBucket("avatars");
-      
-      if (bucketError && bucketError.message.includes("not found")) {
-        // Create bucket if it doesn't exist
-        const { error: createBucketError } = await supabase.storage.createBucket("avatars", {
-          public: true
-        });
-        
-        if (createBucketError) {
-          throw createBucketError;
-        }
-      }
 
       // Upload file to storage
       const { error: uploadError } = await supabase.storage
