@@ -19,7 +19,8 @@ export type CoursePath = "Web Development" | "Data Science" | "Artificial Intell
 // Update to match the exact values in the Supabase enum course_category
 export type CourseCategory = "Programming Fundamentals" | "Frontend Development" | "Backend Development" | "Data Analysis" | "Machine Learning" | "AI Applications";
 export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | "draft" | "published";
-export type DatabaseExerciseStatus = "pending" | "approved" | "rejected" | "draft" | "published";
+// Update to match the exact values in the Supabase database
+export type DatabaseExerciseStatus = "draft" | "published";
 
 export interface Course {
   id: string;

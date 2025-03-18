@@ -84,11 +84,12 @@ export const changeExerciseStatus = async (
     if (status === "archived") {
       dbStatus = "draft";
       isArchived = true;
-    } else if (status === "pending" || status === "approved" || status === "rejected" || status === "published") {
-      // These are valid database statuses, ensure they match DatabaseExerciseStatus
-      if (status === "pending" || status === "approved" || status === "rejected" || status === "published") {
-        dbStatus = status;
-      }
+    } else if (status === "published") {
+      dbStatus = "published";
+    } else {
+      // For any other status, we'll default to draft
+      // Since the database only accepts "draft" or "published"
+      dbStatus = "draft";
     }
     
     const { error } = await supabase
