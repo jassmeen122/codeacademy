@@ -1,88 +1,104 @@
 
-import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Import des pages correctement
-import AuthPage from '@/pages/Auth';
-import IndexPage from '@/pages/Index';
-import NotFoundPage from '@/pages/NotFound';
+import Navigation from "./components/Navigation";
+import { Toaster } from "sonner";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
+import StudentDashboard from "./pages/StudentDashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 // Student Pages
-import StudentDashboard from '@/pages/StudentDashboard';
-import StudentCoursesPage from '@/pages/student/CoursesPage';
-import StudentCourseDetailsPage from '@/pages/student/CourseDetailsPage';
-import StudentCourseLearnPage from '@/pages/student/CourseLearnPage';
-import StudentExercisesPage from '@/pages/student/ExercisesPage';
-import StudentDiscussionPage from '@/pages/student/DiscussionPage';
-import StudentProjectsPage from '@/pages/student/ProjectsPage';
-import StudentCodeEditorPage from '@/pages/student/CodeEditorPage';
-import StudentAIAssistantPage from '@/pages/student/AIAssistantPage';
-import StudentProgressPage from '@/pages/student/ProgressPage';
-import StudentAchievementsPage from '@/pages/student/AchievementsPage';
-import StudentProfilePage from '@/pages/student/ProfilePage';
-import StudentNotificationsPage from '@/pages/student/NotificationsPage';
-import StudentSettingsPage from '@/pages/student/SettingsPage';
+import StudentSettingsPage from "./pages/student/SettingsPage";
+import CoursesPage from "./pages/student/CoursesPage";
+import CourseDetailsPage from "./pages/student/CourseDetailsPage";
+import PaidCourseDetailsPage from "./pages/student/PaidCourseDetailsPage";
+import CourseLearnPage from "./pages/student/CourseLearnPage";
+import ExercisesPage from "./pages/student/ExercisesPage";
+import ProjectsPage from "./pages/student/ProjectsPage";
+import ProgressPage from "./pages/student/ProgressPage";
+import AchievementsPage from "./pages/student/AchievementsPage";
+import DiscussionPage from "./pages/student/DiscussionPage";
+import NotificationsPage from "./pages/student/NotificationsPage";
+import ProfilePage from "./pages/student/ProfilePage";
+import AIAssistantPage from "./pages/student/AIAssistantPage";
+import CodeEditorPage from "./pages/student/CodeEditorPage";
 
 // Teacher Pages
-import TeacherDashboardPage from '@/pages/TeacherDashboard';
-import TeacherCoursesPage from '@/pages/teacher/CoursesPage';
-import TeacherCreateCoursePage from '@/pages/teacher/CreateCoursePage';
-import TeacherEditCoursePage from '@/pages/teacher/EditCoursePage';
-import TeacherExercisesPage from '@/pages/teacher/ExercisesPage';
-import TeacherCreateExercisePage from '@/pages/teacher/CreateExercisePage';
-import TeacherSettingsPage from '@/pages/teacher/SettingsPage';
+import TeacherCoursesPage from "./pages/teacher/CoursesPage";
+import TeacherExercisesPage from "./pages/teacher/ExercisesPage";
+import CreateCoursePage from "./pages/teacher/CreateCoursePage";
+import EditCoursePage from "./pages/teacher/EditCoursePage";
+import CreateExercisePage from "./pages/teacher/CreateExercisePage";
+import TeacherSettingsPage from "./pages/teacher/SettingsPage";
 
 // Admin Pages
-import AdminDashboardPage from '@/pages/AdminDashboard';
-import AdminSettingsPage from '@/pages/admin/SettingsPage';
+import AdminSettingsPage from "./pages/admin/SettingsPage";
 
-function App() {
-  const isLoggedIn = false; // Replace with actual authentication check
+// Create a new query client instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
+const App = () => {
   return (
-    <Router>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          <Route path="/" element={<IndexPage />} />
-          <Route path="/auth/*" element={<AuthPage />} />
-          <Route path="/not-found" element={<NotFoundPage />} />
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Navigation />
+          <main className="pt-16 min-h-screen">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
 
-          {/* Student Routes */}
-          <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/student/courses" element={<StudentCoursesPage />} />
-          <Route path="/student/courses/:courseId/details" element={<StudentCourseDetailsPage />} />
-          <Route path="/student/courses/:courseId/learn" element={<StudentCourseLearnPage />} />
-          <Route path="/student/exercises" element={<StudentExercisesPage />} />
-          <Route path="/student/discussion" element={<StudentDiscussionPage />} />
-          <Route path="/student/projects" element={<StudentProjectsPage />} />
-          <Route path="/student/editor" element={<StudentCodeEditorPage />} />
-          <Route path="/student/ai-assistant" element={<StudentAIAssistantPage />} />
-          <Route path="/student/progress" element={<StudentProgressPage />} />
-          <Route path="/student/achievements" element={<StudentAchievementsPage />} />
-          <Route path="/student/profile" element={<StudentProfilePage />} />
-          <Route path="/student/notifications" element={<StudentNotificationsPage />} />
-          <Route path="/student/settings" element={<StudentSettingsPage />} />
+              {/* Student Routes */}
+              <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/student/settings" element={<StudentSettingsPage />} />
+              <Route path="/student/courses" element={<CoursesPage />} />
+              <Route path="/student/courses/:courseId" element={<CourseDetailsPage />} />
+              <Route path="/student/paid-courses/:courseId" element={<PaidCourseDetailsPage />} />
+              <Route path="/student/learn/:courseId" element={<CourseLearnPage />} />
+              <Route path="/student/exercises" element={<ExercisesPage />} />
+              <Route path="/student/projects" element={<ProjectsPage />} />
+              <Route path="/student/progress" element={<ProgressPage />} />
+              <Route path="/student/achievements" element={<AchievementsPage />} />
+              <Route path="/student/discussion" element={<DiscussionPage />} />
+              <Route path="/student/notifications" element={<NotificationsPage />} />
+              <Route path="/student/profile" element={<ProfilePage />} />
+              <Route path="/student/ai-assistant" element={<AIAssistantPage />} />
+              <Route path="/student/code-editor" element={<CodeEditorPage />} />
 
-          {/* Teacher Routes */}
-          <Route path="/teacher" element={<TeacherDashboardPage />} />
-          <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
-          <Route path="/teacher/courses/create" element={<TeacherCreateCoursePage />} />
-          <Route path="/teacher/courses/edit/:courseId" element={<TeacherEditCoursePage />} />
-          <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
-          <Route path="/teacher/exercises/create" element={<TeacherCreateExercisePage />} />
-          <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
+              {/* Teacher Routes */}
+              <Route path="/teacher" element={<TeacherDashboard />} />
+              <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
+              <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
+              <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
+              <Route path="/teacher/courses/create" element={<CreateCoursePage />} />
+              <Route path="/teacher/courses/edit/:courseId" element={<EditCoursePage />} />
+              <Route path="/teacher/exercises/create" element={<CreateExercisePage />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/admin/settings" element={<AdminSettingsPage />} />
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/settings" element={<AdminSettingsPage />} />
 
-          <Route path="*" element={<Navigate to="/not-found" replace />} />
-        </Routes>
-      </Suspense>
-      <Toaster />
-    </Router>
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          <Toaster position="top-right" closeButton />
+        </Router>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
-}
+};
 
 export default App;
