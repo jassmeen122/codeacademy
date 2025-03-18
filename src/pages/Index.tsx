@@ -6,7 +6,25 @@ import CourseCard from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
 import { CourseFilters } from "@/components/courses/CourseFilters";
 import type { Course, CoursePath, CourseLevel } from "@/types/course";
-import { School, GraduationCap, Database, ArrowRight, MapPin } from "lucide-react";
+import { 
+  School, 
+  GraduationCap, 
+  Database, 
+  ArrowRight, 
+  MapPin, 
+  Code, 
+  BookOpen, 
+  User,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Github
+} from "lucide-react";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { CoursePreview } from "@/components/landing/CoursePreview";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { Footer } from "@/components/landing/Footer";
 
 const allCourses: Course[] = [
   {
@@ -341,7 +359,7 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navigation />
       
       {/* Hero Section */}
@@ -349,12 +367,12 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center animate-fadeIn">
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-8 text-foreground">
-              Learn to Code with
-              <span className="text-primary"> Confidence</span>
+              Apprenez à coder avec les 
+              <span className="text-primary"> meilleurs cours en ligne</span>
             </h1>
             <p className="text-xl text-gray-600 mb-12">
-              Join millions of learners and start coding with our structured learning paths.
-              Master in-demand programming skills through hands-on practice.
+              Explorez les langages populaires et commencez votre parcours d'apprentissage dès aujourd'hui.
+              Maîtrisez les compétences en programmation les plus demandées par la pratique.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {session ? (
@@ -368,7 +386,7 @@ const Index = () => {
                   className="text-lg px-8 bg-primary hover:bg-primary/90"
                   onClick={() => navigate("/auth")}
                 >
-                  Get Started Now
+                  Commencer à Apprendre
                 </Button>
               )}
             </div>
@@ -376,14 +394,20 @@ const Index = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <HowItWorks />
+
+      {/* Course Preview Section */}
+      <CoursePreview />
+
       {/* Courses Section */}
-      <section className="py-16">
+      <section className="py-16 bg-gray-50/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Featured Courses</h2>
+            <h2 className="text-3xl font-bold mb-4">Nos Cours Populaires</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Start your journey with our most popular programming courses,
-              taught by experienced professors from leading institutions.
+              Commencez votre parcours avec nos cours de programmation les plus populaires,
+              enseignés par des professeurs expérimentés d'institutions renommées.
             </p>
           </div>
           
@@ -408,27 +432,16 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-24 bg-blue-50/50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Why Choose CodeAcademy</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Experience a new way of learning with our cutting-edge platform features
-              designed to accelerate your growth in programming.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature cards will be added in next iteration */}
-          </div>
-        </div>
-      </section>
+      {/* Testimonials Section */}
+      <Testimonials />
+
+      {/* Footer */}
+      <Footer />
       
-      {/* Bouton d'accès rapide */}
+      {/* Quick Access Button */}
       {renderQuickAccessButton()}
     </div>
   );
 };
 
 export default Index;
-
