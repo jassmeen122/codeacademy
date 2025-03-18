@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Menu, X, Moon, Sun, User } from "lucide-react";
+import { Menu, X, Moon, Sun, User, BookOpen, TrendingUp, Settings, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -16,7 +16,6 @@ const Navigation = () => {
   const { theme, setTheme } = useTheme();
   const { session, user, loading, handleSignOut } = useAuthState();
 
-  // Correction: useEffect au lieu de useState pour le montage
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -78,18 +77,48 @@ const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             {!loading && session && (
-              <Button
-                variant="outline"
-                className="gap-2 border-primary text-primary hover:bg-primary/10"
-                onClick={goToUserDashboard}
-              >
-                <User className="h-4 w-4" />
-                Mon Profil
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  className="gap-2"
+                  onClick={() => navigate('/student/profile')}
+                >
+                  <User className="h-4 w-4" />
+                  Mon Profil
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="gap-2"
+                  onClick={() => navigate('/student/courses')}
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Voir les Cours
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="gap-2"
+                  onClick={() => navigate('/student/progress')}
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  Mes Progrès
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  className="gap-2"
+                  onClick={() => navigate('/student/settings')}
+                >
+                  <Settings className="h-4 w-4" />
+                  Paramètres
+                </Button>
+              </>
             )}
-            {!loading && user && (user.role === 'teacher' || user.role === 'admin') && (
+            
+            {!loading && session && (user?.role === 'teacher' || user?.role === 'admin') && (
               <Button
                 variant="outline"
                 className="border-primary text-primary hover:bg-primary/10"
@@ -98,6 +127,7 @@ const Navigation = () => {
                 {user.role === 'admin' ? 'Admin Portal' : 'Teacher Portal'}
               </Button>
             )}
+            
             {!loading && session && (
               <div className="flex items-center gap-4">
                 <div className="text-right">
@@ -107,12 +137,19 @@ const Navigation = () => {
                 <NotificationBell userId={session.user.id} />
               </div>
             )}
+            
             {!loading && (
               <Button
-                variant="default"
+                variant={session ? "outline" : "default"}
                 onClick={handleAuth}
+                className="gap-2"
               >
-                {session ? "Sign Out" : "Sign In"}
+                {session ? (
+                  <>
+                    <LogOut className="h-4 w-4" />
+                    Déconnexion
+                  </>
+                ) : "Se Connecter"}
               </Button>
             )}
           </div>
