@@ -36,25 +36,31 @@ const Auth = () => {
           .single();
 
         if (profile) {
-          switch (profile.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'teacher':
-              navigate('/teacher');
-              break;
-            case 'student':
-              navigate('/student');
-              break;
-            default:
-              navigate('/');
-          }
+          console.log("User already authenticated, redirecting to dashboard:", profile.role);
+          redirectToDashboard(profile.role);
         }
       }
     };
 
     checkAuth();
   }, [navigate]);
+
+  const redirectToDashboard = (role: string) => {
+    console.log("Redirecting to dashboard for role:", role);
+    switch (role) {
+      case 'admin':
+        navigate('/admin');
+        break;
+      case 'teacher':
+        navigate('/teacher');
+        break;
+      case 'student':
+        navigate('/student');
+        break;
+      default:
+        navigate('/');
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,19 +114,7 @@ const Auth = () => {
             .single();
 
           if (profile) {
-            switch (profile.role) {
-              case 'admin':
-                navigate('/admin');
-                break;
-              case 'teacher':
-                navigate('/teacher');
-                break;
-              case 'student':
-                navigate('/student');
-                break;
-              default:
-                navigate('/');
-            }
+            redirectToDashboard(profile.role);
           }
         } else {
           // Email verification is required
@@ -129,14 +123,14 @@ const Auth = () => {
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         
         if (signInError) throw signInError;
 
-        if (!user) {
+        if (!data.user) {
           throw new Error("Invalid email or password");
         }
 
@@ -146,25 +140,20 @@ const Auth = () => {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', user.id)
+          .eq('id', data.user.id)
           .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          throw profileError;
+        }
 
         if (profile) {
-          switch (profile.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'teacher':
-              navigate('/teacher');
-              break;
-            case 'student':
-              navigate('/student');
-              break;
-            default:
-              navigate('/');
-          }
+          console.log("Login successful, redirecting to dashboard:", profile.role);
+          redirectToDashboard(profile.role);
+        } else {
+          console.error("No profile found for user");
+          navigate('/');
         }
       }
     } catch (error: any) {

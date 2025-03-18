@@ -23,8 +23,10 @@ export const useAuthState = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("useAuthState: Initializing auth state");
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log("useAuthState: Initial session", session ? "exists" : "doesn't exist");
       setSession(session);
       
       if (session?.user) {
@@ -39,6 +41,7 @@ export const useAuthState = () => {
           if (error) {
             console.error("Error fetching user profile:", error);
           } else if (profile) {
+            console.log("useAuthState: User profile fetched", profile.role);
             setUser(profile as UserProfile);
           }
         } catch (error) {
@@ -53,6 +56,7 @@ export const useAuthState = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("useAuthState: Auth state changed", _event);
       setSession(session);
       
       if (session?.user) {
@@ -67,6 +71,7 @@ export const useAuthState = () => {
           if (error) {
             console.error("Error fetching user profile:", error);
           } else if (profile) {
+            console.log("useAuthState: User profile updated on auth change", profile.role);
             setUser(profile as UserProfile);
           }
         } catch (error) {
@@ -82,6 +87,7 @@ export const useAuthState = () => {
 
   const handleSignOut = async () => {
     try {
+      console.log("useAuthState: Signing out");
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       setUser(null);
