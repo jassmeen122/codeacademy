@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Brain, SendHorizontal, UserCircle } from "lucide-react";
+import { Brain, SendHorizontal, UserCircle, RefreshCw, Trash } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ const AIAssistantPage = () => {
       : [{ role: "assistant", content: "Hi! I'm your AI programming assistant. How can I help you today?" }];
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom whenever messages change
@@ -49,6 +50,7 @@ const AIAssistantPage = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
       // Format messages for the API (excluding the initial system message)
@@ -80,8 +82,9 @@ const AIAssistantPage = () => {
         throw new Error("Invalid response format from AI assistant");
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error calling AI assistant:", error);
+      setErrorMessage(error.message || "Failed to get a response from the AI assistant");
       toast.error("Failed to get a response from the AI assistant. Please try again.");
     } finally {
       setIsLoading(false);
@@ -101,7 +104,19 @@ const AIAssistantPage = () => {
         role: "assistant", 
         content: "Chat history cleared. How can I help you today?" 
       }]);
+      setErrorMessage(null);
     }
+  };
+
+  const handleRetry = () => {
+    // Find the last user message
+    const lastUserMessageIndex = [...messages].reverse().findIndex(msg => msg.role === "user");
+    if (lastUserMessageIndex !== -1) {
+      const lastUserMessage = messages[messages.length - 1 - lastUserMessageIndex];
+      setInput(lastUserMessage.content);
+    }
+    // Remove the error message
+    setErrorMessage(null);
   };
 
   return (
@@ -109,9 +124,18 @@ const AIAssistantPage = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">AI Programming Assistant</h1>
-          <Button variant="outline" onClick={handleClearChat}>
-            Clear Chat
-          </Button>
+          <div className="flex gap-2">
+            {errorMessage && (
+              <Button variant="outline" onClick={handleRetry}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            )}
+            <Button variant="outline" onClick={handleClearChat}>
+              <Trash className="h-4 w-4 mr-2" />
+              Clear Chat
+            </Button>
+          </div>
         </div>
         
         <Card className="h-[calc(100vh-12rem)]">
@@ -155,6 +179,25 @@ const AIAssistantPage = () => {
                       <Skeleton className="h-3 w-3 rounded-full animate-pulse delay-100" />
                       <Skeleton className="h-3 w-3 rounded-full animate-pulse delay-200" />
                     </div>
+                  </div>
+                </div>
+              )}
+              {errorMessage && (
+                <div className="flex items-start gap-2">
+                  <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                    <Brain className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="rounded-lg p-3 max-w-[85%] bg-red-50 text-red-600 border border-red-200">
+                    <p className="font-medium mb-1">Error</p>
+                    <p className="text-sm">{errorMessage}</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-2 bg-white text-red-600 text-xs py-1 h-auto"
+                      onClick={handleRetry}
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Retry Last Message
+                    </Button>
                   </div>
                 </div>
               )}

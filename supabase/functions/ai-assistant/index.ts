@@ -36,7 +36,7 @@ serve(async (req) => {
     // Format messages for OpenAI
     const messages = [
       { role: "system", content: systemMessage },
-      ...messageHistory || [],
+      ...(messageHistory || []),
       { role: "user", content: promptForAI }
     ];
 
