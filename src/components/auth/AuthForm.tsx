@@ -124,6 +124,7 @@ const AuthForm = ({ isSignUp, onSuccessfulAuth }: AuthFormProps) => {
           onSuccessfulAuth(profile.role);
         } else {
           console.error("No profile found for user");
+          throw new Error("User profile not found");
         }
       }
     } catch (error: any) {
