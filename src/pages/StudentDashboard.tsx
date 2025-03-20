@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Book, Code, FileCode, Terminal } from "lucide-react";
+import { Book, Code, FileCode, Terminal, Youtube } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -109,7 +109,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <NavigationCard
             icon={Book}
             title="Resume Learning"
@@ -122,6 +122,14 @@ const StudentDashboard = () => {
             title="Daily Challenge"
             description="Complete today's coding challenge to earn points."
             buttonText="Start Challenge"
+          />
+
+          <NavigationCard
+            icon={Youtube}
+            title="Free Courses"
+            description="Access our free programming language courses with YouTube videos."
+            buttonText="Browse Free Courses"
+            onClick={() => navigate("/student/free-courses")}
           />
 
           <NavigationCard

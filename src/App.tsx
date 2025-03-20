@@ -23,6 +23,7 @@ import StudentAchievementsPage from '@/pages/student/AchievementsPage';
 import StudentProfilePage from '@/pages/student/ProfilePage';
 import StudentNotificationsPage from '@/pages/student/NotificationsPage';
 import StudentSettingsPage from '@/pages/student/SettingsPage';
+import FreeCoursesDashboard from '@/pages/student/FreeCoursesDashboard';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -51,6 +52,7 @@ function App() {
           {/* Student Routes */}
           <Route path="/student" element={<StudentDashboard />} />
           <Route path="/student/courses" element={<StudentCoursesPage />} />
+          <Route path="/student/free-courses" element={<FreeCoursesDashboard />} />
           <Route path="/student/courses/:courseId/details" element={<StudentCourseDetailsPage />} />
           <Route path="/student/courses/:courseId/learn" element={<StudentCourseLearnPage />} />
           <Route path="/student/exercises" element={<StudentExercisesPage />} />
