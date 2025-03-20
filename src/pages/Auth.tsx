@@ -2,16 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { UserAvatar } from "@/components/UserAvatar";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -27,35 +19,51 @@ const Auth = () => {
   useEffect(() => {
     // Check if user is already logged in
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Fetch user role and redirect accordingly
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          console.log("User is already logged in:", session.user.id);
+          
+          // Fetch user role and redirect accordingly
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile) {
-          switch (profile.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'teacher':
-              navigate('/teacher');
-              break;
-            case 'student':
-              navigate('/student');
-              break;
-            default:
-              navigate('/');
+          if (error) {
+            console.error("Error fetching profile:", error);
+            return;
+          }
+
+          if (profile) {
+            console.log("User role:", profile.role);
+            redirectBasedOnRole(profile.role);
           }
         }
+      } catch (error) {
+        console.error("Error checking auth:", error);
       }
     };
 
     checkAuth();
   }, [navigate]);
+
+  const redirectBasedOnRole = (role: string) => {
+    switch (role) {
+      case 'admin':
+        navigate('/admin');
+        break;
+      case 'teacher':
+        navigate('/teacher');
+        break;
+      case 'student':
+        navigate('/student');
+        break;
+      default:
+        navigate('/');
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,19 +117,7 @@ const Auth = () => {
             .single();
 
           if (profile) {
-            switch (profile.role) {
-              case 'admin':
-                navigate('/admin');
-                break;
-              case 'teacher':
-                navigate('/teacher');
-                break;
-              case 'student':
-                navigate('/student');
-                break;
-              default:
-                navigate('/');
-            }
+            redirectBasedOnRole(profile.role);
           }
         } else {
           // Email verification is required
@@ -130,42 +126,35 @@ const Auth = () => {
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
         
         if (signInError) throw signInError;
 
-        if (!user) {
+        if (!data.user) {
           throw new Error("Invalid email or password");
         }
 
         toast.success("Successfully signed in!");
+        console.log("Sign in successful, user:", data.user.id);
         
         // Fetch user role and redirect accordingly
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', user.id)
+          .eq('id', data.user.id)
           .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          throw profileError;
+        }
 
         if (profile) {
-          switch (profile.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'teacher':
-              navigate('/teacher');
-              break;
-            case 'student':
-              navigate('/student');
-              break;
-            default:
-              navigate('/');
-          }
+          console.log("Redirecting user with role:", profile.role);
+          redirectBasedOnRole(profile.role);
         }
       }
     } catch (error: any) {
@@ -177,91 +166,87 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Logo/Brand Section */}
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-primary mb-2">Code Academy</h1>
-        <p className="text-gray-600">Your Journey to Programming Excellence</p>
+        <p className="text-gray-600 dark:text-gray-300">Your Journey to Programming Excellence</p>
       </div>
 
-      <div className="w-full max-w-md p-8 glass-card rounded-xl border border-blue-100 shadow-lg">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          {isSignUp ? "Create an Account" : "Welcome"}
+      <div className="w-full max-w-md p-8 glass-card rounded-xl border border-blue-100 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
+          {isSignUp ? "Create an Account" : "Welcome Back"}
         </h2>
+        
         <form onSubmit={handleAuth} className="space-y-4">
           {isSignUp && (
             <>
               <div>
-                <label htmlFor="fullName" className="text-sm font-medium text-gray-700">
+                <label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Full Name
                 </label>
-                <Input
+                <input
                   id="fullName"
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   required={isSignUp}
-                  className="mt-1"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   placeholder="Enter your full name"
                 />
               </div>
               <div>
-                <label htmlFor="role" className="text-sm font-medium text-gray-700">
+                <label htmlFor="role" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   Role
                 </label>
-                <Select
+                <select
+                  id="role"
                   value={formData.role}
-                  onValueChange={(value: "admin" | "teacher" | "student") =>
-                    setFormData({ ...formData, role: value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as "admin" | "teacher" | "student" })}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
-                  <SelectTrigger className="w-full mt-1">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student/Learner</SelectItem>
-                    <SelectItem value="teacher">Teacher/Professor</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="student">Student/Learner</option>
+                  <option value="teacher">Teacher/Professor</option>
+                  <option value="admin">Administrator</option>
+                </select>
               </div>
             </>
           )}
           <div>
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Email
             </label>
-            <Input
+            <input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
-              className="mt-1"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Enter your email"
             />
           </div>
           <div>
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Password
             </label>
-            <Input
+            <input
               id="password"
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
-              className="mt-1"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Enter your password"
             />
           </div>
-          <Button 
+          <button 
             type="submit" 
-            className="w-full bg-primary hover:bg-primary/90" 
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" 
             disabled={isLoading}
           >
             {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
-          </Button>
+          </button>
         </form>
         <div className="mt-6 text-center">
           <button
