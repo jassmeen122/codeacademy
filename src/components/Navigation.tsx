@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Menu, X, Moon, Sun, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,10 +16,9 @@ const Navigation = () => {
   const { theme, setTheme } = useTheme();
   const { session, user, loading, handleSignOut } = useAuthState();
 
-  // Correction: useEffect au lieu de useState pour le montage
-  useEffect(() => {
+  useState(() => {
     setMounted(true);
-  }, []);
+  });
 
   const handleAuth = () => {
     if (session) {

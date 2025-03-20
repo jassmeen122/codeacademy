@@ -1,12 +1,12 @@
 
 import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/hooks/useAuthState";
 import { toast } from "sonner";
-import { Camera, Trash2 } from "lucide-react";
-import { UserAvatar } from "./UserAvatar";
+import { Camera, Trash2, User } from "lucide-react";
 
 interface ProfilePhotoUploadProps {
   user: UserProfile | null;
@@ -15,6 +15,7 @@ interface ProfilePhotoUploadProps {
 
 export const ProfilePhotoUpload = ({ user, onPhotoChange }: ProfilePhotoUploadProps) => {
   const [uploading, setUploading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar_url || null);
 
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -52,6 +53,7 @@ export const ProfilePhotoUpload = ({ user, onPhotoChange }: ProfilePhotoUploadPr
         throw updateError;
       }
 
+      setAvatarUrl(publicUrlData.publicUrl);
       onPhotoChange(publicUrlData.publicUrl);
       toast.success("Profile photo updated successfully!");
     } catch (error: any) {
@@ -76,6 +78,7 @@ export const ProfilePhotoUpload = ({ user, onPhotoChange }: ProfilePhotoUploadPr
         throw updateError;
       }
 
+      setAvatarUrl(null);
       onPhotoChange("");
       toast.success("Profile photo removed successfully!");
     } catch (error: any) {
@@ -86,19 +89,25 @@ export const ProfilePhotoUpload = ({ user, onPhotoChange }: ProfilePhotoUploadPr
     }
   };
 
+  const getInitials = (name: string | null) => {
+    if (!name) return "U";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase();
+  };
+
   return (
     <div className="flex flex-col items-center space-y-4">
-      <UserAvatar 
-        user={user} 
-        size="xl" 
-        className="border-2 border-primary"
-      />
+      <Avatar className="h-32 w-32 border-2 border-primary">
+        <AvatarImage src={avatarUrl || ""} alt={user?.full_name || "Profile"} />
+        <AvatarFallback className="bg-primary text-primary-foreground text-4xl">
+          {getInitials(user?.full_name)}
+        </AvatarFallback>
+      </Avatar>
       
       <div className="flex flex-col space-y-2">
         <Label htmlFor="avatar" className="cursor-pointer">
           <div className="flex items-center justify-center p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
             <Camera className="mr-2 h-4 w-4" />
-            <span>{user?.avatar_url ? "Change Photo" : "Upload Photo"}</span>
+            <span>{avatarUrl ? "Change Photo" : "Upload Photo"}</span>
           </div>
           <input
             id="avatar"
@@ -110,7 +119,7 @@ export const ProfilePhotoUpload = ({ user, onPhotoChange }: ProfilePhotoUploadPr
           />
         </Label>
         
-        {user?.avatar_url && (
+        {avatarUrl && (
           <Button 
             variant="destructive" 
             size="sm" 
