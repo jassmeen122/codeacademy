@@ -4,7 +4,7 @@ import { Menu, X, Moon, Sun, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useTheme } from "./ThemeProvider";
+import { useTheme } from "next-themes";
 import { NotificationBell } from "./navigation/NotificationBell";
 import { MobileMenu } from "./navigation/MobileMenu";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -16,7 +16,7 @@ const Navigation = () => {
   const { theme, setTheme } = useTheme();
   const { session, user, loading, handleSignOut } = useAuthState();
 
-  // Fix: Change useState to useEffect
+  // Correction: useEffect au lieu de useState pour le montage
   useEffect(() => {
     setMounted(true);
   }, []);

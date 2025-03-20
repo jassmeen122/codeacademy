@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export interface UserProfile {
   id: string;
@@ -23,69 +24,86 @@ export const useAuthState = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log("Auth state changed:", event, currentSession?.user?.id);
+      setSession(currentSession);
       
-      if (session?.user) {
+      if (currentSession?.user) {
+        try {
+          // Fetch user profile on auth state change
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single();
+          
+          if (error) {
+            console.error("Error fetching user profile:", error);
+            setUser(null);
+          } else if (profile) {
+            console.log("Profile loaded:", profile.role);
+            setUser(profile as UserProfile);
+          }
+        } catch (error) {
+          console.error("Error in profile fetch:", error);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+      
+      setLoading(false);
+    });
+
+    // Then check for existing session
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      console.log("Initial session check:", currentSession?.user?.id);
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
         try {
           // Fetch user profile
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('id', currentSession.user.id)
             .single();
           
           if (error) {
             console.error("Error fetching user profile:", error);
+            setUser(null);
           } else if (profile) {
+            console.log("Initial profile loaded:", profile.role);
             setUser(profile as UserProfile);
           }
         } catch (error) {
           console.error("Error in profile fetch:", error);
+          setUser(null);
         }
       }
       
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      
-      if (session?.user) {
-        try {
-          // Fetch user profile on auth state change
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error) {
-            console.error("Error fetching user profile:", error);
-          } else if (profile) {
-            setUser(profile as UserProfile);
-          }
-        } catch (error) {
-          console.error("Error in profile fetch:", error);
-        }
-      } else {
-        setUser(null);
-        navigate('/auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      subscription.unsubscribe();
+    }
+  }, []);
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    setUser(null);
-    navigate('/auth');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      setUser(null);
+      setSession(null);
+      toast.success("Successfully signed out");
+      navigate('/auth', { replace: true });
+    } catch (error: any) {
+      console.error("Sign out error:", error);
+      toast.error(error.message || "Error signing out");
+    }
   };
 
   return {
