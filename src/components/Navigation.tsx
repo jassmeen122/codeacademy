@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { NotificationBell } from "./navigation/NotificationBell";
 import { MobileMenu } from "./navigation/MobileMenu";
 import { useAuthState } from "@/hooks/useAuthState";
+import { UserAvatar } from "./UserAvatar";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,8 +102,9 @@ const Navigation = () => {
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="font-medium">{user?.full_name || 'User'}</p>
-                  <p className="text-xs text-muted-foreground">{user?.role || 'Loading...'}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{user?.role || 'Loading...'}</p>
                 </div>
+                <UserAvatar user={user} size="md" />
                 <NotificationBell userId={session.user.id} />
               </div>
             )}
@@ -138,6 +140,7 @@ const Navigation = () => {
           onAuth={handleAuth}
           userRole={user?.role}
           onPortalClick={goToUserDashboard}
+          user={user}
         />
       </div>
     </nav>

@@ -6,7 +6,7 @@ import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { LogOut, UserCog, Mail, User } from "lucide-react";
 import { toast } from "sonner";
@@ -56,11 +56,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   };
 
-  const getInitials = (name: string | null) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -83,12 +78,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 ) : (
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16 border-2 border-primary">
-                        <AvatarImage src={user?.avatar_url || ''} alt={user?.full_name || 'User'} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                          {getInitials(user?.full_name)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar user={user} size="lg" />
                       <div>
                         <h2 className="font-bold text-xl">{user?.full_name || 'User'}</h2>
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
