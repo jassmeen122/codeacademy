@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
@@ -5,7 +6,7 @@ import Navigation from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "@/hooks/useAuthState";
-import { UserAvatar } from "@/components/UserAvatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { LogOut, UserCog, Mail, User } from "lucide-react";
 import { toast } from "sonner";
@@ -33,6 +34,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         .single();
 
       if (profile) {
+        // Redirect users to their appropriate dashboard if they're on the wrong one
         const currentPath = window.location.pathname;
         const correctPath = `/${profile.role.toLowerCase()}`;
         if (!currentPath.startsWith(correctPath)) {
@@ -54,6 +56,11 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   };
 
+  const getInitials = (name: string | null) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -61,6 +68,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex-1">
           <Navigation />
           <main className="pt-16 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+            {/* Enhanced Profile header section */}
             <div className="bg-background shadow-sm border-b border-border p-4">
               <div className="container mx-auto">
                 {loading ? (
@@ -75,7 +83,12 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 ) : (
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <UserAvatar user={user} size="lg" />
+                      <Avatar className="h-16 w-16 border-2 border-primary">
+                        <AvatarImage src={user?.avatar_url || ''} alt={user?.full_name || 'User'} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xl">
+                          {getInitials(user?.full_name)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
                         <h2 className="font-bold text-xl">{user?.full_name || 'User'}</h2>
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
