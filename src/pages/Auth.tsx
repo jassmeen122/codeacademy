@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,9 +20,9 @@ const Auth = () => {
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initial auth check:", session?.user?.id);
+        
         if (session) {
-          console.log("User is already logged in:", session.user.id);
-          
           // Fetch user role and redirect accordingly
           const { data: profile, error } = await supabase
             .from('profiles')
@@ -37,7 +36,7 @@ const Auth = () => {
           }
 
           if (profile) {
-            console.log("User role:", profile.role);
+            console.log("User already logged in with role:", profile.role);
             redirectBasedOnRole(profile.role);
           }
         }
@@ -50,18 +49,20 @@ const Auth = () => {
   }, [navigate]);
 
   const redirectBasedOnRole = (role: string) => {
+    console.log("Redirecting user with role:", role);
+    
     switch (role) {
       case 'admin':
-        navigate('/admin');
+        navigate('/admin', { replace: true });
         break;
       case 'teacher':
-        navigate('/teacher');
+        navigate('/teacher', { replace: true });
         break;
       case 'student':
-        navigate('/student');
+        navigate('/student', { replace: true });
         break;
       default:
-        navigate('/');
+        navigate('/', { replace: true });
     }
   };
 
@@ -79,14 +80,13 @@ const Auth = () => {
         if (formData.password.length < 6) {
           throw new Error("Password must be at least 6 characters long");
         }
-
+        
         console.log("Attempting signup with data:", {
           email: formData.email,
           fullName: formData.fullName,
           role: formData.role
         });
         
-        // Sign up the user
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -133,12 +133,12 @@ const Auth = () => {
         
         if (signInError) throw signInError;
 
-        if (!data.user) {
+        if (!data?.user) {
           throw new Error("Invalid email or password");
         }
 
-        toast.success("Successfully signed in!");
         console.log("Sign in successful, user:", data.user.id);
+        toast.success("Successfully signed in!");
         
         // Fetch user role and redirect accordingly
         const { data: profile, error: profileError } = await supabase
