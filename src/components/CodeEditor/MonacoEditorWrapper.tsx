@@ -7,16 +7,18 @@ interface MonacoEditorWrapperProps {
   language: ProgrammingLanguage;
   code: string;
   onChange: (value: string | undefined) => void;
+  height?: string;
 }
 
 export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({ 
   language, 
   code, 
-  onChange 
+  onChange,
+  height = "400px"
 }) => {
   return (
     <MonacoEditor
-      height="400px"
+      height={height}
       language={languageOptions[language].monacoId}
       value={code}
       onChange={(value) => onChange(value || "")}

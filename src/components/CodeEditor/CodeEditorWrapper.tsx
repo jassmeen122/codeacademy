@@ -45,11 +45,11 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-6xl mx-auto">
+    <Card className="w-full h-full mx-auto">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <CardTitle>Code Editor</CardTitle>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <LanguageSelector 
               language={language} 
               onChange={handleLanguageChange} 
@@ -58,13 +58,15 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
               onClick={handleGetAIHelp}
               variant="outline"
               disabled={isAnalyzing || !code}
+              size="sm"
             >
               <Lightbulb className="mr-2 h-4 w-4" />
-              Get AI Help
+              AI Help
             </Button>
             <Button
               onClick={handleRunCode}
               disabled={isRunning || !code}
+              size="sm"
             >
               <Play className="mr-2 h-4 w-4" />
               Run Code
@@ -73,13 +75,14 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-4 h-[calc(100vh-240px)]">
           {/* Code Editor */}
-          <div className="min-h-[400px] border rounded-lg overflow-hidden">
+          <div className="h-full border rounded-lg overflow-hidden">
             <MonacoEditorWrapper
               language={language}
               code={code}
               onChange={setCode}
+              height="100%"
             />
           </div>
           {/* Output and Analysis Console */}

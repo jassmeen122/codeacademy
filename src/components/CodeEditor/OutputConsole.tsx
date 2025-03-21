@@ -22,11 +22,11 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
   errorMessage
 }) => {
   return (
-    <div className="min-h-[400px] bg-black text-white rounded-lg overflow-hidden flex flex-col">
+    <div className="h-full bg-black text-white rounded-lg overflow-hidden flex flex-col">
       <Tabs 
         value={activeTab} 
         onValueChange={(value) => onTabChange(value as "output" | "analysis")}
-        className="h-full"
+        className="h-full flex flex-col"
       >
         <div className="bg-gray-900 px-4 py-2">
           <TabsList className="grid w-full grid-cols-2">
@@ -48,10 +48,10 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
           </Alert>
         )}
 
-        <TabsContent value="output" className="h-[360px] p-4 overflow-auto">
+        <TabsContent value="output" className="flex-1 p-4 overflow-auto">
           <pre className="whitespace-pre-wrap">{output || "Program output will appear here..."}</pre>
         </TabsContent>
-        <TabsContent value="analysis" className="h-[360px] p-4 overflow-auto">
+        <TabsContent value="analysis" className="flex-1 p-4 overflow-auto">
           {isAnalyzing ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-pulse text-blue-400">Analyzing your code...</div>
