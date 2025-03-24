@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { useCodingGame } from '@/hooks/useCodingGame';
-import { Trophy, Code, Award, CheckCircle, XCircle } from 'lucide-react';
+import { GameDifficulty, useCodingGame } from '@/hooks/useCodingGame';
+import { Trophy, Code, Award, CheckCircle, XCircle, Lightbulb } from 'lucide-react';
 
 export const CodingMiniGame = () => {
   const {
@@ -16,6 +16,8 @@ export const CodingMiniGame = () => {
     score,
     gameState,
     gamification,
+    difficulty,
+    changeDifficulty,
     startGame,
     selectAnswer,
     resetGame,
@@ -66,12 +68,45 @@ export const CodingMiniGame = () => {
     const options = [
       currentQuiz.option1,
       currentQuiz.option2,
-      currentQuiz.option3
-    ].sort(() => 0.5 - Math.random());
+      currentQuiz.option3,
+      currentQuiz.option4
+    ].filter(Boolean).sort(() => 0.5 - Math.random());
     
     return (
       <div className="space-y-3">
         {options.map(option => renderAnswerButton(option))}
+      </div>
+    );
+  };
+
+  const getDifficultyColor = (level: GameDifficulty) => {
+    switch(level) {
+      case 'Beginner': return 'bg-green-100 text-green-800 border-green-300';
+      case 'Intermediate': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'Advanced': return 'bg-red-100 text-red-800 border-red-300';
+      default: return '';
+    }
+  };
+
+  const renderDifficultySelector = () => {
+    const difficulties: GameDifficulty[] = ['Beginner', 'Intermediate', 'Advanced'];
+    
+    return (
+      <div className="flex flex-col gap-2 mb-6">
+        <h3 className="text-sm font-medium">Niveau de difficulté:</h3>
+        <div className="flex gap-2">
+          {difficulties.map(level => (
+            <Button
+              key={level}
+              variant={difficulty === level ? "default" : "outline"}
+              size="sm"
+              className={`${difficulty === level ? 'bg-primary' : ''}`}
+              onClick={() => changeDifficulty(level)}
+            >
+              {level === 'Beginner' ? 'Débutant' : level === 'Intermediate' ? 'Intermédiaire' : 'Avancé'}
+            </Button>
+          ))}
+        </div>
       </div>
     );
   };
@@ -93,13 +128,19 @@ export const CodingMiniGame = () => {
             </div>
             <h3 className="text-2xl font-bold">Mini-Jeu de Programmation</h3>
             <p className="text-muted-foreground">
-              Testez vos connaissances avec 5 questions rapides!
+              Testez vos connaissances avec {totalQuestions} questions en mode {
+                difficulty === 'Beginner' ? 'Débutant' : 
+                difficulty === 'Intermediate' ? 'Intermédiaire' : 'Avancé'
+              }!
             </p>
             {gamification && (
               <div className="text-sm text-muted-foreground mt-2">
                 Points actuels: <span className="font-medium">{gamification.points}</span>
               </div>
             )}
+            
+            {renderDifficultySelector()}
+            
             <Button className="mt-4" onClick={startGame}>
               Commencer le jeu
             </Button>
@@ -112,6 +153,10 @@ export const CodingMiniGame = () => {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <span className="text-sm font-medium">Question {currentQuizIndex + 1}/{totalQuestions}</span>
+                <Badge className={`ml-2 ${getDifficultyColor(difficulty)}`}>
+                  {difficulty === 'Beginner' ? 'Débutant' : 
+                  difficulty === 'Intermediate' ? 'Intermédiaire' : 'Avancé'}
+                </Badge>
               </div>
               <div className="flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-yellow-500" />
@@ -124,6 +169,15 @@ export const CodingMiniGame = () => {
             <div className="space-y-6">
               <div className="text-lg font-medium">{currentQuiz?.question}</div>
               {renderOptions()}
+              
+              {selectedAnswer && currentQuiz?.explanation && (
+                <div className={`p-4 rounded-lg mt-4 ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  <div className="flex gap-2 items-start">
+                    <Lightbulb className={`h-5 w-5 ${isCorrect ? 'text-green-600' : 'text-red-600'}`} />
+                    <p className="text-sm">{currentQuiz.explanation}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         );
@@ -136,15 +190,20 @@ export const CodingMiniGame = () => {
             </div>
             
             <h3 className="text-2xl font-bold">
-              {score > 3 ? "Bravo, tu as réussi!" : "Réessaie encore!"}
+              {score > totalQuestions * 0.6 ? "Bravo, tu as réussi!" : "Réessaie encore!"}
             </h3>
             
             <div className="text-4xl font-bold">
               {score}/{totalQuestions}
             </div>
             
+            <Badge className={`${getDifficultyColor(difficulty)}`}>
+              {difficulty === 'Beginner' ? 'Débutant' : 
+              difficulty === 'Intermediate' ? 'Intermédiaire' : 'Avancé'}
+            </Badge>
+            
             <p className="text-muted-foreground">
-              {score > 3 
+              {score > totalQuestions * 0.6 
                 ? "Excellentes connaissances en programmation!" 
                 : "Continue de pratiquer, tu progresseras!"}
             </p>

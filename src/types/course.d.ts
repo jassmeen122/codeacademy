@@ -1,3 +1,4 @@
+
 export interface Course {
   id: string;
   title: string;
@@ -80,6 +81,19 @@ export interface Quiz {
   created_at: string;
 }
 
+export interface CodingQuiz {
+  id: string;
+  question: string;
+  correct_answer: string;
+  option1: string;
+  option2: string;
+  option3: string;
+  option4: string;
+  explanation: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  created_at?: string;
+}
+
 export interface CodingExercise {
   id: string;
   module_id: string;
@@ -101,4 +115,21 @@ export interface UserProgress {
   exercise_completed: boolean;
   last_accessed: string;
   created_at: string;
+}
+
+export interface UserGamification {
+  id: string;
+  user_id: string;
+  points: number;
+  badges: string[];
+  last_played_at: string | null;
+  created_at?: string;
+}
+
+export interface MiniGameScore {
+  id: string;
+  user_id: string;
+  score: number;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  completed_at: string;
 }

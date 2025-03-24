@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { CodingQuiz, UserGamification } from '@/types/course';
 import { useAuthState } from '@/hooks/useAuthState';
 
+export type GameDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
+
 export const useCodingGame = () => {
   const { user } = useAuthState();
   const [quizzes, setQuizzes] = useState<CodingQuiz[]>([]);
@@ -15,9 +17,14 @@ export const useCodingGame = () => {
   const [gameState, setGameState] = useState<'loading' | 'ready' | 'playing' | 'finished'>('loading');
   const [gamification, setGamification] = useState<UserGamification | null>(null);
   const [isAnswerLocked, setIsAnswerLocked] = useState(false);
+  const [difficulty, setDifficulty] = useState<GameDifficulty>('Beginner');
   
-  // Number of questions per game
-  const QUESTIONS_PER_GAME = 5;
+  // Number of questions per difficulty
+  const QUESTIONS_PER_GAME = {
+    'Beginner': 10,
+    'Intermediate': 30,
+    'Advanced': 70
+  };
   
   // Badge thresholds
   const BADGES = {
@@ -31,17 +38,20 @@ export const useCodingGame = () => {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
+        setGameState('loading');
+        
         const { data, error } = await supabase
           .from('coding_quiz')
-          .select('*');
+          .select('*')
+          .eq('difficulty', difficulty);
         
         if (error) throw error;
         
         if (data) {
           // Shuffle the questions
           const shuffled = [...data].sort(() => 0.5 - Math.random());
-          // Take only the number we need
-          const selected = shuffled.slice(0, QUESTIONS_PER_GAME);
+          // Take only the number we need based on difficulty
+          const selected = shuffled.slice(0, QUESTIONS_PER_GAME[difficulty]);
           setQuizzes(selected as CodingQuiz[]);
           setGameState('ready');
         }
@@ -52,7 +62,7 @@ export const useCodingGame = () => {
     };
 
     fetchQuizzes();
-  }, []);
+  }, [difficulty]);
 
   // Fetch user gamification data
   useEffect(() => {
@@ -93,6 +103,12 @@ export const useCodingGame = () => {
 
     fetchGamificationData();
   }, [user]);
+
+  // Change difficulty level
+  const changeDifficulty = (newDifficulty: GameDifficulty) => {
+    setDifficulty(newDifficulty);
+    resetGame();
+  };
 
   // Start the game
   const startGame = () => {
@@ -138,7 +154,8 @@ export const useCodingGame = () => {
     
     try {
       // Calculate points (10 points per correct answer)
-      const pointsToAdd = score * 10 + lastQuestionPoints * 10;
+      const difficultyMultiplier = difficulty === 'Beginner' ? 1 : difficulty === 'Intermediate' ? 2 : 3;
+      const pointsToAdd = (score * 10 + lastQuestionPoints * 10) * difficultyMultiplier;
       const newTotalPoints = gamification.points + pointsToAdd;
       
       // Check if any new badges were earned
@@ -163,6 +180,18 @@ export const useCodingGame = () => {
         .eq('user_id', user.id);
       
       if (error) throw error;
+      
+      // Save score to mini_game_scores table
+      const { error: scoreError } = await supabase
+        .from('mini_game_scores')
+        .insert([{
+          user_id: user.id,
+          score: score,
+          difficulty: difficulty,
+          completed_at: new Date().toISOString()
+        }]);
+        
+      if (scoreError) throw scoreError;
       
       // Update local state
       setGamification({
@@ -202,9 +231,11 @@ export const useCodingGame = () => {
     score,
     gameState,
     gamification,
+    difficulty,
+    changeDifficulty,
     startGame,
     selectAnswer,
     resetGame,
-    totalQuestions: QUESTIONS_PER_GAME
+    totalQuestions: quizzes.length
   };
 };
