@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -83,22 +82,22 @@ Pour installer Python, rendez-vous sur le site officiel python.org et téléchar
 
 ## Votre premier programme Python
 
-```python
+\`\`\`
 # Ceci est un commentaire
 print("Hello, World!")  # Affiche Hello, World!
-```
+\`\`\`
 
 ## Variables et types de données
 
 En Python, vous pouvez créer des variables sans déclarer leur type :
 
-```python
+\`\`\`
 # Variables et types de base
 nombre = 42        # Entier
 decimal = 3.14     # Flottant
 texte = "Python"   # Chaîne de caractères
 est_vrai = True    # Booléen
-````,
+\`\`\``,
           order_index: 1,
           difficulty: 'Beginner',
           estimated_duration: '1 heure'
@@ -113,7 +112,7 @@ Les structures de contrôle permettent de modifier le flux d'exécution d'un pro
 
 ## Les conditions (if, elif, else)
 
-```python
+\`\`\`
 age = 18
 
 if age < 18:
@@ -122,13 +121,13 @@ elif age == 18:
     print("Vous venez d'être majeur")
 else:
     print("Vous êtes majeur")
-```
+\`\`\`
 
 ## Les boucles for
 
 La boucle for est utilisée pour itérer sur une séquence (liste, tuple, dictionnaire, ensemble ou chaîne).
 
-```python
+\`\`\`
 # Parcourir une liste
 fruits = ["pomme", "banane", "orange"]
 for fruit in fruits:
@@ -137,32 +136,32 @@ for fruit in fruits:
 # Utiliser la fonction range
 for i in range(5):  # 0, 1, 2, 3, 4
     print(i)
-```
+\`\`\`
 
 ## Les boucles while
 
 La boucle while exécute un bloc de code tant qu'une condition est vraie.
 
-```python
+\`\`\`
 compte = 0
 while compte < 5:
     print(compte)
     compte += 1  # Incrémente compte
-```
+\`\`\`
 
 ## Les instructions break et continue
 
 - break : sort complètement de la boucle
 - continue : passe à l'itération suivante
 
-```python
+\`\`\`
 for i in range(10):
     if i == 3:
         continue  # Saute quand i vaut 3
     if i == 7:
         break     # Sort de la boucle quand i vaut 7
     print(i)
-````,
+\`\`\``,
           order_index: 2,
           difficulty: 'Beginner',
           estimated_duration: '2 heures'
