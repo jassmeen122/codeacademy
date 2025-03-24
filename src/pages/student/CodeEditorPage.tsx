@@ -7,9 +7,9 @@ import { Info } from "lucide-react";
 const CodeEditorPage = () => {
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-4 h-[calc(100vh-64px)]">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Code Editor</h1>
-        <Alert className="mb-4">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">Code Editor</h1>
+        <Alert className="mb-6">
           <Info className="h-4 w-4" />
           <AlertTitle>Multi-language Support</AlertTitle>
           <AlertDescription>
@@ -17,7 +17,7 @@ const CodeEditorPage = () => {
             Perfect for practicing or testing code snippets.
           </AlertDescription>
         </Alert>
-        <div className="h-[calc(100vh-180px)]">
+        <div className="h-[calc(100vh-14rem)]">
           <CodeEditorWrapper />
         </div>
       </div>
