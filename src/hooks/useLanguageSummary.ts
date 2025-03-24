@@ -46,7 +46,24 @@ export function useLanguageSummary(languageId: string | null) {
           .eq('language_id', languageId)
           .single();
           
-        if (summaryError) throw summaryError;
+        if (summaryError) {
+          console.error('Error fetching summary:', summaryError);
+          
+          // Check if the language exists but has no summary
+          const { data: langData, error: langError } = await supabase
+            .from('programming_languages')
+            .select('*')
+            .eq('id', languageId)
+            .single();
+            
+          if (langError) {
+            throw new Error(`Language not found: ${langError.message}`);
+          }
+          
+          // Language exists but no summary found
+          throw new Error(`No summary available for ${langData.name}`);
+        }
+        
         setSummary(summaryData as LanguageSummary);
         
         // If user is logged in, fetch their progress

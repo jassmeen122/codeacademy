@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useLanguageSummary } from '@/hooks/useLanguageSummary';
@@ -8,12 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ArrowLeft, BookOpen, CheckCircle, Code } from "lucide-react";
 import { useAuthState } from '@/hooks/useAuthState';
 import { CodeBlock } from '@/components/ai-assistant/CodeBlock';
+import { toast } from 'sonner';
 
 const LanguageSummaryPage = () => {
   const { languageId } = useParams<{ languageId: string }>();
   const navigate = useNavigate();
-  const { summary, userProgress, loading, markAsRead } = useLanguageSummary(languageId ?? null);
+  const { summary, userProgress, loading, error, markAsRead } = useLanguageSummary(languageId ?? null);
   const { user } = useAuthState();
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Erreur lors du chargement du résumé");
+      console.error("Error loading summary:", error);
+    }
+  }, [error]);
 
   const handleMarkAsRead = async () => {
     if (!user) {
@@ -24,6 +32,7 @@ const LanguageSummaryPage = () => {
     const success = await markAsRead();
     if (success) {
       // We don't need to navigate away as the state will update
+      toast.success("Résumé marqué comme lu !");
     }
   };
 
@@ -63,7 +72,7 @@ const LanguageSummaryPage = () => {
       }
       
       // Check for code blocks
-      if (paragraph.includes('```') || paragraph.match(/^(java|python|js|javascript|c|cpp)\s*\n/)) {
+      if (paragraph.includes('```') || paragraph.match(/^(java|python|js|javascript|c|cpp|php)\s*\n/)) {
         // Handle markdown code blocks ```language\ncode\n```
         const codeMatch = paragraph.match(/```(\w+)?\n([\s\S]+?)\n```/);
         if (codeMatch) {
@@ -77,7 +86,7 @@ const LanguageSummaryPage = () => {
         }
         
         // Handle language prefix code blocks (e.g., java\ncode)
-        const langPrefixMatch = paragraph.match(/^(java|python|js|javascript|c|cpp)\s*\n([\s\S]+)$/);
+        const langPrefixMatch = paragraph.match(/^(java|python|js|javascript|c|cpp|php)\s*\n([\s\S]+)$/);
         if (langPrefixMatch) {
           let language = langPrefixMatch[1];
           if (language === 'js') language = 'javascript';
@@ -90,7 +99,7 @@ const LanguageSummaryPage = () => {
         }
         
         // If we can detect code but no explicit language
-        if (/if\s*\(|\}\s*else\s*\{|function\s+\w+\s*\(|let\s+\w+\s*=|const\s+\w+\s*=|System\.out\.println|public\s+static|import\s+java\.|#include|printf|cout|void\s+\w+\s*\(|int\s+main/.test(paragraph)) {
+        if (/if\s*\(|\}\s*else\s*\{|function\s+\w+\s*\(|let\s+\w+\s*=|const\s+\w+\s*=|System\.out\.println|public\s+static|import\s+java\.|#include|printf|cout|void\s+\w+\s*\(|int\s+main|echo\s+|<?php/.test(paragraph)) {
           const language = detectLanguage(paragraph);
           return (
             <div key={index} className="my-4">

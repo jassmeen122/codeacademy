@@ -1,4 +1,3 @@
-
 // This script adds PHP language summary to the database
 import { createClient } from '@supabase/supabase-js';
 
@@ -236,18 +235,49 @@ async function addPHPLanguageSummary() {
       return;
     }
     
-    const { error: phpSummaryError } = await supabase
+    // Check if summary already exists
+    const { data: existingSummary, error: existingSummaryError } = await supabase
       .from('language_summaries')
-      .insert({
-        language_id: phpLanguage.id,
-        title: 'Fondamentaux du langage PHP',
-        content: phpSummaryContent
-      });
+      .select('id')
+      .eq('language_id', phpLanguage.id)
+      .maybeSingle();
       
-    if (phpSummaryError) {
-      console.error('Error adding PHP language summary:', phpSummaryError);
+    if (existingSummaryError && existingSummaryError.code !== 'PGRST116') {
+      console.error('Error checking existing summary:', existingSummaryError);
+      return;
+    }
+    
+    if (existingSummary) {
+      console.log('PHP language summary already exists, updating content...');
+      
+      // Update existing summary
+      const { error: updateError } = await supabase
+        .from('language_summaries')
+        .update({
+          content: phpSummaryContent
+        })
+        .eq('id', existingSummary.id);
+        
+      if (updateError) {
+        console.error('Error updating PHP language summary:', updateError);
+      } else {
+        console.log('PHP language summary updated successfully!');
+      }
     } else {
-      console.log('PHP language summary added successfully!');
+      // Create new summary
+      const { error: phpSummaryError } = await supabase
+        .from('language_summaries')
+        .insert({
+          language_id: phpLanguage.id,
+          title: 'Fondamentaux du langage PHP',
+          content: phpSummaryContent
+        });
+        
+      if (phpSummaryError) {
+        console.error('Error adding PHP language summary:', phpSummaryError);
+      } else {
+        console.log('PHP language summary added successfully!');
+      }
     }
     
     // Ensure PHP badge exists
@@ -266,11 +296,60 @@ async function addPHPLanguageSummary() {
       console.error('Error adding PHP badge:', phpBadgeError);
     }
     
-    console.log('PHP language summary and badge added successfully!');
+    console.log('PHP language summary and badge setup completed successfully!');
   } catch (error) {
     console.error('Error in addPHPLanguageSummary:', error);
   }
 }
 
+// Create a function to check PHP summary by name
+async function checkPHPSummaryByName() {
+  try {
+    // Get PHP language ID
+    const { data: phpLanguage, error: phpLanguageError } = await supabase
+      .from('programming_languages')
+      .select('id')
+      .eq('name', 'PHP')
+      .maybeSingle();
+      
+    if (phpLanguageError && phpLanguageError.code !== 'PGRST116') {
+      console.error('Error fetching PHP language:', phpLanguageError);
+      return null;
+    }
+    
+    if (!phpLanguage) {
+      console.log('PHP language not found, creating it now...');
+      await addPHPLanguageSummary();
+      return;
+    }
+    
+    // Check if summary exists
+    const { data: summary, error: summaryError } = await supabase
+      .from('language_summaries')
+      .select('*')
+      .eq('language_id', phpLanguage.id)
+      .maybeSingle();
+      
+    if (summaryError && summaryError.code !== 'PGRST116') {
+      console.error('Error fetching PHP summary:', summaryError);
+      return null;
+    }
+    
+    if (!summary) {
+      console.log('PHP summary not found, creating it now...');
+      await addPHPLanguageSummary();
+    } else {
+      console.log('PHP summary found:', summary.title);
+      return summary;
+    }
+  } catch (error) {
+    console.error('Error checking PHP summary:', error);
+    return null;
+  }
+}
+
 // Run the function
 addPHPLanguageSummary();
+
+// Export the check function for direct use
+export { checkPHPSummaryByName };
