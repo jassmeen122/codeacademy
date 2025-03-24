@@ -590,6 +590,241 @@ Java est plus strict que Python, mais il est très puissant et utilisé dans les
       // Tenter d'enregistrer ce résumé dans la base de données sans bloquer l'affichage
       saveDefaultSummary(javaSummaryContent);
     }
+    // Résumé par défaut pour JavaScript
+    else if (langId === 'javascript') {
+      const javascriptSummaryContent = {
+        id: 'temp-id',
+        language_id: 'javascript',
+        title: "Concepts fondamentaux en JavaScript",
+        content: `# 1. Déclaration des variables en JavaScript
+
+Qu'est-ce qu'une variable ?
+Une variable est un espace en mémoire où l'on stocke une donnée. Contrairement à Java, JavaScript est un langage dynamique, ce qui signifie qu'on n'a pas besoin de préciser le type de données (comme en Python).
+
+## Les trois façons de déclarer une variable en JavaScript
+Il existe trois mots-clés pour déclarer une variable :
+
+var (ancienne méthode, à éviter)
+
+let (méthode recommandée)
+
+const (pour les valeurs constantes)
+
+Exemple :
+
+\`\`\`javascript
+var nom = "Yassmine"; // Ancienne manière (peut poser des problèmes)
+let age = 19;         // Nouvelle manière, recommandée
+const pays = "Maroc"; // Une valeur qui ne changera pas
+\`\`\`
+
+## Quelle est la différence entre var, let et const ?
+Mot-clé | Modification possible ? | Portée (scope)
+--- | --- | ---
+var | Oui | Fonction
+let | Oui | Bloc {}
+const | Non | Bloc {}
+
+💡 Conseil :
+
+Utilise let pour les variables qui peuvent changer.
+
+Utilise const si la valeur ne doit jamais changer.
+
+Évite var, car il peut créer des bugs.
+
+# 2. Conditions en JavaScript
+Une condition permet d'exécuter un code seulement si une certaine situation est vraie.
+
+## Condition if simple
+
+\`\`\`javascript
+let age = 19;
+
+if (age >= 18) {
+    console.log("Vous êtes majeur.");
+}
+\`\`\`
+
+💡 Explication :
+
+Si age est supérieur ou égal à 18, alors on affiche "Vous êtes majeur.".
+
+## Condition if...else
+
+\`\`\`javascript
+let age = 16;
+
+if (age >= 18) {
+    console.log("Vous êtes majeur.");
+} else {
+    console.log("Vous êtes mineur.");
+}
+\`\`\`
+
+💡 Explication :
+
+Si age est inférieur à 18, alors on affiche "Vous êtes mineur.".
+
+## Condition if...else if...else
+Si on veut tester plusieurs cas, on utilise else if :
+
+\`\`\`javascript
+let note = 15;
+
+if (note >= 18) {
+    console.log("Excellent !");
+} else if (note >= 14) {
+    console.log("Bien !");
+} else if (note >= 10) {
+    console.log("Passable.");
+} else {
+    console.log("Échec.");
+}
+\`\`\`
+
+💡 Explication :
+
+Si note est supérieure ou égale à 18, on affiche "Excellent".
+
+Sinon, si note >= 14, on affiche "Bien".
+
+Sinon, si note >= 10, on affiche "Passable".
+
+Sinon, on affiche "Échec".
+
+## Conditions avec && et ||
+Comme en Java :
+
+&& (ET logique) → Les deux conditions doivent être vraies.
+
+|| (OU logique) → Au moins une condition doit être vraie.
+
+Exemple avec && (ET logique)
+
+\`\`\`javascript
+let argent = 50;
+let age = 20;
+
+if (age >= 18 && argent >= 100) {
+    console.log("Vous pouvez entrer en boîte.");
+} else {
+    console.log("Accès refusé.");
+}
+\`\`\`
+
+💡 Explication :
+✔️ La personne doit avoir plus de 18 ans ET au moins 100€.
+
+Exemple avec || (OU logique)
+
+\`\`\`javascript
+let carteMembre = false;
+let argent = 150;
+
+if (carteMembre || argent >= 100) {
+    console.log("Accès VIP accordé.");
+} else {
+    console.log("Accès refusé.");
+}
+\`\`\`
+
+💡 Explication :
+✔️ Si la personne a une carte membre OU si elle a au moins 100€, elle peut entrer.
+
+# 3. Fonctions en JavaScript
+Une fonction est un bloc de code qui effectue une action et peut être réutilisé plusieurs fois.
+
+## Créer une fonction sans paramètres
+
+\`\`\`javascript
+function direBonjour() {
+    console.log("Bonjour, bienvenue !");
+}
+
+// Appel de la fonction
+direBonjour();
+\`\`\`
+
+💡 Explication :
+
+function direBonjour() → Définit une fonction nommée direBonjour.
+
+console.log("Bonjour, bienvenue !") → Affiche "Bonjour, bienvenue !".
+
+## Fonctions avec paramètres
+
+\`\`\`javascript
+function saluer(nom) {
+    console.log("Bonjour, " + nom + " !");
+}
+
+// Appel de la fonction
+saluer("Yassmine");
+saluer("Ahmed");
+\`\`\`
+
+💡 Explication :
+
+La fonction saluer(nom) prend un paramètre nom.
+
+Elle affiche "Bonjour, Yassmine !", "Bonjour, Ahmed !", etc.
+
+## Fonctions qui retournent une valeur
+
+\`\`\`javascript
+function additionner(a, b) {
+    return a + b;
+}
+
+// Stocker le résultat et l'afficher
+let resultat = additionner(5, 7);
+console.log(resultat);  // Affiche 12
+\`\`\`
+
+💡 Explication :
+
+La fonction additionne deux nombres et retourne le résultat.
+
+La valeur est stockée dans resultat et affichée avec console.log().
+
+## Fonctions fléchées (Arrow Functions)
+Depuis ES6, JavaScript propose une nouvelle façon d'écrire des fonctions plus courte :
+
+\`\`\`javascript
+const multiplier = (x, y) => x * y;
+
+console.log(multiplier(3, 4));  // Affiche 12
+\`\`\`
+
+💡 Explication :
+
+(x, y) => x * y; est une fonction fléchée.
+
+Elle est équivalente à :
+
+\`\`\`javascript
+function multiplier(x, y) {
+    return x * y;
+}
+\`\`\`
+
+# Conclusion
+✔️ JavaScript est un langage dynamique utilisé pour le développement web.
+✔️ Il permet de déclarer des variables sans préciser le type.
+✔️ Les conditions sont similaires à celles de Java et Python.
+✔️ Les fonctions peuvent être classiques ou sous forme fléchée (ES6).
+✔️ Il est utilisé dans les navigateurs (Frontend) et aussi côté serveur (Node.js).
+
+💡 JavaScript est essentiel pour le développement web moderne ! 🚀`,
+        created_at: new Date().toISOString()
+      };
+      
+      setSummary(javascriptSummaryContent as LanguageSummary);
+      
+      // Tenter d'enregistrer ce résumé dans la base de données sans bloquer l'affichage
+      saveDefaultSummary(javascriptSummaryContent);
+    }
     else {
       // Résumés par défaut pour d'autres langages peuvent être ajoutés ici
       setSummary(null);
