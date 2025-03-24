@@ -158,7 +158,7 @@ const studentMenuItems: MenuItem[] = [
   {
     title: "Code Editor",
     icon: Code,
-    href: "/student/code-editor",
+    href: "/student/editor", // Updated to match the route in App.tsx
   },
   {
     title: "AI Assistant",

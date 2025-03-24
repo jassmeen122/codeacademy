@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { ProgrammingLanguage, languageOptions } from './types';
 
@@ -9,7 +9,8 @@ interface MonacoEditorWrapperProps {
   onChange: (value: string | undefined) => void;
 }
 
-export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({ 
+// Using React.memo to prevent unnecessary re-renders of the Monaco editor
+const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = memo(({ 
   language, 
   code, 
   onChange 
@@ -42,4 +43,8 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
       />
     </div>
   );
-};
+});
+
+MonacoEditorWrapper.displayName = 'MonacoEditorWrapper';
+
+export { MonacoEditorWrapper };

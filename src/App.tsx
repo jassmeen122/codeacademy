@@ -59,6 +59,7 @@ function App() {
           <Route path="/student/discussion" element={<StudentDiscussionPage />} />
           <Route path="/student/projects" element={<StudentProjectsPage />} />
           <Route path="/student/editor" element={<StudentCodeEditorPage />} />
+          <Route path="/student/code-editor" element={<StudentCodeEditorPage />} /> {/* Add this route as an alias */}
           <Route path="/student/ai-assistant" element={<StudentAIAssistantPage />} />
           <Route path="/student/progress" element={<StudentProgressPage />} />
           <Route path="/student/achievements" element={<StudentAchievementsPage />} />

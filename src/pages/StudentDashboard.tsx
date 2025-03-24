@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,24 +136,8 @@ const StudentDashboard = () => {
             title="Code Editor"
             description="Write, run, and debug code with AI assistance."
             buttonText="Open Code Editor"
-          >
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="w-full">
-                  <Code className="mr-2 h-4 w-4" />
-                  Open Code Editor
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-6xl w-[90vw]">
-                <DialogHeader>
-                  <DialogTitle>AI-Powered Code Editor</DialogTitle>
-                </DialogHeader>
-                <div className="mt-4">
-                  <CodeEditorWrapper />
-                </div>
-              </DialogContent>
-            </Dialog>
-          </NavigationCard>
+            onClick={() => navigate("/student/editor")} // Update to use navigate instead of Dialog}
+          />
         </div>
 
         {/* Course Progress */}

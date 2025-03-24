@@ -4,6 +4,10 @@ import { CodeEditorWrapper } from "@/components/CodeEditor/CodeEditorWrapper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Code, PenTool, Server } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { lazy, Suspense } from "react";
+
+// Use lazy loading for the CodeEditorWrapper component to improve initial load time
+const LazyCodeEditorWrapper = lazy(() => import("@/components/CodeEditor/LazyCodeEditorWrapper"));
 
 const CodeEditorPage = () => {
   return (
@@ -16,7 +20,7 @@ const CodeEditorPage = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-sm hover:shadow-md transition-shadow duration-200">
               <CardContent className="pt-6">
                 <div className="flex items-start">
                   <div className="mr-4 bg-blue-100 p-2 rounded-full">
@@ -30,7 +34,7 @@ const CodeEditorPage = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 shadow-sm hover:shadow-md transition-shadow duration-200">
               <CardContent className="pt-6">
                 <div className="flex items-start">
                   <div className="mr-4 bg-purple-100 p-2 rounded-full">
@@ -44,7 +48,7 @@ const CodeEditorPage = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+            <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 shadow-sm hover:shadow-md transition-shadow duration-200">
               <CardContent className="pt-6">
                 <div className="flex items-start">
                   <div className="mr-4 bg-emerald-100 p-2 rounded-full">
@@ -68,7 +72,11 @@ const CodeEditorPage = () => {
           </Alert>
           
           <div className="h-[calc(100vh-24rem)] md:h-[calc(100vh-20rem)]">
-            <CodeEditorWrapper />
+            <Suspense fallback={<div className="w-full h-full flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>}>
+              <CodeEditorWrapper />
+            </Suspense>
           </div>
         </div>
       </div>
