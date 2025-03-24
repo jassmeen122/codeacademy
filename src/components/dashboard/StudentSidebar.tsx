@@ -6,7 +6,6 @@ import {
   PenTool,
   MessageCircle,
   FolderKanban,
-  Code,
   BrainCircuit,
   TrendingUp,
   Trophy,
@@ -53,11 +52,6 @@ export const StudentSidebar = () => {
       title: "Projects",
       icon: FolderKanban,
       href: "/student/projects",
-    },
-    {
-      title: "Code Editor",
-      icon: Code,
-      href: "/student/editor",
     },
     {
       title: "AI Assistant",
