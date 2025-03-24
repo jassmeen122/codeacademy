@@ -17,6 +17,7 @@ import {
   Settings,
   GraduationCap,
   Code,
+  Zap
 } from "lucide-react";
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -81,6 +82,15 @@ export const StudentSidebar = () => {
                 >
                   <Youtube className="h-4 w-4 mr-2" />
                   Cours Gratuits
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/coding-game' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/coding-game')}
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  <span className="text-blue-400 font-semibold">Mini-Jeu de Code</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

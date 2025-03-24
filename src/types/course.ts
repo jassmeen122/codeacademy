@@ -74,6 +74,8 @@ export interface CodingQuiz {
   option1: string;
   option2: string;
   option3: string;
+  option4: string;
+  explanation: string;
   language: string;
   difficulty: string;
   created_at: string;
@@ -140,3 +142,13 @@ export interface UserProgress {
   last_accessed: string;
   created_at: string;
 }
+
+// Add MiniGameScore interface for tracking mini-game scores
+export interface MiniGameScore {
+  id: string;
+  user_id: string;
+  score: number;
+  time_taken: number;
+  completed_at: string;
+}
+
