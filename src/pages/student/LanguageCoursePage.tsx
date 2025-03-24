@@ -126,6 +126,17 @@ const LanguageCoursePage = () => {
             </CardContent>
           </Card>
         </div>
+        
+        <div className="mt-8">
+          <Button 
+            variant="outline" 
+            className="mr-4"
+            onClick={() => navigate(`/student/languages/${languageId}/summary`)}
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Voir le résumé du langage
+          </Button>
+        </div>
       </div>
     </DashboardLayout>
   );

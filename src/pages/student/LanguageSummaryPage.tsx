@@ -30,8 +30,10 @@ const LanguageSummaryPage = () => {
   // Function to detect language from code
   const detectLanguage = (codeBlock: string): string => {
     if (codeBlock.includes('System.out.println')) return 'java';
-    if (codeBlock.includes('function') || codeBlock.includes('let ') || codeBlock.includes('const ')) return 'javascript';
+    if (codeBlock.includes('function') || codeBlock.includes('let ') || codeBlock.includes('const ') || codeBlock.includes('console.log')) return 'javascript';
     if (codeBlock.includes('print(') || codeBlock.includes('def ')) return 'python';
+    if (codeBlock.includes('#include <stdio.h>') || (codeBlock.includes('printf') && codeBlock.includes('int main'))) return 'c';
+    if (codeBlock.includes('using namespace std') || codeBlock.includes('cout <<') || (codeBlock.includes('#include <iostream>') && codeBlock.includes('int main'))) return 'cpp';
     return 'plaintext';
   };
 
@@ -60,7 +62,7 @@ const LanguageSummaryPage = () => {
       }
       
       // Check for code blocks
-      if (paragraph.includes('```') || (paragraph.match(/^(java|python|js|javascript)\s*\n/))) {
+      if (paragraph.includes('```') || paragraph.match(/^(java|python|js|javascript|c|cpp)\s*\n/)) {
         // Handle markdown code blocks ```language\ncode\n```
         const codeMatch = paragraph.match(/```(\w+)?\n([\s\S]+?)\n```/);
         if (codeMatch) {
@@ -74,7 +76,7 @@ const LanguageSummaryPage = () => {
         }
         
         // Handle language prefix code blocks (e.g., java\ncode)
-        const langPrefixMatch = paragraph.match(/^(java|python|js|javascript)\s*\n([\s\S]+)$/);
+        const langPrefixMatch = paragraph.match(/^(java|python|js|javascript|c|cpp)\s*\n([\s\S]+)$/);
         if (langPrefixMatch) {
           let language = langPrefixMatch[1];
           if (language === 'js') language = 'javascript';
@@ -87,7 +89,7 @@ const LanguageSummaryPage = () => {
         }
         
         // If we can detect code but no explicit language
-        if (/if\s*\(|\}\s*else\s*\{|function\s+\w+\s*\(|let\s+\w+\s*=|const\s+\w+\s*=|System\.out\.println|public\s+static|import\s+java\./.test(paragraph)) {
+        if (/if\s*\(|\}\s*else\s*\{|function\s+\w+\s*\(|let\s+\w+\s*=|const\s+\w+\s*=|System\.out\.println|public\s+static|import\s+java\.|#include|printf|cout|void\s+\w+\s*\(|int\s+main/.test(paragraph)) {
           const language = detectLanguage(paragraph);
           return (
             <div key={index} className="my-4">
@@ -98,7 +100,7 @@ const LanguageSummaryPage = () => {
       }
       
       // Check if paragraph starts with Type followed by Description and Example (likely a table)
-      if (paragraph.includes('Type') && paragraph.includes('Description') && paragraph.includes('Exemple')) {
+      if (paragraph.includes('Type') && paragraph.includes('Description') && (paragraph.includes('Exemple') || paragraph.includes('Example'))) {
         const rows = paragraph.split('\n');
         return (
           <div key={index} className="overflow-x-auto my-4">

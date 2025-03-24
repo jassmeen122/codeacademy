@@ -6,9 +6,12 @@ import { GamificationStats } from "@/components/student/GamificationStats";
 import { useUserBadges } from '@/hooks/useUserBadges';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, BookOpen, Code } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
 
 const AchievementsPage = () => {
   const { badges, loading } = useUserBadges();
+  const navigate = useNavigate();
 
   // Get language mastery badges (those with "Mastery" in the name)
   const languageBadges = badges.filter(badge => 
@@ -19,6 +22,35 @@ const AchievementsPage = () => {
   const languageNames = languageBadges.map(badge => 
     badge.badge.name.replace(' Mastery', '')
   );
+
+  // Group languages by category
+  const languageGroups = {
+    basics: ['Python', 'Java', 'JavaScript'],
+    systemLanguages: ['C', 'C++'],
+    web: ['PHP', 'SQL']
+  };
+
+  const isLanguageCompleted = (lang: string) => {
+    return languageNames.includes(lang);
+  };
+
+  const getLanguageBadge = (lang: string) => {
+    return (
+      <span 
+        key={lang} 
+        className={`px-2 py-1 text-xs font-medium rounded-full ${
+          isLanguageCompleted(lang) 
+            ? 'bg-blue-100 text-blue-800' 
+            : 'bg-gray-100 text-gray-500'
+        }`}
+      >
+        {lang}
+        {isLanguageCompleted(lang) && (
+          <Award className="inline-block h-3 w-3 ml-1 text-amber-500" />
+        )}
+      </span>
+    );
+  };
 
   return (
     <DashboardLayout>
@@ -53,18 +85,29 @@ const AchievementsPage = () => {
                     </div>
                   </div>
                   
-                  {languageBadges.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {languageNames.map((language, index) => (
-                        <span 
-                          key={index} 
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
-                        >
-                          {language}
-                        </span>
-                      ))}
+                  {/* Group languages by category */}
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-sm font-medium mb-2">Langages de base</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {languageGroups.basics.map(lang => getLanguageBadge(lang))}
+                      </div>
                     </div>
-                  )}
+                    
+                    <div>
+                      <h3 className="text-sm font-medium mb-2">Langages système</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {languageGroups.systemLanguages.map(lang => getLanguageBadge(lang))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium mb-2">Langages web</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {languageGroups.web.map(lang => getLanguageBadge(lang))}
+                      </div>
+                    </div>
+                  </div>
                   
                   <div className="text-sm text-muted-foreground">
                     {languageBadges.length === 0 ? (
@@ -79,6 +122,16 @@ const AchievementsPage = () => {
                       </p>
                     )}
                   </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate('/student/languages')}
+                  >
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Explorer les langages
+                  </Button>
                 </div>
               </CardContent>
             </Card>
