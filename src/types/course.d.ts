@@ -88,8 +88,8 @@ export interface CodingQuiz {
   option1: string;
   option2: string;
   option3: string;
-  option4: string;
-  explanation: string;
+  option4?: string;
+  explanation?: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   created_at?: string;
 }
