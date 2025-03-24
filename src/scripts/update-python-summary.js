@@ -1,64 +1,16 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { useAuthState } from '@/hooks/useAuthState';
 
-interface LanguageSummary {
-  id: string;
-  language_id: string;
-  title: string;
-  content: string;
-  created_at: string;
-}
+const { createClient } = require('@supabase/supabase-js');
 
-interface UserProgress {
-  id?: string;
-  user_id: string;
-  language_id: string;
-  summary_read: boolean;
-  quiz_completed: boolean;
-  badge_earned: boolean;
-  last_updated?: string;
-}
+// Initialiser le client Supabase avec vos identifiants
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-export const useLanguageSummary = (languageId: string | undefined) => {
-  const [summary, setSummary] = useState<LanguageSummary | null>(null);
-  const [progress, setProgress] = useState<UserProgress | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const { user } = useAuthState();
+const PYTHON_LANGUAGE_ID = 'python'; // Remplacez par l'ID réel dans votre base de données
 
-  useEffect(() => {
-    if (!languageId) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchSummaryAndProgress = async () => {
-      try {
-        setLoading(true);
-        
-        // Récupérer le résumé du langage
-        const { data: summaryData, error: summaryError } = await supabase
-          .from('language_summaries')
-          .select('*')
-          .eq('language_id', languageId)
-          .single();
-          
-        if (summaryError && summaryError.code !== 'PGRST116') {
-          // PGRST116 is "No rows returned" which means the summary doesn't exist yet
-          throw summaryError;
-        }
-        
-        if (summaryData) {
-          setSummary(summaryData as LanguageSummary);
-        } else if (languageId === 'python') {
-          // Pour Python, si aucun résumé n'existe, on en crée un temporairement
-          const pythonSummaryContent = {
-            id: 'temp-id',
-            language_id: 'python',
-            title: "Concepts fondamentaux en Python",
-            content: `# 1. Déclaration des variables en Python
+const pythonSummary = {
+  title: "Concepts fondamentaux en Python",
+  content: `# 1. Déclaration des variables en Python
 
 Qu'est-ce qu'une variable ?
 Une variable est un espace mémoire où l'on stocke une donnée. Elle permet de conserver une information et de la réutiliser plus tard dans le programme.
@@ -276,96 +228,57 @@ On a vu trois concepts essentiels en Python :
 ✔️ Les conditions → Exécuter un code selon une situation.
 ✔️ Les fonctions → Organiser le code pour éviter les répétitions.
 
-Ces notions sont la base de tout programme en Python !`,
-            created_at: new Date().toISOString()
-          };
-          
-          setSummary(pythonSummaryContent as LanguageSummary);
-          
-          // Essayer d'enregistrer ce résumé dans la base de données
-          const { error: insertError } = await supabase
-            .from('language_summaries')
-            .insert([{
-              language_id: 'python',
-              title: pythonSummaryContent.title,
-              content: pythonSummaryContent.content
-            }]);
-            
-          if (insertError) {
-            console.error('Erreur lors de l\'enregistrement du résumé Python:', insertError);
-          }
-        }
-        
-        // Récupérer la progression de l'utilisateur si connecté
-        if (user) {
-          const { data: progressData, error: progressError } = await supabase
-            .from('user_language_progress')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('language_id', languageId)
-            .maybeSingle();
-            
-          if (progressError) {
-            console.error('Erreur lors de la récupération de la progression:', progressError);
-          } else if (progressData) {
-            setProgress(progressData as UserProgress);
-          } else {
-            // Créer une nouvelle entrée de progression par défaut
-            setProgress({
-              user_id: user.id,
-              language_id: languageId,
-              summary_read: false,
-              quiz_completed: false,
-              badge_earned: false
-            });
-          }
-        }
-      } catch (err: any) {
-        console.error('Erreur lors de la récupération des données:', err);
-        setError(err);
-        toast.error('Erreur lors du chargement du résumé');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSummaryAndProgress();
-  }, [languageId, user]);
-
-  const markAsRead = async () => {
-    if (!user || !languageId) return;
-    
-    try {
-      let progData = progress;
-      
-      if (!progData) {
-        // Créer une nouvelle entrée de progression
-        progData = {
-          user_id: user.id,
-          language_id: languageId,
-          summary_read: true,
-          quiz_completed: false,
-          badge_earned: false
-        };
-      } else {
-        progData.summary_read = true;
-      }
-      
-      const { data, error } = await supabase
-        .from('user_language_progress')
-        .upsert([progData], { onConflict: 'user_id,language_id' })
-        .select()
-        .single();
-        
-      if (error) throw error;
-      
-      setProgress(data as UserProgress);
-      toast.success('Résumé marqué comme lu !');
-    } catch (err: any) {
-      console.error('Erreur lors de la mise à jour de la progression:', err);
-      toast.error('Erreur lors de la mise à jour');
-    }
-  };
-
-  return { summary, progress, loading, error, markAsRead };
+Ces notions sont la base de tout programme en Python !`
 };
+
+async function updatePythonSummary() {
+  // Vérifier si un résumé Python existe déjà
+  const { data: existingSummary, error: fetchError } = await supabase
+    .from('language_summaries')
+    .select('*')
+    .eq('language_id', PYTHON_LANGUAGE_ID)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error('Erreur lors de la vérification du résumé:', fetchError);
+    return;
+  }
+
+  if (existingSummary) {
+    // Mettre à jour le résumé existant
+    const { error: updateError } = await supabase
+      .from('language_summaries')
+      .update({
+        title: pythonSummary.title,
+        content: pythonSummary.content
+      })
+      .eq('id', existingSummary.id);
+
+    if (updateError) {
+      console.error('Erreur lors de la mise à jour du résumé:', updateError);
+    } else {
+      console.log('Résumé Python mis à jour avec succès!');
+    }
+  } else {
+    // Insérer un nouveau résumé
+    const { error: insertError } = await supabase
+      .from('language_summaries')
+      .insert([{
+        language_id: PYTHON_LANGUAGE_ID,
+        title: pythonSummary.title,
+        content: pythonSummary.content
+      }]);
+
+    if (insertError) {
+      console.error('Erreur lors de l\'insertion du résumé:', insertError);
+    } else {
+      console.log('Résumé Python inséré avec succès!');
+    }
+  }
+}
+
+updatePythonSummary()
+  .catch(console.error)
+  .finally(() => {
+    console.log('Script terminé');
+  });

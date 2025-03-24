@@ -37,6 +37,17 @@ export const SummaryContent = ({ title, content, isRead = false }: SummaryConten
             <code>{code}</code>
           </pre>
         );
+      } else if (section.includes('✔️') || section.includes('✅') || section.includes('🔹') || section.includes('💡')) {
+        // Section avec des emoji/points, on préserve le format
+        return (
+          <div key={index} className="mb-4 text-gray-700 leading-relaxed">
+            {section.split('\n').map((line, i) => (
+              <p key={i} className={`${line.trim().startsWith('✔️') || line.trim().startsWith('✅') || line.trim().startsWith('🔹') || line.trim().startsWith('💡') ? 'ml-5' : ''} mb-2`}>
+                {line}
+              </p>
+            ))}
+          </div>
+        );
       } else {
         // Paragraphe normal
         return (
