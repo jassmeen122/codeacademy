@@ -1,126 +1,94 @@
-
+import { Menu } from "lucide-react";
 import { useState, useEffect } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { DashboardSidebar } from "./DashboardSidebar";
-import Navigation from "@/components/Navigation";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { useAuthState } from "@/hooks/useAuthState";
-import { UserAvatar } from "@/components/UserAvatar";
+import { Link, useLocation } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
-import { LogOut, UserCog, Mail, User } from "lucide-react";
-import { toast } from "sonner";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { cn } from "@/lib/utils";
+import { useMobile } from "@/hooks/useMobile";
+import { useAuthState } from "@/hooks/useAuthState";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { UserDropdownMenu } from "@/components/auth/UserDropdownMenu";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
+export function DashboardLayout({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState<boolean>(false);
+  const location = useLocation();
+  const { userInfo, userRole, userStatus } = useAuthState();
+  const { isMobile } = useMobile();
 
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { user, loading, handleSignOut } = useAuthState();
-  const navigate = useNavigate();
+  const [currentPath, setCurrentPath] = useState<string>("");
 
   useEffect(() => {
-    const checkUserRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
+    setCurrentPath(location.pathname);
+  }, [location]);
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        // Redirect users to their appropriate dashboard if they're on the wrong one
-        const currentPath = window.location.pathname;
-        const correctPath = `/${profile.role.toLowerCase()}`;
-        if (!currentPath.startsWith(correctPath)) {
-          navigate(correctPath);
-        }
-      }
-    };
-
-    checkUserRole();
-  }, [navigate]);
-
-  const handleLogout = async () => {
-    try {
-      await handleSignOut();
-      toast.success('Logged out successfully');
-      navigate('/auth');
-    } catch (error: any) {
-      toast.error(error.message || 'Error signing out');
-    }
-  };
+  const isTeacherRoute = currentPath.startsWith("/teacher");
+  const isStudentRoute = currentPath.startsWith("/student");
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <DashboardSidebar role={user?.role || null} />
-        <div className="flex-1">
-          <Navigation />
-          <main className="pt-16 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-            {/* Enhanced Profile header section */}
-            <div className="bg-background shadow-sm border-b border-border p-4">
-              <div className="container mx-auto">
-                {loading ? (
-                  <div className="animate-pulse flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-300"></div>
-                    <div className="flex-1">
-                      <div className="h-5 bg-gray-300 rounded w-32 mb-2"></div>
-                      <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
-                      <div className="h-3 bg-gray-300 rounded w-48"></div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <UserAvatar user={user} size="lg" />
-                      <div>
-                        <h2 className="font-bold text-xl">{user?.full_name || 'User'}</h2>
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                          <User className="h-3.5 w-3.5" />
-                          <span className="capitalize text-sm">{user?.role || 'User'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Mail className="h-3.5 w-3.5" />
-                          <span className="text-sm">{user?.email || ''}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-4 sm:mt-0">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => navigate(`/${user?.role}/settings`)}
-                        className="w-full sm:w-auto"
-                      >
-                        <UserCog className="mr-2 h-4 w-4" />
-                        Edit Profile
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={handleLogout}
-                        className="w-full sm:w-auto"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="container mx-auto py-6 px-4">
-              {children}
-            </div>
-          </main>
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <Drawer open={open} onOpenChange={setOpen}>
+        <div
+          className={cn(
+            "fixed top-0 z-20 w-full flex justify-between bg-background/80 backdrop-blur-sm md:hidden px-4 py-3 border-b"
+          )}
+        >
+          <Link
+            to="/"
+            className="flex items-center gap-2 font-semibold text-lg"
+          >
+            <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+            <span>CodeAcademy</span>
+          </Link>
+          <DrawerTrigger asChild>
+            <Button
+              variant="outline"
+              className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </DrawerTrigger>
         </div>
+        <DrawerContent side={isMobile ? "right" : "left"} className="md:hidden p-0">
+          <DashboardSidebar role={userRole} />
+        </DrawerContent>
+      </Drawer>
+      <div className="hidden border-r bg-gray-100/40 md:block dark:bg-gray-800/40">
+        <DashboardSidebar role={userRole} />
       </div>
-    </SidebarProvider>
+      <div className="flex flex-col">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6 md:z-20">
+          <div className="flex flex-1 items-center gap-4">
+            <div className="flex flex-col gap-0.5">
+              {userInfo && (
+                <>
+                  <h1 className="font-semibold text-lg">
+                    {userInfo.full_name || userInfo.email}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    {userRole === "student" && "Étudiant"}
+                    {userRole === "teacher" && "Professeur"}
+                    {userRole === "admin" && "Administrateur"}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+          <UserDropdownMenu avatar_url={userInfo?.avatar_url} />
+        </header>
+        <main className="flex flex-1 flex-col pt-4 md:pt-0">
+          {children}
+        </main>
+      </div>
+    </div>
   );
-};
+}

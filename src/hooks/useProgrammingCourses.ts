@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { ProgrammingLanguage, CourseModule } from '@/types/course';
+import { ProgrammingLanguage, CourseModule, Quiz, CodingExercise } from '@/types/course';
 
 export const useProgrammingLanguages = () => {
   const [languages, setLanguages] = useState<ProgrammingLanguage[]>([]);
@@ -80,31 +80,55 @@ export const useCourseModules = (languageId: string | null) => {
 
 export const useModuleContent = (moduleId: string | null) => {
   const [module, setModule] = useState<CourseModule | null>(null);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [exercises, setExercises] = useState<CodingExercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!moduleId) {
       setModule(null);
+      setQuizzes([]);
+      setExercises([]);
       setLoading(false);
       return;
     }
 
-    const fetchModule = async () => {
+    const fetchModuleData = async () => {
       try {
         setLoading(true);
         
-        const { data, error } = await supabase
+        // Fetch the module content
+        const { data: moduleData, error: moduleError } = await supabase
           .from('course_modules')
           .select('*')
           .eq('id', moduleId)
           .single();
           
-        if (error) {
-          throw error;
-        }
+        if (moduleError) throw moduleError;
         
-        setModule(data as CourseModule);
+        setModule(moduleData as CourseModule);
+        
+        // Fetch related quizzes
+        const { data: quizzesData, error: quizzesError } = await supabase
+          .from('quizzes')
+          .select('*')
+          .eq('module_id', moduleId);
+          
+        if (quizzesError) throw quizzesError;
+        
+        setQuizzes(quizzesData as Quiz[]);
+        
+        // Fetch related coding exercises
+        const { data: exercisesData, error: exercisesError } = await supabase
+          .from('coding_exercises')
+          .select('*')
+          .eq('module_id', moduleId);
+          
+        if (exercisesError) throw exercisesError;
+        
+        setExercises(exercisesData as CodingExercise[]);
+        
       } catch (err: any) {
         console.error('Error fetching module content:', err);
         setError(err);
@@ -113,8 +137,8 @@ export const useModuleContent = (moduleId: string | null) => {
       }
     };
 
-    fetchModule();
+    fetchModuleData();
   }, [moduleId]);
 
-  return { module, loading, error };
+  return { module, quizzes, exercises, loading, error };
 };

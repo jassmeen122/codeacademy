@@ -892,7 +892,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_custom_resources: {
+        Args: {
+          lang_id: string
+        }
+        Returns: Json
+      }
+      get_default_resources: {
+        Args: {
+          lang_id: string
+        }
+        Returns: Json
+      }
+      upsert_custom_resource: {
+        Args: {
+          lang_id: string
+          teach_id: string
+          c_video_url: string
+          c_pdf_url: string
+          e_video_url: string
+          e_pdf_url: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       course_category:

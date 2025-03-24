@@ -35,30 +35,36 @@ export const useLanguageResources = (languageId: string | null) => {
       try {
         setLoading(true);
         
-        // Fetch default resources
-        // Nous devons utiliser une requête SQL brute car les tables custom_resources et default_resources
-        // ne sont pas dans le schéma TypeScript généré
+        // Fetch default resources using RPC
         const { data: defaultData, error: defaultError } = await supabase
           .rpc('get_default_resources', { lang_id: languageId });
           
-        if (defaultError && defaultError.code !== 'PGRST116') {
-          throw defaultError;
+        if (defaultError) {
+          console.error('Error fetching default resources:', defaultError);
+          // Only throw if it's not just a "no rows returned" error
+          if (defaultError.code !== 'PGRST116') {
+            throw defaultError;
+          }
         }
         
-        // Fetch custom resources if they exist
+        // Fetch custom resources using RPC
         const { data: customData, error: customError } = await supabase
           .rpc('get_custom_resources', { lang_id: languageId });
           
-        if (customError && customError.code !== 'PGRST116') {
-          throw customError;
+        if (customError) {
+          console.error('Error fetching custom resources:', customError);
+          // Only throw if it's not just a "no rows returned" error
+          if (customError.code !== 'PGRST116') {
+            throw customError;
+          }
         }
         
         if (defaultData) {
-          setDefaultResources(defaultData as LanguageResource);
+          setDefaultResources(defaultData as unknown as LanguageResource);
         }
         
         if (customData) {
-          setCustomResources(customData as CustomResource);
+          setCustomResources(customData as unknown as CustomResource);
         }
       } catch (err: any) {
         console.error('Error fetching language resources:', err);
@@ -154,8 +160,7 @@ export const useUploadLanguageResource = () => {
         exercise_pdf_url = publicUrlData.publicUrl;
       }
       
-      // Nous utilisons une procédure stockée pour gérer l'insertion/mise à jour
-      // car les tables ne sont pas dans le schéma TypeScript généré
+      // Use RPC function to upsert custom resource
       const { data: result, error: upsertError } = await supabase.rpc(
         'upsert_custom_resource',
         {

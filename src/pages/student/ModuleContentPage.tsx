@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -16,7 +15,7 @@ import type { CourseModule } from '@/types/course';
 const ModuleContentPage = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
-  const { module, quizzes, exercises, loading } = useModuleContent(moduleId ?? null);
+  const { module, quizzes, exercises, loading, error } = useModuleContent(moduleId ?? null);
   const [languageName, setLanguageName] = useState('');
   const [quizScores, setQuizScores] = useState<Record<string, number>>({});
   const [exerciseCompletions, setExerciseCompletions] = useState<Record<string, boolean>>({});
@@ -87,12 +86,7 @@ const ModuleContentPage = () => {
   };
 
   const checkModuleCompletion = () => {
-    // Consider the module complete if:
-    // 1. All quizzes have been attempted
-    // 2. At least 70% of quiz answers are correct
-    // 3. All exercises are completed
-
-    const allQuizzesAttempted = quizzes.every(quiz => quiz.id in quizScores); // Fixed: was quizId
+    const allQuizzesAttempted = quizzes.every(quiz => quiz.id in quizScores);
     
     if (!allQuizzesAttempted) return;
     
@@ -114,7 +108,6 @@ const ModuleContentPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !moduleId) return;
       
-      // Check if a record already exists
       const { data: existingProgress, error: fetchError } = await supabase
         .from('user_progress')
         .select('id')
@@ -125,7 +118,6 @@ const ModuleContentPage = () => {
       if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
       
       if (existingProgress) {
-        // Update existing record
         const { error } = await supabase
           .from('user_progress')
           .update({
@@ -138,7 +130,6 @@ const ModuleContentPage = () => {
           
         if (error) throw error;
       } else {
-        // Insert new record
         const { error } = await supabase
           .from('user_progress')
           .insert({
@@ -163,7 +154,6 @@ const ModuleContentPage = () => {
   const renderModuleContent = (content: string | null) => {
     if (!content) return <p>No content available for this module.</p>;
     
-    // Basic markdown-like rendering
     const sections = content.split('\n\n').map((section, index) => {
       if (section.startsWith('# ')) {
         return <h2 key={index} className="text-2xl font-bold my-4">{section.substring(2)}</h2>;
