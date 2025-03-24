@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -27,6 +26,7 @@ import FreeCoursesDashboard from '@/pages/student/FreeCoursesDashboard';
 import LanguagesPage from '@/pages/student/LanguagesPage';
 import LanguageModulesPage from '@/pages/student/LanguageModulesPage';
 import ModuleContentPage from '@/pages/student/ModuleContentPage';
+import ChallengesPage from '@/pages/student/ChallengesPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -72,6 +72,7 @@ function App() {
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
+          <Route path="/student/challenges" element={<ChallengesPage />} />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<TeacherDashboardPage />} />

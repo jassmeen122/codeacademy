@@ -1,3 +1,4 @@
+
 export interface Course {
   id: string;
   title: string;
@@ -102,3 +103,39 @@ export interface UserProgress {
   last_accessed: string;
   created_at: string;
 }
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  points: number;
+}
+
+export interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  type: 'daily' | 'weekly';
+  points: number;
+  start_date: string;
+  end_date: string;
+}
+
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  earned_at: string;
+  badge: Badge;
+}
+
+export interface UserChallenge {
+  id: string;
+  user_id: string;
+  challenge_id: string;
+  completed: boolean;
+  completion_date: string | null;
+}
+
+export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | "draft" | "published";

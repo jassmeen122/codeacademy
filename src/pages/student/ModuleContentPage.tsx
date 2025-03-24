@@ -1,317 +1,242 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { useModuleContent } from '@/hooks/useProgrammingCourses';
-import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileText, CheckCircle, BookOpen, FileQuestion, Code } from "lucide-react";
-import { QuizComponent } from '@/components/courses/QuizComponent';
-import { CodingExerciseComponent } from '@/components/courses/CodingExerciseComponent';
+import { Video, File, ListChecks, Loader2 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+import { QuizComponent } from "@/components/courses/QuizComponent";
+import { CodingExerciseComponent } from "@/components/courses/CodingExerciseComponent";
+import { useModuleDetails } from '@/hooks/useProgrammingCourses';
 import { toast } from 'sonner';
-import type { CourseModule } from '@/types/course';
+import { supabase } from '@/integrations/supabase/client';
+import { Trophy } from 'lucide-react';
+import { useAuthState } from '@/hooks/useAuthState';
 
 const ModuleContentPage = () => {
-  const { moduleId } = useParams<{ moduleId: string }>();
+  const { moduleId } = useParams();
   const navigate = useNavigate();
-  const { module, quizzes, exercises, loading } = useModuleContent(moduleId ?? null);
-  const [languageName, setLanguageName] = useState('');
-  const [quizScores, setQuizScores] = useState<Record<string, number>>({});
-  const [exerciseCompletions, setExerciseCompletions] = useState<Record<string, boolean>>({});
-  const [completionStatus, setCompletionStatus] = useState<boolean>(false);
+  const { user } = useAuthState();
+  const moduleDetails = useModuleDetails(moduleId || '');
 
-  useEffect(() => {
-    const fetchLanguageName = async () => {
-      if (!module?.language_id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('programming_languages')
-          .select('name')
-          .eq('id', module.language_id)
-          .single();
-          
-        if (error) throw error;
-        setLanguageName(data.name);
-      } catch (err) {
-        console.error('Error fetching language name:', err);
-      }
-    };
+  if (!moduleId) {
+    return <DashboardLayout>Module ID is required.</DashboardLayout>;
+  }
 
-    const fetchUserProgress = async () => {
-      if (!moduleId) return;
-      
+  if (moduleDetails.loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Loading module content...
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!moduleDetails.module) {
+    return <DashboardLayout>Module not found.</DashboardLayout>;
+  }
+
+  const handleCompleteQuiz = async (score: number) => {
+    await moduleDetails.updateProgress(true, score, moduleDetails.userProgress?.exercise_completed || false);
+    
+    // Give points for completing a quiz
+    const pointsEarned = score > 0 ? 50 : 10;
+    
+    if (user) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        await supabase.rpc('increment_user_points', {
+          user_id: user.id,
+          points_to_add: pointsEarned
+        });
         
-        const { data, error } = await supabase
-          .from('user_progress')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('module_id', moduleId)
-          .single();
-          
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+        toast.success(
+          <div className="flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-yellow-500" />
+            <span>+{pointsEarned} points earned for quiz completion!</span>
+          </div>
+        );
         
-        if (data) {
-          setCompletionStatus(data.completed);
+        // Check for quiz score badge if perfect score
+        if (score === 1) {
+          checkForQuizBadge(user.id);
         }
-      } catch (err) {
-        console.error('Error fetching user progress:', err);
+      } catch (error) {
+        console.error('Error updating points:', error);
       }
-    };
-    
-    fetchLanguageName();
-    fetchUserProgress();
-  }, [module, moduleId]);
-
-  const handleQuizCompletion = (quizId: string, score: number) => {
-    setQuizScores(prev => ({
-      ...prev,
-      [quizId]: score
-    }));
-    
-    checkModuleCompletion();
-  };
-
-  const handleExerciseCompletion = (exerciseId: string, completed: boolean) => {
-    setExerciseCompletions(prev => ({
-      ...prev,
-      [exerciseId]: completed
-    }));
-    
-    checkModuleCompletion();
-  };
-
-  const checkModuleCompletion = () => {
-    // Consider the module complete if:
-    // 1. All quizzes have been attempted
-    // 2. At least 70% of quiz answers are correct
-    // 3. All exercises are completed
-
-    const allQuizzesAttempted = quizzes.every(quiz => quizId in quizScores);
-    
-    if (!allQuizzesAttempted) return;
-    
-    const quizTotal = quizzes.length;
-    const quizCorrect = Object.values(quizScores).reduce((sum, score) => sum + score, 0);
-    const quizPercentage = quizTotal > 0 ? (quizCorrect / quizTotal) * 100 : 0;
-    
-    const allExercisesComplete = exercises.every(ex => exerciseCompletions[ex.id]);
-    
-    const isModuleComplete = allQuizzesAttempted && quizPercentage >= 70 && allExercisesComplete;
-    
-    if (isModuleComplete && !completionStatus) {
-      updateUserProgress(true);
     }
   };
 
-  const updateUserProgress = async (completed: boolean) => {
+  const handleCompleteExercise = async (completed: boolean) => {
+    await moduleDetails.updateProgress(
+      moduleDetails.userProgress?.completed || false,
+      moduleDetails.userProgress?.quiz_score || 0,
+      completed
+    );
+    
+    // Give points for completing an exercise
+    if (completed && user) {
+      try {
+        // Award more points for coding exercise completion
+        const pointsEarned = 100;
+        
+        await supabase.rpc('increment_user_points', {
+          user_id: user.id,
+          points_to_add: pointsEarned
+        });
+        
+        toast.success(
+          <div className="flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-yellow-500" />
+            <span>+{pointsEarned} points earned for exercise completion!</span>
+          </div>
+        );
+      } catch (error) {
+        console.error('Error updating points:', error);
+      }
+    }
+  };
+
+  const checkForQuizBadge = async (userId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !moduleId) return;
-      
-      // Check if a record already exists
-      const { data: existingProgress, error: fetchError } = await supabase
+      // Check how many perfect quizzes the user has completed
+      const { data: perfectQuizzes, error: quizError } = await supabase
         .from('user_progress')
         .select('id')
-        .eq('user_id', user.id)
-        .eq('module_id', moduleId)
-        .single();
+        .eq('user_id', userId)
+        .eq('quiz_score', 1);
+        
+      if (quizError) throw quizError;
       
-      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
-      
-      if (existingProgress) {
-        // Update existing record
-        const { error } = await supabase
-          .from('user_progress')
-          .update({
-            completed,
-            quiz_score: Object.values(quizScores).reduce((sum, score) => sum + score, 0),
-            exercise_completed: Object.values(exerciseCompletions).every(Boolean),
-            last_accessed: new Date().toISOString()
-          })
-          .eq('id', existingProgress.id);
+      // If user has 5 perfect quizzes, check for the "Quiz Ace" badge
+      if (perfectQuizzes && perfectQuizzes.length >= 5) {
+        const { data: quizAceBadge, error: badgeError } = await supabase
+          .from('badges')
+          .select('id')
+          .eq('name', 'Quiz Ace')
+          .single();
           
-        if (error) throw error;
-      } else {
-        // Insert new record
-        const { error } = await supabase
-          .from('user_progress')
-          .insert({
-            user_id: user.id,
-            module_id: moduleId,
-            completed,
-            quiz_score: Object.values(quizScores).reduce((sum, score) => sum + score, 0),
-            exercise_completed: Object.values(exerciseCompletions).every(Boolean)
+        if (badgeError) throw badgeError;
+        
+        // Check if user already has this badge
+        const { data: existingBadge, error: existingError } = await supabase
+          .from('user_badges')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('badge_id', quizAceBadge.id)
+          .maybeSingle();
+        
+        if (existingError) throw existingError;
+        
+        // Award badge if they don't have it yet
+        if (!existingBadge && quizAceBadge) {
+          const { error: insertError } = await supabase
+            .from('user_badges')
+            .insert({
+              user_id: userId,
+              badge_id: quizAceBadge.id
+            });
+            
+          if (insertError) throw insertError;
+          
+          // Add the badge points too
+          const { data: badgePoints, error: pointsError } = await supabase
+            .from('badges')
+            .select('points')
+            .eq('id', quizAceBadge.id)
+            .single();
+            
+          if (pointsError) throw pointsError;
+          
+          await supabase.rpc('increment_user_points', {
+            user_id: userId,
+            points_to_add: badgePoints.points
           });
           
-        if (error) throw error;
+          toast.success(`🏆 New badge earned: Quiz Ace!`, {
+            duration: 5000
+          });
+        }
       }
-      
-      setCompletionStatus(completed);
-      toast.success('Module completed! Great job!');
-    } catch (err) {
-      console.error('Error updating user progress:', err);
-      toast.error('Failed to update progress');
+    } catch (error) {
+      console.error('Error checking quiz badge:', error);
     }
-  };
-
-  const renderModuleContent = (content: string | null) => {
-    if (!content) return <p>No content available for this module.</p>;
-    
-    // Basic markdown-like rendering
-    const sections = content.split('\n\n').map((section, index) => {
-      if (section.startsWith('# ')) {
-        return <h2 key={index} className="text-2xl font-bold my-4">{section.substring(2)}</h2>;
-      } else if (section.startsWith('## ')) {
-        return <h3 key={index} className="text-xl font-bold my-3">{section.substring(3)}</h3>;
-      } else if (section.startsWith('### ')) {
-        return <h4 key={index} className="text-lg font-bold my-2">{section.substring(4)}</h4>;
-      } else if (section.startsWith('```')) {
-        const code = section.substring(section.indexOf('\n') + 1, section.lastIndexOf('```'));
-        return (
-          <pre key={index} className="bg-gray-900 text-white p-4 rounded-lg my-4 overflow-x-auto">
-            <code>{code}</code>
-          </pre>
-        );
-      } else {
-        return <p key={index} className="my-2">{section}</p>;
-      }
-    });
-    
-    return <div className="prose max-w-none">{sections}</div>;
   };
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate(-1)}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Modules
-        </Button>
-        
-        {loading ? (
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/2 mb-4" />
-            <div className="h-4 bg-gray-100 rounded w-1/4 mb-8" />
-            <div className="h-96 bg-gray-100 rounded" />
-          </div>
-        ) : module ? (
-          <>
-            <div className="mb-6">
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold text-gray-800">{module.title}</h1>
-                {completionStatus && (
-                  <CheckCircle className="h-6 w-6 text-green-500" />
-                )}
-              </div>
-              <div className="flex items-center text-muted-foreground mt-1">
-                <BookOpen className="h-4 w-4 mr-1" />
-                <span>{languageName}</span>
-                <span className="mx-2">•</span>
-                <span>{module.difficulty}</span>
-                {module.estimated_duration && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <span>{module.estimated_duration}</span>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            <Tabs defaultValue="content">
-              <TabsList className="mb-6">
-                <TabsTrigger value="content" className="flex items-center gap-1">
-                  <FileText className="h-4 w-4" />
-                  Content
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="quiz" 
-                  className="flex items-center gap-1"
-                  disabled={quizzes.length === 0}
-                >
-                  <FileQuestion className="h-4 w-4" />
-                  Quiz ({quizzes.length})
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="exercises" 
-                  className="flex items-center gap-1"
-                  disabled={exercises.length === 0}
-                >
-                  <Code className="h-4 w-4" />
-                  Exercises ({exercises.length})
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="content">
-                <Card>
-                  <CardContent className="pt-6">
-                    {renderModuleContent(module.content)}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="quiz">
-                {quizzes.length > 0 ? (
-                  <div className="space-y-6">
-                    {quizzes.map((quiz) => (
-                      <QuizComponent 
-                        key={quiz.id} 
-                        quiz={quiz} 
-                        onComplete={(score) => handleQuizCompletion(quiz.id, score)} 
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 bg-gray-50 rounded-lg">
-                    <FileQuestion className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-medium text-gray-800 mb-2">No Quizzes Available</h3>
-                    <p className="text-gray-500 max-w-md mx-auto">
-                      There are no quizzes available for this module yet.
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="exercises">
-                {exercises.length > 0 ? (
-                  <div className="space-y-6">
-                    {exercises.map((exercise) => (
-                      <CodingExerciseComponent 
-                        key={exercise.id} 
-                        exercise={exercise} 
-                        onComplete={(completed) => handleExerciseCompletion(exercise.id, completed)} 
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 bg-gray-50 rounded-lg">
-                    <Code className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-medium text-gray-800 mb-2">No Exercises Available</h3>
-                    <p className="text-gray-500 max-w-md mx-auto">
-                      There are no coding exercises available for this module yet.
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </>
-        ) : (
-          <div className="text-center py-16 bg-gray-50 rounded-lg">
-            <BookOpen className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-medium text-gray-800 mb-2">Module Not Found</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              We couldn't find the module you're looking for. Please try selecting a different module.
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">{moduleDetails.module.title}</h1>
+            <p className="text-muted-foreground">
+              {moduleDetails.module.description || 'No description available for this module.'}
             </p>
           </div>
+          <Button onClick={() => navigate(`/student/languages/${moduleDetails.module.language_id}`)}>
+            Back to Course
+          </Button>
+        </div>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Module Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="content">
+                <AccordionTrigger>
+                  <Video className="mr-2 h-4 w-4" />
+                  Module Content
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="prose prose-sm max-w-none">
+                    {moduleDetails.module.content ? (
+                      <div dangerouslySetInnerHTML={{ __html: moduleDetails.module.content }} />
+                    ) : (
+                      <p>No content available for this module.</p>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+
+        {moduleDetails.quizzes.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Quizzes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {moduleDetails.quizzes.map((quiz) => (
+                <QuizComponent 
+                  key={quiz.id} 
+                  quiz={quiz} 
+                  onComplete={handleCompleteQuiz} 
+                />
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {moduleDetails.exercises.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Coding Exercises</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {moduleDetails.exercises.map((exercise) => (
+                <CodingExerciseComponent
+                  key={exercise.id}
+                  exercise={exercise}
+                  onComplete={handleCompleteExercise}
+                />
+              ))}
+            </CardContent>
+          </Card>
         )}
       </div>
     </DashboardLayout>
