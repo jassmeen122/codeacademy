@@ -5,7 +5,7 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useLanguageSummary } from '@/hooks/useLanguageSummary';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft, BookOpen, CheckCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle, Code } from "lucide-react";
 import { useAuthState } from '@/hooks/useAuthState';
 import { CodeBlock } from '@/components/ai-assistant/CodeBlock';
 
@@ -25,6 +25,14 @@ const LanguageSummaryPage = () => {
     if (success) {
       // We don't need to navigate away as the state will update
     }
+  };
+
+  // Function to detect language from code
+  const detectLanguage = (codeBlock: string): string => {
+    if (codeBlock.includes('System.out.println')) return 'java';
+    if (codeBlock.includes('function') || codeBlock.includes('let ') || codeBlock.includes('const ')) return 'javascript';
+    if (codeBlock.includes('print(') || codeBlock.includes('def ')) return 'python';
+    return 'plaintext';
   };
 
   // Function to render the content with proper formatting
@@ -51,20 +59,46 @@ const LanguageSummaryPage = () => {
         );
       }
       
-      // Check for code blocks (detect language by looking for java or python indicators)
-      const codeMatch = paragraph.match(/^(java|python)\s*\n([\s\S]+)$/);
-      if (codeMatch) {
-        const language = codeMatch[1];
-        const code = codeMatch[2];
-        return (
-          <div key={index} className="my-4">
-            <CodeBlock code={code} language={language} />
-          </div>
-        );
+      // Check for code blocks
+      if (paragraph.includes('```') || (paragraph.match(/^(java|python|js|javascript)\s*\n/))) {
+        // Handle markdown code blocks ```language\ncode\n```
+        const codeMatch = paragraph.match(/```(\w+)?\n([\s\S]+?)\n```/);
+        if (codeMatch) {
+          const language = codeMatch[1] || detectLanguage(codeMatch[2]);
+          const code = codeMatch[2];
+          return (
+            <div key={index} className="my-4">
+              <CodeBlock code={code} language={language} />
+            </div>
+          );
+        }
+        
+        // Handle language prefix code blocks (e.g., java\ncode)
+        const langPrefixMatch = paragraph.match(/^(java|python|js|javascript)\s*\n([\s\S]+)$/);
+        if (langPrefixMatch) {
+          let language = langPrefixMatch[1];
+          if (language === 'js') language = 'javascript';
+          const code = langPrefixMatch[2];
+          return (
+            <div key={index} className="my-4">
+              <CodeBlock code={code} language={language} />
+            </div>
+          );
+        }
+        
+        // If we can detect code but no explicit language
+        if (/if\s*\(|\}\s*else\s*\{|function\s+\w+\s*\(|let\s+\w+\s*=|const\s+\w+\s*=|System\.out\.println|public\s+static|import\s+java\./.test(paragraph)) {
+          const language = detectLanguage(paragraph);
+          return (
+            <div key={index} className="my-4">
+              <CodeBlock code={paragraph} language={language} />
+            </div>
+          );
+        }
       }
       
       // Check if paragraph starts with Type followed by Description and Example (likely a table)
-      if (paragraph.startsWith('Type') && paragraph.includes('Description') && paragraph.includes('Exemple')) {
+      if (paragraph.includes('Type') && paragraph.includes('Description') && paragraph.includes('Exemple')) {
         const rows = paragraph.split('\n');
         return (
           <div key={index} className="overflow-x-auto my-4">
@@ -174,7 +208,7 @@ const LanguageSummaryPage = () => {
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <BookOpen className="h-16 w-16 text-gray-300 mb-4" />
+              <Code className="h-16 w-16 text-gray-300 mb-4" />
               <h3 className="text-xl font-medium mb-2">Résumé non disponible</h3>
               <p className="text-gray-500 max-w-md text-center mb-6">
                 Le résumé pour ce langage n'est pas encore disponible.

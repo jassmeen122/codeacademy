@@ -5,15 +5,20 @@ import { BadgesList } from "@/components/student/achievements/BadgesList";
 import { GamificationStats } from "@/components/student/GamificationStats";
 import { useUserBadges } from '@/hooks/useUserBadges';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, BookOpen } from 'lucide-react';
+import { Award, BookOpen, Code } from 'lucide-react';
 
 const AchievementsPage = () => {
   const { badges, loading } = useUserBadges();
 
-  // Get the number of language badges (those with "Mastery" in the name)
-  const languageBadgesCount = badges.filter(badge => 
+  // Get language mastery badges (those with "Mastery" in the name)
+  const languageBadges = badges.filter(badge => 
     badge.badge.name.includes('Mastery')
-  ).length;
+  );
+  
+  // Get the names of the languages from the badges
+  const languageNames = languageBadges.map(badge => 
+    badge.badge.name.replace(' Mastery', '')
+  );
 
   return (
     <DashboardLayout>
@@ -34,8 +39,8 @@ const AchievementsPage = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center">
-                  <BookOpen className="h-5 w-5 mr-2 text-blue-500" />
-                  Progression des Langages
+                  <Code className="h-5 w-5 mr-2 text-blue-500" />
+                  Maîtrise des Langages
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -44,19 +49,32 @@ const AchievementsPage = () => {
                     <span className="text-sm text-muted-foreground">Badges de maîtrise obtenus</span>
                     <div className="flex items-center">
                       <Award className="h-4 w-4 text-amber-500 mr-1" />
-                      <span className="font-medium">{languageBadgesCount}</span>
+                      <span className="font-medium">{languageBadges.length}</span>
                     </div>
                   </div>
                   
+                  {languageBadges.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {languageNames.map((language, index) => (
+                        <span 
+                          key={index} 
+                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full"
+                        >
+                          {language}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
                   <div className="text-sm text-muted-foreground">
-                    {languageBadgesCount === 0 ? (
+                    {languageBadges.length === 0 ? (
                       <p>
                         Vous n'avez pas encore gagné de badge de maîtrise de langage. 
                         Complétez les résumés et les quiz pour en obtenir !
                       </p>
                     ) : (
                       <p>
-                        Félicitations ! Vous avez obtenu {languageBadgesCount} badge{languageBadgesCount > 1 ? 's' : ''} de maîtrise.
+                        Félicitations ! Vous avez obtenu {languageBadges.length} badge{languageBadges.length > 1 ? 's' : ''} de maîtrise.
                         Continuez à apprendre d'autres langages !
                       </p>
                     )}
