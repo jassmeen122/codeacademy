@@ -136,6 +136,7 @@ export interface UserChallenge {
   challenge_id: string;
   completed: boolean;
   completion_date: string | null;
+  status?: string;
 }
 
 export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | "draft" | "published";

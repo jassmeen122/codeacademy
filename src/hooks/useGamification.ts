@@ -112,8 +112,8 @@ export const useChallenges = () => {
         const { error } = await supabase
           .from('user_challenges')
           .update({
-            completed: true,
-            completion_date: new Date().toISOString()
+            completed_at: new Date().toISOString(),
+            status: 'completed'
           })
           .eq('id', existingChallenge.id);
 
@@ -125,8 +125,8 @@ export const useChallenges = () => {
           .insert({
             user_id: user.id,
             challenge_id: challengeId,
-            completed: true,
-            completion_date: new Date().toISOString()
+            completed_at: new Date().toISOString(),
+            status: 'completed'
           });
 
         if (error) throw error;
@@ -139,7 +139,18 @@ export const useChallenges = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      setUserChallenges(data || []);
+      
+      // Convert database data to our UserChallenge type
+      const updatedUserChallenges: UserChallenge[] = data.map(challenge => ({
+        id: challenge.id,
+        user_id: challenge.user_id,
+        challenge_id: challenge.challenge_id,
+        completed: challenge.status === 'completed',
+        completion_date: challenge.completed_at,
+        status: challenge.status
+      }));
+      
+      setUserChallenges(updatedUserChallenges);
 
       toast.success('Challenge completed! Points awarded.');
     } catch (error: any) {

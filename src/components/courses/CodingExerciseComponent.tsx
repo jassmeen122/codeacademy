@@ -74,7 +74,7 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         
         <div className="h-80">
           <CodeEditorWrapper
-            code={code}
+            initialCode={code}
             language={exercise.module_id.includes('python') ? 'python' : 'javascript'}
             onChange={handleCodeChange}
             onRun={handleRun}
