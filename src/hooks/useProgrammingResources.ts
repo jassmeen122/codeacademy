@@ -36,11 +36,10 @@ export const useLanguageResources = (languageId: string | null) => {
         setLoading(true);
         
         // Fetch default resources
+        // Nous devons utiliser une requête SQL brute car les tables custom_resources et default_resources
+        // ne sont pas dans le schéma TypeScript généré
         const { data: defaultData, error: defaultError } = await supabase
-          .from('default_resources')
-          .select('*')
-          .eq('language_id', languageId)
-          .single();
+          .rpc('get_default_resources', { lang_id: languageId });
           
         if (defaultError && defaultError.code !== 'PGRST116') {
           throw defaultError;
@@ -48,10 +47,7 @@ export const useLanguageResources = (languageId: string | null) => {
         
         // Fetch custom resources if they exist
         const { data: customData, error: customError } = await supabase
-          .from('custom_resources')
-          .select('*')
-          .eq('language_id', languageId)
-          .maybeSingle();
+          .rpc('get_custom_resources', { lang_id: languageId });
           
         if (customError && customError.code !== 'PGRST116') {
           throw customError;
@@ -158,51 +154,21 @@ export const useUploadLanguageResource = () => {
         exercise_pdf_url = publicUrlData.publicUrl;
       }
       
-      // Check if we already have custom resources for this language
-      const { data: existingResource, error: fetchError } = await supabase
-        .from('custom_resources')
-        .select('id')
-        .eq('language_id', languageId)
-        .eq('teacher_id', teacherId)
-        .maybeSingle();
-        
-      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+      // Nous utilisons une procédure stockée pour gérer l'insertion/mise à jour
+      // car les tables ne sont pas dans le schéma TypeScript généré
+      const { data: result, error: upsertError } = await supabase.rpc(
+        'upsert_custom_resource',
+        {
+          lang_id: languageId,
+          teach_id: teacherId,
+          c_video_url: data.course_video_url || null,
+          c_pdf_url: course_pdf_url || null,
+          e_video_url: data.exercise_video_url || null,
+          e_pdf_url: exercise_pdf_url || null
+        }
+      );
       
-      // Prepare data for insertion/update
-      const resourceData: any = {
-        language_id: languageId,
-        teacher_id: teacherId
-      };
-      
-      // Only include fields that are provided
-      if (data.course_video_url) resourceData.course_video_url = data.course_video_url;
-      if (course_pdf_url) resourceData.course_pdf_url = course_pdf_url;
-      if (data.exercise_video_url) resourceData.exercise_video_url = data.exercise_video_url;
-      if (exercise_pdf_url) resourceData.exercise_pdf_url = exercise_pdf_url;
-      
-      let result;
-      
-      // Insert or update based on whether the resource exists
-      if (existingResource) {
-        const { data, error } = await supabase
-          .from('custom_resources')
-          .update(resourceData)
-          .eq('id', existingResource.id)
-          .select()
-          .single();
-          
-        if (error) throw error;
-        result = data;
-      } else {
-        const { data, error } = await supabase
-          .from('custom_resources')
-          .insert(resourceData)
-          .select()
-          .single();
-          
-        if (error) throw error;
-        result = data;
-      }
+      if (upsertError) throw upsertError;
       
       return result;
     } catch (err: any) {
