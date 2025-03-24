@@ -34,6 +34,7 @@ const LanguageSummaryPage = () => {
     if (codeBlock.includes('print(') || codeBlock.includes('def ')) return 'python';
     if (codeBlock.includes('#include <stdio.h>') || (codeBlock.includes('printf') && codeBlock.includes('int main'))) return 'c';
     if (codeBlock.includes('using namespace std') || codeBlock.includes('cout <<') || (codeBlock.includes('#include <iostream>') && codeBlock.includes('int main'))) return 'cpp';
+    if (codeBlock.includes('<?php') || codeBlock.includes('echo ') || codeBlock.includes('$')) return 'php';
     return 'plaintext';
   };
 
