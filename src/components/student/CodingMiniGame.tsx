@@ -64,12 +64,13 @@ export const CodingMiniGame = () => {
   const renderOptions = () => {
     if (!currentQuiz) return null;
     
-    // Get all options and shuffle them
+    // Get all options and filter out null/undefined ones
     const options = [
       currentQuiz.option1,
       currentQuiz.option2,
       currentQuiz.option3,
-      currentQuiz.option4
+      // Check if option4 exists before adding it
+      currentQuiz.hasOwnProperty('option4') ? (currentQuiz as any).option4 : null
     ].filter(Boolean).sort(() => 0.5 - Math.random());
     
     return (
@@ -170,11 +171,11 @@ export const CodingMiniGame = () => {
               <div className="text-lg font-medium">{currentQuiz?.question}</div>
               {renderOptions()}
               
-              {selectedAnswer && currentQuiz?.explanation && (
+              {selectedAnswer && currentQuiz && (currentQuiz as any).explanation && (
                 <div className={`p-4 rounded-lg mt-4 ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                   <div className="flex gap-2 items-start">
                     <Lightbulb className={`h-5 w-5 ${isCorrect ? 'text-green-600' : 'text-red-600'}`} />
-                    <p className="text-sm">{currentQuiz.explanation}</p>
+                    <p className="text-sm">{(currentQuiz as any).explanation}</p>
                   </div>
                 </div>
               )}
@@ -208,7 +209,7 @@ export const CodingMiniGame = () => {
                 : "Continue de pratiquer, tu progresseras!"}
             </p>
             
-            {gamification && gamification.badges.length > 0 && (
+            {gamification && gamification.badges && gamification.badges.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium">Badges débloqués:</p>
                 <div className="flex flex-wrap justify-center gap-2">

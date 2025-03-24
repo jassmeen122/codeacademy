@@ -7,10 +7,8 @@ import { Trophy, ArrowLeft, Medal, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { GameDifficulty } from "@/hooks/useCodingGame";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import "react-tabs/style/react-tabs.css";
 import { toast } from "sonner";
 
 interface LeaderboardEntry {
@@ -45,7 +43,7 @@ const MiniGamePage = () => {
       if (scoresError) throw scoresError;
 
       // Fetch user names
-      const userIds = scoresData.map((score) => score.user_id);
+      const userIds = scoresData?.map((score) => score.user_id) || [];
       const { data: usersData, error: usersError } = await supabase
         .from("profiles")
         .select("id, full_name")
@@ -54,14 +52,14 @@ const MiniGamePage = () => {
       if (usersError) throw usersError;
 
       // Merge data
-      const leaderboardData = scoresData.map((score) => {
-        const user = usersData.find((u) => u.id === score.user_id);
+      const leaderboardData = scoresData?.map((score) => {
+        const user = usersData?.find((u) => u.id === score.user_id);
         return {
           ...score,
           user_name: user?.full_name || "Utilisateur inconnu",
           difficulty: score.difficulty as GameDifficulty
         };
-      });
+      }) || [];
 
       setLeaderboard(leaderboardData);
     } catch (error) {
