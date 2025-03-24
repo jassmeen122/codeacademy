@@ -22,7 +22,7 @@ interface UserLanguageProgress {
   last_updated: string;
 }
 
-export function useLanguageSummary(languageId: string | null) {
+export function useLanguageSummary(languageIdOrName: string | null) {
   const [summary, setSummary] = useState<LanguageSummary | null>(null);
   const [userProgress, setUserProgress] = useState<UserLanguageProgress | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export function useLanguageSummary(languageId: string | null) {
   const { user } = useAuthState();
 
   useEffect(() => {
-    if (!languageId) {
+    if (!languageIdOrName) {
       setLoading(false);
       return;
     }
@@ -39,7 +39,29 @@ export function useLanguageSummary(languageId: string | null) {
       try {
         setLoading(true);
         
-        // Fetch language summary
+        // Check if the input is a UUID or a language name
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(languageIdOrName);
+        
+        let languageId: string;
+        
+        // If it's not a UUID, fetch the language ID by name
+        if (!isUuid) {
+          const { data: langData, error: langError } = await supabase
+            .from('programming_languages')
+            .select('id')
+            .ilike('name', languageIdOrName)
+            .single();
+          
+          if (langError) {
+            throw new Error(`Language not found: ${languageIdOrName}`);
+          }
+          
+          languageId = langData.id;
+        } else {
+          languageId = languageIdOrName;
+        }
+        
+        // Fetch language summary using the language ID
         const { data: summaryData, error: summaryError } = await supabase
           .from('language_summaries')
           .select('*')
@@ -87,15 +109,32 @@ export function useLanguageSummary(languageId: string | null) {
     }
 
     fetchData();
-  }, [languageId, user]);
+  }, [languageIdOrName, user]);
 
   async function markAsRead() {
-    if (!user || !languageId) {
+    if (!user || !languageIdOrName) {
       toast.error('Vous devez être connecté pour marquer comme lu');
       return false;
     }
     
     try {
+      // Ensure we have the language ID (not name)
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(languageIdOrName);
+      let languageId: string;
+      
+      if (!isUuid) {
+        const { data: langData, error: langError } = await supabase
+          .from('programming_languages')
+          .select('id')
+          .ilike('name', languageIdOrName)
+          .single();
+        
+        if (langError) throw new Error(`Language not found: ${languageIdOrName}`);
+        languageId = langData.id;
+      } else {
+        languageId = languageIdOrName;
+      }
+      
       // If progress record exists, update it, otherwise create a new one
       if (userProgress) {
         const { error } = await supabase

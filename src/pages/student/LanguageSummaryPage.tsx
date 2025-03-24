@@ -44,6 +44,7 @@ const LanguageSummaryPage = () => {
     if (codeBlock.includes('#include <stdio.h>') || (codeBlock.includes('printf') && codeBlock.includes('int main'))) return 'c';
     if (codeBlock.includes('using namespace std') || codeBlock.includes('cout <<') || (codeBlock.includes('#include <iostream>') && codeBlock.includes('int main'))) return 'cpp';
     if (codeBlock.includes('<?php') || codeBlock.includes('echo ') || codeBlock.includes('$')) return 'php';
+    if (codeBlock.includes('SELECT ') || codeBlock.includes('CREATE TABLE') || codeBlock.includes('INSERT INTO')) return 'sql';
     return 'plaintext';
   };
 
@@ -72,7 +73,7 @@ const LanguageSummaryPage = () => {
       }
       
       // Check for code blocks
-      if (paragraph.includes('```') || paragraph.match(/^(java|python|js|javascript|c|cpp|php)\s*\n/)) {
+      if (paragraph.includes('```') || paragraph.match(/^(java|python|js|javascript|c|cpp|php|sql)\s*\n/)) {
         // Handle markdown code blocks ```language\ncode\n```
         const codeMatch = paragraph.match(/```(\w+)?\n([\s\S]+?)\n```/);
         if (codeMatch) {
@@ -86,7 +87,7 @@ const LanguageSummaryPage = () => {
         }
         
         // Handle language prefix code blocks (e.g., java\ncode)
-        const langPrefixMatch = paragraph.match(/^(java|python|js|javascript|c|cpp|php)\s*\n([\s\S]+)$/);
+        const langPrefixMatch = paragraph.match(/^(java|python|js|javascript|c|cpp|php|sql)\s*\n([\s\S]+)$/);
         if (langPrefixMatch) {
           let language = langPrefixMatch[1];
           if (language === 'js') language = 'javascript';
@@ -99,7 +100,7 @@ const LanguageSummaryPage = () => {
         }
         
         // If we can detect code but no explicit language
-        if (/if\s*\(|\}\s*else\s*\{|function\s+\w+\s*\(|let\s+\w+\s*=|const\s+\w+\s*=|System\.out\.println|public\s+static|import\s+java\.|#include|printf|cout|void\s+\w+\s*\(|int\s+main|echo\s+|<?php/.test(paragraph)) {
+        if (/if\s*\(|\}\s*else\s*\{|function\s+\w+\s*\(|let\s+\w+\s*=|const\s+\w+\s*=|System\.out\.println|public\s+static|import\s+java\.|#include|printf|cout|void\s+\w+\s*\(|int\s+main|echo\s+|<?php|SELECT\s+|CREATE\s+TABLE|INSERT\s+INTO/.test(paragraph)) {
           const language = detectLanguage(paragraph);
           return (
             <div key={index} className="my-4">
