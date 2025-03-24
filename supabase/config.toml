@@ -17,8 +17,7 @@ port = 8000
 [inbucket]
 smtp_port = 2500
 pop3_port = 1100
-# Changing web_port to http_port as per Supabase's latest configuration format
-http_port = 9000
+web_port = 9000
 
 [auth]
 site_url = "http://localhost:3000"
