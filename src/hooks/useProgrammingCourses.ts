@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type { ProgrammingLanguage, CourseModule } from '@/types/course';
+import type { ProgrammingLanguage, CourseModule, Quiz, CodingExercise, UserProgress } from '@/types/course';
 
 export const useProgrammingLanguages = () => {
   const [languages, setLanguages] = useState<ProgrammingLanguage[]>([]);

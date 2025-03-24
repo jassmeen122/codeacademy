@@ -92,7 +92,7 @@ const ModuleContentPage = () => {
     // 2. At least 70% of quiz answers are correct
     // 3. All exercises are completed
 
-    const allQuizzesAttempted = quizzes.every(quiz => quizId in quizScores);
+    const allQuizzesAttempted = quizzes.every(quiz => quiz.id in quizScores); // Fixed: was quizId
     
     if (!allQuizzesAttempted) return;
     

@@ -12,7 +12,15 @@ export interface CourseResource {
   created_at: string | null;
 }
 
-export type ProgrammingLanguage = "JavaScript" | "Python" | "Java" | "C++" | "Ruby" | "Go" | "PHP" | "C" | "SQL";
+export type ProgrammingLanguage = {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 // Update CoursePath to match what Supabase expects
 export type CoursePath = "Web Development" | "Data Science" | "Artificial Intelligence";
@@ -30,7 +38,7 @@ export interface Course {
   path: CoursePath;
   category: CourseCategory;
   duration: string;
-  language: ProgrammingLanguage;
+  language: string;
   students: number;
   image: string;
   professor: {
@@ -79,4 +87,56 @@ export interface UserGamification {
   badges: string[];
   created_at: string;
   last_played_at: string;
+}
+
+// Add CourseModule interface for the modules
+export interface CourseModule {
+  id: string;
+  language_id: string;
+  title: string;
+  description: string | null;
+  order_index: number;
+  content: string | null;
+  difficulty: CourseLevel;
+  estimated_duration: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Add Quiz interface for the quizzes
+export interface Quiz {
+  id: string;
+  module_id: string;
+  question: string;
+  correct_answer: string;
+  option1: string;
+  option2: string;
+  option3: string | null;
+  explanation: string | null;
+  created_at: string;
+}
+
+// Add CodingExercise interface for the exercises
+export interface CodingExercise {
+  id: string;
+  module_id: string;
+  title: string;
+  description: string;
+  starter_code: string | null;
+  expected_output: string | null;
+  difficulty: CourseLevel;
+  hints: string[] | null;
+  created_at: string;
+}
+
+// Add UserProgress interface for tracking progress
+export interface UserProgress {
+  id: string;
+  user_id: string;
+  module_id: string;
+  completed: boolean;
+  quiz_score: number | null;
+  exercise_completed: boolean;
+  last_accessed: string;
+  created_at: string;
 }
