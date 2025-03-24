@@ -6,9 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, ArrowLeft, Medal, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { GameDifficulty } from "@/hooks/useCodingGame";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 interface LeaderboardEntry {
@@ -16,7 +14,7 @@ interface LeaderboardEntry {
   user_id: string;
   user_name: string;
   score: number;
-  difficulty: GameDifficulty;
+  difficulty: string;
   completed_at: string;
 }
 
@@ -24,7 +22,7 @@ const MiniGamePage = () => {
   const navigate = useNavigate();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<GameDifficulty>("Beginner");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("Beginner");
 
   useEffect(() => {
     fetchLeaderboard();
@@ -34,46 +32,56 @@ const MiniGamePage = () => {
     try {
       setLoading(true);
       
-      // Fetch scores from mini_game_scores table where difficulty matches selected difficulty
+      // Use explicit type annotation to avoid excessive type instantiation
       const { data: scoresData, error: scoresError } = await supabase
         .from("mini_game_scores")
-        .select("id, user_id, score, completed_at")
-        .eq("difficulty", selectedDifficulty)
-        .order("score", { ascending: false })
-        .limit(10);
-
-      if (scoresError) {
-        throw scoresError;
-      }
-
-      if (!scoresData || scoresData.length === 0) {
+        .select("id, user_id, score, difficulty, completed_at") as { 
+          data: any[] | null; 
+          error: any;
+        };
+      
+      if (scoresError) throw scoresError;
+      
+      if (!scoresData) {
         setLeaderboard([]);
         setLoading(false);
         return;
       }
-
+      
+      // Filter by difficulty in memory instead of the query
+      const filteredScores = scoresData.filter(
+        score => score.difficulty === selectedDifficulty
+      ).sort((a, b) => b.score - a.score).slice(0, 10);
+      
       // Fetch user names
-      const userIds = scoresData.map((score) => score.user_id);
+      const userIds = filteredScores.map(score => score.user_id);
+      
+      if (userIds.length === 0) {
+        setLeaderboard([]);
+        setLoading(false);
+        return;
+      }
+      
       const { data: usersData, error: usersError } = await supabase
         .from("profiles")
         .select("id, full_name")
         .in("id", userIds);
-
+      
       if (usersError) throw usersError;
-
+      
       // Merge data
-      const leaderboardData = scoresData.map((score) => {
-        const user = usersData?.find((u) => u.id === score.user_id);
+      const leaderboardData = filteredScores.map(score => {
+        const user = usersData?.find(u => u.id === score.user_id);
         return {
           id: score.id,
           user_id: score.user_id,
           user_name: user?.full_name || "Utilisateur inconnu",
           score: score.score,
-          difficulty: selectedDifficulty,
+          difficulty: score.difficulty,
           completed_at: score.completed_at
         };
       });
-
+      
       setLeaderboard(leaderboardData);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
@@ -138,21 +146,22 @@ const MiniGamePage = () => {
                 </p>
                 <ul className="list-disc list-inside mt-2 mb-4 text-gray-600">
                   <li>
-                    <span className="font-medium text-green-600">Débutant</span>: 10 questions fondamentales
+                    <span className="font-medium text-green-600">Débutant</span>
+                    : 10 questions fondamentales
                   </li>
                   <li>
-                    <span className="font-medium text-yellow-600">Intermédiaire</span>: 30 questions plus avancées
+                    <span className="font-medium text-yellow-600">Intermédiaire</span>
+                    : 30 questions plus avancées
                   </li>
                   <li>
-                    <span className="font-medium text-red-600">Avancé</span>: 70 questions expertes
+                    <span className="font-medium text-red-600">Avancé</span>
+                    : 70 questions expertes
                   </li>
                 </ul>
               </div>
-
               <CodingMiniGame />
             </div>
           </div>
-
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
@@ -164,26 +173,23 @@ const MiniGamePage = () => {
               <CardContent>
                 <div className="mb-4">
                   <div className="flex space-x-2">
-                    {["Beginner", "Intermediate", "Advanced"].map(
-                      (diff) => (
-                        <Button
-                          key={diff}
-                          variant={selectedDifficulty === diff ? "default" : "outline"}
-                          size="sm"
-                          className={selectedDifficulty === diff ? "" : "border-gray-200"}
-                          onClick={() => setSelectedDifficulty(diff as GameDifficulty)}
-                        >
-                          {diff === "Beginner"
-                            ? "Débutant"
-                            : diff === "Intermediate"
-                            ? "Intermédiaire"
-                            : "Avancé"}
-                        </Button>
-                      )
-                    )}
+                    {["Beginner", "Intermediate", "Advanced"].map((diff) => (
+                      <Button
+                        key={diff}
+                        variant={selectedDifficulty === diff ? "default" : "outline"}
+                        size="sm"
+                        className={selectedDifficulty === diff ? "" : "border-gray-200"}
+                        onClick={() => setSelectedDifficulty(diff)}
+                      >
+                        {diff === "Beginner"
+                          ? "Débutant"
+                          : diff === "Intermediate"
+                          ? "Intermédiaire"
+                          : "Avancé"}
+                      </Button>
+                    ))}
                   </div>
                 </div>
-
                 {loading ? (
                   <div className="text-center py-4">Chargement...</div>
                 ) : leaderboard.length === 0 ? (
