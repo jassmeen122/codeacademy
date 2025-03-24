@@ -19,12 +19,13 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Challenge {
   id: string;
   title: string;
   description: string;
-  type: 'daily' | 'weekly';
+  type: string; // Changed from 'daily' | 'weekly' to string to match DB schema
   points: number;
   start_date: string;
   end_date: string;
@@ -164,7 +165,7 @@ export default function AchievementsPage() {
     return iconMap[title] || <Trophy className="h-6 w-6" />;
   };
 
-  const getChallengeTypeColor = (type: 'daily' | 'weekly') => {
+  const getChallengeTypeColor = (type: string) => {
     return type === 'daily' 
       ? "bg-blue-100 text-blue-700" 
       : "bg-purple-100 text-purple-700";
@@ -185,16 +186,83 @@ export default function AchievementsPage() {
   };
 
   if (loading) {
-    return <DashboardLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded-md w-1/4 mb-8"></div>
-          <div className="h-64 bg-gray-200 rounded-md mb-8"></div>
-          <div className="h-8 bg-gray-200 rounded-md w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded-md"></div>
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center mb-8 gap-3">
+            <Trophy className="h-7 w-7 text-primary" />
+            <h1 className="text-3xl font-bold">Vos Achievements & Défis</h1>
+          </div>
+          <div className="grid gap-8">
+            <Card className="border-t-4 border-t-blue-500 shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-36" />
+                </CardTitle>
+                <CardDescription>
+                  <Skeleton className="h-4 w-64" />
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2, 3].map((i) => (
+                    <Card key={i} className="overflow-hidden">
+                      <div className="h-1.5 w-full bg-gray-200"></div>
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-4">
+                          <Skeleton className="h-12 w-12 rounded-full" />
+                          <div className="flex-1">
+                            <Skeleton className="h-5 w-40 mb-2" />
+                            <Skeleton className="h-4 w-full mb-3" />
+                            <div className="flex flex-wrap gap-2">
+                              <Skeleton className="h-6 w-20" />
+                              <Skeleton className="h-6 w-24" />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-t-4 border-t-purple-500 shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-36" />
+                </CardTitle>
+                <CardDescription>
+                  <Skeleton className="h-4 w-64" />
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {[1, 2].map((i) => (
+                    <Card key={i} className="overflow-hidden">
+                      <div className="h-1.5 w-full bg-gray-200"></div>
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-4">
+                          <Skeleton className="h-12 w-12 rounded-full" />
+                          <div>
+                            <Skeleton className="h-5 w-32 mb-2" />
+                            <Skeleton className="h-4 w-48 mb-2" />
+                            <div className="flex gap-2">
+                              <Skeleton className="h-6 w-20" />
+                              <Skeleton className="h-6 w-24" />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
-    </DashboardLayout>;
+      </DashboardLayout>
+    );
   }
 
   return (
