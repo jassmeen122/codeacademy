@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { YoutubeIcon, FileText, ArrowLeft } from "lucide-react";
+import { YoutubeIcon, FileText, ArrowLeft, Book } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
 // Définition des liens vidéos pour chaque langage
@@ -87,7 +87,7 @@ const LanguageCoursePage = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <Card className="overflow-hidden">
             <CardHeader className="bg-primary/10">
               <CardTitle className="flex items-center">
@@ -126,6 +126,29 @@ const LanguageCoursePage = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Nouvelle carte pour le résumé détaillé */}
+        <Card className="overflow-hidden">
+          <CardHeader className="bg-primary/10">
+            <CardTitle className="flex items-center">
+              <Book className="mr-2 h-5 w-5 text-primary" />
+              Résumé Détaillé du Langage
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <p className="mb-6">
+              Consultez notre résumé détaillé pour apprendre les concepts clés de {language.name}, 
+              avec des explications claires et des exemples pratiques.
+            </p>
+            <Button 
+              className="w-full"
+              onClick={() => navigate(`/student/language-summary/${languageId}`)}
+            >
+              <Book className="mr-2 h-4 w-4" />
+              Voir le Résumé Détaillé
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );
