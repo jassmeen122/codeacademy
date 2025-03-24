@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CodingMiniGame } from "@/components/student/CodingMiniGame";
@@ -33,35 +32,22 @@ const MiniGamePage = () => {
     try {
       setLoading(true);
       
-      // Use explicit type annotation to avoid excessive type instantiation
       const { data: scoresData, error: scoresError } = await supabase
         .from("mini_game_scores")
-        .select("id, user_id, score, difficulty, completed_at") as { 
-          data: any[] | null; 
-          error: any;
-        };
+        .select("id, user_id, score, difficulty, completed_at")
+        .eq("difficulty", selectedDifficulty)
+        .order("score", { ascending: false })
+        .limit(10);
       
       if (scoresError) throw scoresError;
       
-      if (!scoresData) {
+      if (!scoresData || scoresData.length === 0) {
         setLeaderboard([]);
         setLoading(false);
         return;
       }
       
-      // Filter by difficulty in memory instead of the query
-      const filteredScores = scoresData.filter(
-        score => score.difficulty === selectedDifficulty
-      ).sort((a, b) => b.score - a.score).slice(0, 10);
-      
-      // Fetch user names
-      const userIds = filteredScores.map(score => score.user_id);
-      
-      if (userIds.length === 0) {
-        setLeaderboard([]);
-        setLoading(false);
-        return;
-      }
+      const userIds = scoresData.map(score => score.user_id);
       
       const { data: usersData, error: usersError } = await supabase
         .from("profiles")
@@ -70,8 +56,7 @@ const MiniGamePage = () => {
       
       if (usersError) throw usersError;
       
-      // Merge data
-      const leaderboardData = filteredScores.map(score => {
+      const leaderboardData = scoresData.map(score => {
         const user = usersData?.find(u => u.id === score.user_id);
         return {
           id: score.id,

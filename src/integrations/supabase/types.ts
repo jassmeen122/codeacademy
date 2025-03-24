@@ -157,6 +157,7 @@ export type Database = {
           correct_answer: string
           created_at: string | null
           difficulty: string | null
+          explanation: string | null
           id: string
           language: string | null
           option1: string
@@ -168,6 +169,7 @@ export type Database = {
           correct_answer: string
           created_at?: string | null
           difficulty?: string | null
+          explanation?: string | null
           id?: string
           language?: string | null
           option1: string
@@ -179,6 +181,7 @@ export type Database = {
           correct_answer?: string
           created_at?: string | null
           difficulty?: string | null
+          explanation?: string | null
           id?: string
           language?: string | null
           option1?: string
@@ -521,6 +524,7 @@ export type Database = {
       mini_game_scores: {
         Row: {
           completed_at: string
+          difficulty: string | null
           id: string
           score: number
           time_taken: number
@@ -528,6 +532,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string
+          difficulty?: string | null
           id?: string
           score?: number
           time_taken?: number
@@ -535,6 +540,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string
+          difficulty?: string | null
           id?: string
           score?: number
           time_taken?: number
