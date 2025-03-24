@@ -30,7 +30,7 @@ const AIAssistantPage = () => {
           />
         </div>
 
-        <ErrorDisplay errorMessage={errorMessage} />
+        <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
         
         <Card className="h-[calc(100vh-12rem)]">
           <CardContent className="p-4 h-full flex flex-col">

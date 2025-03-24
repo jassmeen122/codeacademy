@@ -19,7 +19,19 @@ serve(async (req) => {
     if (!openAIApiKey) {
       console.error('OpenAI API key is not configured in Supabase secrets');
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key is not configured' }),
+        JSON.stringify({ 
+          error: 'OpenAI API key is not configured. Please add your OpenAI API key to the Supabase Edge Function secrets.' 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (openAIApiKey === 'sk-your-key-here' || openAIApiKey.trim() === '') {
+      console.error('OpenAI API key is not properly set');
+      return new Response(
+        JSON.stringify({ 
+          error: 'OpenAI API key is not properly set. Please update your OpenAI API key in the Supabase Edge Function secrets.' 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -58,48 +70,62 @@ serve(async (req) => {
     ];
 
     console.log("Calling OpenAI API with model gpt-4o-mini...");
+    
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 1000,
+        }),
+      });
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
-    });
-
-    // Handle API errors
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      
-      try {
-        const errorData = JSON.parse(errorText);
-        throw new Error(errorData.error?.message || `OpenAI API error: ${response.status}`);
-      } catch (parseError) {
-        throw new Error(`OpenAI API error: ${response.status} - ${errorText.substring(0, 100)}`);
+      // Handle API errors
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenAI API error:', response.status, errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          let errorMessage = errorData.error?.message || `OpenAI API error: ${response.status}`;
+          
+          // Check for common error types
+          if (errorData.error?.type === 'invalid_request_error' && errorData.error?.message.includes('API key')) {
+            errorMessage = 'Invalid OpenAI API key. Please check your API key and update it in the Supabase Edge Function secrets.';
+          } else if (errorData.error?.type === 'insufficient_quota') {
+            errorMessage = 'Your OpenAI API key has insufficient quota. Please check your billing status or use a different API key.';
+          }
+          
+          throw new Error(errorMessage);
+        } catch (parseError) {
+          throw new Error(`OpenAI API error: ${response.status} - ${errorText.substring(0, 100)}`);
+        }
       }
-    }
 
-    const data = await response.json();
-    console.log('OpenAI response received successfully:', data.choices ? 'Valid response' : 'Invalid response format');
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid response format from OpenAI:', data);
-      throw new Error('Invalid response format from OpenAI');
-    }
-    
-    const assistantReply = data.choices[0].message;
+      const data = await response.json();
+      console.log('OpenAI response received successfully:', data.choices ? 'Valid response' : 'Invalid response format');
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('Invalid response format from OpenAI:', data);
+        throw new Error('Invalid response format from OpenAI');
+      }
+      
+      const assistantReply = data.choices[0].message;
 
-    return new Response(
-      JSON.stringify({ reply: assistantReply }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      return new Response(
+        JSON.stringify({ reply: assistantReply }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (apiError) {
+      console.error('OpenAI API call failed:', apiError);
+      throw apiError;
+    }
   } catch (error) {
     console.error('Error in AI assistant function:', error);
     return new Response(
