@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileCode, CheckCircle, Circle } from "lucide-react";
+import { FileCode, CheckCircle, Circle, Code } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Exercise {
   id: string;
@@ -19,6 +20,7 @@ interface Exercise {
 const ExercisesPage = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchExercises();
@@ -60,7 +62,24 @@ const ExercisesPage = () => {
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Coding Exercises</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Coding Exercises</h1>
+          <Button onClick={() => navigate("/student/language-selection")} className="md:w-auto w-full">
+            <Code className="mr-2 h-4 w-4" />
+            Accéder aux Cours Vidéo
+          </Button>
+        </div>
+        
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded">
+          <h2 className="text-lg font-semibold mb-2 text-blue-700">Nouveau système de cours</h2>
+          <p className="text-blue-600">
+            Découvrez notre nouveau système simplifié de cours et d'exercices basé sur des vidéos YouTube.
+            Choisissez un langage de programmation et accédez directement au contenu d'apprentissage.
+          </p>
+          <Button variant="link" onClick={() => navigate("/student/language-selection")} className="mt-2 p-0 text-blue-700">
+            Explorer les cours vidéo →
+          </Button>
+        </div>
         
         {loading ? (
           <div>Loading exercises...</div>

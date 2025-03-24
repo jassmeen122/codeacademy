@@ -28,6 +28,8 @@ import LanguagesPage from '@/pages/student/LanguagesPage';
 import LanguageModulesPage from '@/pages/student/LanguageModulesPage';
 import ModuleContentPage from '@/pages/student/ModuleContentPage';
 import MiniGamePage from '@/pages/student/MiniGamePage';
+import LanguageSelectionPage from '@/pages/student/LanguageSelectionPage';
+import LanguageCoursePage from '@/pages/student/LanguageCoursePage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -74,6 +76,10 @@ function App() {
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
+          
+          {/* Nouvelles routes pour le système de cours simplifiés */}
+          <Route path="/student/language-selection" element={<LanguageSelectionPage />} />
+          <Route path="/student/language-courses/:languageId" element={<LanguageCoursePage />} />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<TeacherDashboardPage />} />
