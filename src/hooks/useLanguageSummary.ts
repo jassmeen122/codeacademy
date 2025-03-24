@@ -142,21 +142,53 @@ export function useLanguageSummary(languageId: string | null) {
       
       // If both are completed and badge not earned yet, award badge
       if (data.summary_read && data.quiz_completed && !data.badge_earned) {
+        // Get the language name to determine which badge to award
+        const { data: languageData, error: langError } = await supabase
+          .from('programming_languages')
+          .select('name')
+          .eq('id', languageId)
+          .single();
+          
+        if (langError) throw langError;
+        
+        const badgeName = `${languageData.name} Mastery`;
+        
         // Get the badge ID
         const { data: badgeData, error: badgeError } = await supabase
           .from('badges')
           .select('id')
-          .eq('name', 'Python Mastery')  // For now, hardcoded to Python
-          .single();
+          .eq('name', badgeName)
+          .maybeSingle();
           
-        if (badgeError) throw badgeError;
+        if (badgeError && badgeError.code !== 'PGRST116') throw badgeError;
+        
+        // If badge doesn't exist yet, create it
+        let badgeId;
+        if (!badgeData) {
+          const { data: newBadge, error: createError } = await supabase
+            .from('badges')
+            .insert({
+              name: badgeName,
+              description: `Completed ${languageData.name} summary and quiz`,
+              icon: 'award',
+              points: 100
+            })
+            .select()
+            .single();
+            
+          if (createError) throw createError;
+          badgeId = newBadge.id;
+        } else {
+          badgeId = badgeData.id;
+        }
         
         // Add user badge
         const { error: userBadgeError } = await supabase
           .from('user_badges')
           .insert({
             user_id: userId,
-            badge_id: badgeData.id
+            badge_id: badgeId,
+            earned_at: new Date().toISOString()
           });
           
         if (userBadgeError) throw userBadgeError;
@@ -181,10 +213,10 @@ export function useLanguageSummary(languageId: string | null) {
           
         if (pointsError) throw pointsError;
         
-        toast.success('Félicitations ! Vous avez gagné le badge Python Mastery !');
+        toast.success(`Félicitations ! Vous avez gagné le badge ${languageData.name} Mastery !`);
         
         // Update user gamification
-        updateUserGamification(userId, 'Python Mastery');
+        updateUserGamification(userId, badgeName);
       }
     } catch (err) {
       console.error('Error checking and updating badge:', err);

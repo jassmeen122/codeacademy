@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft, BookOpen, CheckCircle } from "lucide-react";
 import { useAuthState } from '@/hooks/useAuthState';
+import { CodeBlock } from '@/components/ai-assistant/CodeBlock';
 
 const LanguageSummaryPage = () => {
   const { languageId } = useParams<{ languageId: string }>();
@@ -42,7 +43,7 @@ const LanguageSummaryPage = () => {
       }
       
       // Check if this is a sub-heading or explanation
-      if (paragraph.startsWith('🔹') || paragraph.startsWith('💡')) {
+      if (paragraph.startsWith('🔹') || paragraph.startsWith('💡') || paragraph.startsWith('📌')) {
         return (
           <div key={index} className="bg-blue-50 p-4 rounded-md my-4">
             <p>{paragraph}</p>
@@ -50,12 +51,42 @@ const LanguageSummaryPage = () => {
         );
       }
       
-      // If paragraph contains code (usually has "python" or code indicators)
-      if (paragraph.includes('```') || paragraph.includes('    ') || paragraph.includes('#')) {
+      // Check for code blocks (detect language by looking for java or python indicators)
+      const codeMatch = paragraph.match(/^(java|python)\s*\n([\s\S]+)$/);
+      if (codeMatch) {
+        const language = codeMatch[1];
+        const code = codeMatch[2];
         return (
-          <pre key={index} className="bg-gray-900 text-gray-100 p-4 rounded-md my-4 overflow-x-auto">
-            <code>{paragraph}</code>
-          </pre>
+          <div key={index} className="my-4">
+            <CodeBlock code={code} language={language} />
+          </div>
+        );
+      }
+      
+      // Check if paragraph starts with Type followed by Description and Example (likely a table)
+      if (paragraph.startsWith('Type') && paragraph.includes('Description') && paragraph.includes('Exemple')) {
+        const rows = paragraph.split('\n');
+        return (
+          <div key={index} className="overflow-x-auto my-4">
+            <table className="w-full border-collapse">
+              <thead className="bg-gray-100">
+                <tr>
+                  {rows[0].split('\t').map((header, i) => (
+                    <th key={i} className="border p-2 text-left">{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.slice(1).map((row, rowIndex) => (
+                  <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                    {row.split('\t').map((cell, cellIndex) => (
+                      <td key={cellIndex} className="border p-2">{cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         );
       }
       
