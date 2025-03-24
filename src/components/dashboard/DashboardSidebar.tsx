@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Home,
@@ -55,12 +56,11 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ role }: DashboardSidebarProps) {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState<string>("");
+  const { isMobile } = useMobile();
 
   useEffect(() => {
     setActiveItem(location.pathname);
   }, [location]);
-
-  const isMobile = useMobile();
 
   return (
     <div className="flex h-full select-none flex-col gap-2 py-4">

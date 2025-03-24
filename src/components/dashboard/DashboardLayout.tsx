@@ -1,3 +1,4 @@
+
 import { Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -21,7 +22,7 @@ export function DashboardLayout({
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const location = useLocation();
-  const { userInfo, userRole, userStatus } = useAuthState();
+  const { user } = useAuthState();
   const { isMobile } = useMobile();
 
   const [currentPath, setCurrentPath] = useState<string>("");
@@ -32,6 +33,9 @@ export function DashboardLayout({
 
   const isTeacherRoute = currentPath.startsWith("/teacher");
   const isStudentRoute = currentPath.startsWith("/student");
+  
+  // Get the user role from the user object
+  const userRole = user?.role || "student";
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -58,7 +62,7 @@ export function DashboardLayout({
             </Button>
           </DrawerTrigger>
         </div>
-        <DrawerContent side={isMobile ? "right" : "left"} className="md:hidden p-0">
+        <DrawerContent className="md:hidden p-0">
           <DashboardSidebar role={userRole} />
         </DrawerContent>
       </Drawer>
@@ -69,10 +73,10 @@ export function DashboardLayout({
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6 md:z-20">
           <div className="flex flex-1 items-center gap-4">
             <div className="flex flex-col gap-0.5">
-              {userInfo && (
+              {user && (
                 <>
                   <h1 className="font-semibold text-lg">
-                    {userInfo.full_name || userInfo.email}
+                    {user.full_name || user.email}
                   </h1>
                   <p className="text-xs text-muted-foreground">
                     {userRole === "student" && "Étudiant"}
@@ -83,7 +87,7 @@ export function DashboardLayout({
               )}
             </div>
           </div>
-          <UserDropdownMenu avatar_url={userInfo?.avatar_url} />
+          <UserDropdownMenu avatar_url={user?.avatar_url} />
         </header>
         <main className="flex flex-1 flex-col pt-4 md:pt-0">
           {children}
