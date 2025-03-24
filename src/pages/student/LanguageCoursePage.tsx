@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { YoutubeIcon, FileText, ArrowLeft, BookOpen } from "lucide-react";
+import { YoutubeIcon, FileText, ArrowLeft } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
 // Définition des liens vidéos pour chaque langage
@@ -125,17 +125,6 @@ const LanguageCoursePage = () => {
               </Button>
             </CardContent>
           </Card>
-        </div>
-        
-        <div className="mt-8">
-          <Button 
-            variant="outline" 
-            className="mr-4"
-            onClick={() => navigate(`/student/languages/${languageId}/summary`)}
-          >
-            <BookOpen className="mr-2 h-4 w-4" />
-            Voir le résumé du langage
-          </Button>
         </div>
       </div>
     </DashboardLayout>

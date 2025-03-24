@@ -479,38 +479,6 @@ export type Database = {
           },
         ]
       }
-      language_summaries: {
-        Row: {
-          content: string
-          created_at: string | null
-          id: string
-          language_id: string
-          title: string
-        }
-        Insert: {
-          content: string
-          created_at?: string | null
-          id?: string
-          language_id: string
-          title: string
-        }
-        Update: {
-          content?: string
-          created_at?: string | null
-          id?: string
-          language_id?: string
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "language_summaries_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: true
-            referencedRelation: "programming_languages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       messages: {
         Row: {
           content: string
@@ -877,44 +845,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      user_language_progress: {
-        Row: {
-          badge_earned: boolean | null
-          id: string
-          language_id: string
-          last_updated: string | null
-          quiz_completed: boolean | null
-          summary_read: boolean | null
-          user_id: string
-        }
-        Insert: {
-          badge_earned?: boolean | null
-          id?: string
-          language_id: string
-          last_updated?: string | null
-          quiz_completed?: boolean | null
-          summary_read?: boolean | null
-          user_id: string
-        }
-        Update: {
-          badge_earned?: boolean | null
-          id?: string
-          language_id?: string
-          last_updated?: string | null
-          quiz_completed?: boolean | null
-          summary_read?: boolean | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_language_progress_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "programming_languages"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_progress: {
         Row: {
