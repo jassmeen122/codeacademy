@@ -36,6 +36,44 @@ export const useProgrammingLanguages = () => {
   return { languages, loading, error };
 };
 
+export const useCourseModules = (languageId: string | null) => {
+  const [modules, setModules] = useState<CourseModule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchModules = async () => {
+      if (!languageId) {
+        setModules([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('course_modules')
+          .select('*')
+          .eq('language_id', languageId)
+          .order('order_index');
+        
+        if (error) throw error;
+        setModules(data || []);
+      } catch (err: any) {
+        console.error('Error fetching modules:', err);
+        setError(err);
+        toast.error('Failed to load modules');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModules();
+  }, [languageId]);
+
+  return { modules, loading, error };
+};
+
 export const useLanguageDetails = (languageId: string) => {
   const [language, setLanguage] = useState<ProgrammingLanguage | null>(null);
   const [modules, setModules] = useState<CourseModule[]>([]);
