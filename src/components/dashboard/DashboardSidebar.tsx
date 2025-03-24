@@ -1,282 +1,197 @@
-import {
-  Book,
-  Code,
-  GraduationCap,
-  Layout,
-  MessageSquare,
-  Settings,
-  Trophy,
-  UserRound,
-  Activity,
-  FileCode,
-  Brain,
-  Users,
-  FilePlus,
-  Gauge,
-  School,
-  CircuitBoard,
-  Database,
-  BookOpen,
-  ClipboardList,
-  BarChart,
-  Bell,
-  Video,
-  FileText,
-  Folder,
-  PlusCircle,
-  ListChecks,
-  Pencil,
-  Gamepad2
-} from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { 
+  Home, BookOpen, FileText, Users, MessageSquare, 
+  Code, Terminal, Brain, Award, BarChart2, Settings, 
+  Bell, User, Calculator, FolderKanban, GraduationCap, School, Database, Activity, FileCode, FilePlus, Gauge, BookOpenCheck, ListChecks, Pencil, Gamepad2
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface DashboardSidebarProps {
-  userRole: 'admin' | 'teacher' | 'student' | null;
-}
-
-interface MenuItem {
-  title: string;
-  icon: React.ElementType;
-  href: string;
-  description?: string;
-}
-
-const adminMenuItems: MenuItem[] = [
+export const StudentNavItems = [
   {
-    title: "Dashboard",
-    icon: Gauge,
-    href: "/admin",
+    title: "Tableau de Bord",
+    href: "/student",
+    icon: Home,
   },
   {
-    title: "User Management",
-    icon: Users,
-    href: "/admin/users",
-  },
-  {
-    title: "Course Management",
-    icon: Book,
-    href: "/admin/courses",
-  },
-  {
-    title: "Exercises",
-    icon: FileCode,
-    href: "/admin/exercises",
-  },
-  {
-    title: "Analytics",
-    icon: Activity,
-    href: "/admin/analytics",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/admin/settings",
-  },
-];
-
-const teacherMenuItems: MenuItem[] = [
-  {
-    title: "Dashboard",
-    icon: School,
-    href: "/teacher",
-  },
-  {
-    title: "My Courses",
-    icon: BookOpen,
-    href: "/teacher/courses",
-    description: "Manage your courses"
-  },
-  {
-    title: "Course Creator",
-    icon: PlusCircle,
-    href: "/teacher/courses/create",
-    description: "Create new courses"
-  },
-  {
-    title: "Exercises",
-    icon: ClipboardList,
-    href: "/teacher/exercises",
-    description: "Manage exercises"
-  },
-  {
-    title: "Create Exercise",
-    icon: Pencil,
-    href: "/teacher/exercises/create",
-    description: "Create new exercises"
-  },
-  {
-    title: "Student Progress",
-    icon: BarChart,
-    href: "/teacher/progress",
-    description: "Track student performance"
-  },
-  {
-    title: "Discussion",
-    icon: MessageSquare,
-    href: "/teacher/discussion",
-    description: "Course forums"
-  },
-  {
-    title: "Materials",
-    icon: FileText,
-    href: "/teacher/materials",
-    description: "Course resources"
-  },
-  {
-    title: "Notifications",
-    icon: Bell,
-    href: "/teacher/notifications",
-    description: "Alerts and updates"
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/teacher/settings",
-    description: "Personal preferences"
-  },
-];
-
-const studentMenuItems: MenuItem[] = [
-  {
-    title: "Profile",
-    icon: UserRound,
-    href: "/student/profile",
-  },
-  {
-    title: "My Courses",
-    icon: Book,
+    title: "Mes Cours",
     href: "/student/courses",
+    icon: BookOpen,
   },
   {
-    title: "Code Editor",
+    title: "Langages de Programmation",
+    href: "/student/programming",
     icon: Code,
-    href: "/student/editor", // Updated to match the route in App.tsx
   },
   {
-    title: "AI Assistant",
-    icon: Brain,
-    href: "/student/ai-assistant",
-  },
-  {
-    title: "Exercises",
-    icon: FileCode,
+    title: "Exercices",
     href: "/student/exercises",
+    icon: FileText,
   },
   {
-    title: "Projects",
-    icon: Layout,
+    title: "Forum",
+    href: "/student/discussion",
+    icon: MessageSquare,
+  },
+  {
+    title: "Projets",
     href: "/student/projects",
+    icon: FolderKanban,
   },
   {
-    title: "Progress",
-    icon: Activity,
-    href: "/student/progress",
+    title: "Éditeur de Code",
+    href: "/student/code-editor",
+    icon: Terminal,
   },
   {
-    title: "Achievements",
-    icon: Trophy,
-    href: "/student/achievements",
+    title: "Assistant IA",
+    href: "/student/ai-assistant",
+    icon: Brain,
   },
   {
     title: "Mini-Jeu",
-    icon: Gamepad2,
     href: "/student/mini-game",
+    icon: Calculator,
   },
   {
-    title: "Discussion",
-    icon: MessageSquare,
-    href: "/student/discussion",
+    title: "Progression",
+    href: "/student/progress",
+    icon: BarChart2,
   },
   {
-    title: "Settings",
-    icon: Settings,
+    title: "Réussites",
+    href: "/student/achievements",
+    icon: Award,
+  },
+  {
+    title: "Paramètres",
     href: "/student/settings",
+    icon: Settings,
   },
 ];
 
-export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
+export const TeacherNavItems = [
+  {
+    title: "Tableau de Bord",
+    href: "/teacher",
+    icon: Home,
+  },
+  {
+    title: "Mes Cours",
+    href: "/teacher/courses",
+    icon: BookOpen,
+  },
+  {
+    title: "Gestion des Langages",
+    href: "/teacher/languages",
+    icon: Code,
+  },
+  {
+    title: "Exercices",
+    href: "/teacher/exercises",
+    icon: FileText,
+  },
+  {
+    title: "Étudiants",
+    href: "/teacher/students",
+    icon: Users,
+  },
+  {
+    title: "Messages",
+    href: "/teacher/messages",
+    icon: MessageSquare,
+  },
+  {
+    title: "Paramètres",
+    href: "/teacher/settings",
+    icon: Settings,
+  },
+];
+
+export const AdminNavItems = [
+  {
+    title: "Dashboard",
+    href: "/admin",
+    icon: Gauge,
+  },
+  {
+    title: "User Management",
+    href: "/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Course Management",
+    href: "/admin/courses",
+    icon: BookOpenCheck,
+  },
+  {
+    title: "Exercises",
+    href: "/admin/exercises",
+    icon: ListChecks,
+  },
+  {
+    title: "Analytics",
+    href: "/admin/analytics",
+    icon: BarChart2,
+  },
+  {
+    title: "Settings",
+    href: "/admin/settings",
+    icon: Settings,
+  },
+];
+
+interface DashboardSidebarProps {
+  role?: 'student' | 'teacher' | 'admin';
+}
+
+export const DashboardSidebar = ({ role = 'student' }: DashboardSidebarProps) => {
   const location = useLocation();
-
-  const getMenuItems = () => {
-    switch (userRole) {
-      case 'admin':
-        return adminMenuItems;
-      case 'teacher':
-        return teacherMenuItems;
-      case 'student':
-        return studentMenuItems;
-      default:
-        return [];
-    }
-  };
-
-  const getRoleIcon = () => {
-    switch (userRole) {
-      case 'admin':
-        return Database;
-      case 'teacher':
-        return School;
-      case 'student':
-        return GraduationCap;
-      default:
-        return UserRound;
-    }
-  };
-
-  const getRoleTitle = () => {
-    switch (userRole) {
-      case 'admin':
-        return 'Admin Portal';
-      case 'teacher':
-        return 'Teacher Portal';
-      case 'student':
-        return 'Student Portal';
-      default:
-        return 'Loading...';
-    }
-  };
-
-  const RoleIcon = getRoleIcon();
-
+  
+  // Choose nav items based on role
+  const navItems = 
+    role === 'teacher' ? TeacherNavItems :
+    role === 'admin' ? AdminNavItems :
+    StudentNavItems;
+  
   return (
-    <Sidebar className="border-r border-border">
-      <SidebarHeader className="border-b border-border p-4">
-        <div className="flex items-center gap-2">
-          <RoleIcon className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-lg">{getRoleTitle()}</span>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <nav className="space-y-1 p-2">
-          {getMenuItems().map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
+    <aside className="hidden md:flex md:flex-col w-64 border-r bg-white">
+      <div className="flex items-center justify-center h-14 border-b px-4">
+        <Link to="/" className="flex items-center">
+          <span className="font-bold text-xl">Code Academy</span>
+        </Link>
+      </div>
+      <ScrollArea className="flex-1 py-4">
+        <nav className="px-2 space-y-1">
+          {navItems.map((item, index) => {
+            const isActive = location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
+            
             return (
-              <Link key={item.href} to={item.href}>
+              <Link key={index} to={item.href}>
                 <Button
                   variant={isActive ? "secondary" : "ghost"}
-                  className="w-full justify-start gap-2"
-                  title={item.description}
+                  className={`w-full justify-start ${isActive ? 'bg-primary/10 text-primary' : ''}`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <item.icon className="mr-2 h-4 w-4" />
                   {item.title}
                 </Button>
               </Link>
             );
           })}
         </nav>
-      </SidebarContent>
-      <SidebarFooter className="border-t border-border p-4">
-        <SidebarTrigger />
-      </SidebarFooter>
-    </Sidebar>
+      </ScrollArea>
+      <div className="border-t p-4">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+            JS
+          </div>
+          <div>
+            <p className="text-sm font-medium">John Smith</p>
+            <p className="text-xs text-muted-foreground">{role === 'teacher' ? 'Professeur' : role === 'admin' ? 'Administrateur' : 'Étudiant'}</p>
+          </div>
+        </div>
+      </div>
+    </aside>
   );
 };
