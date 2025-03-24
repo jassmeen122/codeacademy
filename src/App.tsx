@@ -30,6 +30,8 @@ import ModuleContentPage from '@/pages/student/ModuleContentPage';
 import MiniGamePage from '@/pages/student/MiniGamePage';
 import LanguageSelectionPage from '@/pages/student/LanguageSelectionPage';
 import LanguageCoursePage from '@/pages/student/LanguageCoursePage';
+import LanguageSummaryPage from '@/pages/student/LanguageSummaryPage';
+import LanguageDetailPage from '@/pages/student/LanguageDetailPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -63,6 +65,8 @@ function App() {
           <Route path="/student/courses/:courseId/learn" element={<StudentCourseLearnPage />} />
           <Route path="/student/languages" element={<LanguagesPage />} />
           <Route path="/student/languages/:languageId" element={<LanguageModulesPage />} />
+          <Route path="/student/languages/:languageId/detail" element={<LanguageDetailPage />} />
+          <Route path="/student/languages/:languageId/summary" element={<LanguageSummaryPage />} />
           <Route path="/student/modules/:moduleId" element={<ModuleContentPage />} />
           <Route path="/student/exercises" element={<StudentExercisesPage />} />
           <Route path="/student/discussion" element={<StudentDiscussionPage />} />

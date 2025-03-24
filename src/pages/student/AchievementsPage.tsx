@@ -1,58 +1,33 @@
 
-import React from "react";
+import React from 'react';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Trophy } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthState } from "@/hooks/useAuthState";
-import { useAchievements } from "@/hooks/useAchievements";
-import { ChallengesList } from "@/components/student/achievements/ChallengesList";
 import { BadgesList } from "@/components/student/achievements/BadgesList";
+import { GamificationStats } from "@/components/student/GamificationStats";
+import { useUserBadges } from '@/hooks/useUserBadges';
 
-export default function AchievementsPage() {
-  const { user } = useAuthState();
-  const { badges, challenges, loading } = useAchievements(user?.id);
-
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center mb-8 gap-3">
-            <Trophy className="h-7 w-7 text-primary" />
-            <h1 className="text-3xl font-bold">Vos Achievements & Défis</h1>
-          </div>
-          <div className="grid gap-8">
-            {/* Loading skeleton for challenges */}
-            <AchievementsLoadingSkeleton />
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
+const AchievementsPage = () => {
+  const { badges, loading } = useUserBadges();
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center mb-8 gap-3">
-          <Trophy className="h-7 w-7 text-primary" />
-          <h1 className="text-3xl font-bold">Vos Achievements & Défis</h1>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Mes Récompenses</h1>
+          <p className="text-gray-600">Suivez vos accomplissements et badges débloqués</p>
         </div>
-
-        <div className="grid gap-8">
-          {/* Active Challenges */}
-          <ChallengesList challenges={challenges} />
-
-          {/* Earned Badges */}
-          <BadgesList badges={badges} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <BadgesList badges={badges} />
+          </div>
+          
+          <div className="lg:col-span-1">
+            <GamificationStats />
+          </div>
         </div>
       </div>
     </DashboardLayout>
   );
-}
+};
 
-// Loading skeleton component
-const AchievementsLoadingSkeleton = () => (
-  <>
-    <Skeleton className="h-[200px] w-full rounded-lg" />
-    <Skeleton className="h-[200px] w-full rounded-lg" />
-  </>
-);
+export default AchievementsPage;
