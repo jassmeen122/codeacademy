@@ -9,6 +9,7 @@ import { SummaryContent } from '@/components/courses/SummaryContent';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useProgrammingLanguages } from '@/hooks/useProgrammingCourses';
+import { getYoutubeEmbedUrl, openYoutubeVideo } from '@/utils/youtubeVideoMap';
 
 type LanguageParams = {
   languageId: string;
@@ -21,7 +22,7 @@ const LanguageSummaryPage = () => {
   const { summary, progress, loading, error, markAsRead } = useLanguageSummary(languageId);
   const { languages, loading: loadingLanguages } = useProgrammingLanguages();
   
-  // Trouver le langage correspondant pour avoir son nom
+  // Find the corresponding language to get its name
   const currentLanguage = languages.find(lang => lang.id === languageId);
   
   const handleMarkAsRead = () => {
@@ -32,22 +33,8 @@ const LanguageSummaryPage = () => {
     markAsRead();
   };
   
-  // Déterminer l'URL de la vidéo YouTube en fonction du langage
-  const getYoutubeUrl = () => {
-    if (!languageId) return '';
-    
-    const videoMap: Record<string, string> = {
-      'python': 'https://www.youtube.com/embed/rfscVS0vtbw',
-      'java': 'https://www.youtube.com/embed/eIrMbAQSU34',
-      'javascript': 'https://www.youtube.com/embed/W6NZfCO5SIk',
-      'c': 'https://www.youtube.com/embed/KJgsSFOSQv0',
-      'cpp': 'https://www.youtube.com/embed/vLnPwxZdW4Y',
-      'php': 'https://www.youtube.com/embed/OK_JCtrrv-c',
-      'sql': 'https://www.youtube.com/embed/HXV3zeQKqGY'
-    };
-    
-    return videoMap[languageId] || '';
-  };
+  // Get the YouTube URL based on the language
+  const youtubeUrl = getYoutubeEmbedUrl(languageId);
 
   const renderContent = () => {
     if (loading) {
@@ -87,7 +74,7 @@ const LanguageSummaryPage = () => {
 
     return (
       <>
-        {/* Vidéo YouTube */}
+        {/* YouTube Video */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Youtube className="mr-2 h-5 w-5 text-red-600" />
@@ -96,7 +83,7 @@ const LanguageSummaryPage = () => {
           <div className="aspect-video">
             <iframe
               className="w-full h-full rounded-lg"
-              src={getYoutubeUrl()}
+              src={youtubeUrl}
               title={`Tutoriel ${currentLanguage?.name || 'de programmation'}`}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -105,7 +92,7 @@ const LanguageSummaryPage = () => {
           </div>
         </div>
 
-        {/* Contenu du résumé */}
+        {/* Summary Content */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Book className="mr-2 h-5 w-5 text-primary" />
@@ -118,7 +105,7 @@ const LanguageSummaryPage = () => {
           />
         </div>
 
-        {/* Bouton pour marquer comme lu */}
+        {/* Mark as read button */}
         {user && !progress?.summary_read && (
           <Button 
             onClick={handleMarkAsRead}
@@ -130,7 +117,7 @@ const LanguageSummaryPage = () => {
           </Button>
         )}
 
-        {/* Lien vers le quiz */}
+        {/* Link to quiz */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Tester vos connaissances</h2>
           <Button 
