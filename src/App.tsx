@@ -27,7 +27,6 @@ import FreeCoursesDashboard from '@/pages/student/FreeCoursesDashboard';
 import LanguagesPage from '@/pages/student/LanguagesPage';
 import LanguageModulesPage from '@/pages/student/LanguageModulesPage';
 import ModuleContentPage from '@/pages/student/ModuleContentPage';
-import CodingGamePage from '@/pages/student/CodingGamePage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -73,7 +72,6 @@ function App() {
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
-          <Route path="/student/coding-game" element={<CodingGamePage />} />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<TeacherDashboardPage />} />

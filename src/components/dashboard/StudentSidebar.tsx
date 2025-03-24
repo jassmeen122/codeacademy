@@ -7,14 +7,16 @@ import {
   FileCode,
   Youtube,
   Terminal,
+  MessagesSquare,
   MessageCircle,
   LineChart,
   Trophy,
   FolderGit,
+  Bell,
+  User,
   Settings,
   GraduationCap,
   Code,
-  Zap
 } from "lucide-react";
 import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -74,6 +76,21 @@ export const StudentSidebar = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton 
+                  className={location.pathname === '/student/free-courses' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/free-courses')}
+                >
+                  <Youtube className="h-4 w-4 mr-2" />
+                  Cours Gratuits
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+          
+          <SidebarGroup>
+            <div className="text-xs uppercase font-semibold mt-6 mb-2 text-muted-foreground">Outils</div>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
                   className={location.pathname === '/student/editor' ? 'bg-secondary' : ''}
                   onClick={() => navigate('/student/editor')}
                 >
@@ -83,44 +100,11 @@ export const StudentSidebar = () => {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton 
-                  className={location.pathname === '/student/coding-game' ? 'bg-secondary' : ''}
-                  onClick={() => navigate('/student/coding-game')}
+                  className={location.pathname === '/student/ai-assistant' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/ai-assistant')}
                 >
-                  <Zap className="h-4 w-4 mr-2" />
-                  <span className="text-blue-400 font-semibold">Mini-Jeu de Code</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-          
-          <SidebarGroup>
-            <div className="text-xs uppercase font-semibold mt-6 mb-2 text-muted-foreground">Progression</div>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  className={location.pathname === '/student/projects' ? 'bg-secondary' : ''}
-                  onClick={() => navigate('/student/projects')}
-                >
-                  <FolderGit className="h-4 w-4 mr-2" />
-                  Projets
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  className={location.pathname === '/student/progress' ? 'bg-secondary' : ''}
-                  onClick={() => navigate('/student/progress')}
-                >
-                  <LineChart className="h-4 w-4 mr-2" />
-                  Ma Progression
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  className={location.pathname === '/student/achievements' ? 'bg-secondary' : ''}
-                  onClick={() => navigate('/student/achievements')}
-                >
-                  <Trophy className="h-4 w-4 mr-2" />
-                  Récompenses
+                  <MessagesSquare className="h-4 w-4 mr-2" />
+                  Assistant AI
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -134,11 +118,62 @@ export const StudentSidebar = () => {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
+
+          <SidebarGroup>
+            <div className="text-xs uppercase font-semibold mt-6 mb-2 text-muted-foreground">Mon Profil</div>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/progress' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/progress')}
+                >
+                  <LineChart className="h-4 w-4 mr-2" />
+                  Progression
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/achievements' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/achievements')}
+                >
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Récompenses
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/projects' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/projects')}
+                >
+                  <FolderGit className="h-4 w-4 mr-2" />
+                  Projets
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
         </SidebarContent>
       </ScrollArea>
       
       <SidebarFooter className="border-t mt-auto p-4">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              className={location.pathname === '/student/notifications' ? 'bg-secondary' : ''}
+              onClick={() => navigate('/student/notifications')}
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Notifications
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              className={location.pathname === '/student/profile' ? 'bg-secondary' : ''}
+              onClick={() => navigate('/student/profile')}
+            >
+              <User className="h-4 w-4 mr-2" />
+              Mon Profil
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton 
               className={location.pathname === '/student/settings' ? 'bg-secondary' : ''}

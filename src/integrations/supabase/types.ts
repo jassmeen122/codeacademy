@@ -518,30 +518,6 @@ export type Database = {
           },
         ]
       }
-      mini_game_scores: {
-        Row: {
-          completed_at: string
-          id: string
-          score: number
-          time_taken: number
-          user_id: string
-        }
-        Insert: {
-          completed_at?: string
-          id?: string
-          score?: number
-          time_taken?: number
-          user_id: string
-        }
-        Update: {
-          completed_at?: string
-          id?: string
-          score?: number
-          time_taken?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
       notifications: {
         Row: {
           content: string

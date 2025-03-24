@@ -1,68 +1,9 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CodingQuiz, UserGamification } from '@/types/course';
 import { useAuthState } from '@/hooks/useAuthState';
-
-// Define static quiz data for the mini-game
-const QUIZ_DATA: Omit<CodingQuiz, 'id' | 'created_at' | 'difficulty' | 'language'>[] = [
-  {
-    question: 'Qui a créé le langage Python ?',
-    option1: 'James Gosling',
-    option2: 'Bjarne Stroustrup',
-    option3: 'Guido van Rossum',
-    option4: 'Dennis Ritchie',
-    correct_answer: 'Guido van Rossum',
-    explanation: 'Python a été créé en 1989 par Guido van Rossum, un programmeur néerlandais. Il voulait un langage simple et lisible.'
-  },
-  {
-    question: 'Quel langage est utilisé pour développer Android ?',
-    option1: 'Java',
-    option2: 'C#',
-    option3: 'Python',
-    option4: 'Swift',
-    correct_answer: 'Java',
-    explanation: 'Java est le langage principal pour Android. Kotlin est aussi populaire aujourd\'hui.'
-  },
-  {
-    question: 'Quel langage est surnommé "le langage du web" ?',
-    option1: 'JavaScript',
-    option2: 'C',
-    option3: 'Python',
-    option4: 'Ruby',
-    correct_answer: 'JavaScript',
-    explanation: 'JavaScript est utilisé pour le développement front-end et back-end sur le web. Il est né en 1995 avec Netscape.'
-  },
-  {
-    question: 'Quel langage a été conçu pour les bases de données ?',
-    option1: 'SQL',
-    option2: 'C++',
-    option3: 'Python',
-    option4: 'PHP',
-    correct_answer: 'SQL',
-    explanation: 'SQL (Structured Query Language) est utilisé pour gérer et interroger les bases de données relationnelles.'
-  },
-  {
-    question: 'Lequel de ces langages est compilé ?',
-    option1: 'Python',
-    option2: 'PHP',
-    option3: 'C',
-    option4: 'JavaScript',
-    correct_answer: 'C',
-    explanation: 'C est un langage compilé qui se transforme en code machine avant d\'être exécuté.'
-  }
-];
-
-// Badge thresholds and game states
-const BADGES = {
-  BEGINNER: { name: 'Débutant', threshold: 50 },
-  INTERMEDIATE: { name: 'Intermédiaire', threshold: 100 },
-  ADVANCED: { name: 'Pro', threshold: 200 },
-  MASTER: { name: 'Maître', threshold: 500 }
-};
-
-type GameState = 'loading' | 'ready' | 'playing' | 'finished';
 
 export const useCodingGame = () => {
   const { user } = useAuthState();
@@ -71,32 +12,46 @@ export const useCodingGame = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
-  const [gameState, setGameState] = useState<GameState>('loading');
+  const [gameState, setGameState] = useState<'loading' | 'ready' | 'playing' | 'finished'>('loading');
   const [gamification, setGamification] = useState<UserGamification | null>(null);
+  const [isAnswerLocked, setIsAnswerLocked] = useState(false);
+  
+  // Number of questions per game
+  const QUESTIONS_PER_GAME = 5;
+  
+  // Badge thresholds
+  const BADGES = {
+    BEGINNER: { name: 'Débutant', threshold: 50 },
+    INTERMEDIATE: { name: 'Intermédiaire', threshold: 100 },
+    ADVANCED: { name: 'Pro', threshold: 200 },
+    MASTER: { name: 'Maître', threshold: 500 }
+  };
 
-  // Initialize the game data
+  // Fetch quiz questions from Supabase
   useEffect(() => {
-    const initializeGame = async () => {
+    const fetchQuizzes = async () => {
       try {
-        // Format quiz data with required fields
-        const formattedQuizzes = QUIZ_DATA.map((quiz, index) => ({
-          ...quiz,
-          id: `static-quiz-${index}`,
-          created_at: new Date().toISOString(),
-          difficulty: 'Beginner',
-          language: 'general',
-        }));
-
-        setQuizzes(formattedQuizzes);
-        setGameState('ready');
-      } catch (error) {
-        console.error('Error initializing game:', error);
-        toast.error('Erreur lors de l\'initialisation du jeu');
-        setGameState('ready');
+        const { data, error } = await supabase
+          .from('coding_quiz')
+          .select('*');
+        
+        if (error) throw error;
+        
+        if (data) {
+          // Shuffle the questions
+          const shuffled = [...data].sort(() => 0.5 - Math.random());
+          // Take only the number we need
+          const selected = shuffled.slice(0, QUESTIONS_PER_GAME);
+          setQuizzes(selected as CodingQuiz[]);
+          setGameState('ready');
+        }
+      } catch (error: any) {
+        console.error('Error fetching coding quizzes:', error);
+        toast.error('Erreur lors du chargement des questions');
       }
     };
 
-    initializeGame();
+    fetchQuizzes();
   }, []);
 
   // Fetch user gamification data
@@ -118,15 +73,10 @@ export const useCodingGame = () => {
         if (data) {
           setGamification(data as UserGamification);
         } else {
-          // Create a new gamification record
+          // Create a new gamification record if none exists
           const { data: newData, error: insertError } = await supabase
             .from('user_gamification')
-            .insert([{ 
-              user_id: user.id,
-              points: 0,
-              badges: [],
-              last_played_at: new Date().toISOString()
-            }])
+            .insert([{ user_id: user.id }])
             .select('*')
             .single();
           
@@ -144,19 +94,20 @@ export const useCodingGame = () => {
     fetchGamificationData();
   }, [user]);
 
-  // Start game function
-  const startGame = useCallback(() => {
+  // Start the game
+  const startGame = () => {
     setCurrentQuizIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setIsCorrect(null);
     setGameState('playing');
-  }, []);
+  };
 
-  // Select answer function
-  const selectAnswer = useCallback((answer: string) => {
-    if (!quizzes[currentQuizIndex]) return;
+  // Handle answer selection
+  const selectAnswer = async (answer: string) => {
+    if (isAnswerLocked || gameState !== 'playing') return;
     
+    setIsAnswerLocked(true);
     setSelectedAnswer(answer);
     
     const currentQuiz = quizzes[currentQuizIndex];
@@ -165,40 +116,39 @@ export const useCodingGame = () => {
     
     if (correct) {
       setScore(prevScore => prevScore + 1);
-      toast.success('Bonne réponse !');
-    } else {
-      toast.error('Pas tout à fait...');
     }
     
-    // Move to next question or finish after a delay
+    // Wait a moment to show the result before moving to the next question
     setTimeout(() => {
       if (currentQuizIndex < quizzes.length - 1) {
         setCurrentQuizIndex(prevIndex => prevIndex + 1);
         setSelectedAnswer(null);
         setIsCorrect(null);
+        setIsAnswerLocked(false);
       } else {
         setGameState('finished');
-        updateGamificationData();
+        updateGamificationData(correct ? 1 : 0);
       }
     }, 1500);
-  }, [currentQuizIndex, quizzes]);
+  };
 
-  // Update gamification data at the end of the game
-  const updateGamificationData = useCallback(async () => {
+  // Update the user's gamification data
+  const updateGamificationData = async (lastQuestionPoints: number) => {
     if (!user || !gamification) return;
     
     try {
-      // Calculate points
-      const newTotalPoints = gamification.points + (score * 10);
+      // Calculate points (10 points per correct answer)
+      const pointsToAdd = score * 10 + lastQuestionPoints * 10;
+      const newTotalPoints = gamification.points + pointsToAdd;
       
-      // Check for new badges
+      // Check if any new badges were earned
       const currentBadges = gamification.badges || [];
       const newBadges = [...currentBadges];
       
       Object.values(BADGES).forEach(badge => {
         if (newTotalPoints >= badge.threshold && !currentBadges.includes(badge.name)) {
           newBadges.push(badge.name);
-          toast.success(`Badge débloqué : ${badge.name}!`);
+          toast.success(`🏆 Badge débloqué : ${badge.name}!`);
         }
       });
       
@@ -214,18 +164,6 @@ export const useCodingGame = () => {
       
       if (error) throw error;
       
-      // Store game result
-      const { error: gameError } = await supabase
-        .from('mini_game_scores')
-        .insert([{
-          user_id: user.id,
-          score: score * 10,
-          time_taken: 0, // We're not tracking time in this simplified version
-          completed_at: new Date().toISOString()
-        }]);
-      
-      if (gameError) throw gameError;
-      
       // Update local state
       setGamification({
         ...gamification,
@@ -234,23 +172,29 @@ export const useCodingGame = () => {
         last_played_at: new Date().toISOString()
       });
       
-      toast.success(`+${score * 10} points! Total: ${newTotalPoints}`);
+      toast.success(`+${pointsToAdd} points! Total: ${newTotalPoints}`);
     } catch (error: any) {
       console.error('Error updating gamification data:', error);
       toast.error('Erreur lors de la mise à jour des points');
     }
-  }, [user, gamification, score]);
+  };
 
-  // Reset game for replay
-  const resetGame = useCallback(() => {
+  // Reset the game
+  const resetGame = () => {
     setGameState('ready');
     setCurrentQuizIndex(0);
     setScore(0);
     setSelectedAnswer(null);
     setIsCorrect(null);
-  }, []);
+    setIsAnswerLocked(false);
+    
+    // Shuffle the questions
+    const shuffled = [...quizzes].sort(() => 0.5 - Math.random());
+    setQuizzes(shuffled);
+  };
 
   return {
+    quizzes,
     currentQuiz: quizzes[currentQuizIndex],
     currentQuizIndex,
     selectedAnswer,
@@ -261,6 +205,6 @@ export const useCodingGame = () => {
     startGame,
     selectAnswer,
     resetGame,
-    totalQuestions: quizzes.length
+    totalQuestions: QUESTIONS_PER_GAME
   };
 };
