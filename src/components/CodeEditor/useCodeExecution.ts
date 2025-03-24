@@ -21,18 +21,25 @@ export const useCodeExecution = () => {
     setIsRunning(true);
     setOutput("");
     setErrorMessage(null);
+    setActiveTab("output"); // Switch to output tab when running code
     
     try {
       const result = await executeCode(code, language);
       setOutput(result.output || "Program executed successfully!");
-      toast.success("Code executed");
+      
+      if (result.output.includes("error") || result.output.includes("Error")) {
+        toast.error("Code execution completed with errors");
+      } else {
+        toast.success("Code executed successfully");
+      }
       
       // After running code, automatically get some basic analysis
       getAIHelp(code, language, "Analyze this code briefly.");
     } catch (error: any) {
       console.error('Error executing code:', error);
-      setOutput(`Error executing code: ${error.message || 'Unknown error'}`);
-      setErrorMessage(error.message || 'Failed to execute code');
+      const errorMsg = error.message || 'Unknown error';
+      setOutput(`Error executing code: ${errorMsg}`);
+      setErrorMessage(errorMsg);
       toast.error("Failed to execute code");
     } finally {
       setIsRunning(false);
@@ -50,7 +57,7 @@ export const useCodeExecution = () => {
     
     try {
       const reply = await getAICodeAssistance(code, language, question);
-      setAnalysis(reply.content);
+      setAnalysis(reply);
       setActiveTab("analysis"); // Switch to analysis tab
       toast.success("AI analysis complete");
     } catch (error: any) {

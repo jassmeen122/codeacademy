@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bug, Lightbulb, Shield, AlertTriangle } from "lucide-react";
+import { Bug, Lightbulb, Shield, AlertTriangle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface OutputConsoleProps {
@@ -10,6 +10,7 @@ interface OutputConsoleProps {
   activeTab: "output" | "analysis";
   onTabChange: (value: "output" | "analysis") => void;
   isAnalyzing: boolean;
+  isRunning?: boolean;
   errorMessage?: string | null;
 }
 
@@ -19,6 +20,7 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
   activeTab,
   onTabChange,
   isAnalyzing,
+  isRunning = false,
   errorMessage
 }) => {
   return (
@@ -55,7 +57,14 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
         )}
 
         <TabsContent value="output" className="flex-1 p-4 overflow-auto font-mono">
-          {output ? (
+          {isRunning ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="animate-pulse flex flex-col items-center text-blue-400">
+                <Loader2 className="h-8 w-8 animate-spin mb-3" />
+                <p>Running your code...</p>
+              </div>
+            </div>
+          ) : output ? (
             <pre className="whitespace-pre-wrap text-green-300">{output}</pre>
           ) : (
             <div className="flex flex-col items-center justify-center h-full">
@@ -71,7 +80,7 @@ export const OutputConsole: React.FC<OutputConsoleProps> = ({
           {isAnalyzing ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-pulse flex flex-col items-center text-blue-400">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mb-3"></div>
+                <Loader2 className="h-8 w-8 animate-spin mb-3" />
                 <p>Analyzing your code...</p>
               </div>
             </div>

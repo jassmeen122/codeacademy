@@ -1,7 +1,5 @@
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { PenTool } from "lucide-react";
 import { lazy, Suspense } from "react";
 
 // Use lazy loading for the CodeEditorWrapper component to improve initial load time
@@ -18,7 +16,7 @@ const CodeEditorPage = () => {
           </div>
           
           {/* Full-height editor to maximize the available space */}
-          <div className="h-[calc(100vh-10rem)]">
+          <div className="h-[calc(100vh-12rem)]">
             <Suspense fallback={<div className="w-full h-full flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>}>

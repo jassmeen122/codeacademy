@@ -17,82 +17,35 @@ serve(async (req) => {
     
     console.log(`Executing ${language} code: ${code.substring(0, 100)}...`);
     
-    // For security and resource constraints, we're simulating code execution here
-    // In a production environment, you might want to connect to a secure execution service
     let output = "";
     let error = null;
     
-    try {
-      // Simulate different language execution
-      switch(language) {
-        case "python":
-          // Simulate Python output with basic validation
-          if (code.includes("print(")) {
-            const match = code.match(/print\("(.+?)"\)/);
-            output = match ? match[1] + "\n" : "Hello from Python!\n";
-          } else {
-            output = "Code executed successfully, but no output was generated.\n";
-          }
-          break;
-        case "javascript":
-          // Simulate JavaScript output
-          if (code.includes("console.log(")) {
-            const match = code.match(/console.log\("(.+?)"\)/);
-            output = match ? match[1] + "\n" : "Hello from JavaScript!\n";
-          } else {
-            output = "Code executed successfully, but no output was generated.\n";
-          }
-          break;
-        case "java":
-          if (code.includes("System.out.println(")) {
-            const match = code.match(/System.out.println\("(.+?)"\)/);
-            output = match ? match[1] + "\n" : "Hello from Java!\n";
-          } else {
-            output = "Code compiled successfully, but no output was generated.\n";
-          }
-          break;
-        case "c":
-        case "cpp":
-          if (code.includes("printf(")) {
-            const match = code.match(/printf\("(.+?)\\n"/);
-            output = match ? match[1] + "\n" : "Hello from C/C++!\n";
-          } else {
-            output = "Code compiled successfully, but no output was generated.\n";
-          }
-          break;
-        case "php":
-          if (code.includes("echo")) {
-            const match = code.match(/echo "(.+?)"/);
-            output = match ? match[1] + "\n" : "Hello from PHP!\n";
-          } else {
-            output = "Script executed, but no output was generated.\n";
-          }
-          break;
-        case "sql":
-          if (code.toLowerCase().includes("select")) {
-            output = "Query executed successfully. Rows returned: 1\n";
-            output += "| result |\n";
-            output += "|---------|\n";
-            output += "| Hello from SQL! |\n";
-          } else {
-            output = "Query executed successfully. 0 rows affected.\n";
-          }
-          break;
-        default:
-          output = `Execution for ${language} is not yet supported.\n`;
+    // Use Deno's built-in capabilities to execute JavaScript code
+    if (language === "javascript") {
+      try {
+        // For JavaScript, we can use Deno's eval
+        const result = await executeJavaScript(code);
+        output = result;
+      } catch (err) {
+        error = `JavaScript execution error: ${err.message}`;
       }
-    } catch (err) {
-      error = `Error during code execution: ${err.message}`;
-      console.error(`Execution error:`, err);
+    } else {
+      // For other languages, we'll use a real execution service
+      // Here we're using a direct approach with Deno capabilities
+      try {
+        const result = await executeCode(code, language);
+        output = result;
+      } catch (err) {
+        error = `Execution error for ${language}: ${err.message}`;
+      }
     }
 
-    // In a real implementation, you would use an actual execution service
+    // Return the execution result
     const result = {
       output: error || output,
       language
     };
 
-    // Return the simulated execution result
     return new Response(
       JSON.stringify(result),
       { 
@@ -116,3 +69,72 @@ serve(async (req) => {
     );
   }
 });
+
+// Function to execute JavaScript code using Deno
+async function executeJavaScript(code) {
+  const consoleOutput = [];
+  
+  // Create a custom console.log implementation to capture output
+  const originalConsoleLog = console.log;
+  console.log = (...args) => {
+    consoleOutput.push(args.map(arg => String(arg)).join(' '));
+    originalConsoleLog(...args);
+  };
+  
+  try {
+    // Execute the code and capture any result
+    const result = await eval(`(async () => { ${code} })()`);
+    
+    // Restore the original console.log
+    console.log = originalConsoleLog;
+    
+    // Return both console output and any result
+    return consoleOutput.join('\n') + (result !== undefined ? `\n${result}` : '');
+  } catch (error) {
+    // Restore the original console.log even if there's an error
+    console.log = originalConsoleLog;
+    throw error;
+  }
+}
+
+// Function to execute code in different languages
+async function executeCode(code, language) {
+  // For Python code, we'll use Deno's Command API to run Python in a subprocess
+  if (language === "python") {
+    // Create a temporary file with the Python code
+    const tempFile = await Deno.makeTempFile({suffix: '.py'});
+    await Deno.writeTextFile(tempFile, code);
+    
+    try {
+      // Execute the Python code
+      const cmd = new Deno.Command("python3", {
+        args: [tempFile],
+        stdout: "piped",
+        stderr: "piped",
+      });
+      
+      const { stdout, stderr } = await cmd.output();
+      
+      // Remove the temporary file
+      await Deno.remove(tempFile);
+      
+      // If there's an error, throw it
+      if (stderr.length > 0) {
+        const errorText = new TextDecoder().decode(stderr);
+        if (errorText.trim()) {
+          throw new Error(errorText);
+        }
+      }
+      
+      // Return the output
+      return new TextDecoder().decode(stdout);
+    } catch (error) {
+      // Make sure to clean up the temporary file
+      try { await Deno.remove(tempFile); } catch {}
+      throw error;
+    }
+  } else {
+    // For other languages, we return a message that direct execution is not supported
+    return `Direct execution of ${language} is not supported in this environment. The code would normally be sent to a specialized execution service.`;
+  }
+}

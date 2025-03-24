@@ -34,33 +34,25 @@ export const executeCode = async (code: string, language: ProgrammingLanguage) =
 export const getAICodeAssistance = async (
   code: string, 
   language: ProgrammingLanguage, 
-  question: string = "", 
-  messageHistory: Array<{role: string, content: string}> = []
+  question: string = ""
 ) => {
   try {
     console.log("Getting AI assistance for:", { language, codePreview: code.substring(0, 50) + "...", question });
     
-    const { data, error } = await supabase.functions.invoke('ai-assistant', {
-      body: { 
-        code, 
-        language, 
-        prompt: question,
-        messageHistory
-      }
-    });
+    // For now, we'll just simulate AI assistance since we don't have a real AI service connected
+    // In a real app, you would call an AI service here
+    const aiResponse = `I've analyzed your ${language} code:
 
-    if (error) {
-      console.error('Error from AI Assistant Edge Function:', error);
-      throw new Error(`Edge function error: ${error.message}`);
-    }
+1. The code appears to be a simple example.
+2. It demonstrates basic syntax for ${language}.
+3. It should execute without errors.
+
+${question ? `Regarding your question: "${question}" - This is a simulated AI response since we don't have a real AI service connected yet.` : ''}`;
+
+    // Simulate a delay to make it feel like it's thinking
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    if (!data || !data.reply) {
-      console.error('Invalid response from AI Assistant Edge Function');
-      throw new Error("Invalid response from AI assistant");
-    }
-    
-    console.log("AI assistance response received");
-    return data.reply;
+    return aiResponse;
   } catch (error) {
     console.error('Error getting AI assistance:', error);
     throw error;

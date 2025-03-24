@@ -8,6 +8,7 @@ import { LanguageSelector } from './LanguageSelector';
 import { MonacoEditorWrapper } from './MonacoEditorWrapper';
 import { OutputConsole } from './OutputConsole';
 import { useCodeExecution } from './useCodeExecution';
+import { toast } from "sonner";
 
 export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
   initialLanguage = "python",
@@ -37,15 +38,24 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
   };
 
   const handleRunCode = () => {
+    if (!code.trim()) {
+      toast.error("Please enter some code to execute");
+      return;
+    }
     runCode(code, language);
   };
 
   const handleGetAIHelp = () => {
+    if (!code.trim()) {
+      toast.error("Please enter some code for analysis");
+      return;
+    }
     getAIHelp(code, language);
   };
 
   const handleResetCode = () => {
     setCode(defaultCode[language]);
+    toast.info(`Code reset to default ${language} example`);
   };
 
   return (
@@ -110,6 +120,7 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
               activeTab={activeTab}
               onTabChange={setActiveTab}
               isAnalyzing={isAnalyzing}
+              isRunning={isRunning}
               errorMessage={errorMessage}
             />
           </div>
