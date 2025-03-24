@@ -1,18 +1,41 @@
-# A more structured config.toml file for Supabase Edge Functions
 
-[functions]
-# Remove the port setting from here as it's causing parsing errors
-
-[auth]
-enabled = true
+project_id = "tgjtkmduelappimtorwe"
 
 [api]
-enabled = true
-port = 54321
-schemas = ["public", "storage"]
-extra_search_path = ["public", "extensions"]
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["extensions"]
 max_rows = 1000
 
 [db]
-port = 54322
-shadow_port = 54320
+port = 5432
+shadow_port = 5433
+major_version = 15
+
+[studio]
+port = 8000
+
+[inbucket]
+smtp_port = 2500
+pop3_port = 1100
+web_port = 9000
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+  "https://localhost:3000",
+  "http://localhost:3000"
+]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[storage]
+file_size_limit = "50MiB"
+
+[functions]
+[functions.seed-course-data]
+verify_jwt = true
+
+[analytics]
+enabled = false

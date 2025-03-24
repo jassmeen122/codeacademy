@@ -24,6 +24,9 @@ import StudentProfilePage from '@/pages/student/ProfilePage';
 import StudentNotificationsPage from '@/pages/student/NotificationsPage';
 import StudentSettingsPage from '@/pages/student/SettingsPage';
 import FreeCoursesDashboard from '@/pages/student/FreeCoursesDashboard';
+import LanguagesPage from '@/pages/student/LanguagesPage';
+import LanguageModulesPage from '@/pages/student/LanguageModulesPage';
+import ModuleContentPage from '@/pages/student/ModuleContentPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -55,6 +58,9 @@ function App() {
           <Route path="/student/free-courses" element={<FreeCoursesDashboard />} />
           <Route path="/student/courses/:courseId/details" element={<StudentCourseDetailsPage />} />
           <Route path="/student/courses/:courseId/learn" element={<StudentCourseLearnPage />} />
+          <Route path="/student/languages" element={<LanguagesPage />} />
+          <Route path="/student/languages/:languageId" element={<LanguageModulesPage />} />
+          <Route path="/student/modules/:moduleId" element={<ModuleContentPage />} />
           <Route path="/student/exercises" element={<StudentExercisesPage />} />
           <Route path="/student/discussion" element={<StudentDiscussionPage />} />
           <Route path="/student/projects" element={<StudentProjectsPage />} />
