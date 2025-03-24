@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Lightbulb } from "lucide-react";
+import { Play, Lightbulb, Code, RefreshCw } from "lucide-react";
 import { CodeEditorProps, defaultCode } from './types';
 import { LanguageSelector } from './LanguageSelector';
 import { MonacoEditorWrapper } from './MonacoEditorWrapper';
@@ -44,38 +44,58 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
     getAIHelp(code, language);
   };
 
+  const handleResetCode = () => {
+    setCode(defaultCode[language]);
+  };
+
   return (
-    <Card className="w-full max-w-6xl mx-auto">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Code Editor</CardTitle>
-          <div className="flex items-center gap-4">
+    <Card className="w-full h-full border-[1.5px] shadow-md overflow-hidden">
+      <CardHeader className="bg-gray-50 dark:bg-gray-800 border-b py-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <CardTitle className="flex items-center text-xl">
+            <Code className="mr-2 h-5 w-5 text-blue-500" />
+            Code Editor
+          </CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
             <LanguageSelector 
               language={language} 
               onChange={handleLanguageChange} 
             />
             <Button
+              onClick={handleResetCode}
+              variant="outline"
+              size="sm"
+              className="text-xs h-9"
+            >
+              <RefreshCw className="mr-1 h-3 w-3" />
+              Reset
+            </Button>
+            <Button
               onClick={handleGetAIHelp}
               variant="outline"
+              size="sm"
+              className="text-xs h-9 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
               disabled={isAnalyzing || !code}
             >
-              <Lightbulb className="mr-2 h-4 w-4" />
+              <Lightbulb className="mr-1 h-3 w-3" />
               Get AI Help
             </Button>
             <Button
               onClick={handleRunCode}
+              size="sm"
+              className="text-xs h-9 bg-blue-600 hover:bg-blue-700"
               disabled={isRunning || !code}
             >
-              <Play className="mr-2 h-4 w-4" />
+              <Play className="mr-1 h-3 w-3" />
               Run Code
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="grid md:grid-cols-2 gap-4">
+      <CardContent className="p-0 h-[calc(100%-60px)]">
+        <div className="grid h-full md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x">
           {/* Code Editor */}
-          <div className="min-h-[400px] border rounded-lg overflow-hidden">
+          <div className="h-[350px] md:h-full">
             <MonacoEditorWrapper
               language={language}
               code={code}
@@ -83,14 +103,16 @@ export const CodeEditorWrapper: React.FC<CodeEditorProps> = ({
             />
           </div>
           {/* Output and Analysis Console */}
-          <OutputConsole
-            output={output}
-            analysis={analysis}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            isAnalyzing={isAnalyzing}
-            errorMessage={errorMessage}
-          />
+          <div className="h-[350px] md:h-full overflow-hidden">
+            <OutputConsole
+              output={output}
+              analysis={analysis}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              isAnalyzing={isAnalyzing}
+              errorMessage={errorMessage}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
