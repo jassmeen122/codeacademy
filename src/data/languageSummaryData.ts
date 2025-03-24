@@ -1,4 +1,3 @@
-
 // Default language summaries that will be used if no data exists in the database
 export const defaultLanguageSummaries: Record<string, { title: string, content: string }> = {
   python: {
@@ -611,7 +610,7 @@ if (carteMembre || argent >= 100) {
 ✔️ Si la personne a une carte membre OU si elle a au moins 100€, elle peut entrer.
 
 # 3. Fonctions en JavaScript
-Une fonction est un bloc de code qui effectue une action et peut être réutilisé plusieurs fois.
+Une fonction est un bloc de code qui effectue une action et peut être réutilisée plusieurs fois.
 
 ## Créer une fonction sans paramètres
 
@@ -695,5 +694,209 @@ function multiplier(x, y) {
 ✔️ Il est utilisé dans les navigateurs (Frontend) et aussi côté serveur (Node.js).
 
 💡 JavaScript est essentiel pour le développement web moderne ! 🚀`
+  },
+  php: {
+    title: "Introduction à PHP",
+    content: `# Introduction à PHP
+
+PHP (Hypertext Preprocessor) est un langage de programmation côté serveur utilisé principalement pour le développement web. Il permet de générer des pages dynamiques, se connecter à une base de données, et gérer les formulaires.
+
+💡 Points forts de PHP :
+✔️ Facile à apprendre et à utiliser.
+✔️ Intégré avec HTML.
+✔️ Compatible avec MySQL, PostgreSQL, SQLite, etc.
+✔️ Fonctionne sur tous les serveurs web (Apache, Nginx…).
+
+## 1. Déclaration des Variables en PHP
+
+En PHP, les variables commencent toujours par $, et il n'est pas nécessaire de préciser le type de la variable (PHP est un langage faiblement typé).
+
+### Syntaxe des Variables
+
+\`\`\`php
+<?php
+$nom = "Yassmine";  // Chaîne de caractères
+$age = 19;          // Entier
+$prix = 15.99;      // Float
+$estConnecte = true; // Booléen
+
+echo "Nom : $nom, Age : $age, Prix : $prix";
+?>
+\`\`\`
+
+💡 Explication :
+
+$nom = "Yassmine"; → Variable contenant une chaîne de caractères.
+
+$age = 19; → Variable de type entier.
+
+$prix = 15.99; → Variable de type décimal.
+
+$estConnecte = true; → Booléen (true ou false).
+
+👉 PHP déduit automatiquement le type des variables en fonction de la valeur qu'on leur attribue.
+
+## 2. Conditions en PHP (if, else if, else)
+
+PHP utilise les mêmes conditions que la plupart des langages de programmation (if, else if, else).
+
+### Condition if simple
+
+\`\`\`php
+<?php
+$age = 20;
+
+if ($age >= 18) {
+    echo "Vous êtes majeur.";
+}
+?>
+\`\`\`
+
+💡 Explication :
+Si $age est supérieur ou égal à 18, on affiche "Vous êtes majeur.".
+
+### Condition if...else
+
+\`\`\`php
+<?php
+$age = 16;
+
+if ($age >= 18) {
+    echo "Vous êtes majeur.";
+} else {
+    echo "Vous êtes mineur.";
+}
+?>
+\`\`\`
+
+💡 Explication :
+Si $age est inférieur à 18, alors on affiche "Vous êtes mineur.".
+
+### Condition if...else if...else
+
+\`\`\`php
+<?php
+$note = 15;
+
+if ($note >= 18) {
+    echo "Excellent !";
+} elseif ($note >= 14) {
+    echo "Bien !";
+} elseif ($note >= 10) {
+    echo "Passable.";
+} else {
+    echo "Échec.";
+}
+?>
+\`\`\`
+
+💡 Explication :
+
+Si note >= 18, on affiche "Excellent !".
+
+Si note >= 14, on affiche "Bien !".
+
+Si note >= 10, on affiche "Passable".
+
+Sinon, on affiche "Échec."
+
+## 3. Fonctions en PHP
+
+Une fonction est un bloc de code qui exécute une tâche spécifique.
+
+### Déclaration d'une fonction sans paramètre
+
+\`\`\`php
+<?php
+function direBonjour() {
+    echo "Bonjour, bienvenue sur notre site !";
+}
+
+direBonjour();
+?>
+\`\`\`
+
+💡 Explication :
+
+function direBonjour() → Déclaration d'une fonction nommée direBonjour.
+
+echo "Bonjour..."; → Affichage d'un message.
+
+direBonjour(); → Appel de la fonction.
+
+### Fonction avec paramètres
+
+\`\`\`php
+<?php
+function saluer($nom) {
+    echo "Bonjour, $nom !";
+}
+
+saluer("Yassmine");
+?>
+\`\`\`
+
+💡 Explication :
+
+$nom est un paramètre passé à la fonction saluer.
+
+Lorsqu'on appelle saluer("Yassmine");, le message "Bonjour, Yassmine !" s'affiche.
+
+### Fonction avec retour de valeur
+
+\`\`\`php
+<?php
+function additionner($a, $b) {
+    return $a + $b;
+}
+
+$resultat = additionner(5, 7);
+echo "Résultat : $resultat";
+?>
+\`\`\`
+
+💡 Explication :
+
+La fonction additionner($a, $b) retourne la somme de $a et $b.
+
+Le résultat est stocké dans la variable $resultat et affiché.
+
+## 4. PHP et HTML : Exemple Complet
+
+PHP est souvent intégré dans des pages HTML.
+
+\`\`\`php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exemple PHP</title>
+</head>
+<body>
+
+<h1>Bienvenue sur mon site</h1>
+
+<?php
+$nom = "Yassmine";
+echo "<p>Bonjour, $nom !</p>";
+?>
+
+</body>
+</html>
+\`\`\`
+
+💡 Explication :
+
+PHP est intégré entre <?php ... ?>.
+
+L'instruction echo "<p>Bonjour, $nom !</p>"; affiche du texte dans une balise HTML.
+
+# Conclusion
+
+✔️ PHP est un langage puissant pour le développement web dynamique.
+✔️ Les variables sont déclarées avec $ sans type spécifique.
+✔️ Les conditions et les fonctions sont similaires aux autres langages.
+✔️ PHP fonctionne en combinaison avec HTML pour générer des pages interactives.
+
+🚀 PHP est l'un des langages les plus utilisés pour créer des sites web dynamiques comme Facebook, WordPress et Wikipedia !`
   }
 };
