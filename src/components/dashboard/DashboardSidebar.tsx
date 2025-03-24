@@ -1,4 +1,3 @@
-
 import {
   Book,
   Code,
@@ -26,7 +25,8 @@ import {
   Folder,
   PlusCircle,
   ListChecks,
-  Pencil
+  Pencil,
+  Gamepad2
 } from "lucide-react";
 import {
   Sidebar,
@@ -184,6 +184,11 @@ const studentMenuItems: MenuItem[] = [
     title: "Achievements",
     icon: Trophy,
     href: "/student/achievements",
+  },
+  {
+    title: "Mini-Jeu",
+    icon: Gamepad2,
+    href: "/student/mini-game",
   },
   {
     title: "Discussion",

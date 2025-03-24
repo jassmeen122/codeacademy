@@ -27,6 +27,7 @@ import FreeCoursesDashboard from '@/pages/student/FreeCoursesDashboard';
 import LanguagesPage from '@/pages/student/LanguagesPage';
 import LanguageModulesPage from '@/pages/student/LanguageModulesPage';
 import ModuleContentPage from '@/pages/student/ModuleContentPage';
+import MiniGamePage from '@/pages/student/MiniGamePage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -69,6 +70,7 @@ function App() {
           <Route path="/student/ai-assistant" element={<StudentAIAssistantPage />} />
           <Route path="/student/progress" element={<StudentProgressPage />} />
           <Route path="/student/achievements" element={<StudentAchievementsPage />} />
+          <Route path="/student/mini-game" element={<MiniGamePage />} />
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
