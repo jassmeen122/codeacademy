@@ -1,6 +1,5 @@
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { CodeEditorWrapper } from "@/components/CodeEditor/CodeEditorWrapper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Code, PenTool, Server } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -63,19 +62,13 @@ const CodeEditorPage = () => {
             </Card>
           </div>
           
-          <Alert className="bg-blue-50 border-blue-200 mb-6">
-            <Info className="h-4 w-4 text-blue-500" />
-            <AlertTitle className="text-blue-700">Pro Tip</AlertTitle>
-            <AlertDescription className="text-blue-600">
-              Use the "Get AI Help" button when you're stuck to receive code suggestions and explanations.
-            </AlertDescription>
-          </Alert>
+          {/* Removed the Pro Tip alert */}
           
-          <div className="h-[calc(100vh-24rem)] md:h-[calc(100vh-20rem)]">
+          <div className="h-[calc(100vh-18rem)] md:h-[calc(100vh-14rem)]">
             <Suspense fallback={<div className="w-full h-full flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>}>
-              <CodeEditorWrapper />
+              <LazyCodeEditorWrapper />
             </Suspense>
           </div>
         </div>
