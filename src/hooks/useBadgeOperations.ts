@@ -80,11 +80,22 @@ export async function checkAndUpdateBadge(languageId: string, userId: string) {
         
       if (updateError) throw updateError;
       
-      // Update user points
+      // Update user points - first fetch current points from the profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('points')
+        .eq('id', userId)
+        .single();
+        
+      if (profileError) throw profileError;
+      
+      // Then update with additional points
+      const newPoints = (profileData.points || 0) + 100;
+      
       const { error: pointsError } = await supabase
         .from('profiles')
         .update({
-          points: data.points ? data.points + 100 : 100
+          points: newPoints
         })
         .eq('id', userId);
         
