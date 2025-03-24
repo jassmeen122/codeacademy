@@ -1,448 +1,439 @@
 
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, FileIcon, FolderIcon, GitBranchIcon, GithubIcon, PlusIcon, UploadIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
-import { toast } from "sonner";
+import { Project, ProjectFile } from "@/types/course";
+import {
+  Download,
+  FileCode,
+  FilePlus,
+  FileText,
+  FileZip,
+  Loader2,
+  UploadCloud,
+} from "lucide-react";
 
-// Define a simple interface for project files
-interface ProjectFile {
-  id: string;
-  name: string;
-  type: string;
-  size: string;
-  lastModified: Date;
-  url?: string;
-}
+const formSchema = z.object({
+  title: z.string().min(5, {
+    message: "Le titre doit contenir au moins 5 caractères",
+  }),
+  description: z.string().min(10, {
+    message: "La description doit contenir au moins 10 caractères",
+  }),
+});
 
-// Interface for student projects
-interface StudentProject {
-  id: string;
-  title: string;
-  description: string;
-  created_at: string;
-  status: 'submitted' | 'pending' | 'approved' | 'rejected';
-  feedback?: string;
-  files: ProjectFile[];
-}
+const FileIcon = ({ fileName }: { fileName: string }) => {
+  if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {
+    return <FileZip className="h-4 w-4 mr-2" />;
+  } else if (
+    fileName.endsWith(".js") ||
+    fileName.endsWith(".ts") ||
+    fileName.endsWith(".py") ||
+    fileName.endsWith(".java") ||
+    fileName.endsWith(".cpp") ||
+    fileName.endsWith(".c")
+  ) {
+    return <FileCode className="h-4 w-4 mr-2" />;
+  } else {
+    return <FileText className="h-4 w-4 mr-2" />;
+  }
+};
 
-export default function ProjectsPage() {
+const ProjectsPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuthState();
-  const [projects, setProjects] = useState<StudentProject[]>([
-    {
-      id: "1",
-      title: "Application Web React",
-      description: "Une application React qui affiche des données depuis une API",
-      created_at: "2023-05-15T10:30:00",
-      status: "approved",
-      feedback: "Excellent travail ! La structure du code est claire et les composants bien organisés.",
-      files: [
-        { id: "f1", name: "App.js", type: "js", size: "25 KB", lastModified: new Date("2023-05-15") },
-        { id: "f2", name: "index.css", type: "css", size: "8 KB", lastModified: new Date("2023-05-14") },
-        { id: "f3", name: "package.json", type: "json", size: "2 KB", lastModified: new Date("2023-05-13") }
-      ]
-    },
-    {
-      id: "2",
-      title: "Algorithme de tri en Python",
-      description: "Implémentation de différents algorithmes de tri en Python",
-      created_at: "2023-04-20T14:20:00",
-      status: "rejected",
-      feedback: "Votre algorithme de tri rapide présente un bug dans le cas de tableaux avec des éléments identiques. Veuillez corriger et soumettre à nouveau.",
-      files: [
-        { id: "f4", name: "sorting.py", type: "py", size: "12 KB", lastModified: new Date("2023-04-20") },
-        { id: "f5", name: "test_sorting.py", type: "py", size: "15 KB", lastModified: new Date("2023-04-19") }
-      ]
-    },
-    {
-      id: "3",
-      title: "Backend Node.js",
-      description: "API RESTful avec Express et MongoDB",
-      created_at: "2023-06-10T09:15:00",
-      status: "pending",
-      files: [
-        { id: "f6", name: "server.js", type: "js", size: "18 KB", lastModified: new Date("2023-06-10") },
-        { id: "f7", name: "routes.js", type: "js", size: "22 KB", lastModified: new Date("2023-06-09") },
-        { id: "f8", name: "database.js", type: "js", size: "10 KB", lastModified: new Date("2023-06-08") }
-      ]
-    }
-  ]);
-  
-  const [newProject, setNewProject] = useState({
-    title: "",
-    description: ""
-  });
-  
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState<FileList | null>(null);
   const [open, setOpen] = useState(false);
-  
-  // Function to handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setSelectedFiles(e.target.files);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchProjects();
+    }
+  }, [user]);
+
+  const fetchProjects = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      // This will need to be created in the database first
+      // Create a SQL migration for this first
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setProjects(data || []);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      toast.error("Erreur lors du chargement des projets");
+    } finally {
+      setLoading(false);
     }
   };
-  
-  // Function to submit a new project
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
-      toast.error("Vous devez être connecté pour soumettre un projet");
-      return;
-    }
-    
-    if (!newProject.title || !newProject.description) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
-      return;
-    }
-    
-    if (!selectedFiles || selectedFiles.length === 0) {
+
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user || !files || files.length === 0) {
       toast.error("Veuillez sélectionner au moins un fichier");
       return;
     }
-    
-    setUploading(true);
-    
+
     try {
-      // Create a new project entry in the database
+      setUploading(true);
+
+      // Create new project
       const { data: projectData, error: projectError } = await supabase
-        .from('student_projects')
+        .from("projects")
         .insert({
           user_id: user.id,
-          title: newProject.title,
-          description: newProject.description,
-          status: 'pending'
+          title: values.title,
+          description: values.description,
+          status: "pending",
         })
-        .select()
+        .select("*")
         .single();
-      
+
       if (projectError) throw projectError;
-      
-      // Upload all selected files
-      const uploadedFiles: ProjectFile[] = [];
-      
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}/${projectData.id}/${Math.random().toString(36).substring(2)}.${fileExt}`;
-        
-        const { data: fileData, error: fileError } = await supabase.storage
-          .from('project_files')
+
+      const project = projectData as Project;
+
+      // Upload files
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${user.id}/${project.id}/${Date.now()}.${fileExt}`;
+
+        // Upload file to storage
+        const { error: uploadError } = await supabase.storage
+          .from("project_files")
           .upload(fileName, file);
-        
-        if (fileError) throw fileError;
-        
-        // Get the public URL for the file
+
+        if (uploadError) throw uploadError;
+
+        // Get the public URL
         const { data: urlData } = supabase.storage
-          .from('project_files')
+          .from("project_files")
           .getPublicUrl(fileName);
-        
-        // Add file metadata to the files table
-        const { data: fileMetadata, error: metadataError } = await supabase
-          .from('project_files')
-          .insert({
-            project_id: projectData.id,
-            file_name: file.name,
-            file_type: fileExt || 'unknown',
-            file_size: file.size,
-            file_path: fileName,
-            file_url: urlData?.publicUrl || ''
-          })
-          .select()
-          .single();
-        
-        if (metadataError) throw metadataError;
-        
-        uploadedFiles.push({
-          id: fileMetadata.id,
-          name: file.name,
-          type: fileExt || 'unknown',
-          size: `${Math.round(file.size / 1024)} KB`,
-          lastModified: new Date(),
-          url: urlData?.publicUrl
+
+        // Store file metadata in the database
+        const { error: fileError } = await supabase.from("project_files").insert({
+          project_id: project.id,
+          file_name: file.name,
+          file_url: urlData.publicUrl,
+          file_type: fileExt || "unknown",
         });
+
+        if (fileError) throw fileError;
       }
-      
-      // Add the new project to the state
-      const newProjectEntry: StudentProject = {
-        id: projectData.id,
-        title: projectData.title,
-        description: projectData.description,
-        created_at: projectData.created_at,
-        status: 'pending',
-        files: uploadedFiles
-      };
-      
-      setProjects([newProjectEntry, ...projects]);
-      
-      // Reset form
-      setNewProject({ title: "", description: "" });
-      setSelectedFiles(null);
+
+      toast.success("Projet créé avec succès");
+      form.reset();
+      setFiles(null);
       setOpen(false);
-      
-      toast.success("Projet soumis avec succès !");
+      fetchProjects();
     } catch (error) {
-      console.error("Error submitting project:", error);
-      toast.error("Erreur lors de la soumission du projet. Veuillez réessayer.");
+      console.error("Error creating project:", error);
+      toast.error("Erreur lors de la création du projet");
     } finally {
       setUploading(false);
     }
   };
-  
-  const getStatusBadge = (status: StudentProject['status']) => {
+
+  const viewProjectFiles = async (project: Project) => {
+    setSelectedProject(project);
+
+    try {
+      const { data, error } = await supabase
+        .from("project_files")
+        .select("*")
+        .eq("project_id", project.id)
+        .order("uploaded_at", { ascending: false });
+
+      if (error) throw error;
+
+      setProjectFiles(data || []);
+    } catch (error) {
+      console.error("Error fetching project files:", error);
+      toast.error("Erreur lors du chargement des fichiers");
+    }
+  };
+
+  const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-800 border-green-300">Approuvé</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-100 text-red-800 border-red-300">Rejeté</Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">En attente</Badge>;
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
       default:
-        return <Badge className="bg-gray-100 text-gray-800 border-gray-300">Soumis</Badge>;
+        return "bg-yellow-100 text-yellow-800";
     }
   };
-  
-  // Function to get file icon based on file type
-  const getFileIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'js':
-      case 'jsx':
-      case 'ts':
-      case 'tsx':
-        return <FileIcon className="h-5 w-5 text-yellow-500" />;
-      case 'css':
-      case 'scss':
-        return <FileIcon className="h-5 w-5 text-blue-500" />;
-      case 'html':
-        return <FileIcon className="h-5 w-5 text-orange-500" />;
-      case 'json':
-        return <FileIcon className="h-5 w-5 text-gray-500" />;
-      case 'py':
-        return <FileIcon className="h-5 w-5 text-green-500" />;
-      case 'java':
-        return <FileIcon className="h-5 w-5 text-red-500" />;
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "approved":
+        return "Approuvé";
+      case "rejected":
+        return "Rejeté";
       default:
-        return <FileIcon className="h-5 w-5 text-gray-500" />;
+        return "En attente";
     }
   };
-  
+
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Mes Projets</h1>
-          
+
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <PlusIcon className="h-4 w-4" />
+              <Button>
+                <FilePlus className="h-4 w-4 mr-2" />
                 Nouveau Projet
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
-              <form onSubmit={handleSubmit}>
-                <DialogHeader>
-                  <DialogTitle>Soumettre un Nouveau Projet</DialogTitle>
-                  <DialogDescription>
-                    Soumettez votre projet pour évaluation. Les fichiers acceptés sont .zip, .rar, .py, .java, .js, etc.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4 py-4">
+              <DialogHeader>
+                <DialogTitle>Créer un nouveau projet</DialogTitle>
+                <DialogDescription>
+                  Donnez un titre à votre projet et joignez les fichiers
+                  nécessaires.
+                </DialogDescription>
+              </DialogHeader>
+
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Titre du projet</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Mon super projet" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Décrivez votre projet..."
+                            {...field}
+                            rows={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="space-y-2">
-                    <Label htmlFor="title">Titre du Projet *</Label>
-                    <Input 
-                      id="title" 
-                      value={newProject.title}
-                      onChange={(e) => setNewProject({...newProject, title: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description *</Label>
-                    <Input 
-                      id="description" 
-                      value={newProject.description}
-                      onChange={(e) => setNewProject({...newProject, description: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="files">Fichiers *</Label>
-                    <div className="border border-dashed border-gray-300 rounded-md p-6 text-center">
-                      <UploadIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-500 mb-2">
-                        Glissez-déposez vos fichiers ici ou cliquez pour parcourir
-                      </p>
-                      <Input 
-                        id="files" 
-                        type="file" 
-                        className="hidden" 
+                    <Label htmlFor="files">Fichiers du projet</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="files"
+                        type="file"
                         multiple
-                        onChange={handleFileChange}
+                        onChange={(e) => setFiles(e.target.files)}
+                        className="flex-1"
                       />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => document.getElementById('files')?.click()}
-                      >
-                        Parcourir
-                      </Button>
-                      {selectedFiles && selectedFiles.length > 0 && (
-                        <div className="mt-2 text-sm text-left">
-                          <p className="font-medium">{selectedFiles.length} fichier(s) sélectionné(s):</p>
-                          <ul className="mt-1 list-disc pl-5">
-                            {Array.from(selectedFiles).slice(0, 3).map((file, index) => (
-                              <li key={index} className="text-gray-600">{file.name}</li>
-                            ))}
-                            {selectedFiles.length > 3 && (
-                              <li className="text-gray-600">...et {selectedFiles.length - 3} autre(s)</li>
-                            )}
-                          </ul>
-                        </div>
-                      )}
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Formats acceptés: .zip, .rar, .py, .js, .java, .cpp, etc.
+                    </p>
                   </div>
-                </div>
-                
-                <DialogFooter>
-                  <Button type="submit" disabled={uploading}>
-                    {uploading ? "Envoi en cours..." : "Soumettre le Projet"}
-                  </Button>
-                </DialogFooter>
-              </form>
+
+                  <DialogFooter>
+                    <Button
+                      type="submit"
+                      disabled={uploading}
+                      className="w-full"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Envoi en cours...
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="h-4 w-4 mr-2" />
+                          Envoyer le projet
+                        </>
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
             </DialogContent>
           </Dialog>
         </div>
-        
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="all">Tous</TabsTrigger>
-            <TabsTrigger value="pending">En attente</TabsTrigger>
-            <TabsTrigger value="approved">Approuvés</TabsTrigger>
-            <TabsTrigger value="rejected">Rejetés</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="all" className="space-y-4">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </TabsContent>
-          
-          <TabsContent value="pending" className="space-y-4">
-            {projects.filter(p => p.status === 'pending').map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </TabsContent>
-          
-          <TabsContent value="approved" className="space-y-4">
-            {projects.filter(p => p.status === 'approved').map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </TabsContent>
-          
-          <TabsContent value="rejected" className="space-y-4">
-            {projects.filter(p => p.status === 'rejected').map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </TabsContent>
-        </Tabs>
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="text-center py-12 border rounded-lg bg-gray-50">
+            <FileCode className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium mb-2">Aucun projet</h3>
+            <p className="text-muted-foreground mb-4">
+              Vous n'avez pas encore créé de projet.
+            </p>
+            <Button onClick={() => setOpen(true)}>
+              <FilePlus className="h-4 w-4 mr-2" />
+              Créer un projet
+            </Button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((project) => (
+                <Card key={project.id} className="overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{project.title}</CardTitle>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeColor(
+                          project.status
+                        )}`}
+                      >
+                        {getStatusText(project.status)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(project.created_at).toLocaleDateString()}
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm mb-4">{project.description}</p>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => viewProjectFiles(project)}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Voir les fichiers
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* View Project Files Dialog */}
+            {selectedProject && (
+              <Dialog
+                open={!!selectedProject}
+                onOpenChange={(open) => !open && setSelectedProject(null)}
+              >
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>
+                      Fichiers du projet: {selectedProject.title}
+                    </DialogTitle>
+                    <DialogDescription>
+                      Status: {getStatusText(selectedProject.status)}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    {projectFiles.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-4">
+                        Aucun fichier trouvé pour ce projet
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {projectFiles.map((file) => (
+                          <div
+                            key={file.id}
+                            className="flex items-center justify-between p-3 rounded-md border"
+                          >
+                            <div className="flex items-center">
+                              <FileIcon fileName={file.file_name} />
+                              <span>{file.file_name}</span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              asChild
+                              title="Télécharger"
+                            >
+                              <a
+                                href={file.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Download className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </>
+        )}
       </div>
     </DashboardLayout>
   );
-}
+};
 
-interface ProjectCardProps {
-  project: StudentProject;
-}
-
-function ProjectCard({ project }: ProjectCardProps) {
-  const statusBadge = () => {
-    switch (project.status) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-800 border-green-300">Approuvé</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-100 text-red-800 border-red-300">Rejeté</Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">En attente</Badge>;
-      default:
-        return <Badge className="bg-gray-100 text-gray-800 border-gray-300">Soumis</Badge>;
-    }
-  };
-  
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle>{project.title}</CardTitle>
-            <CardDescription className="mt-1">{project.description}</CardDescription>
-          </div>
-          {statusBadge()}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center text-sm text-gray-500">
-            <CalendarIcon className="h-4 w-4 mr-2" />
-            <span>Soumis le {format(new Date(project.created_at), "dd/MM/yyyy 'à' HH:mm")}</span>
-          </div>
-          
-          <div className="border rounded-md p-3">
-            <h4 className="text-sm font-medium mb-2">Fichiers du projet</h4>
-            <div className="space-y-2">
-              {project.files.map((file) => (
-                <div key={file.id} className="flex items-center justify-between bg-muted/40 rounded-md p-2">
-                  <div className="flex items-center">
-                    <div className="mr-2">
-                      {file.type && getFileIcon(file.type)}
-                    </div>
-                    <span className="text-sm font-medium">{file.name}</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span className="text-xs text-gray-500">{file.size}</span>
-                    {file.url && (
-                      <a
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline"
-                        download
-                      >
-                        Télécharger
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {project.feedback && (
-            <div className={`p-3 rounded-md ${
-              project.status === 'approved' ? 'bg-green-50 border border-green-200' : 
-              project.status === 'rejected' ? 'bg-red-50 border border-red-200' : 
-              'bg-gray-50 border border-gray-200'
-            }`}>
-              <h4 className="text-sm font-medium mb-1">Feedback de l'enseignant</h4>
-              <p className="text-sm">{project.feedback}</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+export default ProjectsPage;

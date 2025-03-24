@@ -133,3 +133,21 @@ export interface MiniGameScore {
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   completed_at: string;
 }
+
+export interface Project {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+}
+
+export interface ProjectFile {
+  id: string;
+  project_id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string;
+  uploaded_at: string;
+}

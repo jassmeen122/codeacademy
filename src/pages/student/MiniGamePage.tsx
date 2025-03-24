@@ -1,260 +1,214 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CodingMiniGame } from "@/components/student/CodingMiniGame";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, ArrowLeft, Medal, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { GameDifficulty } from "@/hooks/useCodingGame";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Code, Award, ArrowLeft, User } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { GameDifficulty, useCodingGame } from '@/hooks/useCodingGame';
-import { toast } from 'sonner';
-import { useAuthState } from '@/hooks/useAuthState';
-import { CodingMiniGame } from '@/components/student/CodingMiniGame';
+import "react-tabs/style/react-tabs.css";
+import { toast } from "sonner";
 
-// Interface pour le tableau des meilleurs scores
 interface LeaderboardEntry {
   id: string;
   user_id: string;
+  user_name: string;
   score: number;
-  difficulty: string;
+  difficulty: GameDifficulty;
   completed_at: string;
-  user_name?: string;
 }
 
-export default function MiniGamePage() {
+const MiniGamePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthState();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<GameDifficulty>('Beginner');
-  
-  const { gamification } = useCodingGame();
-  
-  // Récupérer le classement
+  const [loading, setLoading] = useState(true);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<GameDifficulty>("Beginner");
+
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        setIsLoadingLeaderboard(true);
-        
-        // Récupération des meilleurs scores pour la difficulté sélectionnée
-        const { data: scores, error: scoresError } = await supabase
-          .from('mini_game_scores')
-          .select('*')
-          .eq('difficulty', selectedDifficulty)
-          .order('score', { ascending: false })
-          .limit(10);
-          
-        if (scoresError) throw scoresError;
-        
-        // Récupération des noms d'utilisateurs
-        if (scores && scores.length > 0) {
-          const userIds = scores.map(score => score.user_id);
-          const { data: profiles, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, full_name')
-            .in('id', userIds);
-            
-          if (profilesError) throw profilesError;
-          
-          // Combiner les scores avec les noms d'utilisateurs
-          const leaderboardWithNames = scores.map(score => {
-            const userProfile = profiles?.find(profile => profile.id === score.user_id);
-            return {
-              ...score,
-              user_name: userProfile?.full_name || 'Utilisateur inconnu'
-            };
-          });
-          
-          setLeaderboard(leaderboardWithNames);
-        } else {
-          setLeaderboard([]);
-        }
-      } catch (error: any) {
-        console.error('Error fetching leaderboard:', error);
-        toast.error('Erreur lors du chargement du classement');
-      } finally {
-        setIsLoadingLeaderboard(false);
-      }
-    };
-    
     fetchLeaderboard();
   }, [selectedDifficulty]);
 
-  // Rendu du tableau des meilleurs scores
-  const renderLeaderboard = () => {
-    if (isLoadingLeaderboard) {
-      return (
-        <div className="py-8 text-center">
-          <p>Chargement du classement...</p>
-        </div>
-      );
+  const fetchLeaderboard = async () => {
+    try {
+      setLoading(true);
+      const { data: scoresData, error: scoresError } = await supabase
+        .from("mini_game_scores")
+        .select("id, user_id, score, difficulty, completed_at")
+        .eq("difficulty", selectedDifficulty)
+        .order("score", { ascending: false })
+        .limit(10);
+
+      if (scoresError) throw scoresError;
+
+      // Fetch user names
+      const userIds = scoresData.map((score) => score.user_id);
+      const { data: usersData, error: usersError } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", userIds);
+
+      if (usersError) throw usersError;
+
+      // Merge data
+      const leaderboardData = scoresData.map((score) => {
+        const user = usersData.find((u) => u.id === score.user_id);
+        return {
+          ...score,
+          user_name: user?.full_name || "Utilisateur inconnu",
+          difficulty: score.difficulty as GameDifficulty
+        };
+      });
+
+      setLeaderboard(leaderboardData);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      toast.error("Erreur lors du chargement du classement");
+    } finally {
+      setLoading(false);
     }
-    
-    if (leaderboard.length === 0) {
-      return (
-        <div className="py-8 text-center">
-          <p>Aucun score enregistré pour ce niveau.</p>
-          <p className="text-sm text-muted-foreground mt-2">Soyez le premier à jouer !</p>
-        </div>
-      );
-    }
-    
-    return (
-      <ScrollArea className="h-[400px]">
-        <div className="space-y-2">
-          {leaderboard.map((entry, index) => (
-            <div 
-              key={entry.id} 
-              className={`flex items-center justify-between p-3 rounded-md ${
-                entry.user_id === user?.id ? 'bg-primary/10' : (index % 2 === 0 ? 'bg-muted/50' : '')
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`flex items-center justify-center w-7 h-7 rounded-full ${
-                  index < 3 ? 'bg-yellow-500 text-white' : 'bg-muted text-muted-foreground'
-                }`}>
-                  {index + 1}
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{entry.user_name}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-yellow-500" />
-                <span className="font-bold">{entry.score}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-    );
   };
 
-  const getDifficultyBadgeColor = (level: GameDifficulty) => {
-    switch(level) {
-      case 'Beginner': return 'bg-green-100 text-green-800 border-green-300';
-      case 'Intermediate': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Advanced': return 'bg-red-100 text-red-800 border-red-300';
-      default: return '';
+  const getDifficultyColor = (difficulty: GameDifficulty) => {
+    switch (difficulty) {
+      case "Beginner":
+        return "bg-green-100 text-green-800";
+      case "Intermediate":
+        return "bg-yellow-100 text-yellow-800";
+      case "Advanced":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getMedalIcon = (index: number) => {
+    switch (index) {
+      case 0:
+        return <Crown className="h-5 w-5 text-yellow-500" />;
+      case 1:
+        return <Medal className="h-5 w-5 text-gray-400" />;
+      case 2:
+        return <Medal className="h-5 w-5 text-amber-600" />;
+      default:
+        return null;
     }
   };
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/student')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-3xl font-bold">Mini-Jeu de Code</h1>
-          </div>
-          {gamification && (
-            <Badge variant="outline" className="flex items-center gap-2 px-3 py-1.5 text-base">
-              <Trophy className="h-4 w-4 text-yellow-500" />
-              <span>{gamification.points} points</span>
-            </Badge>
-          )}
+        <div className="flex items-center mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mr-2"
+            onClick={() => navigate("/student")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
+          </Button>
+          <h1 className="text-3xl font-bold">Mini-Jeu de Code</h1>
         </div>
-        
-        <div className="grid gap-6 md:grid-cols-5">
-          {/* Section principale du jeu */}
-          <div className="md:col-span-3">
-            <CodingMiniGame />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2">
+                  Testez vos connaissances en programmation
+                </h2>
+                <p className="text-gray-600">
+                  Répondez aux questions pour gagner des points et débloquer des
+                  badges. Les questions sont classées par niveau de difficulté:
+                </p>
+                <ul className="list-disc list-inside mt-2 mb-4 text-gray-600">
+                  <li>
+                    <span className="font-medium text-green-600">Débutant</span>: 10 questions fondamentales
+                  </li>
+                  <li>
+                    <span className="font-medium text-yellow-600">Intermédiaire</span>: 30 questions plus avancées
+                  </li>
+                  <li>
+                    <span className="font-medium text-red-600">Avancé</span>: 70 questions expertes
+                  </li>
+                </ul>
+              </div>
+
+              <CodingMiniGame />
+            </div>
           </div>
-          
-          {/* Section classement et badges */}
-          <div className="md:col-span-2">
-            <Tabs defaultValue="leaderboard" className="h-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="leaderboard">Classement</TabsTrigger>
-                <TabsTrigger value="badges">Mes Badges</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="leaderboard" className="mt-4 h-full">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Meilleurs Scores</CardTitle>
-                    <CardDescription>
-                      Les 10 meilleurs joueurs du mini-jeu
-                    </CardDescription>
-                    
-                    <div className="flex gap-2 mt-3">
-                      <Button 
-                        size="sm" 
-                        variant={selectedDifficulty === 'Beginner' ? 'default' : 'outline'}
-                        onClick={() => setSelectedDifficulty('Beginner')}
-                        className={selectedDifficulty === 'Beginner' ? 'bg-primary' : ''}
-                      >
-                        Débutant
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant={selectedDifficulty === 'Intermediate' ? 'default' : 'outline'}
-                        onClick={() => setSelectedDifficulty('Intermediate')}
-                        className={selectedDifficulty === 'Intermediate' ? 'bg-primary' : ''}
-                      >
-                        Intermédiaire
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant={selectedDifficulty === 'Advanced' ? 'default' : 'outline'}
-                        onClick={() => setSelectedDifficulty('Advanced')}
-                        className={selectedDifficulty === 'Advanced' ? 'bg-primary' : ''}
-                      >
-                        Avancé
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {renderLeaderboard()}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="badges" className="mt-4 h-full">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle>Mes Badges</CardTitle>
-                    <CardDescription>
-                      Badges débloqués grâce à vos performances
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {gamification && gamification.badges.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-4">
-                        {gamification.badges.map(badge => (
-                          <Card key={badge} className="p-4 flex flex-col items-center text-center">
-                            <Award className="h-10 w-10 text-yellow-500 mb-2" />
-                            <CardTitle className="text-base">{badge}</CardTitle>
-                            <CardDescription className="text-xs">
-                              {badge === 'Débutant' && 'Premier pas dans le codage'}
-                              {badge === 'Intermédiaire' && 'Maîtrise des concepts de base'}
-                              {badge === 'Pro' && 'Expertise technique confirmée'}
-                              {badge === 'Maître' && 'Maîtrise exceptionnelle du code'}
-                            </CardDescription>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-8 text-center">
-                        <p>Aucun badge débloqué pour le moment.</p>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Jouez au mini-jeu pour gagner des points et débloquer des badges!
-                        </p>
-                      </div>
+
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
+                  Classement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <div className="flex space-x-2">
+                    {["Beginner", "Intermediate", "Advanced"].map(
+                      (diff) => (
+                        <Button
+                          key={diff}
+                          variant={selectedDifficulty === diff ? "default" : "outline"}
+                          size="sm"
+                          className={selectedDifficulty === diff ? "" : "border-gray-200"}
+                          onClick={() => setSelectedDifficulty(diff as GameDifficulty)}
+                        >
+                          {diff === "Beginner"
+                            ? "Débutant"
+                            : diff === "Intermediate"
+                            ? "Intermédiaire"
+                            : "Avancé"}
+                        </Button>
+                      )
                     )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                  </div>
+                </div>
+
+                {loading ? (
+                  <div className="text-center py-4">Chargement...</div>
+                ) : leaderboard.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    Aucun score enregistré pour ce niveau
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {leaderboard.map((entry, index) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center justify-between p-3 rounded-md bg-gray-50"
+                      >
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 w-8 text-center">
+                            {getMedalIcon(index) || `${index + 1}.`}
+                          </div>
+                          <div className="ml-2">
+                            <div className="font-medium">{entry.user_name}</div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(entry.completed_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="font-bold">{entry.score}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
     </DashboardLayout>
   );
-}
+};
+
+export default MiniGamePage;
