@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -43,22 +44,65 @@ export const useLanguageSummary = (languageId: string | undefined) => {
           .from('language_summaries')
           .select('*')
           .eq('language_id', languageId)
-          .single();
+          .maybeSingle();
           
-        if (summaryError && summaryError.code !== 'PGRST116') {
-          // PGRST116 is "No rows returned" which means the summary doesn't exist yet
-          throw summaryError;
+        if (summaryError) {
+          console.error('Erreur lors de la récupération du résumé:', summaryError);
+          // Ne pas jeter d'erreur ici, simplement logger pour le débogage
         }
         
         if (summaryData) {
           setSummary(summaryData as LanguageSummary);
-        } else if (languageId === 'python') {
-          // Pour Python, si aucun résumé n'existe, on en crée un temporairement
-          const pythonSummaryContent = {
-            id: 'temp-id',
-            language_id: 'python',
-            title: "Concepts fondamentaux en Python",
-            content: `# 1. Déclaration des variables en Python
+        } else {
+          // Si aucun résumé n'existe, on crée un résumé par défaut basé sur l'ID du langage
+          createDefaultSummary(languageId);
+        }
+        
+        // Récupérer la progression de l'utilisateur si connecté
+        if (user) {
+          const { data: progressData, error: progressError } = await supabase
+            .from('user_language_progress')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('language_id', languageId)
+            .maybeSingle();
+            
+          if (progressError) {
+            console.error('Erreur lors de la récupération de la progression:', progressError);
+          } else if (progressData) {
+            setProgress(progressData as UserProgress);
+          } else {
+            // Créer une nouvelle entrée de progression par défaut
+            setProgress({
+              user_id: user.id,
+              language_id: languageId,
+              summary_read: false,
+              quiz_completed: false,
+              badge_earned: false
+            });
+          }
+        }
+      } catch (err: any) {
+        console.error('Erreur lors de la récupération des données:', err);
+        setError(err);
+        toast.error('Erreur lors du chargement du résumé');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSummaryAndProgress();
+  }, [languageId, user]);
+
+  // Fonction pour créer un résumé par défaut
+  const createDefaultSummary = (langId: string) => {
+    // Résumé par défaut pour Python
+    if (langId === 'python') {
+      const pythonSummaryContent = {
+        id: 'temp-id',
+        language_id: 'python',
+        title: "Concepts fondamentaux en Python",
+        content: `# 1. Déclaration des variables en Python
 
 Qu'est-ce qu'une variable ?
 Une variable est un espace mémoire où l'on stocke une donnée. Elle permet de conserver une information et de la réutiliser plus tard dans le programme.
@@ -277,60 +321,40 @@ On a vu trois concepts essentiels en Python :
 ✔️ Les fonctions → Organiser le code pour éviter les répétitions.
 
 Ces notions sont la base de tout programme en Python !`,
-            created_at: new Date().toISOString()
-          };
-          
-          setSummary(pythonSummaryContent as LanguageSummary);
-          
-          // Essayer d'enregistrer ce résumé dans la base de données
-          const { error: insertError } = await supabase
-            .from('language_summaries')
-            .insert([{
-              language_id: 'python',
-              title: pythonSummaryContent.title,
-              content: pythonSummaryContent.content
-            }]);
-            
-          if (insertError) {
-            console.error('Erreur lors de l\'enregistrement du résumé Python:', insertError);
-          }
-        }
-        
-        // Récupérer la progression de l'utilisateur si connecté
-        if (user) {
-          const { data: progressData, error: progressError } = await supabase
-            .from('user_language_progress')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('language_id', languageId)
-            .maybeSingle();
-            
-          if (progressError) {
-            console.error('Erreur lors de la récupération de la progression:', progressError);
-          } else if (progressData) {
-            setProgress(progressData as UserProgress);
-          } else {
-            // Créer une nouvelle entrée de progression par défaut
-            setProgress({
-              user_id: user.id,
-              language_id: languageId,
-              summary_read: false,
-              quiz_completed: false,
-              badge_earned: false
-            });
-          }
-        }
-      } catch (err: any) {
-        console.error('Erreur lors de la récupération des données:', err);
-        setError(err);
-        toast.error('Erreur lors du chargement du résumé');
-      } finally {
-        setLoading(false);
-      }
-    };
+        created_at: new Date().toISOString()
+      };
+      
+      setSummary(pythonSummaryContent as LanguageSummary);
+      
+      // Tenter d'enregistrer ce résumé dans la base de données
+      // On le fait de façon asynchrone sans bloquer l'affichage
+      saveDefaultSummary(pythonSummaryContent);
+    } else {
+      // Résumés par défaut pour d'autres langages peuvent être ajoutés ici
+      setSummary(null);
+    }
+  };
 
-    fetchSummaryAndProgress();
-  }, [languageId, user]);
+  // Fonction pour sauvegarder un résumé par défaut dans la base de données
+  const saveDefaultSummary = async (summaryContent: any) => {
+    try {
+      const { error } = await supabase
+        .from('language_summaries')
+        .insert([{
+          language_id: summaryContent.language_id,
+          title: summaryContent.title,
+          content: summaryContent.content
+        }]);
+        
+      if (error) {
+        console.error('Erreur lors de l\'enregistrement du résumé par défaut:', error);
+      } else {
+        console.log('Résumé par défaut enregistré avec succès');
+      }
+    } catch (err) {
+      console.error('Exception lors de l\'enregistrement du résumé par défaut:', err);
+    }
+  };
 
   const markAsRead = async () => {
     if (!user || !languageId) return;
