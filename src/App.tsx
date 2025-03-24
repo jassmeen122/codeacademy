@@ -28,9 +28,6 @@ import LanguagesPage from '@/pages/student/LanguagesPage';
 import LanguageModulesPage from '@/pages/student/LanguageModulesPage';
 import ModuleContentPage from '@/pages/student/ModuleContentPage';
 import MiniGamePage from '@/pages/student/MiniGamePage';
-import ProgrammingLanguagesPage from '@/pages/student/ProgrammingLanguagesPage';
-import ProgrammingLanguageDetailsPage from '@/pages/student/ProgrammingLanguageDetailsPage';
-import ProgrammingExercisesPage from '@/pages/student/ProgrammingExercisesPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -40,8 +37,6 @@ import TeacherEditCoursePage from '@/pages/teacher/EditCoursePage';
 import TeacherExercisesPage from '@/pages/teacher/ExercisesPage';
 import TeacherCreateExercisePage from '@/pages/teacher/CreateExercisePage';
 import TeacherSettingsPage from '@/pages/teacher/SettingsPage';
-import TeacherLanguagesManagementPage from '@/pages/teacher/LanguagesManagementPage';
-import TeacherLanguageResourcesPage from '@/pages/teacher/LanguageResourcesPage';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/AdminDashboard';
@@ -79,9 +74,6 @@ function App() {
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
-          <Route path="/student/programming" element={<ProgrammingLanguagesPage />} />
-          <Route path="/student/programming/:languageId" element={<ProgrammingLanguageDetailsPage />} />
-          <Route path="/student/programming/:languageId/exercises" element={<ProgrammingExercisesPage />} />
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<TeacherDashboardPage />} />
@@ -91,8 +83,6 @@ function App() {
           <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
           <Route path="/teacher/exercises/create" element={<TeacherCreateExercisePage />} />
           <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
-          <Route path="/teacher/languages" element={<TeacherLanguagesManagementPage />} />
-          <Route path="/teacher/languages/:languageId" element={<TeacherLanguageResourcesPage />} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboardPage />} />

@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { ProgrammingLanguage, CourseModule, Quiz, CodingExercise } from '@/types/course';
+import { toast } from 'sonner';
+import type { ProgrammingLanguage, CourseModule, Quiz, CodingExercise, UserProgress } from '@/types/course';
 
 export const useProgrammingLanguages = () => {
   const [languages, setLanguages] = useState<ProgrammingLanguage[]>([]);
@@ -18,14 +19,12 @@ export const useProgrammingLanguages = () => {
           .select('*')
           .order('name');
           
-        if (error) {
-          throw error;
-        }
-        
+        if (error) throw error;
         setLanguages(data as ProgrammingLanguage[]);
       } catch (err: any) {
         console.error('Error fetching programming languages:', err);
         setError(err);
+        toast.error('Failed to load programming languages');
       } finally {
         setLoading(false);
       }
@@ -59,14 +58,12 @@ export const useCourseModules = (languageId: string | null) => {
           .eq('language_id', languageId)
           .order('order_index');
           
-        if (error) {
-          throw error;
-        }
-        
+        if (error) throw error;
         setModules(data as CourseModule[]);
       } catch (err: any) {
         console.error('Error fetching course modules:', err);
         setError(err);
+        toast.error('Failed to load course modules');
       } finally {
         setLoading(false);
       }
@@ -94,11 +91,11 @@ export const useModuleContent = (moduleId: string | null) => {
       return;
     }
 
-    const fetchModuleData = async () => {
+    const fetchModuleContent = async () => {
       try {
         setLoading(true);
         
-        // Fetch the module content
+        // Fetch module
         const { data: moduleData, error: moduleError } = await supabase
           .from('course_modules')
           .select('*')
@@ -107,37 +104,35 @@ export const useModuleContent = (moduleId: string | null) => {
           
         if (moduleError) throw moduleError;
         
-        setModule(moduleData as CourseModule);
-        
-        // Fetch related quizzes
-        const { data: quizzesData, error: quizzesError } = await supabase
+        // Fetch quizzes
+        const { data: quizData, error: quizError } = await supabase
           .from('quizzes')
           .select('*')
           .eq('module_id', moduleId);
           
-        if (quizzesError) throw quizzesError;
+        if (quizError) throw quizError;
         
-        setQuizzes(quizzesData as Quiz[]);
-        
-        // Fetch related coding exercises
-        const { data: exercisesData, error: exercisesError } = await supabase
+        // Fetch exercises
+        const { data: exerciseData, error: exerciseError } = await supabase
           .from('coding_exercises')
           .select('*')
           .eq('module_id', moduleId);
           
-        if (exercisesError) throw exercisesError;
+        if (exerciseError) throw exerciseError;
         
-        setExercises(exercisesData as CodingExercise[]);
-        
+        setModule(moduleData as CourseModule);
+        setQuizzes(quizData as Quiz[]);
+        setExercises(exerciseData as CodingExercise[]);
       } catch (err: any) {
         console.error('Error fetching module content:', err);
         setError(err);
+        toast.error('Failed to load module content');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchModuleData();
+    fetchModuleContent();
   }, [moduleId]);
 
   return { module, quizzes, exercises, loading, error };

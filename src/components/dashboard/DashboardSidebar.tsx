@@ -1,114 +1,282 @@
-
-import React, { useState, useEffect } from "react";
 import {
-  Home,
-  BookOpen,
+  Book,
+  Code,
   GraduationCap,
-  Users,
+  Layout,
+  MessageSquare,
   Settings,
-  LayoutDashboard,
+  Trophy,
+  UserRound,
+  Activity,
+  FileCode,
+  Brain,
+  Users,
+  FilePlus,
+  Gauge,
+  School,
+  CircuitBoard,
+  Database,
+  BookOpen,
+  ClipboardList,
+  BarChart,
+  Bell,
+  Video,
+  FileText,
+  Folder,
+  PlusCircle,
   ListChecks,
-  Languages,
-  LucideIcon,
-  Plus,
+  Pencil,
+  Gamepad2
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { useMobile } from "@/hooks/useMobile";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
-interface NavItemProps {
-  icon: LucideIcon;
-  label: string;
-  to: string;
-  exact?: boolean;
-}
-
-const NavItem = ({ icon: Icon, label, to, exact }: NavItemProps) => {
-  const location = useLocation();
-  const isActive = exact ? location.pathname === to : location.pathname.startsWith(to);
-
-  return (
-    <NavLink
-      to={to}
-      className={cn(
-        "group relative flex w-full items-center rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:bg-secondary hover:text-secondary-foreground focus:bg-secondary focus:text-secondary-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
-        isActive
-          ? "bg-secondary text-secondary-foreground"
-          : "text-muted-foreground"
-      )}
-    >
-      <Icon className="mr-2.5 h-4 w-4" />
-      <span>{label}</span>
-    </NavLink>
-  );
-};
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "react-router-dom";
 
 interface DashboardSidebarProps {
-  role: 'student' | 'teacher' | 'admin';
+  userRole: 'admin' | 'teacher' | 'student' | null;
 }
 
-export function DashboardSidebar({ role }: DashboardSidebarProps) {
-  const location = useLocation();
-  const [activeItem, setActiveItem] = useState<string>("");
-  const { isMobile } = useMobile();
+interface MenuItem {
+  title: string;
+  icon: React.ElementType;
+  href: string;
+  description?: string;
+}
 
-  useEffect(() => {
-    setActiveItem(location.pathname);
-  }, [location]);
+const adminMenuItems: MenuItem[] = [
+  {
+    title: "Dashboard",
+    icon: Gauge,
+    href: "/admin",
+  },
+  {
+    title: "User Management",
+    icon: Users,
+    href: "/admin/users",
+  },
+  {
+    title: "Course Management",
+    icon: Book,
+    href: "/admin/courses",
+  },
+  {
+    title: "Exercises",
+    icon: FileCode,
+    href: "/admin/exercises",
+  },
+  {
+    title: "Analytics",
+    icon: Activity,
+    href: "/admin/analytics",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/admin/settings",
+  },
+];
+
+const teacherMenuItems: MenuItem[] = [
+  {
+    title: "Dashboard",
+    icon: School,
+    href: "/teacher",
+  },
+  {
+    title: "My Courses",
+    icon: BookOpen,
+    href: "/teacher/courses",
+    description: "Manage your courses"
+  },
+  {
+    title: "Course Creator",
+    icon: PlusCircle,
+    href: "/teacher/courses/create",
+    description: "Create new courses"
+  },
+  {
+    title: "Exercises",
+    icon: ClipboardList,
+    href: "/teacher/exercises",
+    description: "Manage exercises"
+  },
+  {
+    title: "Create Exercise",
+    icon: Pencil,
+    href: "/teacher/exercises/create",
+    description: "Create new exercises"
+  },
+  {
+    title: "Student Progress",
+    icon: BarChart,
+    href: "/teacher/progress",
+    description: "Track student performance"
+  },
+  {
+    title: "Discussion",
+    icon: MessageSquare,
+    href: "/teacher/discussion",
+    description: "Course forums"
+  },
+  {
+    title: "Materials",
+    icon: FileText,
+    href: "/teacher/materials",
+    description: "Course resources"
+  },
+  {
+    title: "Notifications",
+    icon: Bell,
+    href: "/teacher/notifications",
+    description: "Alerts and updates"
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/teacher/settings",
+    description: "Personal preferences"
+  },
+];
+
+const studentMenuItems: MenuItem[] = [
+  {
+    title: "Profile",
+    icon: UserRound,
+    href: "/student/profile",
+  },
+  {
+    title: "My Courses",
+    icon: Book,
+    href: "/student/courses",
+  },
+  {
+    title: "Code Editor",
+    icon: Code,
+    href: "/student/editor", // Updated to match the route in App.tsx
+  },
+  {
+    title: "AI Assistant",
+    icon: Brain,
+    href: "/student/ai-assistant",
+  },
+  {
+    title: "Exercises",
+    icon: FileCode,
+    href: "/student/exercises",
+  },
+  {
+    title: "Projects",
+    icon: Layout,
+    href: "/student/projects",
+  },
+  {
+    title: "Progress",
+    icon: Activity,
+    href: "/student/progress",
+  },
+  {
+    title: "Achievements",
+    icon: Trophy,
+    href: "/student/achievements",
+  },
+  {
+    title: "Mini-Jeu",
+    icon: Gamepad2,
+    href: "/student/mini-game",
+  },
+  {
+    title: "Discussion",
+    icon: MessageSquare,
+    href: "/student/discussion",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/student/settings",
+  },
+];
+
+export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
+  const location = useLocation();
+
+  const getMenuItems = () => {
+    switch (userRole) {
+      case 'admin':
+        return adminMenuItems;
+      case 'teacher':
+        return teacherMenuItems;
+      case 'student':
+        return studentMenuItems;
+      default:
+        return [];
+    }
+  };
+
+  const getRoleIcon = () => {
+    switch (userRole) {
+      case 'admin':
+        return Database;
+      case 'teacher':
+        return School;
+      case 'student':
+        return GraduationCap;
+      default:
+        return UserRound;
+    }
+  };
+
+  const getRoleTitle = () => {
+    switch (userRole) {
+      case 'admin':
+        return 'Admin Portal';
+      case 'teacher':
+        return 'Teacher Portal';
+      case 'student':
+        return 'Student Portal';
+      default:
+        return 'Loading...';
+    }
+  };
+
+  const RoleIcon = getRoleIcon();
 
   return (
-    <div className="flex h-full select-none flex-col gap-2 py-4">
-      <div className="px-3 py-2">
-        <NavLink
-          to="/"
-          className="mb-2 flex items-center gap-2 font-semibold text-lg"
-        >
-          <img src="/logo.png" alt="Logo" className="h-8 w-8" />
-          <span>CodeAcademy</span>
-        </NavLink>
-        <Accordion type="single" collapsible className="w-full">
-          <NavItem icon={LayoutDashboard} label="Dashboard" to="/dashboard" exact />
-
-          {role === "student" && (
-            <>
-              <NavItem icon={Languages} label="Languages" to="/student/languages" />
-              <NavItem icon={BookOpen} label="My Courses" to="/student/courses" />
-              <NavItem icon={GraduationCap} label="My Learning Path" to="/student/learning-path" />
-              <NavItem icon={ListChecks} label="My Exercises" to="/student/exercises" />
-            </>
-          )}
-
-          {role === "teacher" && (
-            <>
-              <NavItem icon={Languages} label="Languages" to="/teacher/languages" />
-              <AccordionItem value="courses">
-                <AccordionTrigger className="data-[state=open]:bg-secondary hover:bg-secondary hover:text-secondary-foreground focus:bg-secondary focus:text-secondary-foreground focus:outline-none">
-                  <BookOpen className="mr-2.5 h-4 w-4" />
-                  <span>Courses</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <NavItem icon={Plus} label="Create Course" to="/teacher/courses/create" />
-                  <NavItem icon={BookOpen} label="Manage Courses" to="/teacher/courses" />
-                </AccordionContent>
-              </AccordionItem>
-              <NavItem icon={ListChecks} label="Exercises" to="/teacher/exercises" />
-            </>
-          )}
-
-          {role === "admin" && (
-            <>
-              <NavItem icon={Users} label="Manage Users" to="/admin/users" />
-              <NavItem icon={Settings} label="Settings" to="/admin/settings" />
-            </>
-          )}
-        </Accordion>
-      </div>
-    </div>
+    <Sidebar className="border-r border-border">
+      <SidebarHeader className="border-b border-border p-4">
+        <div className="flex items-center gap-2">
+          <RoleIcon className="h-6 w-6 text-primary" />
+          <span className="font-semibold text-lg">{getRoleTitle()}</span>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <nav className="space-y-1 p-2">
+          {getMenuItems().map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.href;
+            return (
+              <Link key={item.href} to={item.href}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  className="w-full justify-start gap-2"
+                  title={item.description}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.title}
+                </Button>
+              </Link>
+            );
+          })}
+        </nav>
+      </SidebarContent>
+      <SidebarFooter className="border-t border-border p-4">
+        <SidebarTrigger />
+      </SidebarFooter>
+    </Sidebar>
   );
-}
+};
