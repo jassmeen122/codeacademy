@@ -2,9 +2,9 @@
 // This script adds PHP language summary to the database
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client (replace with your project URL and anon key)
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+// Initialize Supabase client with the correct project URL and anon key
+const supabaseUrl = 'https://tgjtkmduelappimtorwe.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnanRrbWR1ZWxhcHBpbXRvcndlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzOTQ1NTAsImV4cCI6MjA1NTk3MDU1MH0.4MT-8B_L86nFmGsrnDN612BIdL6gM1mrgenaFnbXHd0';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // PHP Language summary content
@@ -200,6 +200,39 @@ async function addPHPLanguageSummary() {
       
     if (phpLanguageError) {
       console.error('Error fetching PHP language:', phpLanguageError);
+      
+      // If PHP language doesn't exist yet, create it
+      const { data: newLanguage, error: createLangError } = await supabase
+        .from('programming_languages')
+        .insert({
+          name: 'PHP',
+          description: 'PHP is a server-side scripting language designed for web development',
+          image_url: 'https://www.php.net/images/logos/new-php-logo.svg'
+        })
+        .select();
+        
+      if (createLangError) {
+        console.error('Error creating PHP language:', createLangError);
+        return;
+      }
+      
+      console.log('PHP language created:', newLanguage);
+      
+      // Use the newly created language ID
+      const { error: phpSummaryError } = await supabase
+        .from('language_summaries')
+        .insert({
+          language_id: newLanguage[0].id,
+          title: 'Fondamentaux du langage PHP',
+          content: phpSummaryContent
+        });
+        
+      if (phpSummaryError) {
+        console.error('Error adding PHP language summary:', phpSummaryError);
+      } else {
+        console.log('PHP language summary added successfully!');
+      }
+      
       return;
     }
     
