@@ -1,4 +1,3 @@
-
 export type CourseResourceType = "pdf" | "video" | "presentation" | "youtube";
 
 export interface CourseResource {
@@ -81,6 +80,15 @@ export interface CodingQuiz {
   created_at: string;
 }
 
+// Add the MiniGameScore interface for tracking game scores
+export interface MiniGameScore {
+  id: string;
+  user_id: string;
+  score: number;
+  time_taken: number;
+  completed_at: string;
+}
+
 // Add the UserGamification interface for tracking user points and badges
 export interface UserGamification {
   id: string;
@@ -151,4 +159,3 @@ export interface MiniGameScore {
   time_taken: number;
   completed_at: string;
 }
-
