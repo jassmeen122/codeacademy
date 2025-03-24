@@ -74,8 +74,8 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         
         <div className="h-80">
           <CodeEditorWrapper
-            value={code} // Changed from 'code' to 'value' to match the component prop name
-            language={exercise.module_id.includes('python') ? 'python' : 'javascript'}
+            initialCode={code}
+            initialLanguage={exercise.module_id.includes('python') ? 'python' : 'javascript'}
             onChange={handleCodeChange}
             onRun={handleRun}
           />

@@ -4,6 +4,8 @@ export type ProgrammingLanguage = "python" | "java" | "javascript" | "c" | "cpp"
 export interface CodeEditorProps {
   initialLanguage?: ProgrammingLanguage;
   initialCode?: string;
+  onChange?: (code: string) => void;
+  onRun?: (output: string) => void;
 }
 
 export interface LanguageOption {

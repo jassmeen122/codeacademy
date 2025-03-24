@@ -18,7 +18,7 @@ import {
   GraduationCap,
   Code,
 } from "lucide-react";
-import { Sidebar, SidebarHeader, SidebarNav, SidebarNavItem, SidebarFooter, SidebarMenuSection } from "@/components/ui/sidebar";
+import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter, SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const StudentSidebar = () => {
@@ -35,103 +35,155 @@ export const StudentSidebar = () => {
       </SidebarHeader>
       
       <ScrollArea className="flex-1 px-4">
-        <SidebarNav>
-          <SidebarMenuSection>
-            <SidebarNavItem 
-              icon={<LayoutDashboard className="h-4 w-4" />} 
-              title="Dashboard"
-              isActive={location.pathname === '/student'}
-              onClick={() => navigate('/student')}
-            />
-            <SidebarNavItem 
-              icon={<Book className="h-4 w-4" />} 
-              title="Mes Cours"
-              isActive={location.pathname === '/student/courses'}
-              onClick={() => navigate('/student/courses')}
-            />
-            <SidebarNavItem 
-              icon={<Code className="h-4 w-4" />} 
-              title="Langages de Programmation" 
-              isActive={location.pathname.includes('/student/languages')}
-              onClick={() => navigate('/student/languages')}
-            />
-            <SidebarNavItem 
-              icon={<FileCode className="h-4 w-4" />} 
-              title="Exercices" 
-              isActive={location.pathname === '/student/exercises'}
-              onClick={() => navigate('/student/exercises')}
-            />
-            <SidebarNavItem 
-              icon={<Youtube className="h-4 w-4" />} 
-              title="Cours Gratuits" 
-              isActive={location.pathname === '/student/free-courses'}
-              onClick={() => navigate('/student/free-courses')}
-            />
-          </SidebarMenuSection>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student')}
+                >
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Dashboard
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/courses' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/courses')}
+                >
+                  <Book className="h-4 w-4 mr-2" />
+                  Mes Cours
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname.includes('/student/languages') ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/languages')}
+                >
+                  <Code className="h-4 w-4 mr-2" />
+                  Langages de Programmation
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/exercises' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/exercises')}
+                >
+                  <FileCode className="h-4 w-4 mr-2" />
+                  Exercices
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/free-courses' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/free-courses')}
+                >
+                  <Youtube className="h-4 w-4 mr-2" />
+                  Cours Gratuits
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
           
-          <SidebarMenuSection title="Outils">
-            <SidebarNavItem 
-              icon={<Terminal className="h-4 w-4" />} 
-              title="Éditeur de Code" 
-              isActive={location.pathname === '/student/editor'}
-              onClick={() => navigate('/student/editor')}
-            />
-            <SidebarNavItem 
-              icon={<MessagesSquare className="h-4 w-4" />} 
-              title="Assistant AI" 
-              isActive={location.pathname === '/student/ai-assistant'}
-              onClick={() => navigate('/student/ai-assistant')}
-            />
-            <SidebarNavItem 
-              icon={<MessageCircle className="h-4 w-4" />} 
-              title="Forum" 
-              isActive={location.pathname === '/student/discussion'}
-              onClick={() => navigate('/student/discussion')}
-            />
-          </SidebarMenuSection>
+          <SidebarGroup>
+            <div className="text-xs uppercase font-semibold mt-6 mb-2 text-muted-foreground">Outils</div>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/editor' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/editor')}
+                >
+                  <Terminal className="h-4 w-4 mr-2" />
+                  Éditeur de Code
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/ai-assistant' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/ai-assistant')}
+                >
+                  <MessagesSquare className="h-4 w-4 mr-2" />
+                  Assistant AI
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/discussion' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/discussion')}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Forum
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
 
-          <SidebarMenuSection title="Mon Profil">
-            <SidebarNavItem 
-              icon={<LineChart className="h-4 w-4" />} 
-              title="Progression" 
-              isActive={location.pathname === '/student/progress'}
-              onClick={() => navigate('/student/progress')}
-            />
-            <SidebarNavItem 
-              icon={<Trophy className="h-4 w-4" />} 
-              title="Récompenses" 
-              isActive={location.pathname === '/student/achievements'}
-              onClick={() => navigate('/student/achievements')}
-            />
-            <SidebarNavItem 
-              icon={<FolderGit className="h-4 w-4" />} 
-              title="Projets" 
-              isActive={location.pathname === '/student/projects'}
-              onClick={() => navigate('/student/projects')}
-            />
-          </SidebarMenuSection>
-        </SidebarNav>
+          <SidebarGroup>
+            <div className="text-xs uppercase font-semibold mt-6 mb-2 text-muted-foreground">Mon Profil</div>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/progress' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/progress')}
+                >
+                  <LineChart className="h-4 w-4 mr-2" />
+                  Progression
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/achievements' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/achievements')}
+                >
+                  <Trophy className="h-4 w-4 mr-2" />
+                  Récompenses
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  className={location.pathname === '/student/projects' ? 'bg-secondary' : ''}
+                  onClick={() => navigate('/student/projects')}
+                >
+                  <FolderGit className="h-4 w-4 mr-2" />
+                  Projets
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
       </ScrollArea>
       
       <SidebarFooter className="border-t mt-auto p-4">
-        <SidebarNavItem 
-          icon={<Bell className="h-4 w-4" />} 
-          title="Notifications" 
-          isActive={location.pathname === '/student/notifications'}
-          onClick={() => navigate('/student/notifications')}
-        />
-        <SidebarNavItem 
-          icon={<User className="h-4 w-4" />} 
-          title="Mon Profil" 
-          isActive={location.pathname === '/student/profile'}
-          onClick={() => navigate('/student/profile')}
-        />
-        <SidebarNavItem 
-          icon={<Settings className="h-4 w-4" />} 
-          title="Paramètres" 
-          isActive={location.pathname === '/student/settings'}
-          onClick={() => navigate('/student/settings')}
-        />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              className={location.pathname === '/student/notifications' ? 'bg-secondary' : ''}
+              onClick={() => navigate('/student/notifications')}
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Notifications
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              className={location.pathname === '/student/profile' ? 'bg-secondary' : ''}
+              onClick={() => navigate('/student/profile')}
+            >
+              <User className="h-4 w-4 mr-2" />
+              Mon Profil
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              className={location.pathname === '/student/settings' ? 'bg-secondary' : ''}
+              onClick={() => navigate('/student/settings')}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Paramètres
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

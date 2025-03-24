@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, UserPlus, Edit, Trash2, RefreshCw, BookOpen, GraduationCap, Users } from "lucide-react";
 import type { UserProfile } from "@/hooks/useAuthState";
-import type { Course, ProgrammingLanguage } from "@/types/course";
+import type { Course, CourseLevel, CoursePath, CourseCategory } from "@/types/course";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -116,9 +115,9 @@ const AdminDashboard = () => {
         id: course.id,
         title: course.title,
         description: course.description || "",
-        difficulty: course.difficulty,
-        path: course.path,
-        category: course.category,
+        difficulty: course.difficulty as CourseLevel,
+        path: course.path as CoursePath,
+        category: course.category as CourseCategory,
         professor: {
           name: course.teacher?.full_name || "Unknown",
           title: "Course Instructor"
@@ -127,7 +126,7 @@ const AdminDashboard = () => {
         duration: "8 weeks",
         students: 0,
         image: "/placeholder.svg",
-        language: "JavaScript" as ProgrammingLanguage,
+        language: "JavaScript",
         materials: {
           videos: 0,
           pdfs: 0,

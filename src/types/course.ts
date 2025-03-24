@@ -12,14 +12,14 @@ export interface CourseResource {
   created_at: string | null;
 }
 
-export type ProgrammingLanguage = {
+export interface ProgrammingLanguage {
   id: string;
   name: string;
   description: string | null;
   image_url: string | null;
   created_at: string;
   updated_at: string;
-};
+}
 
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
 // Update CoursePath to match what Supabase expects
