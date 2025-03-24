@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -143,7 +144,7 @@ export const AdminNavItems = [
 ];
 
 interface DashboardSidebarProps {
-  role?: 'student' | 'teacher' | 'admin';
+  role?: 'student' | 'teacher' | 'admin' | null;
 }
 
 export const DashboardSidebar = ({ role = 'student' }: DashboardSidebarProps) => {

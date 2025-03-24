@@ -57,8 +57,13 @@ export const useLanguageResources = (languageId: string | null) => {
           throw customError;
         }
         
-        setDefaultResources(defaultData);
-        setCustomResources(customData);
+        if (defaultData) {
+          setDefaultResources(defaultData as LanguageResource);
+        }
+        
+        if (customData) {
+          setCustomResources(customData as CustomResource);
+        }
       } catch (err: any) {
         console.error('Error fetching language resources:', err);
         setError(err);

@@ -59,7 +59,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <DashboardSidebar userRole={user?.role || null} />
+        <DashboardSidebar role={user?.role || null} />
         <div className="flex-1">
           <Navigation />
           <main className="pt-16 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
