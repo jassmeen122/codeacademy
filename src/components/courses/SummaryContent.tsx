@@ -29,9 +29,9 @@ export const SummaryContent = ({ title, content, isRead = false }: SummaryConten
             {section.replace('## ', '')}
           </h3>
         );
-      } else if (section.startsWith('```')) {
+      } else if (section.includes('```')) {
         // Formater les blocs de code
-        const code = section.replace(/```(.*)\n/g, '').replace(/```$/g, '');
+        const code = section.replace(/```(python|java|javascript)?\n/g, '').replace(/```$/g, '');
         return (
           <pre key={index} className="bg-gray-100 p-4 rounded-md my-4 overflow-x-auto">
             <code>{code}</code>
