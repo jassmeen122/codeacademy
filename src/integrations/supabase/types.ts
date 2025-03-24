@@ -152,6 +152,42 @@ export type Database = {
           },
         ]
       }
+      coding_quiz: {
+        Row: {
+          correct_answer: string
+          created_at: string | null
+          difficulty: string | null
+          id: string
+          language: string | null
+          option1: string
+          option2: string
+          option3: string
+          question: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          language?: string | null
+          option1: string
+          option2: string
+          option3: string
+          question: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          language?: string | null
+          option1?: string
+          option2?: string
+          option3?: string
+          question?: string
+        }
+        Relationships: []
+      }
       course_materials: {
         Row: {
           content_url: string
@@ -752,6 +788,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_gamification: {
+        Row: {
+          badges: string[] | null
+          created_at: string | null
+          id: string
+          last_played_at: string | null
+          points: number | null
+          user_id: string
+        }
+        Insert: {
+          badges?: string[] | null
+          created_at?: string | null
+          id?: string
+          last_played_at?: string | null
+          points?: number | null
+          user_id: string
+        }
+        Update: {
+          badges?: string[] | null
+          created_at?: string | null
+          id?: string
+          last_played_at?: string | null
+          points?: number | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_progress: {
         Row: {

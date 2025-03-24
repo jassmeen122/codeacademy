@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +16,7 @@ import { toast } from "sonner";
 import { NavigationCard } from "@/components/dashboard/NavigationCard";
 import { CourseTabs } from "@/components/dashboard/CourseTabs";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { CodingMiniGame } from "@/components/student/CodingMiniGame";
 import type { Course } from "@/types/course";
 
 const StudentDashboard = () => {
@@ -107,41 +109,51 @@ const StudentDashboard = () => {
           <p className="text-gray-600">Track your learning progress</p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <NavigationCard
-            icon={Book}
-            title="Resume Learning"
-            description="Continue where you left off in your latest course."
-            buttonText="Continue Course"
-          />
+        {/* Grid Layout for Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+          {/* Left Side: Quick Actions */}
+          <div className="md:col-span-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+              <NavigationCard
+                icon={Book}
+                title="Resume Learning"
+                description="Continue where you left off in your latest course."
+                buttonText="Continue Course"
+              />
 
-          <NavigationCard
-            icon={FileCode}
-            title="Daily Challenge"
-            description="Complete today's coding challenge to earn points."
-            buttonText="Start Challenge"
-          />
+              <NavigationCard
+                icon={FileCode}
+                title="Daily Challenge"
+                description="Complete today's coding challenge to earn points."
+                buttonText="Start Challenge"
+              />
 
-          <NavigationCard
-            icon={Youtube}
-            title="Free Courses"
-            description="Access our free programming language courses with YouTube videos."
-            buttonText="Browse Free Courses"
-            onClick={() => navigate("/student/free-courses")}
-          />
+              <NavigationCard
+                icon={Youtube}
+                title="Free Courses"
+                description="Access our free programming language courses with YouTube videos."
+                buttonText="Browse Free Courses"
+                onClick={() => navigate("/student/free-courses")}
+              />
 
-          <NavigationCard
-            icon={Terminal}
-            title="Code Editor"
-            description="Write, run, and debug code with AI assistance."
-            buttonText="Open Code Editor"
-            onClick={() => navigate("/student/editor")} // Update to use navigate instead of Dialog}
-          />
+              <NavigationCard
+                icon={Terminal}
+                title="Code Editor"
+                description="Write, run, and debug code with AI assistance."
+                buttonText="Open Code Editor"
+                onClick={() => navigate("/student/editor")} 
+              />
+            </div>
+
+            {/* Course Progress */}
+            <CourseTabs courses={courses} loading={loading} />
+          </div>
+
+          {/* Right Side: Mini-Game */}
+          <div className="md:col-span-4">
+            <CodingMiniGame />
+          </div>
         </div>
-
-        {/* Course Progress */}
-        <CourseTabs courses={courses} loading={loading} />
       </div>
     </DashboardLayout>
   );

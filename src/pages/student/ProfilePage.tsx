@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserRound, Mail, BookOpen, Trophy, Target, Award, Zap, Users, Code } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { GamificationStats } from "@/components/student/GamificationStats";
 
 interface Badge {
   id: string;
@@ -96,7 +96,6 @@ const ProfilePage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch completed courses
       const { data: coursesProgress, error: coursesError } = await supabase
         .from('student_progress')
         .select('*')
@@ -105,7 +104,6 @@ const ProfilePage = () => {
 
       if (coursesError) throw coursesError;
 
-      // Fetch user's rank
       const { data: profiles, error: rankError } = await supabase
         .from('profiles')
         .select('id')
@@ -113,7 +111,6 @@ const ProfilePage = () => {
 
       if (rankError) throw rankError;
 
-      // Calculate overall completion rate
       const { data: allProgress, error: progressError } = await supabase
         .from('student_progress')
         .select('completion_percentage')
@@ -183,7 +180,6 @@ const ProfilePage = () => {
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Profile Info */}
           <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
@@ -232,7 +228,6 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
 
-          {/* Progress Overview */}
           <Card>
             <CardHeader>
               <CardTitle>Learning Progress</CardTitle>
@@ -260,8 +255,11 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
 
-          {/* Achievements */}
-          <Card className="md:col-span-3">
+          <div className="md:col-span-1">
+            <GamificationStats />
+          </div>
+
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Achievements & Badges</CardTitle>
             </CardHeader>

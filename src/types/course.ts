@@ -57,3 +57,26 @@ export interface CourseLearnResponse {
   order_index: number;
   completed: boolean;
 }
+
+// Add the CodingQuiz interface for our new mini-game
+export interface CodingQuiz {
+  id: string;
+  question: string;
+  correct_answer: string;
+  option1: string;
+  option2: string;
+  option3: string;
+  language: string;
+  difficulty: string;
+  created_at: string;
+}
+
+// Add the UserGamification interface for tracking user points and badges
+export interface UserGamification {
+  id: string;
+  user_id: string;
+  points: number;
+  badges: string[];
+  created_at: string;
+  last_played_at: string;
+}
