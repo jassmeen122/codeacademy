@@ -33,17 +33,27 @@ const MiniGamePage = () => {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
+      
+      // Fetch scores from mini_game_scores table where difficulty matches selected difficulty
       const { data: scoresData, error: scoresError } = await supabase
         .from("mini_game_scores")
-        .select("id, user_id, score, difficulty, completed_at")
+        .select("id, user_id, score, completed_at")
         .eq("difficulty", selectedDifficulty)
         .order("score", { ascending: false })
         .limit(10);
 
-      if (scoresError) throw scoresError;
+      if (scoresError) {
+        throw scoresError;
+      }
+
+      if (!scoresData || scoresData.length === 0) {
+        setLeaderboard([]);
+        setLoading(false);
+        return;
+      }
 
       // Fetch user names
-      const userIds = scoresData?.map((score) => score.user_id) || [];
+      const userIds = scoresData.map((score) => score.user_id);
       const { data: usersData, error: usersError } = await supabase
         .from("profiles")
         .select("id, full_name")
@@ -52,14 +62,17 @@ const MiniGamePage = () => {
       if (usersError) throw usersError;
 
       // Merge data
-      const leaderboardData = scoresData?.map((score) => {
+      const leaderboardData = scoresData.map((score) => {
         const user = usersData?.find((u) => u.id === score.user_id);
         return {
-          ...score,
+          id: score.id,
+          user_id: score.user_id,
           user_name: user?.full_name || "Utilisateur inconnu",
-          difficulty: score.difficulty as GameDifficulty
+          score: score.score,
+          difficulty: selectedDifficulty,
+          completed_at: score.completed_at
         };
-      }) || [];
+      });
 
       setLeaderboard(leaderboardData);
     } catch (error) {

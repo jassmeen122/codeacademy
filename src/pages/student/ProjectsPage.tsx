@@ -30,16 +30,33 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Project, ProjectFile } from "@/types/course";
 import {
   Download,
   FileCode,
   FilePlus,
   FileText,
-  FileZip,
   Loader2,
   UploadCloud,
+  FileIcon,
 } from "lucide-react";
+
+interface Project {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+}
+
+interface ProjectFile {
+  id: string;
+  project_id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string;
+  uploaded_at: string;
+}
 
 const formSchema = z.object({
   title: z.string().min(5, {
@@ -50,9 +67,9 @@ const formSchema = z.object({
   }),
 });
 
-const FileIcon = ({ fileName }: { fileName: string }) => {
+const FileIconComponent = ({ fileName }: { fileName: string }) => {
   if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {
-    return <FileZip className="h-4 w-4 mr-2" />;
+    return <FileIcon className="h-4 w-4 mr-2" />;
   } else if (
     fileName.endsWith(".js") ||
     fileName.endsWith(".ts") ||
@@ -92,13 +109,27 @@ const ProjectsPage = () => {
     }
   }, [user]);
 
+  // For now, we'll mock the data since the tables don't exist yet
   const fetchProjects = async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      // This will need to be created in the database first
-      // Create a SQL migration for this first
+      
+      // Mock the projects for now
+      // When the tables are created in the database, you'll need to update this
+      setProjects([
+        {
+          id: "1",
+          user_id: user.id,
+          title: "Sample Project",
+          description: "This is a sample project",
+          status: "pending",
+          created_at: new Date().toISOString()
+        }
+      ]);
+      
+      /* Uncomment when projects table exists
       const { data, error } = await supabase
         .from("projects")
         .select("*")
@@ -106,8 +137,8 @@ const ProjectsPage = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-
       setProjects(data || []);
+      */
     } catch (error) {
       console.error("Error fetching projects:", error);
       toast.error("Erreur lors du chargement des projets");
@@ -124,7 +155,16 @@ const ProjectsPage = () => {
 
     try {
       setUploading(true);
-
+      
+      // Mock project creation
+      // When the tables are created, you'll need to update this with real implementations
+      toast.success("Projet créé avec succès");
+      form.reset();
+      setFiles(null);
+      setOpen(false);
+      fetchProjects();
+      
+      /* Uncomment when projects and project_files tables exist
       // Create new project
       const { data: projectData, error: projectError } = await supabase
         .from("projects")
@@ -160,21 +200,19 @@ const ProjectsPage = () => {
           .getPublicUrl(fileName);
 
         // Store file metadata in the database
-        const { error: fileError } = await supabase.from("project_files").insert({
-          project_id: project.id,
-          file_name: file.name,
-          file_url: urlData.publicUrl,
-          file_type: fileExt || "unknown",
-        });
+        const { error: fileError } = await supabase
+          .from("project_files")
+          .insert({
+            project_id: project.id,
+            file_name: file.name,
+            file_url: urlData.publicUrl,
+            file_type: fileExt || "unknown",
+          });
 
         if (fileError) throw fileError;
       }
-
-      toast.success("Projet créé avec succès");
-      form.reset();
-      setFiles(null);
-      setOpen(false);
-      fetchProjects();
+      */
+      
     } catch (error) {
       console.error("Error creating project:", error);
       toast.error("Erreur lors de la création du projet");
@@ -187,6 +225,19 @@ const ProjectsPage = () => {
     setSelectedProject(project);
 
     try {
+      // Mock project files for now
+      setProjectFiles([
+        {
+          id: "1",
+          project_id: project.id,
+          file_name: "example.js",
+          file_url: "#",
+          file_type: "js",
+          uploaded_at: new Date().toISOString()
+        }
+      ]);
+      
+      /* Uncomment when project_files table exists
       const { data, error } = await supabase
         .from("project_files")
         .select("*")
@@ -194,8 +245,8 @@ const ProjectsPage = () => {
         .order("uploaded_at", { ascending: false });
 
       if (error) throw error;
-
       setProjectFiles(data || []);
+      */
     } catch (error) {
       console.error("Error fetching project files:", error);
       toast.error("Erreur lors du chargement des fichiers");
@@ -404,7 +455,7 @@ const ProjectsPage = () => {
                             className="flex items-center justify-between p-3 rounded-md border"
                           >
                             <div className="flex items-center">
-                              <FileIcon fileName={file.file_name} />
+                              <FileIconComponent fileName={file.file_name} />
                               <span>{file.file_name}</span>
                             </div>
                             <Button

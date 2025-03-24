@@ -1,4 +1,3 @@
-
 export type CourseResourceType = "pdf" | "video" | "presentation" | "youtube";
 
 export interface CourseResource {
@@ -74,9 +73,11 @@ export interface CodingQuiz {
   option1: string;
   option2: string;
   option3: string;
-  language: string;
+  option4?: string;
+  language?: string;
   difficulty: string;
-  created_at: string;
+  explanation?: string;
+  created_at?: string;
 }
 
 // Add the UserGamification interface for tracking user points and badges
