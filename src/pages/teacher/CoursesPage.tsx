@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import type { Course } from "@/types/course";
+import type { Course, CourseLevel, CoursePath, CourseCategory } from "@/types/course";
 
 type SortField = "title" | "created_at" | "difficulty" | "path" | "category";
 type SortDirection = "asc" | "desc";
@@ -63,15 +63,21 @@ const CoursesPage = () => {
         `)
         .eq('teacher_id', user?.id);
 
-      // Apply filters
+      // Apply filters - with proper type casting
       if (filters.difficulty) {
-        query = query.eq('difficulty', filters.difficulty);
+        // Make sure the difficulty value is one of the allowed values
+        const difficulty = filters.difficulty as CourseLevel;
+        query = query.eq('difficulty', difficulty);
       }
       if (filters.path) {
-        query = query.eq('path', filters.path);
+        // Make sure the path value is one of the allowed values
+        const path = filters.path as CoursePath;
+        query = query.eq('path', path);
       }
       if (filters.category) {
-        query = query.eq('category', filters.category);
+        // Make sure the category value is one of the allowed values
+        const category = filters.category as CourseCategory;
+        query = query.eq('category', category);
       }
 
       // Apply sorting
@@ -131,7 +137,49 @@ const CoursesPage = () => {
     return () => clearTimeout(timer);
   };
 
+  // Update this function to validate the values before setting them
   const handleFilterChange = (key: FilterKey, value: string | null) => {
+    // Validate that the value is acceptable for the given key
+    if (value === "") {
+      // Handle empty selection (clear filter)
+      setFilters(prev => ({ ...prev, [key]: null }));
+      return;
+    }
+    
+    // If we have a value, make sure it's a valid option for this filter type
+    if (value) {
+      if (key === "difficulty") {
+        // Check if value is a valid CourseLevel
+        const validDifficulties: CourseLevel[] = ["Beginner", "Intermediate", "Advanced"];
+        if (!validDifficulties.includes(value as CourseLevel)) {
+          console.error(`Invalid difficulty value: ${value}`);
+          return;
+        }
+      } else if (key === "path") {
+        // Check if value is a valid CoursePath
+        const validPaths: CoursePath[] = ["Web Development", "Data Science", "Artificial Intelligence"];
+        if (!validPaths.includes(value as CoursePath)) {
+          console.error(`Invalid path value: ${value}`);
+          return;
+        }
+      } else if (key === "category") {
+        // Check if value is a valid CourseCategory
+        const validCategories: CourseCategory[] = [
+          "Programming Fundamentals", 
+          "Frontend Development", 
+          "Backend Development", 
+          "Data Analysis", 
+          "Machine Learning", 
+          "AI Applications"
+        ];
+        if (!validCategories.includes(value as CourseCategory)) {
+          console.error(`Invalid category value: ${value}`);
+          return;
+        }
+      }
+    }
+    
+    // If we passed all validation, update the filter
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
