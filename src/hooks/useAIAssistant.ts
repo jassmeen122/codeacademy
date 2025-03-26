@@ -64,7 +64,7 @@ export const useAIAssistant = () => {
 
       if (response.error) {
         console.error("Edge function error:", response.error);
-        throw new Error(response.error.message || "Failed to get a response from the AI assistant");
+        throw new Error(response.error.message || "Notre service d'IA est temporairement indisponible. Veuillez réessayer plus tard.");
       }
 
       // Add AI response to chat
@@ -76,23 +76,35 @@ export const useAIAssistant = () => {
       } else if (response.data?.error) {
         throw new Error(response.data.error);
       } else {
-        throw new Error("Invalid response format from AI assistant");
+        throw new Error("Notre service d'IA est temporairement indisponible. Veuillez réessayer plus tard.");
       }
 
     } catch (error: any) {
       console.error("Error calling AI assistant:", error);
-      setErrorMessage(error.message || "Failed to get a response from the AI assistant");
-      toast.error(`Failed to get a response from the AI assistant. Please try again.`);
+      
+      // Customize the error message to be more user-friendly
+      let friendlyError = "Notre service d'IA est temporairement indisponible. Veuillez réessayer plus tard.";
+      
+      if (error.message && (
+          error.message.includes("quota") || 
+          error.message.includes("billing") ||
+          error.message.includes("exceeded")
+      )) {
+        friendlyError = "Le service d'IA est actuellement en maintenance. Nous travaillons à le rétablir rapidement.";
+      }
+      
+      setErrorMessage(friendlyError);
+      toast.error(friendlyError);
     } finally {
       setIsLoading(false);
     }
   };
 
   const clearChat = () => {
-    if (confirm("Are you sure you want to clear the chat history?")) {
+    if (confirm("Êtes-vous sûr de vouloir effacer l'historique de discussion?")) {
       setMessages([{ 
         role: "assistant", 
-        content: "Chat history cleared. How can I help you today?" 
+        content: "Historique effacé. Comment puis-je vous aider aujourd'hui?" 
       }]);
       setErrorMessage(null);
     }

@@ -10,7 +10,6 @@ import { ChatActions } from "@/components/ai-assistant/ChatActions";
 import { AIAssistantInfo } from "@/components/ai-assistant/AIAssistantInfo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InfoIcon } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const AIAssistantPage = () => {
   const {
@@ -45,13 +44,6 @@ const AIAssistantPage = () => {
               />
             </div>
           </div>
-
-          <Alert className="mb-4">
-            <AlertDescription className="text-sm">
-              Pour utiliser l'assistant, vous devez configurer une clé API OpenAI. 
-              Consultez la documentation pour savoir comment ajouter votre clé API aux secrets de la fonction Edge Supabase.
-            </AlertDescription>
-          </Alert>
 
           <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
           
