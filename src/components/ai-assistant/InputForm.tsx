@@ -1,10 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { SendHorizontal, Code } from "lucide-react";
+import { SendHorizontal, Code, Trash, FileCode } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface InputFormProps {
   onSubmit: (input: string, code?: string, language?: string) => void;
@@ -16,6 +17,14 @@ export const InputForm = ({ onSubmit, isLoading }: InputFormProps) => {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("javascript");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Focus on textarea when component mounts
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,76 +42,122 @@ export const InputForm = ({ onSubmit, isLoading }: InputFormProps) => {
     }
   };
 
+  const clearInputs = () => {
+    setInput("");
+    setCode("");
+  };
+
   const programmingLanguages = [
     "javascript", "typescript", "python", "java", "csharp", "cpp", 
-    "php", "ruby", "swift", "kotlin", "go", "rust", "html", "css"
+    "php", "ruby", "swift", "kotlin", "go", "rust", "html", "css", "c"
   ];
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
       <Textarea
+        ref={textareaRef}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={showCodeInput 
-          ? "Ask a question about your code..." 
-          : "Ask me anything about programming..."}
-        className="flex-1 min-h-[80px] resize-none"
+          ? "Posez une question sur votre code..." 
+          : "Posez n'importe quelle question sur la programmation..."}
+        className="flex-1 min-h-[80px] resize-none transition-all"
         disabled={isLoading}
       />
       
-      {showCodeInput && (
-        <div className="flex flex-col gap-2 animate-fadeIn">
-          <div className="flex gap-2">
-            <Select 
-              value={language} 
-              onValueChange={setLanguage}
+      <AnimatePresence>
+        {showCodeInput && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col gap-2 overflow-hidden"
+          >
+            <div className="flex gap-2">
+              <Select 
+                value={language} 
+                onValueChange={setLanguage}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sélectionnez un langage" />
+                </SelectTrigger>
+                <SelectContent>
+                  {programmingLanguages.map((lang) => (
+                    <SelectItem key={lang} value={lang}>
+                      {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="icon"
+                      onClick={clearInputs}
+                      disabled={isLoading || (!input && !code)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Effacer</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            
+            <Textarea
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder={`Collez votre code ${language} ici...`}
+              className="flex-1 min-h-[150px] font-mono text-sm resize-none"
               disabled={isLoading}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                {programmingLanguages.map((lang) => (
-                  <SelectItem key={lang} value={lang}>
-                    {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Textarea
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder={`Paste your ${language} code here...`}
-            className="flex-1 min-h-[150px] font-mono text-sm resize-none"
-            disabled={isLoading}
-          />
-        </div>
-      )}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowCodeInput(!showCodeInput)}
-            disabled={isLoading}
-          >
-            <Code className="h-4 w-4 mr-2" />
-            {showCodeInput ? "Hide Code" : "Add Code"}
-          </Button>
-          <span className="text-xs text-gray-500">
-            Press Ctrl+Enter to send
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowCodeInput(!showCodeInput)}
+                  disabled={isLoading}
+                >
+                  {showCodeInput ? <FileCode className="h-4 w-4 mr-2" /> : <Code className="h-4 w-4 mr-2" />}
+                  {showCodeInput ? "Masquer Code" : "Ajouter Code"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{showCodeInput ? "Masquer l'éditeur de code" : "Ajouter du code à votre question"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          <span className="text-xs text-gray-500 hidden sm:inline">
+            Appuyez sur Ctrl+Entrée pour envoyer
           </span>
         </div>
+        
         <Button 
           type="submit" 
-          disabled={isLoading}
+          disabled={isLoading || (!input.trim() && !code.trim())}
+          className="transition-all"
         >
           <SendHorizontal className="h-4 w-4 mr-2" />
-          {isLoading ? "Thinking..." : "Send"}
+          {isLoading ? "En attente..." : "Envoyer"}
         </Button>
       </div>
     </form>
