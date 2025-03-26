@@ -1174,4 +1174,4 @@ SELECT * FROM utilisateurs_recents;
 DROP VIEW utilisateurs_recents;
 \`\`\`
 
-SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise ou des analyses
+SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise
