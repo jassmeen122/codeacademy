@@ -8,7 +8,6 @@ import { InputForm } from "@/components/ai-assistant/InputForm";
 import { ErrorDisplay } from "@/components/ai-assistant/ErrorDisplay";
 import { ChatActions } from "@/components/ai-assistant/ChatActions";
 import { AIAssistantInfo } from "@/components/ai-assistant/AIAssistantInfo";
-import { ModelSelector } from "@/components/ai-assistant/ModelSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InfoIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,9 +19,7 @@ const AIAssistantPage = () => {
     errorMessage,
     sendMessage,
     clearChat,
-    retryLastMessage,
-    selectedModel,
-    setSelectedModel
+    retryLastMessage
   } = useAIAssistant();
   
   const [currentTab, setCurrentTab] = useState<string>("chat");
@@ -51,21 +48,14 @@ const AIAssistantPage = () => {
 
           <Alert className="mb-4">
             <AlertDescription className="text-sm">
-              Pour utiliser l'assistant, vous devez configurer une clé API. Vous pouvez choisir entre OpenAI ou Hugging Face.
-              Si votre clé OpenAI a atteint son quota, essayez d'utiliser Hugging Face à la place.
+              Pour utiliser l'assistant, vous devez configurer une clé API OpenAI. 
+              Consultez la documentation pour savoir comment ajouter votre clé API aux secrets de la fonction Edge Supabase.
             </AlertDescription>
           </Alert>
 
           <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
           
           <TabsContent value="chat">
-            <div className="mb-4">
-              <ModelSelector 
-                selectedModel={selectedModel} 
-                onModelChange={setSelectedModel}
-                disabled={isLoading}
-              />
-            </div>
             <Card className="h-[calc(100vh-20rem)]">
               <CardContent className="p-4 h-full flex flex-col">
                 <MessageDisplay 

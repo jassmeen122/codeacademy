@@ -8,8 +8,6 @@ export type Message = {
   content: string;
 };
 
-export type AIModel = "openai" | "huggingface";
-
 export const useAIAssistant = () => {
   const [messages, setMessages] = useState<Message[]>(() => {
     // Try to load messages from localStorage
@@ -20,21 +18,11 @@ export const useAIAssistant = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
-    // Try to load selected model from localStorage
-    const savedModel = localStorage.getItem("ai-assistant-model");
-    return (savedModel as AIModel) || "openai";
-  });
 
   // Save messages to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("ai-assistant-messages", JSON.stringify(messages));
   }, [messages]);
-
-  // Save selected model to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("ai-assistant-model", selectedModel);
-  }, [selectedModel]);
 
   const sendMessage = async (userInput: string, code?: string, language?: string) => {
     if ((!userInput.trim() && !code?.trim()) || isLoading) return;
@@ -60,11 +48,10 @@ export const useAIAssistant = () => {
         content: msg.content
       }));
 
-      console.log(`Sending request to ${selectedModel} assistant...`);
+      console.log("Sending request to OpenAI assistant...");
       
       // Call Supabase Edge Function
-      let endpoint = selectedModel === "openai" ? 'ai-assistant' : 'huggingface-assistant';
-      let response = await supabase.functions.invoke(endpoint, {
+      let response = await supabase.functions.invoke('ai-assistant', {
         body: { 
           prompt: userInput, 
           messageHistory: messageHistory,
@@ -73,40 +60,11 @@ export const useAIAssistant = () => {
         }
       });
 
-      // If OpenAI fails due to quota issue, try Hugging Face instead
-      if (selectedModel === "openai" && response.error) {
-        const errorMessage = response.error.message || "";
-        const isQuotaError = errorMessage.includes("quota") || 
-                           errorMessage.includes("billing") || 
-                           errorMessage.includes("insufficient");
-        
-        if (isQuotaError) {
-          console.log("OpenAI quota error detected, switching to Hugging Face...");
-          endpoint = 'huggingface-assistant';
-          
-          // Attempt with Hugging Face
-          response = await supabase.functions.invoke(endpoint, {
-            body: { 
-              prompt: userInput, 
-              messageHistory: messageHistory,
-              code: code,
-              language: language
-            }
-          });
-          
-          if (!response.error) {
-            // Update the model selection if Hugging Face succeeds
-            setSelectedModel("huggingface");
-            toast.info("Switched to Hugging Face model due to OpenAI quota limits.");
-          }
-        }
-      }
-
       console.log("Response received:", response.data, response.error);
 
       if (response.error) {
         console.error("Edge function error:", response.error);
-        throw new Error(response.error.message || `Failed to get a response from the ${selectedModel} assistant`);
+        throw new Error(response.error.message || "Failed to get a response from the AI assistant");
       }
 
       // Add AI response to chat
@@ -118,13 +76,13 @@ export const useAIAssistant = () => {
       } else if (response.data?.error) {
         throw new Error(response.data.error);
       } else {
-        throw new Error(`Invalid response format from ${selectedModel} assistant`);
+        throw new Error("Invalid response format from AI assistant");
       }
 
     } catch (error: any) {
       console.error("Error calling AI assistant:", error);
-      setErrorMessage(error.message || `Failed to get a response from the ${selectedModel} assistant`);
-      toast.error(`Failed to get a response from the ${selectedModel} assistant. Please try again.`);
+      setErrorMessage(error.message || "Failed to get a response from the AI assistant");
+      toast.error(`Failed to get a response from the AI assistant. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -157,8 +115,6 @@ export const useAIAssistant = () => {
     errorMessage,
     sendMessage,
     clearChat,
-    retryLastMessage,
-    selectedModel,
-    setSelectedModel
+    retryLastMessage
   };
 };
