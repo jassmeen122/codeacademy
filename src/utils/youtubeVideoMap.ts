@@ -1,48 +1,41 @@
+export const getYoutubeEmbedUrl = (url: string): string => {
+  if (!url) return '';
+  const videoId = url.split('v=')[1]?.split('&')[0];
+  return `https://www.youtube.com/embed/${videoId}`;
+};
 
-// Maps language IDs to YouTube video URLs
-export const languageVideoMap: Record<string, { courseVideo: string; exercisesVideo: string }> = {
+export const openYoutubeVideo = (url: string) => {
+  window.open(url, '_blank');
+};
+
+// Map of programming languages to their YouTube video URLs
+export const languageVideoMap: Record<string, { courseVideo: string, exercisesVideo: string }> = {
   python: {
-    courseVideo: 'https://www.youtube.com/embed/rfscVS0vtbw',
-    exercisesVideo: 'https://www.youtube.com/embed/t8pPdKYpowI'
+    courseVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=rfscVS0vtbw"),
+    exercisesVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=HBxCHonY-Fg")
   },
   java: {
-    courseVideo: 'https://www.youtube.com/embed/eIrMbAQSU34',
-    exercisesVideo: 'https://www.youtube.com/embed/grEKMHGYyns'
+    courseVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=GoXwIVyQqaY"),
+    exercisesVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=9J-hez_rt2s")
   },
   javascript: {
-    courseVideo: 'https://www.youtube.com/embed/W6NZfCO5SIk',
-    exercisesVideo: 'https://www.youtube.com/embed/hdI2bqOjy3c'
+    courseVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=W6NZfCO5SIk"),
+    exercisesVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=w-7RQ46RgxU")
   },
   c: {
-    courseVideo: 'https://www.youtube.com/embed/KJgsSFOSQv0',
-    exercisesVideo: 'https://www.youtube.com/embed/qz2Sj2V4Xew'
-  },
-  cpp: {
-    courseVideo: 'https://www.youtube.com/embed/vLnPwxZdW4Y',
-    exercisesVideo: 'https://www.youtube.com/embed/GQp1zzTwrIg'
+    courseVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=KJgsSFOSQv0"),
+    exercisesVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=K5vGQzWBgRQ")
   },
   php: {
-    courseVideo: 'https://www.youtube.com/embed/OK_JCtrrv-c',
-    exercisesVideo: 'https://www.youtube.com/embed/2eebptXfEvw'
+    courseVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+    exercisesVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=vqqt5_jnh2o")
   },
   sql: {
-    courseVideo: 'https://www.youtube.com/embed/HXV3zeQKqGY',
-    exercisesVideo: 'https://www.youtube.com/embed/5cU5xSZXFo8'
-  }
-};
-
-// Returns the YouTube embed URL for a language
-export const getYoutubeEmbedUrl = (languageId: string | undefined): string => {
-  if (!languageId) return '';
-  
-  const videoInfo = languageVideoMap[languageId];
-  return videoInfo?.courseVideo || '';
-};
-
-// Opens a YouTube video in a new tab
-export const openYoutubeVideo = (url: string): void => {
-  if (!url) return;
-  
-  const youtubeUrl = url.replace('embed/', 'watch?v=');
-  window.open(youtubeUrl, '_blank');
+    courseVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=HXV3zeQKqGY"),
+    exercisesVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=aaVqBwamWjQ")
+  },
+  cpp: {
+    courseVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=vLnPwxZdW4Y"),
+    exercisesVideo: getYoutubeEmbedUrl("https://www.youtube.com/watch?v=8jLOx1hD3_o")
+  },
 };

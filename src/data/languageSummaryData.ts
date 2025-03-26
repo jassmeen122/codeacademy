@@ -4,959 +4,597 @@ import { languageVideoMap } from '../utils/youtubeVideoMap';
 // Default language summaries that will be used if no data exists in the database
 export const defaultLanguageSummaries: Record<string, { title: string, content: string }> = {
   python: {
-    title: "Concepts fondamentaux en Python",
-    content: `# 1. Déclaration des variables en Python
+    title: 'Les fondamentaux de Python',
+    content: `# Introduction à Python
 
-Qu'est-ce qu'une variable ?
-Une variable est un espace mémoire où l'on stocke une donnée. Elle permet de conserver une information et de la réutiliser plus tard dans le programme.
+Python est un langage de programmation polyvalent, interprété et de haut niveau, créé par Guido van Rossum et publié pour la première fois en 1991. Il est conçu pour être simple à lire et à écrire, avec une syntaxe qui met l'accent sur la lisibilité du code, ce qui réduit considérablement le coût de maintenance.
 
-Imagine une boîte où tu ranges un objet. Si tu écris "Nom" sur la boîte et que tu mets un papier avec "Yassmine" à l'intérieur, cette boîte devient une variable qui contient la valeur "Yassmine".
+## Variables et Types de données
 
-En Python, il est très simple de créer une variable :
-
-\`\`\`python
-nom = "Yassmine"  # Une variable contenant du texte
-age = 19  # Une variable contenant un nombre entier
-prix = 99.99  # Une variable contenant un nombre décimal
-est_actif = True  # Une variable contenant une valeur booléenne (Vrai ou Faux)
-\`\`\`
-
-💡 Remarque importante :
-
-Python détecte automatiquement le type de la variable.
-
-Contrairement à d'autres langages comme Java ou C, on ne déclare pas le type (ex: int, string).
-
-Par exemple, dans Java, il faut écrire :
-
-\`\`\`java
-String nom = "Yassmine";
-int age = 19;
-\`\`\`
-
-Mais en Python, il suffit de faire :
+En Python, les variables sont dynamiquement typées, ce qui signifie qu'elles peuvent changer de type au cours de l'exécution du programme.
 
 \`\`\`python
-nom = "Yassmine"
-age = 19
+# Entiers
+age = 25
+
+# Flottants
+prix = 19.99
+
+# Chaînes de caractères
+nom = "Python"
+
+# Booléens
+est_vrai = True
+est_faux = False
+
+# Listes (tableaux mutables)
+fruits = ["pomme", "banane", "orange"]
+
+# Tuples (tableaux immuables)
+coordonnees = (10, 20)
+
+# Dictionnaires (paires clé-valeur)
+personne = {"nom": "Dupont", "age": 30}
+
+# Ensembles (collections non ordonnées d'éléments uniques)
+nombres_uniques = {1, 2, 3, 4, 5}
 \`\`\`
 
-C'est plus simple et plus rapide !
+## Structures Conditionnelles
 
-# 2. Les conditions en Python
-
-Les conditions permettent d'exécuter des instructions uniquement si certaines situations sont vraies.
-Par exemple, si tu veux savoir si une personne peut entrer dans une boîte de nuit, tu vas poser une condition :
-
-Si elle a 18 ans ou plus, elle peut entrer.
-
-Sinon, elle ne peut pas entrer.
-
-En Python, cela s'écrit comme ceci :
+Les instructions conditionnelles permettent d'exécuter différents blocs de code selon que certaines conditions sont remplies ou non.
 
 \`\`\`python
-age = 19
+age = 18
 
-if age >= 18:  # Si l'âge est supérieur ou égal à 18
-    print("Vous êtes majeur, vous pouvez entrer.")  
-else:  # Sinon
-    print("Vous êtes mineur, l'entrée est interdite.")
-\`\`\`
-
-🔹 Explication du code :
-
-if signifie "si", il teste une condition.
-
->= signifie "supérieur ou égal à".
-
-else signifie "sinon", c'est-à-dire que si la condition n'est pas respectée, on exécute le code qui suit.
-
-## Ajout de plusieurs conditions avec elif
-
-Parfois, il faut tester plusieurs cas. Par exemple, si on veut classer une note :
-
-Si la note est supérieure ou égale à 18 → "Excellent"
-
-Sinon si la note est entre 14 et 17 → "Bien"
-
-Sinon si la note est entre 10 et 13 → "Passable"
-
-Sinon → "Échec"
-
-Voici le code Python correspondant :
-
-\`\`\`python
-note = 15
-
-if note >= 18:
-    print("Excellent")
-elif note >= 14:  # Sinon si la note est entre 14 et 17
-    print("Bien")
-elif note >= 10:  # Sinon si la note est entre 10 et 13
-    print("Passable")
-else:  # Si la note est en dessous de 10
-    print("Échec")
-\`\`\`
-
-🔹 Pourquoi elif ?
-
-elif signifie "sinon si", il permet d'ajouter d'autres conditions.
-
-Le programme teste les conditions dans l'ordre et s'arrête dès qu'une condition est vraie.
-
-## Les conditions multiples avec and et or
-
-On peut combiner plusieurs conditions :
-
-and (ET) → Les deux conditions doivent être vraies.
-
-or (OU) → Au moins une des conditions doit être vraie.
-
-Exemple avec and :
-
-\`\`\`python
-age = 20
-argent = 50
-
-if age >= 18 and argent >= 100:  # Les DEUX conditions doivent être vraies
-    print("Vous pouvez entrer dans la boîte de nuit.")
+if age < 18:
+    print("Mineur")
+elif age == 18:
+    print("Tout juste majeur")
 else:
-    print("Vous ne pouvez pas entrer.")
+    print("Majeur")
 \`\`\`
 
-Ici, pour entrer :
-✔️ Il faut avoir au moins 18 ans ET au moins 100€.
-Si l'une des conditions est fausse, l'entrée est refusée.
+## Boucles
 
-Exemple avec or :
+Les boucles permettent d'exécuter un bloc de code plusieurs fois.
 
 \`\`\`python
-carte_membre = False
-argent = 150
+# Boucle for
+for i in range(5):
+    print(i)  # Affiche 0, 1, 2, 3, 4
 
-if carte_membre or argent >= 100:  # UNE des conditions doit être vraie
-    print("Vous avez accès à la salle VIP !")
-else:
-    print("Accès refusé.")
+# Boucle while
+compteur = 0
+while compteur < 5:
+    print(compteur)
+    compteur += 1  # Affiche 0, 1, 2, 3, 4
 \`\`\`
 
-Ici, on peut accéder à la salle VIP SI :
-✔️ On a une carte membre OU on a plus de 100€.
+## Fonctions
 
-# 3. Les fonctions en Python
-
-Une fonction est un morceau de code qui réalise une tâche précise.
-Au lieu d'écrire le même code plusieurs fois, on le met dans une fonction et on l'appelle quand on en a besoin.
-
-💡 Pourquoi utiliser une fonction ?
-✅ Évite les répétitions de code.
-✅ Rend le programme plus clair et mieux organisé.
-✅ Permet de réutiliser le code facilement.
-
-## Créer et utiliser une fonction simple
-
-Une fonction en Python se définit avec le mot-clé def suivi du nom de la fonction et des parenthèses ().
-
-\`\`\`python
-def dire_bonjour():
-    print("Bonjour, bienvenue en Python !")
-
-# Appel de la fonction
-dire_bonjour()
-\`\`\`
-
-🔹 Explication :
-
-def dire_bonjour(): crée une fonction appelée dire_bonjour.
-
-À l'intérieur, print() affiche un message.
-
-Pour exécuter la fonction, on l'appelle avec dire_bonjour().
-
-## Fonctions avec paramètres
-
-Une fonction peut recevoir des informations grâce aux paramètres.
+Les fonctions sont des blocs de code réutilisables qui effectuent une tâche spécifique.
 
 \`\`\`python
 def saluer(nom):
-    print(f"Bonjour, {nom} !")
+    return f"Bonjour, {nom}!"
 
-saluer("Yassmine")  # Bonjour, Yassmine !
-saluer("Ahmed")  # Bonjour, Ahmed !
+message = saluer("Alice")
+print(message)  # Affiche "Bonjour, Alice!"
 \`\`\`
 
-🔹 Ici, nom est un paramètre, il permet de passer un prénom à la fonction.
+## Classes et Objets
 
-## Fonctions qui retournent une valeur (return)
-
-Parfois, une fonction doit renvoyer un résultat qu'on peut utiliser dans le programme.
-On utilise return pour renvoyer une valeur.
+Python est un langage de programmation orienté objet. Les classes permettent de créer des objets avec des attributs et des méthodes.
 
 \`\`\`python
-def additionner(a, b):
-    return a + b  # Retourne la somme
+class Personne:
+    def __init__(self, nom, age):
+        self.nom = nom
+        self.age = age
+    
+    def presentation(self):
+        return f"Je m'appelle {self.nom} et j'ai {self.age} ans."
 
-somme = additionner(5, 7)
-print(somme)  # Affiche 12
+p1 = Personne("Alice", 30)
+print(p1.presentation())  # Affiche "Je m'appelle Alice et j'ai 30 ans."
 \`\`\`
 
-🔹 additionner(a, b) renvoie a + b, puis on stocke ce résultat dans somme.
+## Modules et Bibliothèques
 
-## Fonctions avec paramètres par défaut
-
-Une fonction peut avoir un paramètre avec une valeur par défaut.
+Python dispose d'une vaste bibliothèque standard et de nombreux modules tiers qui étendent ses fonctionnalités.
 
 \`\`\`python
-def presentation(nom, age=18):
-    print(f"Je m'appelle {nom} et j'ai {age} ans.")
+# Module de la bibliothèque standard
+import math
+print(math.sqrt(16))  # Affiche 4.0
 
-presentation("Yassmine")  # Valeur par défaut : 18 ans
-presentation("Ahmed", 20)  # Remplace 18 par 20
+# Module tiers populaire (nécessite installation)
+import pandas as pd
+données = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 \`\`\`
 
-Si aucun âge n'est donné, Python prend 18 par défaut.
+## Gestion des Exceptions
 
-# Conclusion
+La gestion des exceptions permet de traiter les erreurs de manière élégante.
 
-On a vu trois concepts essentiels en Python :
-✔️ Les variables → Stocker des valeurs.
-✔️ Les conditions → Exécuter un code selon une situation.
-✔️ Les fonctions → Organiser le code pour éviter les répétitions.
+\`\`\`python
+try:
+    résultat = 10 / 0
+except ZeroDivisionError:
+    print("Division par zéro impossible!")
+finally:
+    print("Ce bloc est toujours exécuté.")
+\`\`\`
 
-Ces notions sont la base de tout programme en Python !`
+Python est largement utilisé dans le développement web, l'analyse de données, l'intelligence artificielle, l'automatisation et bien d'autres domaines. Sa simplicité et sa polyvalence en font un excellent choix pour les débutants comme pour les programmeurs expérimentés.`
   },
   java: {
-    title: "Concepts fondamentaux en Java",
-    content: `# 1. Déclaration des variables en Java
+    title: 'Les bases de Java',
+    content: `# Introduction à Java
 
-Qu'est-ce qu'une variable ?
-Comme en Python, une variable en Java est un espace mémoire où l'on stocke une donnée.
+Java est un langage de programmation orienté objet de haut niveau, développé par Sun Microsystems (maintenant propriété d'Oracle). Il est conçu pour être portable, ce qui signifie qu'un programme Java peut s'exécuter sur n'importe quelle plateforme sans être recompilé.
 
-Cependant, en Java, contrairement à Python, il faut toujours préciser le type de la variable.
+## Variables et Types de données
 
-Syntaxe pour déclarer une variable en Java
+Java est un langage fortement typé, ce qui signifie que vous devez déclarer le type de chaque variable avant de l'utiliser.
 
 \`\`\`java
-int age = 19;  // Une variable entière (int)
-double prix = 99.99;  // Un nombre à virgule (double)
-boolean estActif = true;  // Une valeur booléenne (true/false)
-String nom = "Yassmine";  // Une chaîne de caractères (String)
+// Types primitifs
+int age = 25;
+double prix = 19.99;
+char grade = 'A';
+boolean estVrai = true;
+
+// Chaînes de caractères (non primitif)
+String nom = "Java";
+
+// Tableaux
+int[] nombres = {1, 2, 3, 4, 5};
+String[] fruits = {"pomme", "banane", "orange"};
 \`\`\`
 
-📌 Différence avec Python :
+## Structures Conditionnelles
 
-En Python, on écrit juste nom = "Yassmine", et Python devine que c'est une chaîne de caractères.
-
-En Java, on doit obligatoirement dire que c'est un String.
-
-## Les types de données en Java
-
-Voici les principaux types que tu dois connaître :
-
-Type | Description | Exemple
---- | --- | ---
-int | Nombre entier | int age = 25;
-double | Nombre à virgule | double prix = 9.99;
-boolean | Vrai ou Faux | boolean estVrai = true;
-char | Un seul caractère | char lettre = 'A';
-String | Texte | String nom = "Yassmine";
-
-# 2. Les conditions en Java
-
-Les conditions permettent d'exécuter du code seulement si une certaine situation est vraie.
-
-## La condition if...else en Java
-
-Prenons un exemple simple :
+Les instructions conditionnelles permettent d'exécuter différents blocs de code selon que certaines conditions sont remplies ou non.
 
 \`\`\`java
-int age = 19;
+int age = 18;
 
-if (age >= 18) {
-    System.out.println("Vous êtes majeur, vous pouvez entrer.");
+if (age < 18) {
+    System.out.println("Mineur");
+} else if (age == 18) {
+    System.out.println("Tout juste majeur");
 } else {
-    System.out.println("Vous êtes mineur, l'entrée est interdite.");
+    System.out.println("Majeur");
 }
 \`\`\`
 
-🔹 Explication :
+## Boucles
 
-if (condition) → Vérifie si la condition est vraie.
-
-else → Exécute ce code si la condition est fausse.
-
-System.out.println() → Affiche du texte à l'écran.
-
-📌 Différence avec Python :
-
-En Python, on utilise print() au lieu de System.out.println().
-
-Java utilise des {} pour entourer les blocs de code, alors que Python utilise l'indentation.
-
-## La condition if...else if...else
-
-Imaginons qu'on veut classer une note en fonction d'une grille :
+Les boucles permettent d'exécuter un bloc de code plusieurs fois.
 
 \`\`\`java
-int note = 15;
-
-if (note >= 18) {
-    System.out.println("Excellent");
-} else if (note >= 14) {  // Sinon si
-    System.out.println("Bien");
-} else if (note >= 10) {
-    System.out.println("Passable");
-} else {
-    System.out.println("Échec");
+// Boucle for
+for (int i = 0; i < 5; i++) {
+    System.out.println(i);  // Affiche 0, 1, 2, 3, 4
 }
+
+// Boucle while
+int compteur = 0;
+while (compteur < 5) {
+    System.out.println(compteur);
+    compteur++;  // Affiche 0, 1, 2, 3, 4
+}
+
+// Boucle do-while
+int j = 0;
+do {
+    System.out.println(j);
+    j++;
+} while (j < 5);  // Affiche 0, 1, 2, 3, 4
 \`\`\`
 
-🔹 Ce qu'il faut retenir :
+## Méthodes
 
-else if permet d'ajouter d'autres conditions.
-
-Le programme s'arrête dès qu'une condition est vraie.
-
-## Les conditions multiples avec && et ||
-
-Comme en Python :
-
-&& (ET logique) → Les deux conditions doivent être vraies.
-
-|| (OU logique) → Au moins une des conditions doit être vraie.
-
-Exemple avec && (ET logique)
+Les méthodes sont des blocs de code réutilisables qui effectuent une tâche spécifique.
 
 \`\`\`java
-int age = 20;
-int argent = 50;
-
-if (age >= 18 && argent >= 100) { 
-    System.out.println("Vous pouvez entrer dans la boîte de nuit.");
-} else {
-    System.out.println("Vous ne pouvez pas entrer.");
+public static String saluer(String nom) {
+    return "Bonjour, " + nom + "!";
 }
+
+// Appel de la méthode
+String message = saluer("Alice");
+System.out.println(message);  // Affiche "Bonjour, Alice!"
 \`\`\`
 
-💡 Explication :
-✔️ La personne doit avoir plus de 18 ans ET au moins 100€.
-❌ Si l'une des conditions est fausse, elle ne peut pas entrer.
+## Classes et Objets
 
-Exemple avec || (OU logique)
+Java est un langage de programmation orienté objet. Tout le code Java est écrit à l'intérieur de classes.
 
 \`\`\`java
-boolean carteMembre = false;
-int argent = 150;
-
-if (carteMembre || argent >= 100) { 
-    System.out.println("Vous avez accès à la salle VIP !");
-} else {
-    System.out.println("Accès refusé.");
+public class Personne {
+    // Attributs
+    private String nom;
+    private int age;
+    
+    // Constructeur
+    public Personne(String nom, int age) {
+        this.nom = nom;
+        this.age = age;
+    }
+    
+    // Méthode
+    public String presentation() {
+        return "Je m'appelle " + nom + " et j'ai " + age + " ans.";
+    }
 }
+
+// Création d'un objet
+Personne p1 = new Personne("Alice", 30);
+System.out.println(p1.presentation());  // Affiche "Je m'appelle Alice et j'ai 30 ans."
 \`\`\`
 
-💡 Explication :
-✔️ Si la personne a une carte membre OU si elle a 100€ ou plus, elle peut entrer.
+## Héritage
 
-# 3. Les fonctions en Java
-
-Une fonction (appelée "méthode" en Java) est un bloc de code qui effectue une action précise.
-
-## Créer une fonction simple
-
-En Java, une fonction est définie avec :
-
-Un type de retour (void, int, String, etc.).
-
-Un nom de fonction.
-
-Des parenthèses () avec ou sans paramètres.
-
-Un corps de fonction {} qui contient le code à exécuter.
-
-Exemple d'une fonction sans paramètres
+L'héritage permet à une classe d'hériter des attributs et des méthodes d'une autre classe.
 
 \`\`\`java
-public static void direBonjour() {
-    System.out.println("Bonjour, bienvenue en Java !");
+public class Etudiant extends Personne {
+    private String ecole;
+    
+    public Etudiant(String nom, int age, String ecole) {
+        super(nom, age);  // Appel du constructeur de la classe parent
+        this.ecole = ecole;
+    }
+    
+    @Override
+    public String presentation() {
+        return super.presentation() + " J'étudie à " + ecole + ".";
+    }
 }
-
-// Appel de la fonction
-direBonjour();
 \`\`\`
 
-🔹 Explication :
+## Gestion des Exceptions
 
-public static void → Mot-clé utilisé pour définir une fonction en Java.
-
-direBonjour() → Nom de la fonction.
-
-void signifie que la fonction ne retourne rien.
-
-## Fonctions avec paramètres
-
-Une fonction peut prendre des informations en entrée (comme en Python).
+La gestion des exceptions permet de traiter les erreurs de manière élégante.
 
 \`\`\`java
-public static void saluer(String nom) {
-    System.out.println("Bonjour, " + nom + " !");
-}
-
-// Appel de la fonction
-saluer("Yassmine");
-saluer("Ahmed");
-\`\`\`
-
-💡 Explication :
-
-La fonction saluer() prend un paramètre nom de type String.
-
-Elle affiche "Bonjour, Yassmine !" si on appelle saluer("Yassmine").
-
-## Fonctions qui retournent une valeur
-
-Une fonction peut renvoyer un résultat grâce au mot-clé return.
-
-\`\`\`java
-public static int additionner(int a, int b) {
-    return a + b;  // Retourne la somme
-}
-
-public static void main(String[] args) {
-    int somme = additionner(5, 7);
-    System.out.println(somme);  // Affiche 12
+try {
+    int résultat = 10 / 0;
+} catch (ArithmeticException e) {
+    System.out.println("Division par zéro impossible!");
+} finally {
+    System.out.println("Ce bloc est toujours exécuté.");
 }
 \`\`\`
 
-💡 Explication :
-
-additionner(int a, int b) prend deux nombres et retourne leur somme.
-
-On stocke le résultat dans somme et on l'affiche.
-
-## Fonctions avec paramètres par défaut ?
-
-💡 En Java, il n'y a pas de paramètres par défaut comme en Python.
-On doit créer plusieurs versions d'une fonction (surcharge de méthode) :
-
-\`\`\`java
-public static void presentation(String nom) {
-    System.out.println("Je m'appelle " + nom + " et j'ai 18 ans.");
-}
-
-public static void presentation(String nom, int age) {
-    System.out.println("Je m'appelle " + nom + " et j'ai " + age + " ans.");
-}
-
-// Appel des fonctions
-presentation("Yassmine");  // Prend 18 ans par défaut
-presentation("Ahmed", 20);
-\`\`\`
-
-Ici, la première fonction suppose 18 ans par défaut, et la deuxième permet de préciser l'âge.
-
-# Conclusion
-
-On a vu trois concepts essentiels en Java :
-✔️ Les variables → Stocker des valeurs en précisant leur type.
-✔️ Les conditions → Exécuter un code en fonction d'une situation.
-✔️ Les fonctions → Éviter les répétitions et organiser le code.
-
-💡 Différences avec Python :
-
-En Java, on déclare toujours le type des variables.
-
-Java utilise des {} au lieu d'indentation.
-
-Pour afficher du texte, on utilise System.out.println() au lieu de print().
-
-Les fonctions en Java s'appellent méthodes, et elles doivent toujours être définies dans une classe.
-
-Java est plus strict que Python, mais il est très puissant et utilisé dans les grandes applications !`
+Java est largement utilisé dans le développement d'applications d'entreprise, d'applications mobiles (Android), et de nombreux autres domaines. Sa portabilité, sa robustesse et sa sécurité en font un choix populaire pour de nombreux projets de développement logiciel.`
   },
   javascript: {
-    title: "Concepts fondamentaux en JavaScript",
-    content: `# 1. Déclaration des variables en JavaScript
+    title: 'Apprendre JavaScript',
+    content: `# Introduction à JavaScript
 
-Qu'est-ce qu'une variable ?
-Une variable est un espace en mémoire où l'on stocke une donnée. Contrairement à Java, JavaScript est un langage dynamique, ce qui signifie qu'on n'a pas besoin de préciser le type de données (comme en Python).
+JavaScript est un langage de programmation de haut niveau, interprété, qui permet d'ajouter de l'interactivité aux pages web. Initialement conçu pour fonctionner côté client dans les navigateurs web, JavaScript peut maintenant également être utilisé côté serveur avec Node.js.
 
-## Les trois façons de déclarer une variable en JavaScript
-Il existe trois mots-clés pour déclarer une variable :
+## Variables et Types de données
 
-var (ancienne méthode, à éviter)
-
-let (méthode recommandée)
-
-const (pour les valeurs constantes)
-
-Exemple :
+JavaScript est un langage à typage dynamique, ce qui signifie que les variables peuvent changer de type pendant l'exécution du programme.
 
 \`\`\`javascript
-var nom = "Yassmine"; // Ancienne manière (peut poser des problèmes)
-let age = 19;         // Nouvelle manière, recommandée
-const pays = "Maroc"; // Une valeur qui ne changera pas
+// Déclaration de variables avec let, const ou var
+let age = 25;
+const PI = 3.14159;
+var nom = "JavaScript";
+
+// Types de données
+let nombre = 42;          // Number
+let prix = 19.99;         // Number (pas de distinction entre entier et flottant)
+let nom = "JavaScript";   // String
+let estVrai = true;       // Boolean
+let rien = null;          // Null
+let nonDefini;            // Undefined
+let symbole = Symbol();   // Symbol (ES6)
+let grand = BigInt(9007199254740991);  // BigInt (ES2020)
+
+// Objets et tableaux
+let personne = {          // Object
+  nom: "Dupont",
+  age: 30
+};
+
+let fruits = ["pomme", "banane", "orange"];  // Array
 \`\`\`
 
-## Quelle est la différence entre var, let et const ?
-Mot-clé | Modification possible ? | Portée (scope)
---- | --- | ---
-var | Oui | Fonction
-let | Oui | Bloc {}
-const | Non | Bloc {}
+## Structures Conditionnelles
 
-💡 Conseil :
-
-Utilise let pour les variables qui peuvent changer.
-
-Utilise const si la valeur ne doit jamais changer.
-
-Évite var, car il peut créer des bugs.
-
-# 2. Conditions en JavaScript
-Une condition permet d'exécuter un code seulement si une certaine situation est vraie.
-
-## Condition if simple
+Les instructions conditionnelles permettent d'exécuter différents blocs de code selon que certaines conditions sont remplies ou non.
 
 \`\`\`javascript
-let age = 19;
+let age = 18;
 
-if (age >= 18) {
-    console.log("Vous êtes majeur.");
-}
-\`\`\`
-
-💡 Explication :
-
-Si age est supérieur ou égal à 18, alors on affiche "Vous êtes majeur."
-
-## Condition if...else
-
-\`\`\`javascript
-let age = 16;
-
-if (age >= 18) {
-    console.log("Vous êtes majeur.");
+if (age < 18) {
+  console.log("Mineur");
+} else if (age === 18) {
+  console.log("Tout juste majeur");
 } else {
-    console.log("Vous êtes mineur.");
+  console.log("Majeur");
+}
+
+// Opérateur ternaire
+let statut = age < 18 ? "Mineur" : "Majeur";
+
+// Switch
+switch (age) {
+  case 18:
+    console.log("Tout juste majeur");
+    break;
+  case 21:
+    console.log("Majeur aux US");
+    break;
+  default:
+    console.log("Âge quelconque");
 }
 \`\`\`
 
-💡 Explication :
+## Boucles
 
-Si age est inférieur à 18, alors on affiche "Vous êtes mineur."
-
-## Condition if...else if...else
-Si on veut tester plusieurs cas, on utilise else if :
+Les boucles permettent d'exécuter un bloc de code plusieurs fois.
 
 \`\`\`javascript
-let note = 15;
+// Boucle for
+for (let i = 0; i < 5; i++) {
+  console.log(i);  // Affiche 0, 1, 2, 3, 4
+}
 
-if (note >= 18) {
-    console.log("Excellent !");
-} else if (note >= 14) {
-    console.log("Bien !");
-} else if (note >= 10) {
-    console.log("Passable.");
-} else {
-    console.log("Échec.");
+// Boucle while
+let compteur = 0;
+while (compteur < 5) {
+  console.log(compteur);
+  compteur++;  // Affiche 0, 1, 2, 3, 4
+}
+
+// Boucle do-while
+let j = 0;
+do {
+  console.log(j);
+  j++;
+} while (j < 5);  // Affiche 0, 1, 2, 3, 4
+
+// Boucle for...of (pour les itérables comme Array)
+let fruits = ["pomme", "banane", "orange"];
+for (let fruit of fruits) {
+  console.log(fruit);
+}
+
+// Boucle for...in (pour les objets)
+let personne = { nom: "Dupont", age: 30 };
+for (let propriété in personne) {
+  console.log(propriété + ": " + personne[propriété]);
 }
 \`\`\`
 
-💡 Explication :
+## Fonctions
 
-Si note est supérieure ou égale à 18, on affiche "Excellent".
-
-Sinon, si note >= 14, on affiche "Bien".
-
-Sinon, si note >= 10, on affiche "Passable".
-
-Sinon, on affiche "Échec."
-
-## Conditions avec && et ||
-Comme en Java :
-
-&& (ET logique) → Les deux conditions doivent être vraies.
-
-|| (OU logique) → Au moins une condition doit être vraie.
-
-Exemple avec && (ET logique)
+Les fonctions sont des blocs de code réutilisables qui effectuent une tâche spécifique.
 
 \`\`\`javascript
-let argent = 50;
-let age = 20;
-
-if (age >= 18 && argent >= 100) {
-    console.log("Vous pouvez entrer en boîte.");
-} else {
-    console.log("Accès refusé.");
-}
-\`\`\`
-
-💡 Explication :
-✔️ La personne doit avoir plus de 18 ans ET au moins 100€.
-
-Exemple avec || (OU logique)
-
-\`\`\`javascript
-let carteMembre = false;
-let argent = 150;
-
-if (carteMembre || argent >= 100) {
-    console.log("Accès VIP accordé.");
-} else {
-    console.log("Accès refusé.");
-}
-\`\`\`
-
-💡 Explication :
-✔️ Si la personne a une carte membre OU si elle a au moins 100€, elle peut entrer.
-
-# 3. Fonctions en JavaScript
-Une fonction est un bloc de code qui effectue une action et peut être réutilisée plusieurs fois.
-
-## Créer une fonction sans paramètres
-
-\`\`\`javascript
-function direBonjour() {
-    console.log("Bonjour, bienvenue !");
-}
-
-// Appel de la fonction
-direBonjour();
-\`\`\`
-
-💡 Explication :
-
-function direBonjour() → Définit une fonction nommée direBonjour.
-
-console.log("Bonjour, bienvenue !") → Affiche "Bonjour, bienvenue !".
-
-## Fonctions avec paramètres
-
-\`\`\`javascript
+// Déclaration de fonction
 function saluer(nom) {
-    console.log("Bonjour, " + nom + " !");
+  return "Bonjour, " + nom + "!";
 }
 
-// Appel de la fonction
-saluer("Yassmine");
-saluer("Ahmed");
+// Expression de fonction
+const saluer = function(nom) {
+  return "Bonjour, " + nom + "!";
+};
+
+// Fonction fléchée (ES6)
+const saluer = (nom) => {
+  return "Bonjour, " + nom + "!";
+};
+
+// Version simplifiée pour les fonctions à une ligne
+const saluer = nom => "Bonjour, " + nom + "!";
+
+// Appel de fonction
+let message = saluer("Alice");
+console.log(message);  // Affiche "Bonjour, Alice!"
 \`\`\`
 
-💡 Explication :
+## Objets et Classes
 
-La fonction saluer(nom) prend un paramètre nom.
-
-Elle affiche "Bonjour, Yassmine !", "Bonjour, Ahmed !", etc.
-
-## Fonctions qui retournent une valeur
+JavaScript utilise des objets et, depuis ES6, des classes pour la programmation orientée objet.
 
 \`\`\`javascript
-function additionner(a, b) {
-    return a + b;
+// Création d'un objet
+let personne = {
+  nom: "Dupont",
+  age: 30,
+  presentation: function() {
+    return "Je m'appelle " + this.nom + " et j'ai " + this.age + " ans.";
+  }
+};
+
+console.log(personne.presentation());
+
+// Classes (ES6)
+class Personne {
+  constructor(nom, age) {
+    this.nom = nom;
+    this.age = age;
+  }
+  
+  presentation() {
+    return \`Je m'appelle \${this.nom} et j'ai \${this.age} ans.\`;
+  }
 }
 
-// Stocker le résultat et l'afficher
-let resultat = additionner(5, 7);
-console.log(resultat);  // Affiche 12
+let p1 = new Personne("Alice", 30);
+console.log(p1.presentation());  // Affiche "Je m'appelle Alice et j'ai 30 ans."
 \`\`\`
 
-💡 Explication :
+## Promesses et Async/Await
 
-La fonction additionne deux nombres et retourne le résultat.
-
-La valeur est stockée dans resultat et affichée avec console.log().
-
-## Fonctions fléchées (Arrow Functions)
-Depuis ES6, JavaScript propose une nouvelle façon d'écrire des fonctions plus courte :
+JavaScript utilise des promesses et la syntaxe async/await pour gérer les opérations asynchrones.
 
 \`\`\`javascript
-const multiplier = (x, y) => x * y;
-
-console.log(multiplier(3, 4));  // Affiche 12
-\`\`\`
-
-💡 Explication :
-
-(x, y) => x * y; est une fonction fléchée.
-
-Elle est équivalente à :
-
-\`\`\`javascript
-function multiplier(x, y) {
-    return x * y;
+// Promesses
+function fetchData() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve("Données reçues");
+    }, 2000);
+  });
 }
+
+fetchData()
+  .then(data => console.log(data))
+  .catch(error => console.error(error));
+
+// Async/Await (ES8)
+async function getData() {
+  try {
+    const data = await fetchData();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+getData();
 \`\`\`
 
-# Conclusion
-✔️ JavaScript est un langage dynamique utilisé pour le développement web.
-✔️ Il permet de déclarer des variables sans préciser le type.
-✔️ Les conditions sont similaires à celles de Java et Python.
-✔️ Les fonctions peuvent être classiques ou sous forme fléchée (ES6).
-✔️ Il est utilisé dans les navigateurs (Frontend) et aussi côté serveur (Node.js).
-
-💡 JavaScript est essentiel pour le développement web moderne ! 🚀`
+JavaScript est un langage essentiel pour le développement web, mais aussi pour le développement d'applications mobiles, de jeux, et même d'applications serveur avec Node.js. Sa flexibilité et son omniprésence en font l'un des langages de programmation les plus populaires au monde.`
   },
   c: {
-    title: "Introduction au Langage C",
-    content: `# 1. Introduction au Langage C
+    title: 'Introduction au langage C',
+    content: `# Introduction au langage C
 
-Le langage C est un langage de programmation impératif et procédural créé dans les années 1970 pour le développement du système d'exploitation UNIX. C'est un langage bas niveau qui offre un contrôle direct sur le matériel et la mémoire.
+Le C est un langage de programmation impératif et structuré, créé au début des années 1970 par Dennis Ritchie pour le développement du système d'exploitation UNIX. Il est considéré comme un langage de niveau intermédiaire, combinant des éléments de langages de haut niveau avec la fonctionnalité d'assemblage de bas niveau.
 
-💡 Points forts du langage C :
-✔️ Langage puissant et efficace
-✔️ Contrôle précis de la mémoire
-✔️ Portable sur presque toutes les plateformes
-✔️ Utilisé dans de nombreux systèmes d'exploitation et logiciels critiques
+## Variables et Types de données
 
-# 2. Structure d'un Programme en C
-
-Un programme en C a une structure fondamentale assez simple :
+Le C est un langage à typage statique, ce qui signifie que le type de chaque variable doit être déclaré avant son utilisation.
 
 \`\`\`c
-#include <stdio.h>  // Inclusion de bibliothèques
+// Types de base
+int age = 25;            // Entier
+float prix = 19.99;      // Flottant simple précision
+double pi = 3.14159265;  // Flottant double précision
+char grade = 'A';        // Caractère
 
-int main() {  // Fonction principale, point d'entrée du programme
-    printf("Bonjour, le monde !\n");  // Affiche un message
-    return 0;  // Indique que le programme s'est terminé avec succès
-}
+// Constantes
+const float PI = 3.14159;
+
+// Tableaux
+int nombres[5] = {1, 2, 3, 4, 5};
+char nom[10] = "C";  // Chaîne de caractères (tableau de caractères)
 \`\`\`
 
-🔹 Explication :
+## Structures Conditionnelles
 
-\`#include <stdio.h>\` : Inclut la bibliothèque standard d'entrée/sortie (Standard Input-Output).
-
-\`int main()\` : Fonction principale par laquelle commence l'exécution du programme.
-
-\`printf()\` : Fonction pour afficher du texte dans la console.
-
-\`return 0\` : Indique que le programme s'est terminé sans erreur.
-
-# 3. Types de Données en C
-
-En C, chaque variable doit avoir un type spécifique qui définit la nature des données qu'elle peut contenir.
-
-## Types de base
-
-Type | Description | Taille | Exemple
---- | --- | --- | ---
-int | Entiers | 4 octets | int age = 25;
-float | Réels simple précision | 4 octets | float prix = 19.99f;
-double | Réels double précision | 8 octets | double pi = 3.14159265359;
-char | Caractère unique | 1 octet | char lettre = 'A';
-void | Type spécial (aucune valeur) | - | void fonctionSansRetour();
-
-## Modificateurs de types
-
-Les types peuvent être modifiés avec :
-- \`short\` : réduit la taille
-- \`long\` : augmente la taille
-- \`unsigned\` : uniquement valeurs positives
-- \`signed\` : valeurs positives et négatives
+Les instructions conditionnelles permettent d'exécuter différents blocs de code selon que certaines conditions sont remplies ou non.
 
 \`\`\`c
-unsigned long int grandeValeurPositive = 4294967295;
-short int petitEntier = 32767;
-\`\`\`
+int age = 18;
 
-# 4. Variables et Déclaration
-
-En C, toutes les variables doivent être déclarées avant utilisation, en précisant leur type :
-
-\`\`\`c
-int age;           // Déclaration simple
-int taille = 175;  // Déclaration avec initialisation
-float poids = 70.5, taille = 1.75;  // Plusieurs variables du même type
-const double PI = 3.14159;  // Constante (ne peut pas être modifiée)
-\`\`\`
-
-💡 Important :
-- Les noms de variables sont sensibles à la casse (majuscules/minuscules).
-- Ils ne peuvent pas commencer par un chiffre.
-- Ils ne peuvent contenir que des lettres, chiffres et underscore (_).
-
-# 5. Opérateurs en C
-
-## Opérateurs arithmétiques
-- \`+\` : Addition
-- \`-\` : Soustraction
-- \`*\` : Multiplication
-- \`/\` : Division
-- \`%\` : Modulo (reste de la division)
-
-## Opérateurs d'affectation
-- \`=\` : Affectation simple
-- \`+=, -=, *=, /=, %=\` : Affectation combinée
-  
-\`\`\`c
-x += 5;  // Équivalent à x = x + 5
-\`\`\`
-
-## Opérateurs de comparaison
-- \`==\` : Égalité
-- \`!=\` : Différence
-- \`>, <, >=, <=\` : Supérieur, inférieur, supérieur ou égal, inférieur ou égal
-
-## Opérateurs logiques
-- \`&&\` : ET logique
-- \`||\` : OU logique
-- \`!\` : NON logique
-
-# 6. Structures de Contrôle
-
-## Conditions : if, else if, else
-
-\`\`\`c
-int age = 17;
-
-if (age >= 18) {
-    printf("Vous êtes majeur.\n");
+if (age < 18) {
+    printf("Mineur\n");
+} else if (age == 18) {
+    printf("Tout juste majeur\n");
 } else {
-    printf("Vous êtes mineur.\n");
+    printf("Majeur\n");
+}
+
+// Opérateur ternaire
+int statut = (age < 18) ? 0 : 1;  // 0 pour mineur, 1 pour majeur
+
+// Switch
+switch (age) {
+    case 18:
+        printf("Tout juste majeur\n");
+        break;
+    case 21:
+        printf("Majeur aux US\n");
+        break;
+    default:
+        printf("Âge quelconque\n");
 }
 \`\`\`
 
-## Structure if-else if-else
+## Boucles
+
+Les boucles permettent d'exécuter un bloc de code plusieurs fois.
 
 \`\`\`c
-int note = 15;
-
-if (note >= 18) {
-    printf("Excellent !\n");
-} else if (note >= 14) {
-    printf("Bien !\n");
-} else if (note >= 10) {
-    printf("Passable.\n");
-} else {
-    printf("Échec.\n");
-}
-\`\`\`
-
-## Boucle for
-
-\`\`\`c
-// Affiche les nombres de 0 à 4
+// Boucle for
 for (int i = 0; i < 5; i++) {
-    printf("%d\n", i);
+    printf("%d\n", i);  // Affiche 0, 1, 2, 3, 4
 }
-\`\`\`
 
-🔹 Explication :
-1. \`int i = 0\` : Initialisation de la variable de boucle
-2. \`i < 5\` : Condition de continuation
-3. \`i++\` : Incrémentation après chaque itération
-
-## Boucle while
-
-\`\`\`c
-int i = 0;
-while (i < 5) {
-    printf("%d\n", i);
-    i++;
+// Boucle while
+int compteur = 0;
+while (compteur < 5) {
+    printf("%d\n", compteur);
+    compteur++;  // Affiche 0, 1, 2, 3, 4
 }
-\`\`\`
 
-## Boucle do-while
-
-\`\`\`c
-int i = 0;
+// Boucle do-while
+int j = 0;
 do {
-    printf("%d\n", i);
-    i++;
-} while (i < 5);
+    printf("%d\n", j);
+    j++;
+} while (j < 5);  // Affiche 0, 1, 2, 3, 4
 \`\`\`
 
-La différence avec while est que do-while exécute le code au moins une fois avant de vérifier la condition.
+## Fonctions
 
-# 7. Fonctions en C
-
-Les fonctions permettent de regrouper des instructions qui réalisent une tâche spécifique.
-
-## Déclaration et définition
+Les fonctions sont des blocs de code réutilisables qui effectuent une tâche spécifique.
 
 \`\`\`c
-// Prototype (déclaration)
-int addition(int a, int b);
-
-// Définition
+// Déclaration et définition d'une fonction
 int addition(int a, int b) {
     return a + b;
 }
 
-// Utilisation
-int main() {
-    int resultat = addition(5, 3);
-    printf("5 + 3 = %d\n", resultat);
-    return 0;
+// Prototype de fonction (déclaration préalable)
+void saluer(char nom[]);
+
+// Définition de la fonction
+void saluer(char nom[]) {
+    printf("Bonjour, %s!\n", nom);
 }
+
+// Appel de fonction
+int somme = addition(5, 3);
+printf("Somme: %d\n", somme);  // Affiche "Somme: 8"
+
+saluer("Alice");  // Affiche "Bonjour, Alice!"
 \`\`\`
 
-🔹 Explication :
-- \`int addition(int a, int b)\` : La fonction prend deux entiers et retourne un entier.
-- \`return a + b\` : Calcule la somme et renvoie le résultat.
-- \`int resultat = addition(5, 3)\` : Appelle la fonction et stocke le résultat.
+## Pointeurs
 
-# 8. Pointeurs
-
-Les pointeurs sont une caractéristique fondamentale du langage C. Ils permettent de manipuler directement les adresses mémoire.
+Les pointeurs sont des variables qui stockent l'adresse mémoire d'une autre variable.
 
 \`\`\`c
-int nombre = 42;
-int *ptr = &nombre;  // ptr stocke l'adresse de nombre
+int x = 10;
+int *ptr = &x;  // ptr contient l'adresse de x
 
-printf("Valeur de nombre : %d\n", nombre);      // 42
-printf("Adresse de nombre : %p\n", &nombre);    // 0x...
-printf("Valeur de ptr : %p\n", ptr);            // 0x... (même adresse)
-printf("Valeur pointée par ptr : %d\n", *ptr);  // 42
+printf("Valeur de x: %d\n", x);        // Affiche 10
+printf("Adresse de x: %p\n", &x);      // Affiche l'adresse mémoire de x
+printf("Valeur de ptr: %p\n", ptr);    // Affiche la même adresse
+printf("Valeur pointée par ptr: %d\n", *ptr);  // Affiche 10
+
+// Modification via pointeur
+*ptr = 20;
+printf("Nouvelle valeur de x: %d\n", x);  // Affiche 20
 \`\`\`
 
-🔹 Explication :
-- \`int *ptr\` : Déclare un pointeur vers un entier
-- \`&nombre\` : Opérateur d'adresse (retourne l'adresse de la variable)
-- \`*ptr\` : Opérateur de déréférencement (accède à la valeur pointée)
+## Structures
 
-## Modification via pointeur
-
-\`\`\`c
-*ptr = 100;  // Modifie la valeur de nombre via le pointeur
-printf("Nouvelle valeur de nombre : %d\n", nombre);  // 100
-\`\`\`
-
-# 9. Tableaux
-
-Les tableaux permettent de stocker plusieurs valeurs du même type.
-
-\`\`\`c
-int notes[5] = {12, 15, 18, 10, 14};  // Tableau de 5 entiers
-
-// Accès aux éléments (l'indexation commence à 0)
-printf("Première note : %d\n", notes[0]);  // 12
-printf("Deuxième note : %d\n", notes[1]);  // 15
-
-// Modification d'un élément
-notes[2] = 19;
-\`\`\`
-
-## Tableaux et pointeurs
-
-En C, les tableaux sont étroitement liés aux pointeurs :
-
-\`\`\`c
-int *ptr = notes;  // ptr pointe vers le premier élément du tableau
-
-// Ces lignes sont équivalentes
-printf("%d\n", notes[0]);
-printf("%d\n", *ptr);
-
-// Accéder au deuxième élément
-printf("%d\n", notes[1]);
-printf("%d\n", *(ptr + 1));
-\`\`\`
-
-# 10. Structures
-
-Les structures permettent de regrouper des variables de types différents sous un même nom.
+Les structures permettent de regrouper des variables de différents types sous un même nom.
 
 \`\`\`c
 // Définition d'une structure
@@ -967,238 +605,582 @@ struct Personne {
 };
 
 // Utilisation de la structure
-int main() {
-    struct Personne p1;
-    
-    // Affectation de valeurs
-    strcpy(p1.nom, "Yassmine");
-    p1.age = 25;
-    p1.taille = 1.70;
-    
-    // Affichage
-    printf("Nom : %s, Age : %d, Taille : %.2f\n", p1.nom, p1.age, p1.taille);
-    
-    return 0;
+struct Personne p1;
+strcpy(p1.nom, "Jean");
+p1.age = 30;
+p1.taille = 1.75;
+
+printf("Nom: %s, Age: %d, Taille: %.2f\n", p1.nom, p1.age, p1.taille);
+
+// Initialisation lors de la déclaration
+struct Personne p2 = {"Alice", 25, 1.68};
+\`\`\`
+
+## Allocation Dynamique de Mémoire
+
+Le C permet l'allocation et la libération dynamique de mémoire avec les fonctions malloc(), calloc(), realloc() et free().
+
+\`\`\`c
+// Allocation de mémoire pour un entier
+int *ptr = (int*) malloc(sizeof(int));
+*ptr = 10;
+printf("Valeur: %d\n", *ptr);  // Affiche 10
+
+// Libération de la mémoire
+free(ptr);
+
+// Allocation d'un tableau
+int *tableau = (int*) malloc(5 * sizeof(int));
+for (int i = 0; i < 5; i++) {
+    tableau[i] = i + 1;
+}
+
+// N'oubliez pas de libérer la mémoire
+free(tableau);
+\`\`\`
+
+Le C est largement utilisé pour le développement système, les pilotes de périphériques, les systèmes embarqués et les applications nécessitant des performances élevées. Sa proximité avec le matériel et son efficacité en font un choix populaire pour les projets où la performance est critique.`
+  },
+  cpp: {
+    title: "Fondamentaux du C++",
+    content: `# Introduction au C++
+
+Le C++ est un langage de programmation polyvalent créé par Bjarne Stroustrup au début des années 1980 comme une extension du langage C. Il ajoute des fonctionnalités orientées objet et de nombreuses améliorations au C, tout en maintenant sa compatibilité et ses performances.
+
+## Variables et Types de données
+
+Le C++ est un langage à typage statique, ce qui signifie que le type de chaque variable doit être déclaré avant son utilisation.
+
+\`\`\`cpp
+// Types de base
+int age = 25;              // Entier
+float prix = 19.99f;       // Flottant simple précision
+double pi = 3.14159265;    // Flottant double précision
+char grade = 'A';          // Caractère
+bool estVrai = true;       // Booléen (vrai/faux)
+
+// Constantes
+const double PI = 3.14159265;
+
+// Chaînes de caractères
+char nomC[10] = "C++";     // Style C
+std::string nom = "C++";   // Style C++ (nécessite #include <string>)
+
+// Tableaux
+int nombres[5] = {1, 2, 3, 4, 5};
+
+// Vecteurs (tableau dynamique)
+std::vector<int> vecteur = {1, 2, 3, 4, 5};  // nécessite #include <vector>
+\`\`\`
+
+## Structures Conditionnelles
+
+Les instructions conditionnelles permettent d'exécuter différents blocs de code selon que certaines conditions sont remplies ou non.
+
+\`\`\`cpp
+int age = 18;
+
+if (age < 18) {
+    std::cout << "Mineur" << std::endl;
+} else if (age == 18) {
+    std::cout << "Tout juste majeur" << std::endl;
+} else {
+    std::cout << "Majeur" << std::endl;
+}
+
+// Opérateur ternaire
+std::string statut = (age < 18) ? "Mineur" : "Majeur";
+
+// Switch
+switch (age) {
+    case 18:
+        std::cout << "Tout juste majeur" << std::endl;
+        break;
+    case 21:
+        std::cout << "Majeur aux US" << std::endl;
+        break;
+    default:
+        std::cout << "Âge quelconque" << std::endl;
 }
 \`\`\`
 
-# Conclusion
+## Boucles
 
-Le langage C est puissant mais demande une compréhension précise de la gestion mémoire. Il reste fondamental pour comprendre comment fonctionnent les ordinateurs et de nombreux langages modernes s'inspirent de sa syntaxe.
+Les boucles permettent d'exécuter un bloc de code plusieurs fois.
 
-Points clés à retenir :
-✔️ Langage bas niveau avec contrôle direct de la mémoire
-✔️ Types de données stricts et statiques
-✔️ Pointeurs pour manipuler directement la mémoire
-✔️ Absence de gestion automatique de la mémoire (allocations/libérations manuelles)
-✔️ Syntaxe qui a influencé de nombreux autres langages (C++, Java, C#...)`
+\`\`\`cpp
+// Boucle for
+for (int i = 0; i < 5; i++) {
+    std::cout << i << std::endl;  // Affiche 0, 1, 2, 3, 4
+}
+
+// Boucle while
+int compteur = 0;
+while (compteur < 5) {
+    std::cout << compteur << std::endl;
+    compteur++;  // Affiche 0, 1, 2, 3, 4
+}
+
+// Boucle do-while
+int j = 0;
+do {
+    std::cout << j << std::endl;
+    j++;
+} while (j < 5);  // Affiche 0, 1, 2, 3, 4
+
+// Boucle for basée sur une plage (C++11)
+std::vector<int> nombres = {1, 2, 3, 4, 5};
+for (int nombre : nombres) {
+    std::cout << nombre << std::endl;
+}
+\`\`\`
+
+## Fonctions
+
+Les fonctions sont des blocs de code réutilisables qui effectuent une tâche spécifique.
+
+\`\`\`cpp
+// Déclaration et définition d'une fonction
+int addition(int a, int b) {
+    return a + b;
+}
+
+// Prototype de fonction (déclaration préalable)
+void saluer(const std::string& nom);
+
+// Définition de la fonction
+void saluer(const std::string& nom) {
+    std::cout << "Bonjour, " << nom << "!" << std::endl;
+}
+
+// Fonction avec paramètres par défaut
+void afficherInfo(std::string nom, int age = 30) {
+    std::cout << nom << " a " << age << " ans." << std::endl;
+}
+
+// Surcharge de fonction
+void afficher(int nombre) {
+    std::cout << "Entier: " << nombre << std::endl;
+}
+
+void afficher(std::string texte) {
+    std::cout << "Texte: " << texte << std::endl;
+}
+
+// Appel de fonctions
+int somme = addition(5, 3);
+std::cout << "Somme: " << somme << std::endl;  // Affiche "Somme: 8"
+
+saluer("Alice");  // Affiche "Bonjour, Alice!"
+afficherInfo("Bob");  // Affiche "Bob a 30 ans."
+afficherInfo("Charlie", 25);  // Affiche "Charlie a 25 ans."
+
+afficher(42);  // Appelle la première version
+afficher("Bonjour");  // Appelle la deuxième version
+\`\`\`
+
+## Classes et Objets
+
+Le C++ est un langage de programmation orienté objet. Les classes permettent de créer des objets avec des attributs et des méthodes.
+
+\`\`\`cpp
+class Personne {
+private:
+    std::string nom;
+    int age;
+    
+public:
+    // Constructeur
+    Personne(const std::string& n, int a) : nom(n), age(a) {}
+    
+    // Méthodes
+    void presentation() const {
+        std::cout << "Je m'appelle " << nom << " et j'ai " << age << " ans." << std::endl;
+    }
+    
+    // Accesseurs (getters)
+    std::string getNom() const { return nom; }
+    int getAge() const { return age; }
+    
+    // Mutateurs (setters)
+    void setNom(const std::string& n) { nom = n; }
+    void setAge(int a) { age = a; }
+};
+
+// Création d'objets
+Personne p1("Alice", 30);
+p1.presentation();  // Affiche "Je m'appelle Alice et j'ai 30 ans."
+
+std::cout << "Nom: " << p1.getNom() << std::endl;
+p1.setAge(31);
+std::cout << "Nouvel âge: " << p1.getAge() << std::endl;
+\`\`\`
+
+## Héritage
+
+L'héritage permet à une classe d'hériter des attributs et des méthodes d'une autre classe.
+
+\`\`\`cpp
+class Etudiant : public Personne {
+private:
+    std::string ecole;
+    
+public:
+    // Constructeur
+    Etudiant(const std::string& n, int a, const std::string& e)
+        : Personne(n, a), ecole(e) {}
+    
+    // Méthode redéfinie
+    void presentation() const override {
+        Personne::presentation();  // Appel de la méthode de la classe parent
+        std::cout << "J'étudie à " << ecole << "." << std::endl;
+    }
+};
+
+// Utilisation de la classe dérivée
+Etudiant e1("Bob", 20, "Polytechnique");
+e1.presentation();
+\`\`\`
+
+## Templates
+
+Les templates permettent la programmation générique en C++.
+
+\`\`\`cpp
+// Fonction template
+template <typename T>
+T maximum(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+// Classe template
+template <typename T>
+class Pile {
+private:
+    std::vector<T> elements;
+    
+public:
+    void empiler(const T& element) {
+        elements.push_back(element);
+    }
+    
+    T depiler() {
+        if (elements.empty()) {
+            throw std::out_of_range("Pile vide");
+        }
+        T dernier = elements.back();
+        elements.pop_back();
+        return dernier;
+    }
+    
+    bool estVide() const {
+        return elements.empty();
+    }
+};
+
+// Utilisation des templates
+int max_int = maximum<int>(10, 20);  // 20
+double max_double = maximum(3.14, 2.71);  // 3.14 (le type est déduit)
+
+Pile<int> pileEntiers;
+pileEntiers.empiler(10);
+pileEntiers.empiler(20);
+std::cout << pileEntiers.depiler() << std::endl;  // 20
+\`\`\`
+
+Le C++ est utilisé dans de nombreux domaines, notamment les jeux vidéo, les systèmes d'exploitation, les applications embarquées, les logiciels hautes performances et les applications financières. Sa puissance, sa flexibilité et son efficacité en font un choix populaire pour les projets où la performance et le contrôle détaillé sont importants.`
   },
   php: {
-    title: "Introduction à PHP",
+    title: 'Introduction à PHP',
     content: `# Introduction à PHP
 
-PHP (Hypertext Preprocessor) est un langage de programmation côté serveur utilisé principalement pour le développement web. Il permet de générer des pages dynamiques, se connecter à une base de données, et gérer les formulaires.
+PHP (PHP: Hypertext Preprocessor) est un langage de script open source principalement utilisé pour le développement web côté serveur. Créé en 1994 par Rasmus Lerdorf, PHP est spécifiquement conçu pour la création de sites web dynamiques et d'applications web.
 
-💡 Points forts de PHP :
-✔️ Facile à apprendre et à utiliser.
-✔️ Intégré avec HTML.
-✔️ Compatible avec MySQL, PostgreSQL, SQLite, etc.
-✔️ Fonctionne sur tous les serveurs web (Apache, Nginx…).
+## Configuration de base
 
-## 1. Déclaration des Variables en PHP
-
-En PHP, les variables commencent toujours par $, et il n'est pas nécessaire de préciser le type de la variable (PHP est un langage faiblement typé).
-
-### Syntaxe des Variables
-
-\`\`\`php
-<?php
-$nom = "Yassmine";  // Chaîne de caractères
-$age = 19;          // Entier
-$prix = 15.99;      // Float
-$estConnecte = true; // Booléen
-
-echo "Nom : $nom, Age : $age, Prix : $prix";
-?>
-\`\`\`
-
-💡 Explication :
-
-$nom = "Yassmine"; → Variable contenant une chaîne de caractères.
-
-$age = 19; → Variable de type entier.
-
-$prix = 15.99; → Variable de type décimal.
-
-$estConnecte = true; → Booléen (true ou false).
-
-👉 PHP déduit automatiquement le type des variables en fonction de la valeur qu'on leur attribue.
-
-## 2. Conditions en PHP (if, else if, else)
-
-PHP utilise les mêmes conditions que la plupart des langages de programmation (if, else if, else).
-
-### Condition if simple
-
-\`\`\`php
-<?php
-$age = 20;
-
-if ($age >= 18) {
-    echo "Vous êtes majeur.";
-}
-?>
-\`\`\`
-
-💡 Explication :
-Si $age est supérieur ou égal à 18, on affiche "Vous êtes majeur."
-
-### Condition if...else
-
-\`\`\`php
-<?php
-$age = 16;
-
-if ($age >= 18) {
-    echo "Vous êtes majeur.";
-} else {
-    echo "Vous êtes mineur.";
-}
-?>
-\`\`\`
-
-💡 Explication :
-Si $age est inférieur à 18, alors on affiche "Vous êtes mineur."
-
-### Condition if...else if...else
-
-\`\`\`php
-<?php
-$note = 15;
-
-if ($note >= 18) {
-    echo "Excellent !";
-} elseif ($note >= 14) {
-    echo "Bien !";
-} elseif ($note >= 10) {
-    echo "Passable.";
-} else {
-    echo "Échec.";
-}
-?>
-\`\`\`
-
-💡 Explication :
-
-Si note >= 18, on affiche "Excellent !".
-
-Si note >= 14, on affiche "Bien !".
-
-Si note >= 10, on affiche "Passable".
-
-Sinon, on affiche "Échec."
-
-## 3. Fonctions en PHP
-
-Une fonction est un bloc de code qui exécute une tâche spécifique.
-
-### Déclaration d'une fonction sans paramètre
-
-\`\`\`php
-<?php
-function direBonjour() {
-    echo "Bonjour, bienvenue sur notre site !";
-}
-
-direBonjour();
-?>
-\`\`\`
-
-💡 Explication :
-
-function direBonjour() → Déclaration d'une fonction nommée direBonjour.
-
-echo "Bonjour..."; → Affichage d'un message.
-
-direBonjour(); → Appel de la fonction.
-
-### Fonction avec paramètres
-
-\`\`\`php
-<?php
-function saluer($nom) {
-    echo "Bonjour, $nom !";
-}
-
-saluer("Yassmine");
-?>
-\`\`\`
-
-💡 Explication :
-
-$nom est un paramètre passé à la fonction saluer.
-
-Lorsqu'on appelle saluer("Yassmine");, le message "Bonjour, Yassmine !" s'affiche.
-
-### Fonction avec retour de valeur
-
-\`\`\`php
-<?php
-function additionner($a, $b) {
-    return $a + $b;
-}
-
-$resultat = additionner(5, 7);
-echo "Résultat : $resultat";
-?>
-\`\`\`
-
-💡 Explication :
-
-La fonction additionner($a, $b) retourne la somme de $a et $b.
-
-Le résultat est stocké dans la variable $resultat et affiché.
-
-## 4. PHP et HTML : Exemple Complet
-
-PHP est souvent intégré dans des pages HTML.
+Un script PHP commence par \`<?php\` et se termine par \`?>\`. Il peut être intégré directement dans le HTML.
 
 \`\`\`php
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Exemple PHP</title>
+    <title>Ma page PHP</title>
 </head>
 <body>
-
-<h1>Bienvenue sur mon site</h1>
-
-<?php
-$nom = "Yassmine";
-echo "<p>Bonjour, $nom !</p>";
-?>
-
+    <h1>Bonjour en PHP</h1>
+    <?php
+        echo "Bonjour, monde!";
+    ?>
 </body>
 </html>
 \`\`\`
 
-💡 Explication :
+## Variables et Types de données
 
-PHP est intégré entre <?php ... ?>.
+PHP est un langage à typage dynamique, ce qui signifie que les variables peuvent changer de type pendant l'exécution du programme.
 
-L'instruction echo "<p>Bonjour, $nom !</p>"; affiche du texte dans une balise HTML.
+\`\`\`php
+// Déclaration de variables
+$age = 25;              // Entier
+$prix = 19.99;          // Flottant
+$nom = "PHP";           // Chaîne de caractères
+$estVrai = true;        // Booléen
+$rien = null;           // Null
 
-# Conclusion
+// Tableaux
+$nombres = [1, 2, 3, 4, 5];  // Tableau indexé numériquement
 
-✔️ PHP est un langage puissant pour le développement web dynamique.
-✔️ Les variables sont déclarées avec $ sans type spécifique.
-✔️ Les conditions et les fonctions sont similaires aux autres langages.
-✔️ PHP fonctionne en combinaison avec HTML pour générer des pages interactives.
+// Tableau associatif
+$personne = [
+    "nom" => "Dupont",
+    "age" => 30,
+    "ville" => "Paris"
+];
 
-🚀 PHP est l'un des langages les plus utilisés pour créer des sites web dynamiques comme Facebook, WordPress et Wikipedia !`
+// Vérification du type
+echo gettype($age);     // Affiche "integer"
+var_dump($prix);        // Affiche des informations détaillées sur la variable
+\`\`\`
+
+## Structures Conditionnelles
+
+Les instructions conditionnelles permettent d'exécuter différents blocs de code selon que certaines conditions sont remplies ou non.
+
+\`\`\`php
+$age = 18;
+
+if ($age < 18) {
+    echo "Mineur";
+} elseif ($age == 18) {
+    echo "Tout juste majeur";
+} else {
+    echo "Majeur";
+}
+
+// Opérateur ternaire
+$statut = ($age < 18) ? "Mineur" : "Majeur";
+
+// Switch
+switch ($age) {
+    case 18:
+        echo "Tout juste majeur";
+        break;
+    case 21:
+        echo "Majeur aux US";
+        break;
+    default:
+        echo "Âge quelconque";
+}
+\`\`\`
+
+## Boucles
+
+Les boucles permettent d'exécuter un bloc de code plusieurs fois.
+
+\`\`\`php
+// Boucle for
+for ($i = 0; $i < 5; $i++) {
+    echo $i . "<br>";  // Affiche 0, 1, 2, 3, 4
+}
+
+// Boucle while
+$compteur = 0;
+while ($compteur < 5) {
+    echo $compteur . "<br>";
+    $compteur++;  // Affiche 0, 1, 2, 3, 4
+}
+
+// Boucle do-while
+$j = 0;
+do {
+    echo $j . "<br>";
+    $j++;
+} while ($j < 5);  // Affiche 0, 1, 2, 3, 4
+
+// Boucle foreach (pour les tableaux)
+$fruits = ["pomme", "banane", "orange"];
+foreach ($fruits as $fruit) {
+    echo $fruit . "<br>";
+}
+
+// Foreach avec clé et valeur
+$personne = ["nom" => "Dupont", "age" => 30];
+foreach ($personne as $clé => $valeur) {
+    echo $clé . ": " . $valeur . "<br>";
+}
+\`\`\`
+
+## Fonctions
+
+Les fonctions sont des blocs de code réutilisables qui effectuent une tâche spécifique.
+
+\`\`\`php
+// Déclaration d'une fonction
+function saluer($nom) {
+    return "Bonjour, " . $nom . "!";
+}
+
+// Fonction avec paramètres par défaut
+function afficherInfo($nom, $age = 30) {
+    echo $nom . " a " . $age . " ans.";
+}
+
+// Fonction avec nombre variable d'arguments
+function somme(...$nombres) {
+    return array_sum($nombres);
+}
+
+// Fonctions anonymes (closures)
+$double = function($x) {
+    return $x * 2;
+};
+
+// Appel de fonctions
+$message = saluer("Alice");
+echo $message;  // Affiche "Bonjour, Alice!"
+
+afficherInfo("Bob");  // Affiche "Bob a 30 ans."
+afficherInfo("Charlie", 25);  // Affiche "Charlie a 25 ans."
+
+echo somme(1, 2, 3, 4, 5);  // Affiche 15
+
+echo $double(5);  // Affiche 10
+\`\`\`
+
+## Classes et Objets
+
+PHP supporte la programmation orientée objet. Les classes permettent de créer des objets avec des propriétés et des méthodes.
+
+\`\`\`php
+class Personne {
+    // Propriétés
+    private $nom;
+    private $age;
+    
+    // Constructeur
+    public function __construct($nom, $age) {
+        $this->nom = $nom;
+        $this->age = $age;
+    }
+    
+    // Méthodes
+    public function presentation() {
+        return "Je m'appelle " . $this->nom . " et j'ai " . $this->age . " ans.";
+    }
+    
+    // Getters et Setters
+    public function getNom() {
+        return $this->nom;
+    }
+    
+    public function setNom($nom) {
+        $this->nom = $nom;
+    }
+    
+    public function getAge() {
+        return $this->age;
+    }
+    
+    public function setAge($age) {
+        $this->age = $age;
+    }
+}
+
+// Création d'un objet
+$p1 = new Personne("Alice", 30);
+echo $p1->presentation();  // Affiche "Je m'appelle Alice et j'ai 30 ans."
+
+echo $p1->getNom();  // Affiche "Alice"
+$p1->setAge(31);
+echo $p1->getAge();  // Affiche 31
+\`\`\`
+
+## Héritage
+
+L'héritage permet à une classe d'hériter des propriétés et des méthodes d'une autre classe.
+
+\`\`\`php
+class Etudiant extends Personne {
+    private $ecole;
+    
+    public function __construct($nom, $age, $ecole) {
+        parent::__construct($nom, $age);  // Appel du constructeur parent
+        $this->ecole = $ecole;
+    }
+    
+    public function presentation() {
+        return parent::presentation() . " J'étudie à " . $this->ecole . ".";
+    }
+}
+
+// Utilisation de la classe dérivée
+$e1 = new Etudiant("Bob", 20, "Polytechnique");
+echo $e1->presentation();  // Affiche "Je m'appelle Bob et j'ai 20 ans. J'étudie à Polytechnique."
+\`\`\`
+
+## Manipulation de Fichiers
+
+PHP permet de lire et d'écrire des fichiers sur le serveur.
+
+\`\`\`php
+// Lecture d'un fichier
+$contenu = file_get_contents("fichier.txt");
+echo $contenu;
+
+// Écriture dans un fichier
+file_put_contents("nouveau.txt", "Bonjour, monde!");
+
+// Manipulation avancée avec fopen
+$fichier = fopen("donnees.txt", "r");
+while (!feof($fichier)) {
+    $ligne = fgets($fichier);
+    echo $ligne . "<br>";
+}
+fclose($fichier);
+\`\`\`
+
+## Bases de données
+
+PHP s'intègre facilement avec de nombreuses bases de données, notamment MySQL via l'extension MySQLi ou PDO.
+
+\`\`\`php
+// Connexion avec MySQLi
+$mysqli = new mysqli("localhost", "utilisateur", "mot_de_passe", "base_de_données");
+
+if ($mysqli->connect_error) {
+    die("Connexion échouée: " . $mysqli->connect_error);
+}
+
+// Exécution d'une requête
+$result = $mysqli->query("SELECT * FROM utilisateurs");
+
+// Parcours des résultats
+while ($row = $result->fetch_assoc()) {
+    echo "Nom: " . $row["nom"] . "<br>";
+}
+
+$mysqli->close();
+
+// Connexion avec PDO
+try {
+    $pdo = new PDO("mysql:host=localhost;dbname=base_de_données", "utilisateur", "mot_de_passe");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE age > ?");
+    $stmt->execute([18]);
+    
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo "Nom: " . $row["nom"] . "<br>";
+    }
+} catch (PDOException $e) {
+    echo "Erreur: " . $e->getMessage();
+}
+\`\`\`
+
+PHP est principalement utilisé pour le développement de sites web dynamiques et d'applications web. Avec des frameworks comme Laravel, Symfony ou WordPress, il est possible de créer rapidement des applications web robustes et complexes.`
   },
   sql: {
-    title: "Les fondamentaux du SQL",
+    title: 'Les fondamentaux du SQL',
     content: `# Introduction à SQL
 
 SQL (Structured Query Language) est un langage de programmation utilisé pour gérer les bases de données relationnelles. Il permet de créer, modifier, interroger et administrer des bases de données.
@@ -1472,20 +1454,4 @@ DROP VIEW utilisateurs_recents;
 
 SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise ou des analyses de données, la maîtrise du SQL ouvre de nombreuses opportunités dans le domaine de l'informatique.`
   }
-};
-
-// Returns the YouTube embed URL for a language
-export const getYoutubeEmbedUrl = (languageId: string | undefined): string => {
-  if (!languageId) return '';
-  
-  const videoInfo = languageVideoMap[languageId];
-  return videoInfo?.courseVideo || '';
-};
-
-// Opens a YouTube video in a new tab
-export const openYoutubeVideo = (url: string): void => {
-  if (!url) return;
-  
-  const youtubeUrl = url.replace('embed/', 'watch?v=');
-  window.open(youtubeUrl, '_blank');
 };
