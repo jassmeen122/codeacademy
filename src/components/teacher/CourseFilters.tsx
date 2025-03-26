@@ -53,15 +53,17 @@ export const CourseFilters = ({
   };
 
   const toggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    // Fix: Use direct value assignment instead of a function
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
   };
 
   // Update this function to validate the values before setting them
   const handleFilterChange = (key: FilterKey, value: string | null) => {
     // Validate that the value is acceptable for the given key
     if (value === "all") {
-      // Handle "all" selection (clear filter)
-      setFilters(prev => ({ ...prev, [key]: null }));
+      // Fix: Create a new filters object instead of using a function
+      const newFilters = { ...filters, [key]: null };
+      setFilters(newFilters);
       return;
     }
     
@@ -98,8 +100,9 @@ export const CourseFilters = ({
       }
     }
     
-    // If we passed all validation, update the filter
-    setFilters(prev => ({ ...prev, [key]: value }));
+    // Fix: Create a new filters object instead of using a function
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
   };
 
   return (
