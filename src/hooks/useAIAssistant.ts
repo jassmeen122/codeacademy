@@ -14,7 +14,7 @@ export const useAIAssistant = () => {
     const savedMessages = localStorage.getItem("ai-assistant-messages");
     return savedMessages 
       ? JSON.parse(savedMessages) 
-      : [{ role: "assistant", content: "Hi! I'm your AI programming assistant. How can I help you today?" }];
+      : [{ role: "assistant", content: "Bonjour ! Je suis votre assistant IA de programmation. Je peux vous aider avec Python, Java, JavaScript, C, C++, PHP et SQL. Comment puis-je vous aider aujourd'hui?" }];
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export const useAIAssistant = () => {
     if (code && language) {
       userContent = userInput.trim() ? 
         `${userInput}\n\n\`\`\`${language}\n${code}\n\`\`\`` : 
-        `Please help with this ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\``;
+        `Aidez-moi avec ce code ${language}:\n\n\`\`\`${language}\n${code}\n\`\`\``;
     }
 
     // Add user message to chat
@@ -48,7 +48,7 @@ export const useAIAssistant = () => {
         content: msg.content
       }));
 
-      console.log("Sending request to OpenAI assistant...");
+      console.log("Sending request to AI assistant...");
       
       // Call Supabase Edge Function
       let response = await supabase.functions.invoke('ai-assistant', {
@@ -85,7 +85,9 @@ export const useAIAssistant = () => {
       // Customize the error message to be more user-friendly
       let friendlyError = "Notre service d'IA est temporairement indisponible. Veuillez réessayer plus tard.";
       
-      if (error.message && (
+      if (error.message && error.message.includes("langages de programmation")) {
+        friendlyError = error.message;
+      } else if (error.message && (
           error.message.includes("quota") || 
           error.message.includes("billing") ||
           error.message.includes("exceeded")
@@ -104,7 +106,7 @@ export const useAIAssistant = () => {
     if (confirm("Êtes-vous sûr de vouloir effacer l'historique de discussion?")) {
       setMessages([{ 
         role: "assistant", 
-        content: "Historique effacé. Comment puis-je vous aider aujourd'hui?" 
+        content: "Historique effacé. Je suis votre assistant IA de programmation. Je peux vous aider avec Python, Java, JavaScript, C, C++, PHP et SQL. Comment puis-je vous aider aujourd'hui?" 
       }]);
       setErrorMessage(null);
     }

@@ -7,6 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Define allowed programming languages
+const ALLOWED_LANGUAGES = ["python", "java", "javascript", "c", "cpp", "c++", "php", "sql"];
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -20,7 +23,7 @@ serve(async (req) => {
       console.error('OpenAI API key is not configured in Supabase secrets');
       return new Response(
         JSON.stringify({ 
-          error: 'OpenAI API key is not configured. Please add your OpenAI API key to the Supabase Edge Function secrets.' 
+          error: 'Le service est temporairement indisponible. Veuillez réessayer plus tard.' 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -30,7 +33,7 @@ serve(async (req) => {
       console.error('OpenAI API key is not properly set');
       return new Response(
         JSON.stringify({ 
-          error: 'OpenAI API key is not properly set. Please update your OpenAI API key in the Supabase Edge Function secrets.' 
+          error: 'Le service est temporairement indisponible. Veuillez réessayer plus tard.' 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -39,7 +42,7 @@ serve(async (req) => {
     // Parse request body
     const requestData = await req.json().catch(error => {
       console.error('Failed to parse request JSON:', error);
-      throw new Error('Invalid request format');
+      throw new Error('Format de requête invalide');
     });
     
     const { prompt, messageHistory, code, language } = requestData;
@@ -50,15 +53,28 @@ serve(async (req) => {
     console.log("- Code assistance:", code ? 'Yes' : 'No');
     console.log("- Language:", language || 'N/A');
     
-    // Format system message based on whether this is code assistance
-    let systemMessage;
+    // Check if the query is related to programming languages
+    const isProgrammingRelated = checkIfProgrammingRelated(prompt, code, language);
+    
+    if (!isProgrammingRelated) {
+      return new Response(
+        JSON.stringify({ 
+          reply: { 
+            role: "assistant", 
+            content: "Je suis désolé, je ne peux répondre qu'aux questions concernant les langages de programmation suivants : Python, Java, JavaScript, C, C++, PHP et SQL. Veuillez reformuler votre question pour qu'elle soit liée à ces langages."
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Format system message for programming assistance
+    const systemMessage = "Vous êtes un assistant de programmation qui aide uniquement avec les langages Python, Java, JavaScript, C, C++, PHP et SQL. Vos réponses doivent être concises, claires et centrées uniquement sur ces langages de programmation. Si une question ne concerne pas ces langages, rappelez poliment à l'utilisateur que vous êtes spécialisé dans ces langages uniquement.";
     let promptForAI;
     
     if (code && language) {
-      systemMessage = "You are an expert programming teacher and code assistant. You help students understand code, fix bugs, and learn programming concepts. Be concise, clear, and give practical advice.";
-      promptForAI = `Please help me with this ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\`\n\n${prompt || "What does this code do and how can it be improved?"}`;
+      promptForAI = `Aidez-moi avec ce code ${language}:\n\n\`\`\`${language}\n${code}\n\`\`\`\n\n${prompt || "Que fait ce code et comment peut-il être amélioré?"}`;
     } else {
-      systemMessage = "You are a helpful programming assistant for a coding education platform. You provide clear, concise explanations about programming concepts, help debug code, and offer guidance on best practices.";
       promptForAI = prompt;
     }
     
@@ -93,18 +109,18 @@ serve(async (req) => {
         
         try {
           const errorData = JSON.parse(errorText);
-          let errorMessage = errorData.error?.message || `OpenAI API error: ${response.status}`;
+          let errorMessage = errorData.error?.message || `Erreur API OpenAI: ${response.status}`;
           
           // Check for common error types
           if (errorData.error?.type === 'invalid_request_error' && errorData.error?.message.includes('API key')) {
-            errorMessage = 'Invalid OpenAI API key. Please check your API key and update it in the Supabase Edge Function secrets.';
+            errorMessage = 'Le service est temporairement indisponible. Veuillez réessayer plus tard.';
           } else if (errorData.error?.type === 'insufficient_quota') {
-            errorMessage = 'Your OpenAI API key has insufficient quota. Please check your billing status or use a different API key.';
+            errorMessage = 'Le service est temporairement indisponible. Veuillez réessayer plus tard.';
           }
           
           throw new Error(errorMessage);
         } catch (parseError) {
-          throw new Error(`OpenAI API error: ${response.status} - ${errorText.substring(0, 100)}`);
+          throw new Error(`Le service est temporairement indisponible. Veuillez réessayer plus tard.`);
         }
       }
 
@@ -113,7 +129,7 @@ serve(async (req) => {
       
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
         console.error('Invalid response format from OpenAI:', data);
-        throw new Error('Invalid response format from OpenAI');
+        throw new Error('Format de réponse invalide de l\'API');
       }
       
       const assistantReply = data.choices[0].message;
@@ -129,8 +145,44 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in AI assistant function:', error);
     return new Response(
-      JSON.stringify({ error: error.message || "Unknown error occurred" }),
+      JSON.stringify({ error: error.message || "Une erreur inconnue s'est produite" }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
+
+// Function to check if the query is related to programming languages
+function checkIfProgrammingRelated(prompt: string, code?: string, codeLanguage?: string): boolean {
+  if (!prompt && !code) return false;
+  
+  // If code is provided with an allowed language, it's programming-related
+  if (code && codeLanguage) {
+    const normalizedLanguage = codeLanguage.toLowerCase();
+    return ALLOWED_LANGUAGES.some(lang => 
+      normalizedLanguage === lang || 
+      (lang === "cpp" && (normalizedLanguage === "c++" || normalizedLanguage === "c")) ||
+      (lang === "c++" && (normalizedLanguage === "cpp" || normalizedLanguage === "c"))
+    );
+  }
+  
+  // Check if prompt mentions any of the allowed languages
+  const promptLower = prompt.toLowerCase();
+  const containsLanguage = ALLOWED_LANGUAGES.some(lang => promptLower.includes(lang));
+  
+  // Check for programming keywords
+  const programmingKeywords = [
+    "code", "function", "variable", "class", "method", "syntax", "error", 
+    "debug", "compiler", "interpreter", "algorithm", "loop", "array", "string", 
+    "integer", "float", "boolean", "if statement", "while", "for loop", 
+    "switch", "case", "exception", "try catch", "import", "module", "library",
+    "api", "framework", "package", "dependency", "object", "inheritance", 
+    "polymorphism", "interface", "abstract", "static", "dynamic", "null", "undefined",
+    "query", "database", "table", "select", "insert", "update", "delete", "join"
+  ];
+  
+  const containsProgrammingKeyword = programmingKeywords.some(keyword => 
+    promptLower.includes(keyword)
+  );
+  
+  return containsLanguage || containsProgrammingKeyword;
+}
