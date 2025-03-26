@@ -4,15 +4,43 @@ import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BookOpen, Users, BarChart, Clock, Folder } from "lucide-react";
+import { PlusCircle, BookOpen, Users, BarChart, Clock, Folder, Search, ArrowUp, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import type { Course } from "@/types/course";
+
+type SortField = "title" | "created_at" | "difficulty" | "path" | "category";
+type SortDirection = "asc" | "desc";
+type FilterKey = "difficulty" | "path" | "category";
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<SortField>("created_at");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [filters, setFilters] = useState<Record<FilterKey, string | null>>({
+    difficulty: null,
+    path: null,
+    category: null,
+  });
   const navigate = useNavigate();
   const { user } = useAuthState();
 
@@ -20,12 +48,12 @@ const CoursesPage = () => {
     if (user) {
       fetchCourses();
     }
-  }, [user]);
+  }, [user, sortField, sortDirection, filters]);
 
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('courses')
         .select(`
           *,
@@ -33,8 +61,23 @@ const CoursesPage = () => {
             name:full_name
           )
         `)
-        .eq('teacher_id', user?.id)
-        .order('created_at', { ascending: false });
+        .eq('teacher_id', user?.id);
+
+      // Apply filters
+      if (filters.difficulty) {
+        query = query.eq('difficulty', filters.difficulty);
+      }
+      if (filters.path) {
+        query = query.eq('path', filters.path);
+      }
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+
+      // Apply sorting
+      query = query.order(sortField, { ascending: sortDirection === 'asc' });
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -61,13 +104,50 @@ const CoursesPage = () => {
         }
       }));
       
-      setCourses(transformedCourses);
+      // Apply search filter in memory (since we can't do it in the database query easily)
+      const filteredCourses = searchTerm
+        ? transformedCourses.filter(course => 
+            course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            course.category.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        : transformedCourses;
+      
+      setCourses(filteredCourses);
     } catch (error: any) {
       toast.error("Failed to fetch courses");
       console.error("Error fetching courses:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    // Debounce the actual search to avoid too many re-renders
+    const timer = setTimeout(() => {
+      fetchCourses();
+    }, 300);
+    return () => clearTimeout(timer);
+  };
+
+  const handleFilterChange = (key: FilterKey, value: string | null) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const toggleSortDirection = () => {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      difficulty: null,
+      path: null,
+      category: null,
+    });
+    setSearchTerm("");
+    setSortField("created_at");
+    setSortDirection("desc");
   };
 
   return (
@@ -81,15 +161,137 @@ const CoursesPage = () => {
           </Button>
         </div>
 
+        <div className="mb-8 bg-white p-4 rounded-lg shadow-sm border">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="col-span-1 md:col-span-3 lg:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search courses..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Select
+                value={filters.difficulty || ""}
+                onValueChange={(value) => handleFilterChange("difficulty", value || null)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Difficulty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Difficulties</SelectItem>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Select
+                value={filters.path || ""}
+                onValueChange={(value) => handleFilterChange("path", value || null)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Path" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Paths</SelectItem>
+                  <SelectItem value="Web Development">Web Development</SelectItem>
+                  <SelectItem value="Data Science">Data Science</SelectItem>
+                  <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Select
+                value={sortField}
+                onValueChange={(value) => setSortField(value as SortField)}
+              >
+                <SelectTrigger className="flex justify-between">
+                  <SelectValue placeholder="Sort by" />
+                  <button onClick={(e) => { e.stopPropagation(); toggleSortDirection(); }} className="hover:bg-muted p-1 rounded-full">
+                    {sortDirection === 'asc' ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )}
+                  </button>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="title">Title</SelectItem>
+                  <SelectItem value="created_at">Date Created</SelectItem>
+                  <SelectItem value="difficulty">Difficulty</SelectItem>
+                  <SelectItem value="path">Path</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          {/* Active filters */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {Object.entries(filters).map(([key, value]) => 
+              value && (
+                <Badge key={key} variant="secondary" className="flex items-center gap-1">
+                  {key}: {value}
+                  <button 
+                    onClick={() => handleFilterChange(key as FilterKey, null)}
+                    className="ml-1 hover:bg-muted rounded-full p-0.5"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              )
+            )}
+            {(searchTerm || Object.values(filters).some(Boolean)) && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={clearFilters}
+                className="h-7 text-xs"
+              >
+                Clear All
+              </Button>
+            )}
+          </div>
+        </div>
+
         {loading ? (
-          <div className="text-center py-8">Loading courses...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {[1, 2, 3].map((item) => (
+              <Card key={item} className="overflow-hidden">
+                <div className="aspect-video bg-gray-200 animate-pulse" />
+                <CardHeader>
+                  <div className="h-6 bg-gray-200 animate-pulse rounded w-3/4 mb-2" />
+                  <div className="h-4 bg-gray-100 animate-pulse rounded w-1/2" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-16 bg-gray-100 animate-pulse rounded mb-4" />
+                  <div className="flex justify-between">
+                    <div className="h-8 bg-gray-200 animate-pulse rounded w-1/3" />
+                    <div className="h-8 bg-gray-200 animate-pulse rounded w-1/3" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : courses.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-xl font-medium mb-2">No courses found</p>
               <p className="text-muted-foreground mb-6 text-center max-w-md">
-                You haven't created any courses yet. Start by creating your first course.
+                {searchTerm || Object.values(filters).some(Boolean) 
+                  ? "No courses match your search criteria. Try adjusting your filters."
+                  : "You haven't created any courses yet. Start by creating your first course."}
               </p>
               <Button onClick={() => navigate("/teacher/courses/create")}>
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -105,7 +307,7 @@ const CoursesPage = () => {
                   <img
                     src={course.image}
                     alt={course.title}
-                    className="object-cover w-full h-full"
+                    className="object-cover w-full h-full transition-transform hover:scale-105 duration-300"
                   />
                   <div className="absolute top-4 left-4 flex gap-2">
                     <span className={`px-2 py-1 rounded-md text-xs font-medium ${
@@ -161,13 +363,31 @@ const CoursesPage = () => {
                     >
                       Manage
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => navigate(`/teacher/courses/edit/${course.id}`)}
-                    >
-                      Edit
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="flex-none">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => navigate(`/teacher/courses/edit/${course.id}`)}>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/teacher/courses/${course.id}/resources`)}>
+                          Manage Resources
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/teacher/courses/${course.id}/students`)}>
+                          View Students
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          className="text-red-600" 
+                          onClick={() => toast.error("Not implemented yet")}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </CardContent>
               </Card>
