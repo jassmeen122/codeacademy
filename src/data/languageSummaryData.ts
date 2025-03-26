@@ -272,7 +272,7 @@ int age = 19;
 if (age >= 18) {
     System.out.println("Vous êtes majeur, vous pouvez entrer.");
 } else {
-    System.out.println("Vous êtes mineur, entrée interdite.");
+    System.out.println("Vous êtes mineur, l'entrée est interdite.");
 }
 \`\`\`
 
@@ -568,7 +568,7 @@ Sinon, si note >= 14, on affiche "Bien".
 
 Sinon, si note >= 10, on affiche "Passable".
 
-Sinon, on affiche "Échec".
+Sinon, on affiche "Échec."
 
 ## Conditions avec && et ||
 Comme en Java :
@@ -1172,4 +1172,23 @@ SELECT * FROM utilisateurs_recents;
 DROP VIEW utilisateurs_recents;
 \`\`\`
 
-SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise ou des analyses de données, la maîtrise du SQL ouvre de nombreuses opportunités dans le domaine de l'
+SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise ou des analyses de données, la maîtrise du SQL ouvre de nombreuses opportunités dans le domaine de l'informatique.`
+  }
+};
+
+// Returns the YouTube embed URL for a language
+export const getYoutubeEmbedUrl = (languageId: string | undefined): string => {
+  if (!languageId) return '';
+  
+  const videoInfo = languageVideoMap[languageId];
+  return videoInfo?.courseVideo || '';
+};
+
+// Opens a YouTube video in a new tab
+export const openYoutubeVideo = (url: string): void => {
+  if (!url) return;
+  
+  const youtubeUrl = url.replace('embed/', 'watch?v=');
+  window.open(youtubeUrl, '_blank');
+};
+
