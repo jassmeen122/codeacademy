@@ -140,8 +140,8 @@ const CoursesPage = () => {
   // Update this function to validate the values before setting them
   const handleFilterChange = (key: FilterKey, value: string | null) => {
     // Validate that the value is acceptable for the given key
-    if (value === "") {
-      // Handle empty selection (clear filter)
+    if (value === "all") {
+      // Handle "all" selection (clear filter)
       setFilters(prev => ({ ...prev, [key]: null }));
       return;
     }
@@ -226,14 +226,14 @@ const CoursesPage = () => {
             
             <div>
               <Select
-                value={filters.difficulty || ""}
-                onValueChange={(value) => handleFilterChange("difficulty", value || null)}
+                value={filters.difficulty || "all"}
+                onValueChange={(value) => handleFilterChange("difficulty", value === "all" ? null : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Difficulty" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Difficulties</SelectItem>
+                  <SelectItem value="all">All Difficulties</SelectItem>
                   <SelectItem value="Beginner">Beginner</SelectItem>
                   <SelectItem value="Intermediate">Intermediate</SelectItem>
                   <SelectItem value="Advanced">Advanced</SelectItem>
@@ -243,14 +243,14 @@ const CoursesPage = () => {
             
             <div>
               <Select
-                value={filters.path || ""}
-                onValueChange={(value) => handleFilterChange("path", value || null)}
+                value={filters.path || "all"}
+                onValueChange={(value) => handleFilterChange("path", value === "all" ? null : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Path" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Paths</SelectItem>
+                  <SelectItem value="all">All Paths</SelectItem>
                   <SelectItem value="Web Development">Web Development</SelectItem>
                   <SelectItem value="Data Science">Data Science</SelectItem>
                   <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
