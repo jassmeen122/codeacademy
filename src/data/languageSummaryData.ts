@@ -1,5 +1,3 @@
-import { languageVideoMap } from '@/utils/youtubeVideoMap';
-
 // Default language summaries that will be used if no data exists in the database
 export const defaultLanguageSummaries: Record<string, { title: string, content: string }> = {
   python: {
@@ -1174,4 +1172,23 @@ SELECT * FROM utilisateurs_recents;
 DROP VIEW utilisateurs_recents;
 \`\`\`
 
-SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise
+SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise ou des analyses de données, la maîtrise du SQL ouvre de nombreuses opportunités dans le domaine de l'informatique.`
+  }
+};
+
+// Returns the YouTube embed URL for a language
+export const getYoutubeEmbedUrl = (languageId: string | undefined): string => {
+  if (!languageId) return '';
+  
+  const videoInfo = languageVideoMap[languageId];
+  return videoInfo?.courseVideo || '';
+};
+
+// Opens a YouTube video in a new tab
+export const openYoutubeVideo = (url: string): void => {
+  if (!url) return;
+  
+  const youtubeUrl = url.replace('embed/', 'watch?v=');
+  window.open(youtubeUrl, '_blank');
+};
+
