@@ -1,3 +1,4 @@
+
 export type CourseResourceType = "pdf" | "video" | "presentation" | "youtube";
 
 export interface CourseResource {
@@ -29,6 +30,32 @@ export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | 
 // Update to match the exact values in the Supabase database
 export type DatabaseExerciseStatus = "draft" | "published";
 
+export interface CourseLesson {
+  id: string;
+  title: string;
+  content?: string;
+  module_id: string;
+  order_index: number;
+  is_published?: boolean;
+  requires_completion?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CourseModule {
+  id: string;
+  title: string;
+  description?: string;
+  order_index: number;
+  lessons?: CourseLesson[];
+  language_id?: string;
+  content?: string | null;
+  difficulty?: CourseLevel;
+  estimated_duration?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -51,6 +78,8 @@ export interface Course {
   };
   price?: number;
   isPremium?: boolean;
+  modules?: CourseModule[];
+  is_published?: boolean;
 }
 
 export interface CourseLearnResponse {
@@ -88,20 +117,6 @@ export interface UserGamification {
   badges: string[];
   created_at: string;
   last_played_at: string;
-}
-
-// Add CourseModule interface for the modules
-export interface CourseModule {
-  id: string;
-  language_id: string;
-  title: string;
-  description: string | null;
-  order_index: number;
-  content: string | null;
-  difficulty: CourseLevel;
-  estimated_duration: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
 // Add Quiz interface for the quizzes
