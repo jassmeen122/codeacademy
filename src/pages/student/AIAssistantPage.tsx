@@ -26,30 +26,27 @@ const AIAssistantPage = () => {
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">AI Programming Assistant</h1>
-          <div className="flex items-center gap-4">
-            {/* Move TabsList inside a Tabs component */}
-            <Tabs value={currentTab} onValueChange={setCurrentTab} className="hidden sm:block">
-              <TabsList>
+        <Tabs value={currentTab} onValueChange={setCurrentTab}>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-800">AI Programming Assistant</h1>
+            <div className="flex items-center gap-4">
+              <TabsList className="hidden sm:flex">
                 <TabsTrigger value="chat">Chat</TabsTrigger>
                 <TabsTrigger value="info">
                   <InfoIcon className="h-4 w-4 mr-2" />
                   À propos
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
-            <ChatActions 
-              onClearChat={clearChat} 
-              onRetry={retryLastMessage} 
-              showRetry={!!errorMessage} 
-            />
+              <ChatActions 
+                onClearChat={clearChat} 
+                onRetry={retryLastMessage} 
+                showRetry={!!errorMessage} 
+              />
+            </div>
           </div>
-        </div>
 
-        <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
-        
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-0">
+          <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
+          
           <TabsContent value="chat">
             <Card className="h-[calc(100vh-12rem)]">
               <CardContent className="p-4 h-full flex flex-col">
