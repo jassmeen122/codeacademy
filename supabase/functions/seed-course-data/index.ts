@@ -83,22 +83,22 @@ Pour installer Python, rendez-vous sur le site officiel python.org et téléchar
 
 ## Votre premier programme Python
 
-```python
+\`\`\`python
 # Ceci est un commentaire
 print("Hello, World!")  # Affiche Hello, World!
-```
+\`\`\`
 
 ## Variables et types de données
 
 En Python, vous pouvez créer des variables sans déclarer leur type :
 
-```python
+\`\`\`python
 # Variables et types de base
 nombre = 42        # Entier
 decimal = 3.14     # Flottant
 texte = "Python"   # Chaîne de caractères
 est_vrai = True    # Booléen
-````,
+\`\`\``,
           order_index: 1,
           difficulty: 'Beginner',
           estimated_duration: '1 heure'
@@ -113,7 +113,7 @@ Les structures de contrôle permettent de modifier le flux d'exécution d'un pro
 
 ## Les conditions (if, elif, else)
 
-```python
+\`\`\`python
 age = 18
 
 if age < 18:
@@ -122,13 +122,13 @@ elif age == 18:
     print("Vous venez d'être majeur")
 else:
     print("Vous êtes majeur")
-```
+\`\`\`
 
 ## Les boucles for
 
 La boucle for est utilisée pour itérer sur une séquence (liste, tuple, dictionnaire, ensemble ou chaîne).
 
-```python
+\`\`\`python
 # Parcourir une liste
 fruits = ["pomme", "banane", "orange"]
 for fruit in fruits:
@@ -137,32 +137,32 @@ for fruit in fruits:
 # Utiliser la fonction range
 for i in range(5):  # 0, 1, 2, 3, 4
     print(i)
-```
+\`\`\`
 
 ## Les boucles while
 
 La boucle while exécute un bloc de code tant qu'une condition est vraie.
 
-```python
+\`\`\`python
 compte = 0
 while compte < 5:
     print(compte)
     compte += 1  # Incrémente compte
-```
+\`\`\`
 
 ## Les instructions break et continue
 
 - break : sort complètement de la boucle
 - continue : passe à l'itération suivante
 
-```python
+\`\`\`python
 for i in range(10):
     if i == 3:
         continue  # Saute quand i vaut 3
     if i == 7:
         break     # Sort de la boucle quand i vaut 7
     print(i)
-````,
+\`\`\``,
           order_index: 2,
           difficulty: 'Beginner',
           estimated_duration: '2 heures'
@@ -177,7 +177,7 @@ for i in range(10):
 
 Les fonctions permettent de regrouper du code réutilisable.
 
-```python
+\`\`\`python
 def saluer(nom):
     """Cette fonction affiche un message de salutation."""
     return f"Bonjour, {nom} !"
@@ -185,33 +185,33 @@ def saluer(nom):
 # Appel de la fonction
 message = saluer("Alice")
 print(message)  # Affiche: Bonjour, Alice !
-```
+\`\`\`
 
 ## Paramètres par défaut
 
-```python
+\`\`\`python
 def saluer(nom, message="Bonjour"):
     return f"{message}, {nom} !"
 
 print(saluer("Bob"))  # Utilise la valeur par défaut: Bonjour, Bob !
 print(saluer("Charlie", "Salut"))  # Remplace la valeur par défaut: Salut, Charlie !
-```
+\`\`\`
 
 ## Arguments nommés
 
-```python
+\`\`\`python
 def presenter(prenom, nom, age):
     return f"{prenom} {nom}, {age} ans"
 
 # Vous pouvez spécifier les arguments dans n'importe quel ordre si vous les nommez
 print(presenter(age=30, nom="Dupont", prenom="Jean"))
-```
+\`\`\`
 
 ## Modules et packages
 
 Les modules sont des fichiers Python contenant du code réutilisable. Les packages sont des dossiers contenant plusieurs modules.
 
-```python
+\`\`\`python
 # Importer un module entier
 import math
 print(math.sqrt(16))  # Utilise la fonction sqrt du module math
@@ -223,7 +223,7 @@ print(cos(0))  # Utilise directement la fonction cos
 # Importer avec un alias
 import numpy as np
 arr = np.array([1, 2, 3])
-````,
+\`\`\``,
           order_index: 3,
           difficulty: 'Beginner',
           estimated_duration: '2 heures'
@@ -240,7 +240,7 @@ La Programmation Orientée Objet (POO) est un paradigme de programmation qui uti
 
 Une classe est un modèle pour créer des objets.
 
-```python
+\`\`\`python
 class Personne:
     def __init__(self, nom, age):
         self.nom = nom
@@ -252,13 +252,13 @@ class Personne:
 # Création d'un objet (instance de la classe)
 personne1 = Personne("Alice", 30)
 print(personne1.se_presenter())
-```
+\`\`\`
 
 ## Héritage
 
 L'héritage permet à une classe d'hériter des attributs et méthodes d'une autre classe.
 
-```python
+\`\`\`python
 class Etudiant(Personne):
     def __init__(self, nom, age, ecole):
         # Appel du constructeur de la classe parente
@@ -271,13 +271,13 @@ class Etudiant(Personne):
 etudiant1 = Etudiant("Bob", 20, "Université Python")
 print(etudiant1.se_presenter())  # Méthode héritée
 print(etudiant1.etudier())       # Nouvelle méthode
-```
+\`\`\`
 
 ## Encapsulation
 
 L'encapsulation consiste à restreindre l'accès à certains composants d'un objet.
 
-```python
+\`\`\`python
 class CompteBancaire:
     def __init__(self, proprietaire, solde=0):
         self.proprietaire = proprietaire
@@ -301,13 +301,13 @@ class CompteBancaire:
 compte = CompteBancaire("Charlie")
 compte.deposer(1000)
 print(compte.get_solde())  # 1000
-```
+\`\`\`
 
 ## Polymorphisme
 
 Le polymorphisme permet à différentes classes d'avoir des méthodes de même nom mais avec des comportements différents.
 
-```python
+\`\`\`python
 class Animal:
     def faire_bruit(self):
         pass
@@ -326,7 +326,7 @@ def faire_parler(animal):
 animaux = [Chien(), Chat()]
 for animal in animaux:
     print(faire_parler(animal))
-````,
+\`\`\``,
           order_index: 4,
           difficulty: 'Intermediate',
           estimated_duration: '3 heures'
@@ -343,7 +343,7 @@ La gestion des erreurs est une partie importante de tout programme robuste. Pyth
 
 Le bloc try/except permet de capturer et gérer les exceptions.
 
-```python
+\`\`\`python
 try:
     # Code susceptible de générer une erreur
     nombre = int(input("Entrez un nombre: "))
@@ -358,14 +358,14 @@ except ZeroDivisionError:
 except Exception as e:
     # Capture toute autre exception
     print(f"Une erreur inattendue s'est produite: {e}")
-```
+\`\`\`
 
 ## Else et Finally
 
 Le bloc else est exécuté si aucune exception n'est levée dans le bloc try.
 Le bloc finally est toujours exécuté, qu'une exception soit levée ou non.
 
-```python
+\`\`\`python
 try:
     fichier = open("donnees.txt", "r")
     contenu = fichier.read()
@@ -379,13 +379,13 @@ finally:
     # Fermer le fichier s'il a été ouvert
     if 'fichier' in locals() and not fichier.closed:
         fichier.close()
-```
+\`\`\`
 
 ## Lever des exceptions
 
 Vous pouvez lever des exceptions avec l'instruction raise.
 
-```python
+\`\`\`python
 def diviser(a, b):
     if b == 0:
         raise ValueError("La division par zéro n'est pas autorisée.")
@@ -395,13 +395,13 @@ try:
     resultat = diviser(10, 0)
 except ValueError as e:
     print(f"Erreur: {e}")
-```
+\`\`\`
 
 ## Créer des exceptions personnalisées
 
 Vous pouvez créer vos propres classes d'exceptions.
 
-```python
+\`\`\`python
 class MonErreurPersonnalisee(Exception):
     """Exception levée pour des erreurs spécifiques à mon application."""
     pass
@@ -417,7 +417,7 @@ try:
     mon_age = verifier_age(200)
 except MonErreurPersonnalisee as e:
     print(f"Erreur de validation: {e}")
-````,
+\`\`\``,
           order_index: 5,
           difficulty: 'Intermediate',
           estimated_duration: '2 heures'
