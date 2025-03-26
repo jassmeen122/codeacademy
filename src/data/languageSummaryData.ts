@@ -898,5 +898,278 @@ L'instruction echo "<p>Bonjour, $nom !</p>"; affiche du texte dans une balise HT
 ✔️ PHP fonctionne en combinaison avec HTML pour générer des pages interactives.
 
 🚀 PHP est l'un des langages les plus utilisés pour créer des sites web dynamiques comme Facebook, WordPress et Wikipedia !`
-  }
-};
+  },
+  sql: {
+    title: "Les fondamentaux du SQL",
+    content: `# Introduction à SQL
+
+SQL (Structured Query Language) est un langage de programmation utilisé pour gérer les bases de données relationnelles. Il permet de créer, modifier, interroger et administrer des bases de données.
+
+## Structure d'une Base de Données Relationnelle
+
+Une base de données relationnelle est composée de tables, qui sont des structures organisées en lignes (enregistrements) et colonnes (champs).
+
+## Création de Base de Données et de Tables
+
+\`\`\`sql
+-- Création d'une base de données
+CREATE DATABASE ma_base_de_donnees;
+
+-- Utilisation d'une base de données
+USE ma_base_de_donnees;
+
+-- Création d'une table
+CREATE TABLE utilisateurs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(50) NOT NULL,
+    prenom VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    date_naissance DATE,
+    date_inscription TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Création d'une autre table avec une clé étrangère
+CREATE TABLE commandes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    utilisateur_id INT,
+    produit VARCHAR(100) NOT NULL,
+    quantite INT DEFAULT 1,
+    date_commande TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id)
+);
+\`\`\`
+
+## Insertion de Données
+
+\`\`\`sql
+-- Insertion d'un seul enregistrement
+INSERT INTO utilisateurs (nom, prenom, email, date_naissance)
+VALUES ('Dupont', 'Jean', 'jean.dupont@example.com', '1990-05-15');
+
+-- Insertion de plusieurs enregistrements
+INSERT INTO utilisateurs (nom, prenom, email, date_naissance)
+VALUES 
+    ('Martin', 'Sophie', 'sophie.martin@example.com', '1985-12-10'),
+    ('Durand', 'Pierre', 'pierre.durand@example.com', '1992-08-22');
+\`\`\`
+
+## Requêtes de Sélection
+
+\`\`\`sql
+-- Sélection de tous les enregistrements et toutes les colonnes
+SELECT * FROM utilisateurs;
+
+-- Sélection de colonnes spécifiques
+SELECT nom, prenom, email FROM utilisateurs;
+
+-- Sélection avec condition
+SELECT * FROM utilisateurs WHERE date_naissance > '1990-01-01';
+
+-- Sélection avec plusieurs conditions
+SELECT * FROM utilisateurs
+WHERE date_naissance > '1990-01-01' AND nom = 'Dupont';
+
+-- Utilisation de OR
+SELECT * FROM utilisateurs
+WHERE nom = 'Dupont' OR nom = 'Martin';
+
+-- Utilisation de IN
+SELECT * FROM utilisateurs
+WHERE nom IN ('Dupont', 'Martin', 'Durand');
+
+-- Utilisation de LIKE pour les recherches partielles
+SELECT * FROM utilisateurs
+WHERE email LIKE '%@example.com';
+
+-- Utilisation de BETWEEN pour les plages de valeurs
+SELECT * FROM utilisateurs
+WHERE date_naissance BETWEEN '1980-01-01' AND '1989-12-31';
+
+-- Tri des résultats
+SELECT * FROM utilisateurs
+ORDER BY nom ASC, prenom DESC;
+
+-- Limitation du nombre de résultats
+SELECT * FROM utilisateurs
+LIMIT 10;
+
+-- Décalage des résultats (pour la pagination)
+SELECT * FROM utilisateurs
+LIMIT 10 OFFSET 20;
+\`\`\`
+
+## Fonctions d'Agrégation
+
+\`\`\`sql
+-- Comptage d'enregistrements
+SELECT COUNT(*) FROM utilisateurs;
+
+-- Comptage avec condition
+SELECT COUNT(*) FROM utilisateurs
+WHERE date_naissance > '1990-01-01';
+
+-- Autres fonctions d'agrégation
+SELECT 
+    MIN(date_naissance) AS plus_ancien,
+    MAX(date_naissance) AS plus_recent,
+    AVG(YEAR(CURRENT_DATE) - YEAR(date_naissance)) AS age_moyen
+FROM utilisateurs;
+
+-- Groupement
+SELECT YEAR(date_naissance) AS annee, COUNT(*) AS nombre
+FROM utilisateurs
+GROUP BY annee
+ORDER BY annee;
+
+-- Groupement avec condition sur groupes
+SELECT YEAR(date_naissance) AS annee, COUNT(*) AS nombre
+FROM utilisateurs
+GROUP BY annee
+HAVING nombre > 1
+ORDER BY annee;
+\`\`\`
+
+## Jointures
+
+\`\`\`sql
+-- Jointure interne (INNER JOIN)
+SELECT u.nom, u.prenom, c.produit, c.quantite
+FROM utilisateurs u
+INNER JOIN commandes c ON u.id = c.utilisateur_id;
+
+-- Jointure externe gauche (LEFT JOIN)
+SELECT u.nom, u.prenom, c.produit, c.quantite
+FROM utilisateurs u
+LEFT JOIN commandes c ON u.id = c.utilisateur_id;
+
+-- Jointure externe droite (RIGHT JOIN)
+SELECT u.nom, u.prenom, c.produit, c.quantite
+FROM utilisateurs u
+RIGHT JOIN commandes c ON u.id = c.utilisateur_id;
+
+-- Jointure complète (FULL JOIN) - Pas supporté par MySQL, mais équivalent à :
+SELECT u.nom, u.prenom, c.produit, c.quantite
+FROM utilisateurs u
+LEFT JOIN commandes c ON u.id = c.utilisateur_id
+UNION
+SELECT u.nom, u.prenom, c.produit, c.quantite
+FROM utilisateurs u
+RIGHT JOIN commandes c ON u.id = c.utilisateur_id
+WHERE u.id IS NULL;
+\`\`\`
+
+## Sous-requêtes
+
+\`\`\`sql
+-- Sous-requête dans la clause WHERE
+SELECT * FROM utilisateurs
+WHERE id IN (SELECT utilisateur_id FROM commandes WHERE produit = 'Ordinateur');
+
+-- Sous-requête dans la clause FROM
+SELECT temp.annee, temp.nombre
+FROM (
+    SELECT YEAR(date_naissance) AS annee, COUNT(*) AS nombre
+    FROM utilisateurs
+    GROUP BY annee
+) AS temp
+WHERE temp.nombre > 1;
+\`\`\`
+
+## Mise à Jour de Données
+
+\`\`\`sql
+-- Mise à jour d'un enregistrement
+UPDATE utilisateurs
+SET email = 'nouveau.email@example.com'
+WHERE id = 1;
+
+-- Mise à jour de plusieurs enregistrements
+UPDATE utilisateurs
+SET date_inscription = CURRENT_TIMESTAMP
+WHERE date_inscription IS NULL;
+\`\`\`
+
+## Suppression de Données
+
+\`\`\`sql
+-- Suppression d'un enregistrement
+DELETE FROM utilisateurs
+WHERE id = 1;
+
+-- Suppression de plusieurs enregistrements
+DELETE FROM utilisateurs
+WHERE date_naissance < '1980-01-01';
+
+-- Suppression de tous les enregistrements
+DELETE FROM utilisateurs;
+-- ou
+TRUNCATE TABLE utilisateurs;
+\`\`\`
+
+## Modification de Structure de Table
+
+\`\`\`sql
+-- Ajout d'une colonne
+ALTER TABLE utilisateurs
+ADD COLUMN telephone VARCHAR(15);
+
+-- Modification d'une colonne
+ALTER TABLE utilisateurs
+MODIFY COLUMN telephone VARCHAR(20);
+
+-- Suppression d'une colonne
+ALTER TABLE utilisateurs
+DROP COLUMN telephone;
+
+-- Ajout d'une contrainte
+ALTER TABLE utilisateurs
+ADD CONSTRAINT email_unique UNIQUE (email);
+
+-- Suppression d'une contrainte
+ALTER TABLE utilisateurs
+DROP CONSTRAINT email_unique;
+\`\`\`
+
+## Suppression de Tables et de Bases de Données
+
+\`\`\`sql
+-- Suppression d'une table
+DROP TABLE commandes;
+
+-- Suppression d'une base de données
+DROP DATABASE ma_base_de_donnees;
+\`\`\`
+
+## Transactions
+
+\`\`\`sql
+-- Début d'une transaction
+START TRANSACTION;
+
+-- Opérations
+INSERT INTO utilisateurs (nom, prenom) VALUES ('Smith', 'John');
+UPDATE commandes SET quantite = quantite - 1 WHERE id = 5;
+
+-- Validation des modifications
+COMMIT;
+
+-- ou Annulation des modifications
+ROLLBACK;
+\`\`\`
+
+## Vues
+
+\`\`\`sql
+-- Création d'une vue
+CREATE VIEW utilisateurs_recents AS
+SELECT * FROM utilisateurs
+WHERE date_inscription > DATE_SUB(CURRENT_DATE, INTERVAL 1 MONTH);
+
+-- Utilisation d'une vue
+SELECT * FROM utilisateurs_recents;
+
+-- Suppression d'une vue
+DROP VIEW utilisateurs_recents;
+\`\`\`
+
+SQL est un langage essentiel pour travailler avec des bases de données relationnelles. Que ce soit pour des sites web, des applications d'entreprise ou des analyses de données, la maîtrise du SQL ouvre de nombreuses opportunités dans le domaine de l'

@@ -1,3 +1,4 @@
+
 // Maps language IDs to YouTube video URLs
 export const languageVideoMap: Record<string, { courseVideo: string; exercisesVideo: string }> = {
   python: {
