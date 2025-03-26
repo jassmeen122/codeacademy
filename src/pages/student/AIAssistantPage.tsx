@@ -11,6 +11,7 @@ import { AIAssistantInfo } from "@/components/ai-assistant/AIAssistantInfo";
 import { ModelSelector } from "@/components/ai-assistant/ModelSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InfoIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const AIAssistantPage = () => {
   const {
@@ -48,6 +49,13 @@ const AIAssistantPage = () => {
             </div>
           </div>
 
+          <Alert className="mb-4">
+            <AlertDescription className="text-sm">
+              Pour utiliser l'assistant, vous devez configurer une clé API. Vous pouvez choisir entre OpenAI ou Hugging Face.
+              Si votre clé OpenAI a atteint son quota, essayez d'utiliser Hugging Face à la place.
+            </AlertDescription>
+          </Alert>
+
           <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
           
           <TabsContent value="chat">
@@ -58,7 +66,7 @@ const AIAssistantPage = () => {
                 disabled={isLoading}
               />
             </div>
-            <Card className="h-[calc(100vh-16rem)]">
+            <Card className="h-[calc(100vh-20rem)]">
               <CardContent className="p-4 h-full flex flex-col">
                 <MessageDisplay 
                   messages={messages} 

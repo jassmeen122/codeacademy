@@ -33,41 +33,44 @@ export const ErrorDisplay = ({ errorMessage, onRetry }: ErrorDisplayProps) => {
         {isOpenAIApiKeyError && (
           <div className="mt-2 text-sm space-y-2">
             <p>
-              To fix this issue, you need to add a valid OpenAI API key to your Supabase Edge Function secrets.
+              Pour résoudre ce problème, vous devez ajouter une clé API OpenAI valide aux secrets de votre fonction Edge Supabase.
             </p>
             <ol className="list-decimal ml-5 space-y-1">
-              <li>Go to the Supabase dashboard</li>
-              <li>Navigate to Edge Functions → Settings</li>
-              <li>Add or update the <code className="bg-gray-200 px-1 rounded">OPENAI_API_KEY</code> secret with your valid API key</li>
+              <li>Accédez au tableau de bord Supabase</li>
+              <li>Naviguez vers Edge Functions → Paramètres</li>
+              <li>Ajoutez ou mettez à jour le secret <code className="bg-gray-200 px-1 rounded">OPENAI_API_KEY</code> avec votre clé API valide</li>
             </ol>
+            <p className="mt-2">
+              Vous pouvez également utiliser le modèle Hugging Face à la place en le sélectionnant dans la liste déroulante des modèles.
+            </p>
           </div>
         )}
         {isOpenAIQuotaError && (
           <div className="mt-2 text-sm space-y-2">
             <p>
-              Your OpenAI API key has reached its usage limits. To fix this issue:
+              Votre clé API OpenAI a atteint ses limites d'utilisation. Pour résoudre ce problème :
             </p>
             <ol className="list-decimal ml-5 space-y-1">
-              <li>Check your billing status on the OpenAI dashboard</li>
-              <li>Add credit to your account or upgrade your plan</li>
-              <li>Or use a different API key with available quota</li>
-              <li>Update the <code className="bg-gray-200 px-1 rounded">OPENAI_API_KEY</code> in Supabase Edge Function secrets</li>
+              <li>Vérifiez l'état de votre facturation sur le tableau de bord OpenAI</li>
+              <li>Ajoutez du crédit à votre compte ou mettez à niveau votre forfait</li>
+              <li>Ou utilisez une clé API différente avec un quota disponible</li>
+              <li>Mettez à jour la <code className="bg-gray-200 px-1 rounded">OPENAI_API_KEY</code> dans les secrets de la fonction Edge Supabase</li>
             </ol>
             <p className="mt-2">
-              Alternatively, you can use the Hugging Face model instead by selecting it from the model dropdown.
+              Alternativement, vous pouvez utiliser le modèle Hugging Face à la place en le sélectionnant dans la liste déroulante des modèles.
             </p>
           </div>
         )}
         {isHuggingFaceApiKeyError && (
           <div className="mt-2 text-sm space-y-2">
             <p>
-              To fix this issue, you need to add a valid Hugging Face API key to your Supabase Edge Function secrets.
+              Pour résoudre ce problème, vous devez ajouter une clé API Hugging Face valide aux secrets de votre fonction Edge Supabase.
             </p>
             <ol className="list-decimal ml-5 space-y-1">
-              <li>Go to the Supabase dashboard</li>
-              <li>Navigate to Edge Functions → Settings</li>
-              <li>Add or update the <code className="bg-gray-200 px-1 rounded">HUGGINGFACE_API_KEY</code> secret with your valid API key</li>
-              <li>You can get an API key from <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">Hugging Face's tokens page</a></li>
+              <li>Accédez au tableau de bord Supabase</li>
+              <li>Naviguez vers Edge Functions → Paramètres</li>
+              <li>Ajoutez ou mettez à jour le secret <code className="bg-gray-200 px-1 rounded">HUGGINGFACE_API_KEY</code> avec votre clé API valide</li>
+              <li>Vous pouvez obtenir une clé API depuis <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">la page des jetons Hugging Face</a></li>
             </ol>
           </div>
         )}
@@ -78,7 +81,7 @@ export const ErrorDisplay = ({ errorMessage, onRetry }: ErrorDisplayProps) => {
             size="sm" 
             className="mt-2"
           >
-            Retry
+            Réessayer
           </Button>
         )}
       </AlertDescription>

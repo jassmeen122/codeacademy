@@ -63,8 +63,8 @@ export const useAIAssistant = () => {
       console.log(`Sending request to ${selectedModel} assistant...`);
       
       // Call Supabase Edge Function
-      const endpoint = selectedModel === "openai" ? 'ai-assistant' : 'huggingface-assistant';
-      const { data, error } = await supabase.functions.invoke(endpoint, {
+      let endpoint = selectedModel === "openai" ? 'ai-assistant' : 'huggingface-assistant';
+      let response = await supabase.functions.invoke(endpoint, {
         body: { 
           prompt: userInput, 
           messageHistory: messageHistory,
@@ -73,21 +73,50 @@ export const useAIAssistant = () => {
         }
       });
 
-      console.log("Response received:", data, error);
+      // If OpenAI fails due to quota issue, try Hugging Face instead
+      if (selectedModel === "openai" && response.error) {
+        const errorMessage = response.error.message || "";
+        const isQuotaError = errorMessage.includes("quota") || 
+                           errorMessage.includes("billing") || 
+                           errorMessage.includes("insufficient");
+        
+        if (isQuotaError) {
+          console.log("OpenAI quota error detected, switching to Hugging Face...");
+          endpoint = 'huggingface-assistant';
+          
+          // Attempt with Hugging Face
+          response = await supabase.functions.invoke(endpoint, {
+            body: { 
+              prompt: userInput, 
+              messageHistory: messageHistory,
+              code: code,
+              language: language
+            }
+          });
+          
+          if (!response.error) {
+            // Update the model selection if Hugging Face succeeds
+            setSelectedModel("huggingface");
+            toast.info("Switched to Hugging Face model due to OpenAI quota limits.");
+          }
+        }
+      }
 
-      if (error) {
-        console.error("Edge function error:", error);
-        throw new Error(error.message || `Failed to get a response from the ${selectedModel} assistant`);
+      console.log("Response received:", response.data, response.error);
+
+      if (response.error) {
+        console.error("Edge function error:", response.error);
+        throw new Error(response.error.message || `Failed to get a response from the ${selectedModel} assistant`);
       }
 
       // Add AI response to chat
-      if (data?.reply) {
+      if (response.data?.reply) {
         setMessages(prev => [...prev, { 
           role: "assistant", 
-          content: data.reply.content 
+          content: response.data.reply.content 
         }]);
-      } else if (data?.error) {
-        throw new Error(data.error);
+      } else if (response.data?.error) {
+        throw new Error(response.data.error);
       } else {
         throw new Error(`Invalid response format from ${selectedModel} assistant`);
       }
