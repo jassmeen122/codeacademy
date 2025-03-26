@@ -1,3 +1,4 @@
+
 // Default language summaries that will be used if no data exists in the database
 export const defaultLanguageSummaries: Record<string, { title: string, content: string }> = {
   python: {
@@ -695,6 +696,301 @@ function multiplier(x, y) {
 
 💡 JavaScript est essentiel pour le développement web moderne ! 🚀`
   },
+  c: {
+    title: "Introduction au Langage C",
+    content: `# 1. Introduction au Langage C
+
+Le langage C est un langage de programmation impératif et procédural créé dans les années 1970 pour le développement du système d'exploitation UNIX. C'est un langage bas niveau qui offre un contrôle direct sur le matériel et la mémoire.
+
+💡 Points forts du langage C :
+✔️ Langage puissant et efficace
+✔️ Contrôle précis de la mémoire
+✔️ Portable sur presque toutes les plateformes
+✔️ Utilisé dans de nombreux systèmes d'exploitation et logiciels critiques
+
+# 2. Structure d'un Programme en C
+
+Un programme en C a une structure fondamentale assez simple :
+
+\`\`\`c
+#include <stdio.h>  // Inclusion de bibliothèques
+
+int main() {  // Fonction principale, point d'entrée du programme
+    printf("Bonjour, le monde !\n");  // Affiche un message
+    return 0;  // Indique que le programme s'est terminé avec succès
+}
+\`\`\`
+
+🔹 Explication :
+
+\`#include <stdio.h>\` : Inclut la bibliothèque standard d'entrée/sortie (Standard Input-Output).
+
+\`int main()\` : Fonction principale par laquelle commence l'exécution du programme.
+
+\`printf()\` : Fonction pour afficher du texte dans la console.
+
+\`return 0\` : Indique que le programme s'est terminé sans erreur.
+
+# 3. Types de Données en C
+
+En C, chaque variable doit avoir un type spécifique qui définit la nature des données qu'elle peut contenir.
+
+## Types de base
+
+Type | Description | Taille | Exemple
+--- | --- | --- | ---
+int | Entiers | 4 octets | int age = 25;
+float | Réels simple précision | 4 octets | float prix = 19.99f;
+double | Réels double précision | 8 octets | double pi = 3.14159265359;
+char | Caractère unique | 1 octet | char lettre = 'A';
+void | Type spécial (aucune valeur) | - | void fonctionSansRetour();
+
+## Modificateurs de types
+
+Les types peuvent être modifiés avec :
+- \`short\` : réduit la taille
+- \`long\` : augmente la taille
+- \`unsigned\` : uniquement valeurs positives
+- \`signed\` : valeurs positives et négatives
+
+\`\`\`c
+unsigned long int grandeValeurPositive = 4294967295;
+short int petitEntier = 32767;
+\`\`\`
+
+# 4. Variables et Déclaration
+
+En C, toutes les variables doivent être déclarées avant utilisation, en précisant leur type :
+
+\`\`\`c
+int age;           // Déclaration simple
+int taille = 175;  // Déclaration avec initialisation
+float poids = 70.5, taille = 1.75;  // Plusieurs variables du même type
+const double PI = 3.14159;  // Constante (ne peut pas être modifiée)
+\`\`\`
+
+💡 Important :
+- Les noms de variables sont sensibles à la casse (majuscules/minuscules).
+- Ils ne peuvent pas commencer par un chiffre.
+- Ils ne peuvent contenir que des lettres, chiffres et underscore (_).
+
+# 5. Opérateurs en C
+
+## Opérateurs arithmétiques
+- \`+\` : Addition
+- \`-\` : Soustraction
+- \`*\` : Multiplication
+- \`/\` : Division
+- \`%\` : Modulo (reste de la division)
+
+## Opérateurs d'affectation
+- \`=\` : Affectation simple
+- \`+=, -=, *=, /=, %=\` : Affectation combinée
+  
+\`\`\`c
+x += 5;  // Équivalent à x = x + 5
+\`\`\`
+
+## Opérateurs de comparaison
+- \`==\` : Égalité
+- \`!=\` : Différence
+- \`>, <, >=, <=\` : Supérieur, inférieur, supérieur ou égal, inférieur ou égal
+
+## Opérateurs logiques
+- \`&&\` : ET logique
+- \`||\` : OU logique
+- \`!\` : NON logique
+
+# 6. Structures de Contrôle
+
+## Conditions : if, else if, else
+
+\`\`\`c
+int age = 17;
+
+if (age >= 18) {
+    printf("Vous êtes majeur.\n");
+} else {
+    printf("Vous êtes mineur.\n");
+}
+\`\`\`
+
+## Structure if-else if-else
+
+\`\`\`c
+int note = 15;
+
+if (note >= 18) {
+    printf("Excellent !\n");
+} else if (note >= 14) {
+    printf("Bien !\n");
+} else if (note >= 10) {
+    printf("Passable.\n");
+} else {
+    printf("Échec.\n");
+}
+\`\`\`
+
+## Boucle for
+
+\`\`\`c
+// Affiche les nombres de 0 à 4
+for (int i = 0; i < 5; i++) {
+    printf("%d\n", i);
+}
+\`\`\`
+
+🔹 Explication :
+1. \`int i = 0\` : Initialisation de la variable de boucle
+2. \`i < 5\` : Condition de continuation
+3. \`i++\` : Incrémentation après chaque itération
+
+## Boucle while
+
+\`\`\`c
+int i = 0;
+while (i < 5) {
+    printf("%d\n", i);
+    i++;
+}
+\`\`\`
+
+## Boucle do-while
+
+\`\`\`c
+int i = 0;
+do {
+    printf("%d\n", i);
+    i++;
+} while (i < 5);
+\`\`\`
+
+La différence avec while est que do-while exécute le code au moins une fois avant de vérifier la condition.
+
+# 7. Fonctions en C
+
+Les fonctions permettent de regrouper des instructions qui réalisent une tâche spécifique.
+
+## Déclaration et définition
+
+\`\`\`c
+// Prototype (déclaration)
+int addition(int a, int b);
+
+// Définition
+int addition(int a, int b) {
+    return a + b;
+}
+
+// Utilisation
+int main() {
+    int resultat = addition(5, 3);
+    printf("5 + 3 = %d\n", resultat);
+    return 0;
+}
+\`\`\`
+
+🔹 Explication :
+- \`int addition(int a, int b)\` : La fonction prend deux entiers et retourne un entier.
+- \`return a + b\` : Calcule la somme et renvoie le résultat.
+- \`int resultat = addition(5, 3)\` : Appelle la fonction et stocke le résultat.
+
+# 8. Pointeurs
+
+Les pointeurs sont une caractéristique fondamentale du langage C. Ils permettent de manipuler directement les adresses mémoire.
+
+\`\`\`c
+int nombre = 42;
+int *ptr = &nombre;  // ptr stocke l'adresse de nombre
+
+printf("Valeur de nombre : %d\n", nombre);      // 42
+printf("Adresse de nombre : %p\n", &nombre);    // 0x...
+printf("Valeur de ptr : %p\n", ptr);            // 0x... (même adresse)
+printf("Valeur pointée par ptr : %d\n", *ptr);  // 42
+\`\`\`
+
+🔹 Explication :
+- \`int *ptr\` : Déclare un pointeur vers un entier
+- \`&nombre\` : Opérateur d'adresse (retourne l'adresse de la variable)
+- \`*ptr\` : Opérateur de déréférencement (accède à la valeur pointée)
+
+## Modification via pointeur
+
+\`\`\`c
+*ptr = 100;  // Modifie la valeur de nombre via le pointeur
+printf("Nouvelle valeur de nombre : %d\n", nombre);  // 100
+\`\`\`
+
+# 9. Tableaux
+
+Les tableaux permettent de stocker plusieurs valeurs du même type.
+
+\`\`\`c
+int notes[5] = {12, 15, 18, 10, 14};  // Tableau de 5 entiers
+
+// Accès aux éléments (l'indexation commence à 0)
+printf("Première note : %d\n", notes[0]);  // 12
+printf("Deuxième note : %d\n", notes[1]);  // 15
+
+// Modification d'un élément
+notes[2] = 19;
+\`\`\`
+
+## Tableaux et pointeurs
+
+En C, les tableaux sont étroitement liés aux pointeurs :
+
+\`\`\`c
+int *ptr = notes;  // ptr pointe vers le premier élément du tableau
+
+// Ces lignes sont équivalentes
+printf("%d\n", notes[0]);
+printf("%d\n", *ptr);
+
+// Accéder au deuxième élément
+printf("%d\n", notes[1]);
+printf("%d\n", *(ptr + 1));
+\`\`\`
+
+# 10. Structures
+
+Les structures permettent de regrouper des variables de types différents sous un même nom.
+
+\`\`\`c
+// Définition d'une structure
+struct Personne {
+    char nom[50];
+    int age;
+    float taille;
+};
+
+// Utilisation de la structure
+int main() {
+    struct Personne p1;
+    
+    // Affectation de valeurs
+    strcpy(p1.nom, "Yassmine");
+    p1.age = 25;
+    p1.taille = 1.70;
+    
+    // Affichage
+    printf("Nom : %s, Age : %d, Taille : %.2f\n", p1.nom, p1.age, p1.taille);
+    
+    return 0;
+}
+\`\`\`
+
+# Conclusion
+
+Le langage C est puissant mais demande une compréhension précise de la gestion mémoire. Il reste fondamental pour comprendre comment fonctionnent les ordinateurs et de nombreux langages modernes s'inspirent de sa syntaxe.
+
+Points clés à retenir :
+✔️ Langage bas niveau avec contrôle direct de la mémoire
+✔️ Types de données stricts et statiques
+✔️ Pointeurs pour manipuler directement la mémoire
+✔️ Absence de gestion automatique de la mémoire (allocations/libérations manuelles)
+✔️ Syntaxe qui a influencé de nombreux autres langages (C++, Java, C#...)`
+  },
   php: {
     title: "Introduction à PHP",
     content: `# Introduction à PHP
@@ -1191,4 +1487,3 @@ export const openYoutubeVideo = (url: string): void => {
   const youtubeUrl = url.replace('embed/', 'watch?v=');
   window.open(youtubeUrl, '_blank');
 };
-

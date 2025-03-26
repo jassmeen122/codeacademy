@@ -1,15 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Book, CheckCircle, Youtube } from "lucide-react";
+import { ArrowLeft, Book, CheckCircle, Youtube, PlayCircle, Code } from "lucide-react";
 import { useLanguageSummary } from '@/hooks/useLanguageSummary';
 import { SummaryContent } from '@/components/courses/SummaryContent';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useProgrammingLanguages } from '@/hooks/useProgrammingCourses';
-import { getYoutubeEmbedUrl, openYoutubeVideo } from '@/utils/youtubeVideoMap';
+import { getYoutubeEmbedUrl, openYoutubeVideo, languageVideoMap } from '@/utils/youtubeVideoMap';
 
 type LanguageParams = {
   languageId: string;
@@ -21,6 +21,7 @@ const LanguageSummaryPage = () => {
   const { user } = useAuthState();
   const { summary, progress, loading, error, markAsRead } = useLanguageSummary(languageId);
   const { languages, loading: loadingLanguages } = useProgrammingLanguages();
+  const [videoType, setVideoType] = useState<'course' | 'exercises'>('course');
   
   // Find the corresponding language to get its name
   const currentLanguage = languages.find(lang => lang.id === languageId);
@@ -33,8 +34,12 @@ const LanguageSummaryPage = () => {
     markAsRead();
   };
   
-  // Get the YouTube URL based on the language
-  const youtubeUrl = getYoutubeEmbedUrl(languageId);
+  // Get the YouTube URL based on the language and video type
+  const youtubeUrl = languageId && languageVideoMap[languageId] 
+    ? (videoType === 'course' 
+      ? languageVideoMap[languageId].courseVideo 
+      : languageVideoMap[languageId].exercisesVideo)
+    : '';
 
   const renderContent = () => {
     if (loading) {
@@ -76,19 +81,52 @@ const LanguageSummaryPage = () => {
       <>
         {/* YouTube Video */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <Youtube className="mr-2 h-5 w-5 text-red-600" />
-            Vidéo d'apprentissage
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <Youtube className="mr-2 h-5 w-5 text-red-600" />
+              {videoType === 'course' ? 'Vidéo d\'apprentissage' : 'Vidéo d\'exercices'}
+            </h2>
+            <div className="flex gap-2">
+              <Button 
+                size="sm"
+                variant={videoType === 'course' ? 'default' : 'outline'}
+                onClick={() => setVideoType('course')}
+                className="flex items-center"
+              >
+                <PlayCircle className="mr-1 h-4 w-4" />
+                Cours
+              </Button>
+              <Button 
+                size="sm"
+                variant={videoType === 'exercises' ? 'default' : 'outline'}
+                onClick={() => setVideoType('exercises')}
+                className="flex items-center"
+              >
+                <Code className="mr-1 h-4 w-4" />
+                Exercices
+              </Button>
+            </div>
+          </div>
           <div className="aspect-video">
             <iframe
               className="w-full h-full rounded-lg"
               src={youtubeUrl}
-              title={`Tutoriel ${currentLanguage?.name || 'de programmation'}`}
+              title={`${videoType === 'course' ? 'Tutoriel' : 'Exercices'} ${currentLanguage?.name || 'de programmation'}`}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
+          </div>
+          <div className="mt-2 flex justify-end">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => openYoutubeVideo(youtubeUrl)}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <Youtube className="mr-1 h-4 w-4" />
+              Ouvrir sur YouTube
+            </Button>
           </div>
         </div>
 
