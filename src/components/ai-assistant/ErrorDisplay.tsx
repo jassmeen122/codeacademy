@@ -12,13 +12,17 @@ interface ErrorDisplayProps {
 export const ErrorDisplay = ({ errorMessage, onRetry }: ErrorDisplayProps) => {
   if (!errorMessage) return null;
 
-  const isApiKeyError = errorMessage.includes("API key") || 
-                        errorMessage.includes("OpenAI") || 
-                        errorMessage.includes("configured");
+  const isOpenAIApiKeyError = errorMessage.includes("OPENAI_API_KEY") || 
+                            errorMessage.includes("OpenAI") || 
+                            errorMessage.includes("configured");
                         
-  const isQuotaError = errorMessage.includes("insufficient quota") || 
-                       errorMessage.includes("exceeded your current quota") ||
-                       errorMessage.includes("billing");
+  const isOpenAIQuotaError = errorMessage.includes("insufficient quota") || 
+                           errorMessage.includes("exceeded your current quota") ||
+                           errorMessage.includes("billing");
+                           
+  const isHuggingFaceApiKeyError = errorMessage.includes("HUGGINGFACE_API_KEY") || 
+                                 errorMessage.includes("Hugging Face") || 
+                                 errorMessage.includes("HuggingFace");
 
   return (
     <Alert variant="destructive" className="mb-4">
@@ -26,7 +30,7 @@ export const ErrorDisplay = ({ errorMessage, onRetry }: ErrorDisplayProps) => {
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>
         {errorMessage}
-        {isApiKeyError && (
+        {isOpenAIApiKeyError && (
           <div className="mt-2 text-sm space-y-2">
             <p>
               To fix this issue, you need to add a valid OpenAI API key to your Supabase Edge Function secrets.
@@ -38,7 +42,7 @@ export const ErrorDisplay = ({ errorMessage, onRetry }: ErrorDisplayProps) => {
             </ol>
           </div>
         )}
-        {isQuotaError && (
+        {isOpenAIQuotaError && (
           <div className="mt-2 text-sm space-y-2">
             <p>
               Your OpenAI API key has reached its usage limits. To fix this issue:
@@ -48,6 +52,22 @@ export const ErrorDisplay = ({ errorMessage, onRetry }: ErrorDisplayProps) => {
               <li>Add credit to your account or upgrade your plan</li>
               <li>Or use a different API key with available quota</li>
               <li>Update the <code className="bg-gray-200 px-1 rounded">OPENAI_API_KEY</code> in Supabase Edge Function secrets</li>
+            </ol>
+            <p className="mt-2">
+              Alternatively, you can use the Hugging Face model instead by selecting it from the model dropdown.
+            </p>
+          </div>
+        )}
+        {isHuggingFaceApiKeyError && (
+          <div className="mt-2 text-sm space-y-2">
+            <p>
+              To fix this issue, you need to add a valid Hugging Face API key to your Supabase Edge Function secrets.
+            </p>
+            <ol className="list-decimal ml-5 space-y-1">
+              <li>Go to the Supabase dashboard</li>
+              <li>Navigate to Edge Functions → Settings</li>
+              <li>Add or update the <code className="bg-gray-200 px-1 rounded">HUGGINGFACE_API_KEY</code> secret with your valid API key</li>
+              <li>You can get an API key from <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">Hugging Face's tokens page</a></li>
             </ol>
           </div>
         )}

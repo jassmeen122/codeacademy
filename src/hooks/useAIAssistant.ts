@@ -8,6 +8,8 @@ export type Message = {
   content: string;
 };
 
+export type AIModel = "openai" | "huggingface";
+
 export const useAIAssistant = () => {
   const [messages, setMessages] = useState<Message[]>(() => {
     // Try to load messages from localStorage
@@ -18,11 +20,21 @@ export const useAIAssistant = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
+    // Try to load selected model from localStorage
+    const savedModel = localStorage.getItem("ai-assistant-model");
+    return (savedModel as AIModel) || "openai";
+  });
 
   // Save messages to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("ai-assistant-messages", JSON.stringify(messages));
   }, [messages]);
+
+  // Save selected model to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("ai-assistant-model", selectedModel);
+  }, [selectedModel]);
 
   const sendMessage = async (userInput: string, code?: string, language?: string) => {
     if ((!userInput.trim() && !code?.trim()) || isLoading) return;
@@ -48,10 +60,11 @@ export const useAIAssistant = () => {
         content: msg.content
       }));
 
-      console.log("Sending request to AI assistant...");
+      console.log(`Sending request to ${selectedModel} assistant...`);
       
       // Call Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+      const endpoint = selectedModel === "openai" ? 'ai-assistant' : 'huggingface-assistant';
+      const { data, error } = await supabase.functions.invoke(endpoint, {
         body: { 
           prompt: userInput, 
           messageHistory: messageHistory,
@@ -64,7 +77,7 @@ export const useAIAssistant = () => {
 
       if (error) {
         console.error("Edge function error:", error);
-        throw new Error(error.message || "Failed to get a response from the AI assistant");
+        throw new Error(error.message || `Failed to get a response from the ${selectedModel} assistant`);
       }
 
       // Add AI response to chat
@@ -76,13 +89,13 @@ export const useAIAssistant = () => {
       } else if (data?.error) {
         throw new Error(data.error);
       } else {
-        throw new Error("Invalid response format from AI assistant");
+        throw new Error(`Invalid response format from ${selectedModel} assistant`);
       }
 
     } catch (error: any) {
       console.error("Error calling AI assistant:", error);
-      setErrorMessage(error.message || "Failed to get a response from the AI assistant");
-      toast.error("Failed to get a response from the AI assistant. Please try again.");
+      setErrorMessage(error.message || `Failed to get a response from the ${selectedModel} assistant`);
+      toast.error(`Failed to get a response from the ${selectedModel} assistant. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +128,8 @@ export const useAIAssistant = () => {
     errorMessage,
     sendMessage,
     clearChat,
-    retryLastMessage
+    retryLastMessage,
+    selectedModel,
+    setSelectedModel
   };
 };

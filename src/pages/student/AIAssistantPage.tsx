@@ -8,6 +8,7 @@ import { InputForm } from "@/components/ai-assistant/InputForm";
 import { ErrorDisplay } from "@/components/ai-assistant/ErrorDisplay";
 import { ChatActions } from "@/components/ai-assistant/ChatActions";
 import { AIAssistantInfo } from "@/components/ai-assistant/AIAssistantInfo";
+import { ModelSelector } from "@/components/ai-assistant/ModelSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InfoIcon } from "lucide-react";
 
@@ -18,7 +19,9 @@ const AIAssistantPage = () => {
     errorMessage,
     sendMessage,
     clearChat,
-    retryLastMessage
+    retryLastMessage,
+    selectedModel,
+    setSelectedModel
   } = useAIAssistant();
   
   const [currentTab, setCurrentTab] = useState<string>("chat");
@@ -48,7 +51,14 @@ const AIAssistantPage = () => {
           <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
           
           <TabsContent value="chat">
-            <Card className="h-[calc(100vh-12rem)]">
+            <div className="mb-4">
+              <ModelSelector 
+                selectedModel={selectedModel} 
+                onModelChange={setSelectedModel}
+                disabled={isLoading}
+              />
+            </div>
+            <Card className="h-[calc(100vh-16rem)]">
               <CardContent className="p-4 h-full flex flex-col">
                 <MessageDisplay 
                   messages={messages} 
