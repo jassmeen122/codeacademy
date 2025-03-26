@@ -29,15 +29,13 @@ const AIAssistantPage = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">AI Programming Assistant</h1>
           <div className="flex items-center gap-4">
-            <Tabs value={currentTab} onValueChange={setCurrentTab} className="hidden sm:flex">
-              <TabsList>
-                <TabsTrigger value="chat">Chat</TabsTrigger>
-                <TabsTrigger value="info">
-                  <InfoIcon className="h-4 w-4 mr-2" />
-                  À propos
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <TabsList className="hidden sm:flex">
+              <TabsTrigger value="chat" onClick={() => setCurrentTab("chat")}>Chat</TabsTrigger>
+              <TabsTrigger value="info" onClick={() => setCurrentTab("info")}>
+                <InfoIcon className="h-4 w-4 mr-2" />
+                À propos
+              </TabsTrigger>
+            </TabsList>
             <ChatActions 
               onClearChat={clearChat} 
               onRetry={retryLastMessage} 
@@ -48,8 +46,7 @@ const AIAssistantPage = () => {
 
         <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
         
-        {/* Wrap TabsContent components in a parent Tabs component */}
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-0">
+        <Tabs value={currentTab} className="mt-0">
           <TabsContent value="chat">
             <Card className="h-[calc(100vh-12rem)]">
               <CardContent className="p-4 h-full flex flex-col">
