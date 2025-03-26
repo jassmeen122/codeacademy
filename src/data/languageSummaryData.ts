@@ -1,3 +1,5 @@
+// Import the languageVideoMap from the utils folder
+import { languageVideoMap } from '../utils/youtubeVideoMap';
 
 // Default language summaries that will be used if no data exists in the database
 export const defaultLanguageSummaries: Record<string, { title: string, content: string }> = {
@@ -526,7 +528,7 @@ if (age >= 18) {
 
 💡 Explication :
 
-Si age est supérieur ou égal à 18, alors on affiche "Vous êtes majeur.".
+Si age est supérieur ou égal à 18, alors on affiche "Vous êtes majeur."
 
 ## Condition if...else
 
@@ -542,7 +544,7 @@ if (age >= 18) {
 
 💡 Explication :
 
-Si age est inférieur à 18, alors on affiche "Vous êtes mineur.".
+Si age est inférieur à 18, alors on affiche "Vous êtes mineur."
 
 ## Condition if...else if...else
 Si on veut tester plusieurs cas, on utilise else if :
@@ -1049,7 +1051,7 @@ if ($age >= 18) {
 \`\`\`
 
 💡 Explication :
-Si $age est supérieur ou égal à 18, on affiche "Vous êtes majeur.".
+Si $age est supérieur ou égal à 18, on affiche "Vous êtes majeur."
 
 ### Condition if...else
 
@@ -1066,7 +1068,7 @@ if ($age >= 18) {
 \`\`\`
 
 💡 Explication :
-Si $age est inférieur à 18, alors on affiche "Vous êtes mineur.".
+Si $age est inférieur à 18, alors on affiche "Vous êtes mineur."
 
 ### Condition if...else if...else
 
