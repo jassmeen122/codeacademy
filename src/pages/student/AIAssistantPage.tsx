@@ -48,7 +48,7 @@ const AIAssistantPage = () => {
 
         <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
         
-        <TabsContent value="chat" className="mt-0" forceMount={currentTab === "chat"}>
+        <TabsContent value="chat" className="mt-0" forceMount={currentTab === "chat" ? true : undefined}>
           <Card className="h-[calc(100vh-12rem)]">
             <CardContent className="p-4 h-full flex flex-col">
               <MessageDisplay 
@@ -63,7 +63,7 @@ const AIAssistantPage = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="info" className="mt-0" forceMount={currentTab === "info"}>
+        <TabsContent value="info" className="mt-0" forceMount={currentTab === "info" ? true : undefined}>
           <AIAssistantInfo />
         </TabsContent>
       </div>
