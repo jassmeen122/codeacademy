@@ -9,7 +9,7 @@ import { ErrorDisplay } from "@/components/ai-assistant/ErrorDisplay";
 import { ChatActions } from "@/components/ai-assistant/ChatActions";
 import { AIAssistantInfo } from "@/components/ai-assistant/AIAssistantInfo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SettingsIcon, InfoIcon } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 
 const AIAssistantPage = () => {
   const {
@@ -48,24 +48,27 @@ const AIAssistantPage = () => {
 
         <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
         
-        <TabsContent value="chat" className="mt-0" forceMount={currentTab === "chat" ? true : undefined}>
-          <Card className="h-[calc(100vh-12rem)]">
-            <CardContent className="p-4 h-full flex flex-col">
-              <MessageDisplay 
-                messages={messages} 
-                isLoading={isLoading} 
-              />
-              <InputForm 
-                onSubmit={sendMessage} 
-                isLoading={isLoading} 
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Wrap TabsContent components in a parent Tabs component */}
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-0">
+          <TabsContent value="chat">
+            <Card className="h-[calc(100vh-12rem)]">
+              <CardContent className="p-4 h-full flex flex-col">
+                <MessageDisplay 
+                  messages={messages} 
+                  isLoading={isLoading} 
+                />
+                <InputForm 
+                  onSubmit={sendMessage} 
+                  isLoading={isLoading} 
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="info" className="mt-0" forceMount={currentTab === "info" ? true : undefined}>
-          <AIAssistantInfo />
-        </TabsContent>
+          <TabsContent value="info">
+            <AIAssistantInfo />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
