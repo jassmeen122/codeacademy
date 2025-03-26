@@ -9,7 +9,9 @@ import { ErrorDisplay } from "@/components/ai-assistant/ErrorDisplay";
 import { ChatActions } from "@/components/ai-assistant/ChatActions";
 import { AIAssistantInfo } from "@/components/ai-assistant/AIAssistantInfo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const AIAssistantPage = () => {
   const {
@@ -18,10 +20,16 @@ const AIAssistantPage = () => {
     errorMessage,
     sendMessage,
     clearChat,
-    retryLastMessage
+    retryLastMessage,
+    switchAssistantModel
   } = useAIAssistant();
   
   const [currentTab, setCurrentTab] = useState<string>("chat");
+
+  const handleSwitchModel = () => {
+    switchAssistantModel();
+    toast.success("Essai avec un modèle alternatif en cours...");
+  };
 
   return (
     <DashboardLayout>
@@ -45,7 +53,19 @@ const AIAssistantPage = () => {
             </div>
           </div>
 
-          <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage} />
+          {errorMessage && (
+            <ErrorDisplay errorMessage={errorMessage} onRetry={retryLastMessage}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="ml-2 flex items-center gap-1"
+                onClick={handleSwitchModel}
+              >
+                <RefreshCw className="h-3 w-3" /> 
+                Essayer un modèle alternatif
+              </Button>
+            </ErrorDisplay>
+          )}
           
           <TabsContent value="chat">
             <Card className="h-[calc(100vh-20rem)]">

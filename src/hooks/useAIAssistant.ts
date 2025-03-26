@@ -18,6 +18,7 @@ export const useAIAssistant = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [useHuggingFace, setUseHuggingFace] = useState<boolean>(false);
 
   // Save messages to localStorage whenever they change
   useEffect(() => {
@@ -48,10 +49,11 @@ export const useAIAssistant = () => {
         content: msg.content
       }));
 
-      console.log("Sending request to AI assistant...");
+      console.log(`Sending request to ${useHuggingFace ? 'Hugging Face' : 'OpenAI'} assistant...`);
       
-      // Call Supabase Edge Function
-      let response = await supabase.functions.invoke('ai-assistant', {
+      // Call Supabase Edge Function (OpenAI or Hugging Face based on state)
+      const functionName = useHuggingFace ? 'huggingface-assistant' : 'ai-assistant';
+      let response = await supabase.functions.invoke(functionName, {
         body: { 
           prompt: userInput, 
           messageHistory: messageHistory,
@@ -123,12 +125,31 @@ export const useAIAssistant = () => {
     setErrorMessage(null);
   };
 
+  const switchAssistantModel = () => {
+    setUseHuggingFace(prev => !prev);
+    setErrorMessage(null);
+    toast.info(useHuggingFace ? 
+      "Changement vers le modèle OpenAI." : 
+      "Changement vers le modèle Hugging Face.");
+    
+    // Retry with the new model if there's a recent user message
+    const lastUserMessageIndex = [...messages].reverse().findIndex(msg => msg.role === "user");
+    if (lastUserMessageIndex !== -1) {
+      const lastUserMessage = messages[messages.length - 1 - lastUserMessageIndex];
+      // Add a slight delay to allow the UI to update
+      setTimeout(() => {
+        sendMessage(lastUserMessage.content);
+      }, 100);
+    }
+  };
+
   return {
     messages,
     isLoading,
     errorMessage,
     sendMessage,
     clearChat,
-    retryLastMessage
+    retryLastMessage,
+    switchAssistantModel
   };
 };
