@@ -43,7 +43,8 @@ export const useCourseModules = (courseId: string) => {
       }
       
       // Transform module data to match CourseModule type with explicit type casting
-      const modulesWithLessons: CourseModule[] = (modulesData as ModuleRecord[]).map(module => ({
+      const moduleRecords = modulesData as ModuleRecord[];
+      const modulesWithLessons: CourseModule[] = moduleRecords.map(module => ({
         id: module.id,
         title: module.title,
         description: module.description || undefined,
@@ -63,7 +64,7 @@ export const useCourseModules = (courseId: string) => {
       // For now, we'll use user_progress to simulate lessons since we don't have a 
       // course_lessons table yet
       try {
-        const moduleIds = modulesData.map(module => module.id);
+        const moduleIds = moduleRecords.map(module => module.id);
         
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
