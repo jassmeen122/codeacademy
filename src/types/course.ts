@@ -49,6 +49,7 @@ export interface CourseModule {
   order_index: number;
   lessons?: CourseLesson[];
   language_id?: string;
+  course_id?: string;
   content?: string | null;
   difficulty?: CourseLevel;
   estimated_duration?: string | null;
