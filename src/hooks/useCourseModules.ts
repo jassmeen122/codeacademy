@@ -29,7 +29,7 @@ export const useCourseModules = (courseId: string) => {
       setLoading(true);
       
       // First, get all modules for this course
-      const { data: modulesData, error: modulesError } = await supabase
+      const { data, error: modulesError } = await supabase
         .from('course_modules')
         .select('*')
         .eq('course_id', courseId)
@@ -37,13 +37,13 @@ export const useCourseModules = (courseId: string) => {
       
       if (modulesError) throw modulesError;
       
-      if (!modulesData || modulesData.length === 0) {
+      if (!data || data.length === 0) {
         setModules([]);
         return;
       }
       
-      // Cast to our typed interface first before mapping to avoid excessive type inference
-      const moduleRecords: ModuleRecord[] = modulesData as ModuleRecord[];
+      // Explicitly type the modules data and cast it to avoid deep type inference
+      const moduleRecords = data as unknown as ModuleRecord[];
       
       // Transform module data with explicit typing
       const modulesWithLessons: CourseModule[] = moduleRecords.map(module => ({
