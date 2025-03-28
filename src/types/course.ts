@@ -22,12 +22,9 @@ export interface ProgrammingLanguage {
 }
 
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
-// Update CoursePath to match what Supabase expects
 export type CoursePath = "Web Development" | "Data Science" | "Artificial Intelligence";
-// Update to match the exact values in the Supabase enum course_category
 export type CourseCategory = "Programming Fundamentals" | "Frontend Development" | "Backend Development" | "Data Analysis" | "Machine Learning" | "AI Applications";
 export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | "draft" | "published";
-// Update to match the exact values in the Supabase database
 export type DatabaseExerciseStatus = "draft" | "published";
 
 export interface CourseLesson {
