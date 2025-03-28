@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,11 +44,17 @@ const ProfilePage = () => {
   useEffect(() => {
     fetchProfile();
     fetchBadges();
-    fetchProgress();
   }, []);
+
+  useEffect(() => {
+    if (profile) {
+      fetchProgress();
+    }
+  }, [profile]);
 
   const fetchProfile = async () => {
     try {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
@@ -65,7 +72,8 @@ const ProfilePage = () => {
         email: profile.email || "",
       });
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -88,6 +96,7 @@ const ProfilePage = () => {
       setBadges(data || []);
     } catch (error: any) {
       console.error('Error fetching badges:', error);
+      toast.error("Failed to load badges");
     }
   };
 
@@ -130,6 +139,7 @@ const ProfilePage = () => {
       });
     } catch (error: any) {
       console.error('Error fetching progress:', error);
+      toast.error("Failed to load progress data");
     }
   };
 
@@ -151,7 +161,8 @@ const ProfilePage = () => {
       setEditing(false);
       fetchProfile();
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
     }
   };
 
@@ -170,7 +181,27 @@ const ProfilePage = () => {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
-          Loading...
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-pulse flex flex-col items-center">
+              <div className="rounded-full bg-gray-200 h-16 w-16 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-24"></div>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-4">Profile Not Found</h2>
+            <p className="text-gray-600 mb-4">We couldn't load your profile information.</p>
+            <Button onClick={fetchProfile}>Try Again</Button>
+          </div>
         </div>
       </DashboardLayout>
     );

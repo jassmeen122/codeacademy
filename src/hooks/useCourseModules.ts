@@ -4,6 +4,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { CourseModule, CourseLesson } from "@/types/course";
 import { toast } from "sonner";
 
+// Define types for database records
+type ModuleRecord = {
+  id: string;
+  title: string;
+  description: string | null;
+  order_index: number;
+  course_id: string;
+  [key: string]: any; // For other properties
+}
+
+type LessonRecord = {
+  id: string;
+  title: string;
+  content: string | null;
+  module_id: string;
+  order_index: number;
+  is_published: boolean;
+  requires_completion: boolean;
+  [key: string]: any; // For other properties
+}
+
 export const useCourseModules = (courseId: string) => {
   const [modules, setModules] = useState<CourseModule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +47,9 @@ export const useCourseModules = (courseId: string) => {
       const moduleIds = (modulesData || []).map(module => module.id);
       
       if (moduleIds.length > 0) {
+        // Since 'course_lessons' might not be in the database schema, we need to use a type assertion
         const { data: lessonsData, error: lessonsError } = await supabase
-          .from('course_lessons')
+          .from('course_lessons' as any)
           .select('*')
           .in('module_id', moduleIds)
           .order('order_index');
@@ -36,18 +58,18 @@ export const useCourseModules = (courseId: string) => {
         
         // Combine modules with their lessons
         const modulesWithLessons = (modulesData || []).map(module => {
-          const moduleLessons = (lessonsData || [])
+          const moduleLessons = (lessonsData as LessonRecord[] || [])
             .filter(lesson => lesson.module_id === module.id);
           
           return {
             ...module,
-            lessons: moduleLessons
+            lessons: moduleLessons as CourseLesson[]
           };
         });
         
-        setModules(modulesWithLessons as CourseModule[]);
+        setModules(modulesWithLessons as unknown as CourseModule[]);
       } else {
-        setModules(modulesData as CourseModule[] || []);
+        setModules(modulesData as unknown as CourseModule[] || []);
       }
     } catch (err: any) {
       console.error("Error fetching course modules:", err);
@@ -77,23 +99,23 @@ export const useCourseModules = (courseId: string) => {
         // Create new module
         const { data, error } = await supabase
           .from('course_modules')
-          .insert(moduleData)
+          .insert(moduleData as any)
           .select()
           .single();
         
         if (error) throw error;
-        savedModule = data as CourseModule;
+        savedModule = data as unknown as CourseModule;
       } else {
         // Update existing module
         const { data, error } = await supabase
           .from('course_modules')
-          .update(moduleData)
+          .update(moduleData as any)
           .eq('id', module.id)
           .select()
           .single();
         
         if (error) throw error;
-        savedModule = data as CourseModule;
+        savedModule = data as unknown as CourseModule;
       }
       
       return savedModule;
@@ -124,24 +146,24 @@ export const useCourseModules = (courseId: string) => {
       if (isNewLesson) {
         // Create new lesson
         const { data, error } = await supabase
-          .from('course_lessons')
-          .insert(lessonData)
+          .from('course_lessons' as any)
+          .insert(lessonData as any)
           .select()
           .single();
         
         if (error) throw error;
-        savedLesson = data as CourseLesson;
+        savedLesson = data as unknown as CourseLesson;
       } else {
         // Update existing lesson
         const { data, error } = await supabase
-          .from('course_lessons')
-          .update(lessonData)
+          .from('course_lessons' as any)
+          .update(lessonData as any)
           .eq('id', lesson.id)
           .select()
           .single();
         
         if (error) throw error;
-        savedLesson = data as CourseLesson;
+        savedLesson = data as unknown as CourseLesson;
       }
       
       return savedLesson;
@@ -156,7 +178,7 @@ export const useCourseModules = (courseId: string) => {
     try {
       // First delete all lessons in this module
       const { error: lessonsError } = await supabase
-        .from('course_lessons')
+        .from('course_lessons' as any)
         .delete()
         .eq('module_id', moduleId);
       
@@ -187,7 +209,7 @@ export const useCourseModules = (courseId: string) => {
   const deleteLesson = async (lessonId: string): Promise<boolean> => {
     try {
       const { error } = await supabase
-        .from('course_lessons')
+        .from('course_lessons' as any)
         .delete()
         .eq('id', lessonId);
       
@@ -227,7 +249,7 @@ export const useCourseModules = (courseId: string) => {
       // Update all modules in a single batch
       const { error } = await supabase
         .from('course_modules')
-        .upsert(updates, { onConflict: 'id' });
+        .upsert(updates as any, { onConflict: 'id' });
       
       if (error) throw error;
       
@@ -252,8 +274,8 @@ export const useCourseModules = (courseId: string) => {
       
       // Update all lessons in a single batch
       const { error } = await supabase
-        .from('course_lessons')
-        .upsert(updates, { onConflict: 'id' });
+        .from('course_lessons' as any)
+        .upsert(updates as any, { onConflict: 'id' });
       
       if (error) throw error;
       
