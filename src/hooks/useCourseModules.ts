@@ -35,34 +35,34 @@ export const useCourseModules = (courseId: string) => {
       
       setModules(modulesWithLessons);
       
-      // Now, let's get lesson data using a manual fetch since we might not have a course_lessons table
-      // We'll manually populate the modules after fetching
+      // For now, we'll use user_progress to simulate lessons since we don't have a 
+      // course_lessons table yet
       try {
         const moduleIds = modulesData.map(module => module.id);
         
-        const { data: lessonsData, error: lessonsError } = await supabase
-          .from('user_progress')  // Using an existing table that has module_id
+        const { data: progressData, error: progressError } = await supabase
+          .from('user_progress')
           .select('*')
           .in('module_id', moduleIds);
         
-        if (lessonsError) throw lessonsError;
+        if (progressError) throw progressError;
         
-        if (lessonsData && lessonsData.length > 0) {
-          // Map lessons to their parent modules
+        if (progressData && progressData.length > 0) {
+          // Map progress records to module structure
           const updatedModules = modulesWithLessons.map(module => {
-            // Convert user_progress records to lesson structure (this is just a workaround)
-            const moduleLessons = lessonsData
+            // Create mock lessons from progress data
+            const moduleLessons = progressData
               .filter(record => record.module_id === module.id)
-              .map(record => ({
+              .map((record, index) => ({
                 id: record.id,
-                title: "Lesson " + record.id.substring(0, 4),
+                title: `Lesson ${index + 1}`,
                 module_id: record.module_id,
-                order_index: 0,
-                content: "Lesson content",
+                order_index: index,
+                content: "Lesson content placeholder",
                 is_published: true,
                 requires_completion: true,
                 created_at: record.created_at
-              })) as CourseLesson[];
+              } as CourseLesson));
             
             return {
               ...module,
@@ -73,8 +73,8 @@ export const useCourseModules = (courseId: string) => {
           setModules(updatedModules);
         }
       } catch (lessonsError) {
-        console.error("Error fetching lessons:", lessonsError);
-        // We'll continue with the modules without lessons
+        console.error("Error fetching lesson data:", lessonsError);
+        // Continue with modules without lessons
       }
     } catch (err: any) {
       console.error("Error fetching course modules:", err);
@@ -88,9 +88,9 @@ export const useCourseModules = (courseId: string) => {
   const saveModule = async (module: CourseModule): Promise<CourseModule> => {
     try {
       // Determine if this is a new module or an update
-      const isNewModule = module.id.startsWith('temp-');
+      const isNewModule = !module.id || module.id.startsWith('temp-');
       
-      // Prepare module data for Supabase, making sure we include all required fields
+      // Prepare module data for Supabase
       const moduleData = {
         course_id: courseId,
         title: module.title,
@@ -113,7 +113,12 @@ export const useCourseModules = (courseId: string) => {
           .single();
         
         if (error) throw error;
-        savedModule = data as unknown as CourseModule;
+        if (!data) throw new Error("No data returned when creating module");
+        
+        savedModule = {
+          ...data,
+          lessons: module.lessons || []
+        };
       } else {
         // Update existing module
         const { data, error } = await supabase
@@ -124,13 +129,29 @@ export const useCourseModules = (courseId: string) => {
           .single();
         
         if (error) throw error;
-        savedModule = data as unknown as CourseModule;
+        if (!data) throw new Error("No data returned when updating module");
+        
+        savedModule = {
+          ...data,
+          lessons: module.lessons || []
+        };
       }
       
-      return {
-        ...savedModule,
-        lessons: module.lessons || []
-      };
+      // Update modules state
+      setModules(prevModules => {
+        const index = prevModules.findIndex(m => m.id === savedModule.id);
+        if (index >= 0) {
+          // Replace existing module
+          const updatedModules = [...prevModules];
+          updatedModules[index] = savedModule;
+          return updatedModules;
+        } else {
+          // Add new module
+          return [...prevModules, savedModule];
+        }
+      });
+      
+      return savedModule;
     } catch (err: any) {
       console.error("Error saving module:", err);
       toast.error("Failed to save module");
@@ -143,37 +164,32 @@ export const useCourseModules = (courseId: string) => {
     try {
       console.log("Saving lesson:", lesson);
       
-      // We'll simulate saving by returning the lesson with a real ID if it's a temp ID
-      if (lesson.id.startsWith('temp-')) {
-        const newLesson = {
-          ...lesson,
-          id: `real-${Date.now()}`
-        };
-        
-        // Update the modules in state
-        setModules(prevModules => 
-          prevModules.map(module => {
-            if (module.id === lesson.module_id) {
-              const updatedLessons = [...(module.lessons || [])];
-              const lessonIndex = updatedLessons.findIndex(l => l.id === lesson.id);
-              
-              if (lessonIndex >= 0) {
-                updatedLessons[lessonIndex] = newLesson;
-              } else {
-                updatedLessons.push(newLesson);
-              }
-              
-              return { ...module, lessons: updatedLessons };
-            }
-            return module;
-          })
-        );
-        
-        return newLesson;
-      }
+      // Simulate saving by returning the lesson with a real ID if it's a temp ID
+      const isNew = !lesson.id || lesson.id.startsWith('temp-');
+      const newLesson = isNew
+        ? { ...lesson, id: `lesson-${Date.now()}` }
+        : lesson;
       
-      // If it's an existing lesson, just return it
-      return lesson;
+      // Update the modules in state
+      setModules(prevModules => 
+        prevModules.map(module => {
+          if (module.id === lesson.module_id) {
+            const updatedLessons = [...(module.lessons || [])];
+            const lessonIndex = updatedLessons.findIndex(l => l.id === lesson.id);
+            
+            if (lessonIndex >= 0) {
+              updatedLessons[lessonIndex] = newLesson;
+            } else {
+              updatedLessons.push(newLesson);
+            }
+            
+            return { ...module, lessons: updatedLessons };
+          }
+          return module;
+        })
+      );
+      
+      return newLesson;
     } catch (err: any) {
       console.error("Error saving lesson:", err);
       toast.error("Failed to save lesson");
@@ -233,7 +249,7 @@ export const useCourseModules = (courseId: string) => {
 
   const updateModulesOrder = async (updatedModules: CourseModule[]): Promise<boolean> => {
     try {
-      // Prepare updates with all required fields
+      // Prepare updates with required fields
       const updates = updatedModules.map(module => ({
         id: module.id,
         order_index: module.order_index,

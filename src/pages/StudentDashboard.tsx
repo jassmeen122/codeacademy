@@ -24,91 +24,102 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const { user, loading: authLoading } = useAuthState();
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est authentifié
-    if (!authLoading && !user) {
-      toast.error("Vous devez être connecté pour accéder à cette page");
-      navigate("/auth");
-      return;
-    }
-
-    const fetchCourses = async () => {
-      try {
-        // Fetch enrolled courses
-        const { data: enrolledCourses, error } = await supabase
-          .from('courses')
-          .select(`
-            *,
-            teacher:teacher_id (
-              name:full_name
-            ),
-            course_materials (
-              id,
-              type,
-              title
-            )
-          `)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          toast.error("Échec du chargement des cours");
-          console.error("Error fetching courses:", error);
-        } else if (enrolledCourses) {
-          // Transform the data to match our Course type
-          const transformedCourses: Course[] = enrolledCourses.map(course => ({
-            id: course.id,
-            title: course.title,
-            description: course.description || "",
-            duration: "8 weeks", // Default duration
-            students: 0, // We'll need to implement this
-            image: "/placeholder.svg", // Default image
-            difficulty: course.difficulty,
-            path: course.path,
-            category: course.category,
-            language: "JavaScript", // Default language
-            professor: {
-              name: course.teacher?.name || "Unknown Professor",
-              title: "Course Instructor"
-            },
-            materials: {
-              videos: course.course_materials?.filter(m => m.type === 'video').length || 0,
-              pdfs: course.course_materials?.filter(m => m.type === 'pdf').length || 0,
-              presentations: course.course_materials?.filter(m => m.type === 'presentation').length || 0
-            }
-          }));
-          
-          setCourses(transformedCourses);
-        }
-      } catch (error: any) {
-        toast.error("Une erreur est survenue");
-        console.error("Unexpected error:", error);
-      } finally {
-        setLoading(false);
+    // Check if user authentication has finished loading
+    if (!authLoading) {
+      // If no user is authenticated after loading completes, redirect to auth page
+      if (!user) {
+        console.log("No authenticated user found, redirecting to auth page");
+        toast.error("Vous devez être connecté pour accéder à cette page");
+        navigate("/auth");
+        return;
       }
-    };
-
-    if (user) {
+      
+      // Only fetch courses if we have an authenticated user
       fetchCourses();
     }
-  }, [navigate, user, authLoading]);
+  }, [user, authLoading, navigate]);
 
+  const fetchCourses = async () => {
+    try {
+      setDataLoading(true);
+      console.log("Fetching courses for user:", user?.id);
+      
+      // Fetch enrolled courses
+      const { data: enrolledCourses, error } = await supabase
+        .from('courses')
+        .select(`
+          *,
+          teacher:teacher_id (
+            name:full_name
+          ),
+          course_materials (
+            id,
+            type,
+            title
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast.error("Échec du chargement des cours");
+        console.error("Error fetching courses:", error);
+      } else if (enrolledCourses) {
+        // Transform the data to match our Course type
+        const transformedCourses: Course[] = enrolledCourses.map(course => ({
+          id: course.id,
+          title: course.title,
+          description: course.description || "",
+          duration: "8 weeks", // Default duration
+          students: 0, // We'll need to implement this
+          image: "/placeholder.svg", // Default image
+          difficulty: course.difficulty,
+          path: course.path,
+          category: course.category,
+          language: "JavaScript", // Default language
+          professor: {
+            name: course.teacher?.name || "Unknown Professor",
+            title: "Course Instructor"
+          },
+          materials: {
+            videos: course.course_materials?.filter(m => m.type === 'video').length || 0,
+            pdfs: course.course_materials?.filter(m => m.type === 'pdf').length || 0,
+            presentations: course.course_materials?.filter(m => m.type === 'presentation').length || 0
+          }
+        }));
+        
+        setCourses(transformedCourses);
+      }
+    } catch (error: any) {
+      toast.error("Une erreur est survenue");
+      console.error("Unexpected error:", error);
+    } finally {
+      setDataLoading(false);
+      setLoading(false);
+    }
+  };
+
+  // Display loading state while authentication is in progress
   if (authLoading) {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[50vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement...</p>
+            <p className="text-gray-600">Vérification de l'authentification...</p>
           </div>
         </div>
       </DashboardLayout>
     );
   }
 
+  // If auth is not loading but we don't have a user, the useEffect will handle redirecting
+  // This is a fallback just in case
   if (!user) {
-    return null; // Le useEffect va rediriger vers /auth
+    return null;
   }
 
   return (
@@ -158,7 +169,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Course Progress */}
-            <CourseTabs courses={courses} loading={loading} />
+            <CourseTabs courses={courses} loading={dataLoading} />
           </div>
 
           {/* Right Side: Mini-Game */}
