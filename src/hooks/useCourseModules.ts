@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CourseModule, CourseLesson, CourseLevel } from "@/types/course";
@@ -27,13 +26,21 @@ export const useCourseModules = (courseId: string) => {
         return;
       }
       
-      // Transform module data to match CourseModule type
-      const modulesWithLessons = modulesData.map(module => ({
-        ...module,
-        // Ensure difficulty is properly typed as CourseLevel
+      // Transform module data to match CourseModule type with explicit type casting
+      const modulesWithLessons: CourseModule[] = modulesData.map(module => ({
+        id: module.id,
+        title: module.title,
+        description: module.description || undefined,
+        order_index: module.order_index,
+        language_id: module.language_id,
+        course_id: courseId,
+        content: module.content || undefined,
         difficulty: (module.difficulty as CourseLevel) || 'Beginner',
-        lessons: [] as CourseLesson[]
-      })) as CourseModule[];
+        estimated_duration: module.estimated_duration || undefined,
+        created_at: module.created_at,
+        updated_at: module.updated_at,
+        lessons: [] // Initialize with empty array
+      }));
       
       setModules(modulesWithLessons);
       
@@ -53,7 +60,7 @@ export const useCourseModules = (courseId: string) => {
           // Map progress records to module structure
           const updatedModules = modulesWithLessons.map(module => {
             // Create mock lessons from progress data
-            const moduleLessons = progressData
+            const moduleLessons: CourseLesson[] = progressData
               .filter(record => record.module_id === module.id)
               .map((record, index) => ({
                 id: record.id,
@@ -64,7 +71,7 @@ export const useCourseModules = (courseId: string) => {
                 is_published: true,
                 requires_completion: true,
                 created_at: record.created_at
-              } as CourseLesson));
+              }));
             
             return {
               ...module,
@@ -165,7 +172,6 @@ export const useCourseModules = (courseId: string) => {
     }
   };
 
-  // This is a mock implementation since we don't have a lessons table
   const saveLesson = async (lesson: CourseLesson): Promise<CourseLesson> => {
     try {
       console.log("Saving lesson:", lesson);
@@ -227,7 +233,6 @@ export const useCourseModules = (courseId: string) => {
     }
   };
 
-  // This is a mock implementation since we don't have a lessons table
   const deleteLesson = async (lessonId: string): Promise<boolean> => {
     try {
       // Since we're mocking, we'll just update the local state
@@ -282,7 +287,6 @@ export const useCourseModules = (courseId: string) => {
     }
   };
 
-  // This is a mock implementation since we don't have a lessons table
   const updateLessonsOrder = async (moduleId: string, updatedLessons: CourseLesson[]): Promise<boolean> => {
     try {
       // Since we're mocking, we'll just update the local state
@@ -303,7 +307,6 @@ export const useCourseModules = (courseId: string) => {
     }
   };
 
-  // Load modules when courseId changes
   useEffect(() => {
     if (courseId) {
       fetchModules();
