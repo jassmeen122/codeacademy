@@ -4,6 +4,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { CourseModule, CourseLesson } from "@/types/course";
 import { toast } from "sonner";
 
+// Define explicit types for database records
+interface ModuleRecord {
+  id: string;
+  title: string;
+  description: string | null;
+  order_index: number;
+  course_id?: string;
+  content?: string | null;
+  difficulty?: string | null;
+  estimated_duration?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface LessonRecord {
+  id: string;
+  module_id: string;
+  title: string;
+  content: string | null;
+  order_index: number;
+  is_published?: boolean;
+  requires_completion?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export const useCourseModules = (courseId: string) => {
   const [modules, setModules] = useState<CourseModule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +48,11 @@ export const useCourseModules = (courseId: string) => {
       
       if (modulesError) throw modulesError;
       
+      // Type assertion to prevent deep type instantiation
+      const typedModulesData = modulesData as unknown as ModuleRecord[];
+      
       // Then, get all lessons for these modules
-      const moduleIds = (modulesData || []).map(module => module.id);
+      const moduleIds = (typedModulesData || []).map(module => module.id);
       
       if (moduleIds.length > 0) {
         const { data: lessonsData, error: lessonsError } = await supabase
@@ -34,9 +63,12 @@ export const useCourseModules = (courseId: string) => {
         
         if (lessonsError) throw lessonsError;
         
+        // Type assertion for lessons
+        const typedLessonsData = lessonsData as unknown as LessonRecord[];
+        
         // Combine modules with their lessons
-        const modulesWithLessons = (modulesData || []).map(module => {
-          const moduleLessons = (lessonsData || [])
+        const modulesWithLessons = (typedModulesData || []).map(module => {
+          const moduleLessons = (typedLessonsData || [])
             .filter(lesson => lesson.module_id === module.id);
           
           return {
@@ -47,7 +79,7 @@ export const useCourseModules = (courseId: string) => {
         
         setModules(modulesWithLessons as CourseModule[]);
       } else {
-        setModules(modulesData as CourseModule[] || []);
+        setModules(typedModulesData as CourseModule[] || []);
       }
     } catch (err: any) {
       console.error("Error fetching course modules:", err);
