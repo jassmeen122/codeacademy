@@ -18,36 +18,35 @@ import { CourseTabs } from "@/components/dashboard/CourseTabs";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CodingMiniGame } from "@/components/student/CodingMiniGame";
 import type { Course } from "@/types/course";
-import { useAuthState } from "@/hooks/useAuthState";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dataLoading, setDataLoading] = useState(false);
-  const { user, loading: authLoading } = useAuthState();
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
-    // Check if user authentication has finished loading
-    if (!authLoading) {
-      // If no user is authenticated after loading completes, redirect to auth page
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log("No authenticated user found, redirecting to auth page");
-        toast.error("Vous devez être connecté pour accéder à cette page");
         navigate("/auth");
         return;
       }
-      
-      // Only fetch courses if we have an authenticated user
-      fetchCourses();
-    }
-  }, [user, authLoading, navigate]);
 
-  const fetchCourses = async () => {
-    try {
-      setDataLoading(true);
-      console.log("Fetching courses for user:", user?.id);
-      
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        toast.error("Failed to fetch user profile");
+        console.error("Error fetching profile:", profileError);
+      } else {
+        setUserProfile(profile);
+      }
+
       // Fetch enrolled courses
       const { data: enrolledCourses, error } = await supabase
         .from('courses')
@@ -65,7 +64,7 @@ const StudentDashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        toast.error("Échec du chargement des cours");
+        toast.error("Failed to fetch courses");
         console.error("Error fetching courses:", error);
       } else if (enrolledCourses) {
         // Transform the data to match our Course type
@@ -93,43 +92,21 @@ const StudentDashboard = () => {
         
         setCourses(transformedCourses);
       }
-    } catch (error: any) {
-      toast.error("Une erreur est survenue");
-      console.error("Unexpected error:", error);
-    } finally {
-      setDataLoading(false);
+      
       setLoading(false);
-    }
-  };
+    };
 
-  // Display loading state while authentication is in progress
-  if (authLoading) {
-    return (
-      <DashboardLayout>
-        <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[50vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Vérification de l'authentification...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  // If auth is not loading but we don't have a user, the useEffect will handle redirecting
-  // This is a fallback just in case
-  if (!user) {
-    return null;
-  }
+    checkAuth();
+  }, [navigate]);
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">
-            Bienvenue, {user?.full_name || 'Étudiant'}!
+            Welcome back, {userProfile?.full_name || 'Student'}!
           </h1>
-          <p className="text-gray-600">Suivez votre progression d'apprentissage</p>
+          <p className="text-gray-600">Track your learning progress</p>
         </div>
 
         {/* Grid Layout for Dashboard */}
@@ -139,37 +116,37 @@ const StudentDashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <NavigationCard
                 icon={Book}
-                title="Reprendre l'apprentissage"
-                description="Continuez où vous vous êtes arrêté dans votre dernier cours."
-                buttonText="Continuer le cours"
+                title="Resume Learning"
+                description="Continue where you left off in your latest course."
+                buttonText="Continue Course"
               />
 
               <NavigationCard
                 icon={FileCode}
-                title="Défi quotidien"
-                description="Complétez le défi de codage du jour pour gagner des points."
-                buttonText="Commencer le défi"
+                title="Daily Challenge"
+                description="Complete today's coding challenge to earn points."
+                buttonText="Start Challenge"
               />
 
               <NavigationCard
                 icon={Youtube}
-                title="Cours gratuits"
-                description="Accédez à nos cours gratuits de langages de programmation avec des vidéos YouTube."
-                buttonText="Explorer les cours gratuits"
+                title="Free Courses"
+                description="Access our free programming language courses with YouTube videos."
+                buttonText="Browse Free Courses"
                 onClick={() => navigate("/student/free-courses")}
               />
 
               <NavigationCard
                 icon={Terminal}
-                title="Éditeur de code"
-                description="Écrivez, exécutez et déboguez du code avec l'assistance IA."
-                buttonText="Ouvrir l'éditeur de code"
+                title="Code Editor"
+                description="Write, run, and debug code with AI assistance."
+                buttonText="Open Code Editor"
                 onClick={() => navigate("/student/editor")} 
               />
             </div>
 
             {/* Course Progress */}
-            <CourseTabs courses={courses} loading={dataLoading} />
+            <CourseTabs courses={courses} loading={loading} />
           </div>
 
           {/* Right Side: Mini-Game */}
