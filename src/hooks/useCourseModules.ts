@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CourseModule, CourseLesson } from "@/types/course";
+import { CourseModule, CourseLesson, CourseLevel } from "@/types/course";
 import { toast } from "sonner";
 
 export const useCourseModules = (courseId: string) => {
@@ -27,10 +27,12 @@ export const useCourseModules = (courseId: string) => {
         return;
       }
       
-      // Store all modules with empty lessons arrays
+      // Transform module data to match CourseModule type
       const modulesWithLessons = modulesData.map(module => ({
         ...module,
-        lessons: []
+        // Ensure difficulty is properly typed as CourseLevel
+        difficulty: (module.difficulty as CourseLevel) || 'Beginner',
+        lessons: [] as CourseLesson[]
       })) as CourseModule[];
       
       setModules(modulesWithLessons);
@@ -90,14 +92,14 @@ export const useCourseModules = (courseId: string) => {
       // Determine if this is a new module or an update
       const isNewModule = !module.id || module.id.startsWith('temp-');
       
-      // Prepare module data for Supabase
+      // Prepare module data for Supabase with proper typing
       const moduleData = {
         course_id: courseId,
         title: module.title,
         description: module.description || null,
         order_index: module.order_index,
         language_id: module.language_id || "00000000-0000-0000-0000-000000000000", // Fallback ID
-        difficulty: module.difficulty || "Beginner", // Fallback difficulty
+        difficulty: module.difficulty || "Beginner", // Ensure correct typing
         content: module.content || null,
         estimated_duration: module.estimated_duration || null
       };
@@ -115,8 +117,10 @@ export const useCourseModules = (courseId: string) => {
         if (error) throw error;
         if (!data) throw new Error("No data returned when creating module");
         
+        // Cast the difficulty to CourseLevel to ensure type safety
         savedModule = {
           ...data,
+          difficulty: data.difficulty as CourseLevel || 'Beginner',
           lessons: module.lessons || []
         };
       } else {
@@ -131,8 +135,10 @@ export const useCourseModules = (courseId: string) => {
         if (error) throw error;
         if (!data) throw new Error("No data returned when updating module");
         
+        // Cast the difficulty to CourseLevel to ensure type safety
         savedModule = {
           ...data,
+          difficulty: data.difficulty as CourseLevel || 'Beginner',
           lessons: module.lessons || []
         };
       }
@@ -249,12 +255,13 @@ export const useCourseModules = (courseId: string) => {
 
   const updateModulesOrder = async (updatedModules: CourseModule[]): Promise<boolean> => {
     try {
-      // Prepare updates with required fields
+      // Prepare updates with required fields and proper typing
       const updates = updatedModules.map(module => ({
         id: module.id,
         order_index: module.order_index,
         title: module.title,
-        language_id: module.language_id || "00000000-0000-0000-0000-000000000000"
+        language_id: module.language_id || "00000000-0000-0000-0000-000000000000",
+        difficulty: module.difficulty || "Beginner"
       }));
       
       // Update all modules in a single batch
