@@ -42,8 +42,10 @@ export const useCourseModules = (courseId: string) => {
         return;
       }
       
-      // Transform module data to match CourseModule type with explicit type casting
-      const moduleRecords = modulesData as ModuleRecord[];
+      // Cast to our typed interface first before mapping to avoid excessive type inference
+      const moduleRecords: ModuleRecord[] = modulesData as ModuleRecord[];
+      
+      // Transform module data with explicit typing
       const modulesWithLessons: CourseModule[] = moduleRecords.map(module => ({
         id: module.id,
         title: module.title,
