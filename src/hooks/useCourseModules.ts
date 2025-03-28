@@ -1,7 +1,23 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CourseModule, CourseLesson, CourseLevel } from "@/types/course";
 import { toast } from "sonner";
+
+// Define an interface for the database module structure
+interface ModuleRecord {
+  id: string;
+  title: string;
+  description: string | null;
+  order_index: number;
+  language_id: string;
+  course_id: string;
+  content: string | null;
+  difficulty: string | null;
+  estimated_duration: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export const useCourseModules = (courseId: string) => {
   const [modules, setModules] = useState<CourseModule[]>([]);
@@ -27,7 +43,7 @@ export const useCourseModules = (courseId: string) => {
       }
       
       // Transform module data to match CourseModule type with explicit type casting
-      const modulesWithLessons: CourseModule[] = modulesData.map(module => ({
+      const modulesWithLessons: CourseModule[] = (modulesData as ModuleRecord[]).map(module => ({
         id: module.id,
         title: module.title,
         description: module.description || undefined,
