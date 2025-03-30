@@ -32,17 +32,17 @@ const AIAssistantPage = () => {
 
   const handleSwitchModel = () => {
     switchAssistantModel();
-    toast.success("Trying with an alternative model...");
+    toast.success("Essai avec un modèle alternatif en cours...");
   };
 
   const handleSendMessage = (userInput: string, code?: string, language?: string) => {
     if (!user && !isAuthLoading) {
-      toast.error("Please login to use the AI assistant");
+      toast.error("Veuillez vous connecter pour utiliser l'assistant IA");
       return;
     }
     
     if (dailyLimit.limitReached) {
-      toast.error(`You have reached your daily limit of ${dailyLimit.limit} questions. The limit will reset at midnight.`);
+      toast.error(`Vous avez atteint votre limite quotidienne de ${dailyLimit.limit} questions. La limite sera réinitialisée à minuit.`);
       return;
     }
     
@@ -60,7 +60,7 @@ const AIAssistantPage = () => {
                 <TabsTrigger value="chat">Chat</TabsTrigger>
                 <TabsTrigger value="info">
                   <InfoIcon className="h-4 w-4 mr-2" />
-                  About
+                  À propos
                 </TabsTrigger>
               </TabsList>
               <ChatActions 
@@ -80,7 +80,7 @@ const AIAssistantPage = () => {
                 onClick={handleSwitchModel}
               >
                 <RefreshCw className="h-3 w-3" /> 
-                Try alternative model
+                Essayer un modèle alternatif
               </Button>
             </ErrorDisplay>
           )}

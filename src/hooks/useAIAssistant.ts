@@ -16,7 +16,7 @@ export const useAIAssistant = () => {
     const savedMessages = localStorage.getItem("ai-assistant-messages");
     return savedMessages 
       ? JSON.parse(savedMessages) 
-      : [{ role: "assistant", content: "Hello! I'm your programming AI assistant. I can help with Python, Java, JavaScript, C, C++, PHP and SQL. How can I help you today?" }];
+      : [{ role: "assistant", content: "Bonjour ! Je suis votre assistant IA de programmation. Je peux vous aider avec Python, Java, JavaScript, C, C++, PHP et SQL. Comment puis-je vous aider aujourd'hui?" }];
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -49,10 +49,9 @@ export const useAIAssistant = () => {
     if (!user) return;
     
     try {
-      // Custom query to avoid the type error
       const { data, error } = await supabase
         .from('ai_query_logs')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', user.id)
         .gte('created_at', new Date().toISOString().split('T')[0]);
       
@@ -79,7 +78,7 @@ export const useAIAssistant = () => {
     
     // Check if limit is reached
     if (dailyLimit.limitReached) {
-      toast.error(`You have reached your daily limit of ${dailyLimit.limit} questions. The limit will reset at midnight.`);
+      toast.error(`Vous avez atteint votre limite quotidienne de ${dailyLimit.limit} questions. La limite sera réinitialisée à minuit.`);
       return;
     }
 
@@ -88,7 +87,7 @@ export const useAIAssistant = () => {
     if (code && language) {
       userContent = userInput.trim() ? 
         `${userInput}\n\n\`\`\`${language}\n${code}\n\`\`\`` : 
-        `Help me with this ${language} code:\n\n\`\`\`${language}\n${code}\n\`\`\``;
+        `Aidez-moi avec ce code ${language}:\n\n\`\`\`${language}\n${code}\n\`\`\``;
     }
 
     // Add user message to chat
@@ -122,7 +121,7 @@ export const useAIAssistant = () => {
 
       if (response.error) {
         console.error("Edge function error:", response.error);
-        throw new Error(response.error.message || "Our AI service is temporarily unavailable. Please try again later.");
+        throw new Error(response.error.message || "Notre service d'IA est temporairement indisponible. Veuillez réessayer plus tard.");
       }
 
       // Check if daily limit is reached
@@ -152,23 +151,23 @@ export const useAIAssistant = () => {
       } else if (response.data?.error) {
         throw new Error(response.data.error);
       } else {
-        throw new Error("Our AI service is temporarily unavailable. Please try again later.");
+        throw new Error("Notre service d'IA est temporairement indisponible. Veuillez réessayer plus tard.");
       }
 
     } catch (error: any) {
       console.error("Error calling AI assistant:", error);
       
       // Customize the error message to be more user-friendly
-      let friendlyError = "Our AI service is temporarily unavailable. Please try again later.";
+      let friendlyError = "Notre service d'IA est temporairement indisponible. Veuillez réessayer plus tard.";
       
-      if (error.message && error.message.includes("programming languages")) {
+      if (error.message && error.message.includes("langages de programmation")) {
         friendlyError = error.message;
       } else if (error.message && (
           error.message.includes("quota") || 
           error.message.includes("billing") ||
           error.message.includes("exceeded")
       )) {
-        friendlyError = "The AI service is currently undergoing maintenance. We're working to restore it quickly.";
+        friendlyError = "Le service d'IA est actuellement en maintenance. Nous travaillons à le rétablir rapidement.";
       }
       
       setErrorMessage(friendlyError);
@@ -179,10 +178,10 @@ export const useAIAssistant = () => {
   };
 
   const clearChat = () => {
-    if (confirm("Are you sure you want to clear the chat history?")) {
+    if (confirm("Êtes-vous sûr de vouloir effacer l'historique de discussion?")) {
       setMessages([{ 
         role: "assistant", 
-        content: "Chat history cleared. I'm your programming AI assistant. I can help with Python, Java, JavaScript, C, C++, PHP and SQL. How can I help you today?" 
+        content: "Historique effacé. Je suis votre assistant IA de programmation. Je peux vous aider avec Python, Java, JavaScript, C, C++, PHP et SQL. Comment puis-je vous aider aujourd'hui?" 
       }]);
       setErrorMessage(null);
     }
@@ -203,8 +202,8 @@ export const useAIAssistant = () => {
     setUseHuggingFace(prev => !prev);
     setErrorMessage(null);
     toast.info(useHuggingFace ? 
-      "Switching to OpenAI model." : 
-      "Switching to Hugging Face model.");
+      "Changement vers le modèle OpenAI." : 
+      "Changement vers le modèle Hugging Face.");
     
     // Retry with the new model if there's a recent user message
     const lastUserMessageIndex = [...messages].reverse().findIndex(msg => msg.role === "user");
