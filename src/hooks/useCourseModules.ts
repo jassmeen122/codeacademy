@@ -10,8 +10,12 @@ type ModuleRecord = {
   title: string;
   description: string | null;
   order_index: number;
-  course_id: string;
   language_id?: string;
+  content?: string | null;
+  difficulty?: string;
+  estimated_duration?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 type LessonRecord = {
@@ -22,6 +26,8 @@ type LessonRecord = {
   order_index: number;
   is_published: boolean;
   requires_completion: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const useCourseModules = (courseId: string) => {
@@ -46,19 +52,27 @@ export const useCourseModules = (courseId: string) => {
       const moduleIds = (modulesData || []).map(module => module.id);
       
       if (moduleIds.length > 0) {
-        // Use a raw query with explicit casting to work around type issues
+        // Use the raw query approach with the new course_lessons table
         const { data: lessonsData, error: lessonsError } = await supabase
-          .from('course_lessons')
-          .select('*')
-          .in('module_id', moduleIds)
-          .order('order_index');
+          .rpc('get_course_lessons_for_modules', { module_ids: moduleIds })
+          .then(response => {
+            // If RPC doesn't exist yet, fall back to direct query
+            if (response.error && response.error.message.includes('function get_course_lessons_for_modules() does not exist')) {
+              return supabase
+                .from('course_lessons')
+                .select('*')
+                .in('module_id', moduleIds)
+                .order('order_index');
+            }
+            return response;
+          });
           
         if (lessonsError) {
           console.error("Error fetching lessons:", lessonsError);
           throw lessonsError;
         }
         
-        // Use explicit type assertion
+        // Use a type assertion with unknown first
         const typedLessonsData = (lessonsData || []) as unknown as LessonRecord[];
         
         // Combine modules with their lessons
@@ -106,7 +120,7 @@ export const useCourseModules = (courseId: string) => {
         title: module.title,
         description: module.description || null,
         order_index: module.order_index,
-        language_id: module.language_id || '00000000-0000-0000-0000-000000000000' // Default UUID
+        language_id: module.language_id || null
       };
       
       let savedModule: CourseModule;
@@ -160,19 +174,19 @@ export const useCourseModules = (courseId: string) => {
       let savedLesson: CourseLesson;
       
       if (isNewLesson) {
-        // Create new lesson with type assertion
+        // Create new lesson using direct table access
         const { data, error } = await supabase
           .from('course_lessons')
-          .insert(lessonData as any)
+          .insert(lessonData)
           .select();
         
         if (error) throw error;
         savedLesson = (data?.[0] || {}) as CourseLesson;
       } else {
-        // Update existing lesson with type assertion
+        // Update existing lesson using direct table access
         const { data, error } = await supabase
           .from('course_lessons')
-          .update(lessonData as any)
+          .update(lessonData)
           .eq('id', lesson.id)
           .select();
         
@@ -190,15 +204,7 @@ export const useCourseModules = (courseId: string) => {
 
   const deleteModule = async (moduleId: string): Promise<boolean> => {
     try {
-      // First delete all lessons in this module
-      const { error: lessonsError } = await supabase
-        .from('course_lessons')
-        .delete()
-        .eq('module_id', moduleId);
-      
-      if (lessonsError) throw lessonsError;
-      
-      // Then delete the module
+      // Delete the module (lessons will be cascade deleted due to foreign key constraints)
       const { error } = await supabase
         .from('course_modules')
         .delete()
@@ -260,7 +266,7 @@ export const useCourseModules = (courseId: string) => {
         order_index: module.order_index
       }));
       
-      // Handle the type issue with explicit cast
+      // Use explicit type assertion
       const { error } = await supabase
         .from('course_modules')
         .upsert(updates as any);
