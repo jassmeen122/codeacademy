@@ -49,9 +49,10 @@ export const useAIAssistant = () => {
     if (!user) return;
     
     try {
+      // Custom query to avoid the type error
       const { data, error } = await supabase
         .from('ai_query_logs')
-        .select('*', { count: 'exact' })
+        .select('*')
         .eq('user_id', user.id)
         .gte('created_at', new Date().toISOString().split('T')[0]);
       

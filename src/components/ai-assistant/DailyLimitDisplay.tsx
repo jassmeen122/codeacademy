@@ -29,7 +29,6 @@ export const DailyLimitDisplay: React.FC<DailyLimitDisplayProps> = ({
       <Progress 
         value={percentage} 
         className={`h-2 ${limitReached ? 'bg-red-100' : 'bg-gray-100'}`}
-        indicatorClassName={limitReached ? 'bg-red-500' : 'bg-blue-500'}
       />
       
       {limitReached && (
