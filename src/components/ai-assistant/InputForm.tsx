@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,6 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
   const [language, setLanguage] = useState("javascript");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Focus on textarea when component mounts
   useEffect(() => {
     if (textareaRef.current && !disabled && !limitReached) {
       textareaRef.current.focus();
@@ -39,7 +37,6 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Submit on Ctrl+Enter or Cmd+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       handleSubmit(e);
     }
@@ -60,7 +57,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
       <Alert variant="destructive" className="mb-4">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Vous avez atteint votre limite quotidienne de questions. Revenez demain pour continuer à apprendre!
+          You have reached your daily limit of questions. Come back tomorrow to continue learning!
         </AlertDescription>
       </Alert>
     );
@@ -71,7 +68,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
       <Alert className="mb-4">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Vous devez être connecté pour utiliser l'assistant IA.
+          You must be logged in to use the AI assistant.
         </AlertDescription>
       </Alert>
     );

@@ -22,7 +22,7 @@ export const DailyLimitDisplay: React.FC<DailyLimitDisplayProps> = ({
   return (
     <div className="mb-4">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-sm font-medium">Questions quotidiennes</span>
+        <span className="text-sm font-medium">Daily Questions</span>
         <span className="text-sm font-medium">{count}/{limit}</span>
       </div>
       
@@ -36,7 +36,7 @@ export const DailyLimitDisplay: React.FC<DailyLimitDisplayProps> = ({
         <Alert variant="destructive" className="mt-2">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center gap-1">
-            <span>Limite atteinte. Réinitialisation à minuit</span>
+            <span>Daily limit reached. Resets at midnight</span>
             {resetTime && (
               <span className="flex items-center text-xs ml-1">
                 <Clock className="h-3 w-3 mr-1" />
