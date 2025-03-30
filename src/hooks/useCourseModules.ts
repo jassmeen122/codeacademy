@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CourseModule, CourseLesson } from "@/types/course";
@@ -24,8 +23,8 @@ type LessonRecord = {
   content: string | null;
   module_id: string;
   order_index: number;
-  is_published: boolean;
-  requires_completion: boolean;
+  is_published: boolean | null;
+  requires_completion: boolean | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -52,20 +51,12 @@ export const useCourseModules = (courseId: string) => {
       const moduleIds = (modulesData || []).map(module => module.id);
       
       if (moduleIds.length > 0) {
-        // Use the raw query approach with the new course_lessons table
+        // Use direct table query instead of RPC
         const { data: lessonsData, error: lessonsError } = await supabase
-          .rpc('get_course_lessons_for_modules', { module_ids: moduleIds })
-          .then(response => {
-            // If RPC doesn't exist yet, fall back to direct query
-            if (response.error && response.error.message.includes('function get_course_lessons_for_modules() does not exist')) {
-              return supabase
-                .from('course_lessons')
-                .select('*')
-                .in('module_id', moduleIds)
-                .order('order_index');
-            }
-            return response;
-          });
+          .from('course_lessons')
+          .select('*')
+          .in('module_id', moduleIds)
+          .order('order_index');
           
         if (lessonsError) {
           console.error("Error fetching lessons:", lessonsError);
