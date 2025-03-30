@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CourseModule, CourseLesson } from "@/types/course";
@@ -51,7 +52,7 @@ export const useCourseModules = (courseId: string) => {
       const moduleIds = (modulesData || []).map(module => module.id);
       
       if (moduleIds.length > 0) {
-        // Use direct table query instead of RPC
+        // Use direct table query
         const { data: lessonsData, error: lessonsError } = await supabase
           .from('course_lessons')
           .select('*')
@@ -63,8 +64,8 @@ export const useCourseModules = (courseId: string) => {
           throw lessonsError;
         }
         
-        // Use a type assertion with unknown first
-        const typedLessonsData = (lessonsData || []) as unknown as LessonRecord[];
+        // Convert to proper type - first as unknown, then to our expected type
+        const typedLessonsData = lessonsData as unknown as LessonRecord[];
         
         // Combine modules with their lessons
         const modulesWithLessons = (modulesData || []).map(module => {
