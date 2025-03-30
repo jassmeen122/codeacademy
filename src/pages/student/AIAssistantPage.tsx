@@ -8,12 +8,15 @@ import { InputForm } from "@/components/ai-assistant/InputForm";
 import { ErrorDisplay } from "@/components/ai-assistant/ErrorDisplay";
 import { ChatActions } from "@/components/ai-assistant/ChatActions";
 import { AIAssistantInfo } from "@/components/ai-assistant/AIAssistantInfo";
+import { DailyLimitDisplay } from "@/components/ai-assistant/DailyLimitDisplay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InfoIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuthState } from "@/hooks/useAuthState";
 
 const AIAssistantPage = () => {
+  const { user, isLoading: isAuthLoading } = useAuthState();
   const {
     messages,
     isLoading,
@@ -21,7 +24,8 @@ const AIAssistantPage = () => {
     sendMessage,
     clearChat,
     retryLastMessage,
-    switchAssistantModel
+    switchAssistantModel,
+    dailyLimit
   } = useAIAssistant();
   
   const [currentTab, setCurrentTab] = useState<string>("chat");
@@ -29,6 +33,20 @@ const AIAssistantPage = () => {
   const handleSwitchModel = () => {
     switchAssistantModel();
     toast.success("Essai avec un modèle alternatif en cours...");
+  };
+
+  const handleSendMessage = (userInput: string, code?: string, language?: string) => {
+    if (!user && !isAuthLoading) {
+      toast.error("Veuillez vous connecter pour utiliser l'assistant IA");
+      return;
+    }
+    
+    if (dailyLimit.limitReached) {
+      toast.error(`Vous avez atteint votre limite quotidienne de ${dailyLimit.limit} questions. La limite sera réinitialisée à minuit.`);
+      return;
+    }
+    
+    sendMessage(userInput, code, language);
   };
 
   return (
@@ -70,13 +88,22 @@ const AIAssistantPage = () => {
           <TabsContent value="chat">
             <Card className="h-[calc(100vh-20rem)]">
               <CardContent className="p-4 h-full flex flex-col">
+                {user && <DailyLimitDisplay 
+                  count={dailyLimit.count}
+                  limit={dailyLimit.limit}
+                  limitReached={dailyLimit.limitReached}
+                  resetTime={dailyLimit.resetTime}
+                />}
+                
                 <MessageDisplay 
                   messages={messages} 
                   isLoading={isLoading} 
                 />
                 <InputForm 
-                  onSubmit={sendMessage} 
-                  isLoading={isLoading} 
+                  onSubmit={handleSendMessage} 
+                  isLoading={isLoading}
+                  disabled={dailyLimit.limitReached || (!user && !isAuthLoading)}
+                  limitReached={dailyLimit.limitReached}
                 />
               </CardContent>
             </Card>
