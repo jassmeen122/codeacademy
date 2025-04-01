@@ -32,6 +32,8 @@ import LanguageSelectionPage from '@/pages/student/LanguageSelectionPage';
 import LanguageCoursePage from '@/pages/student/LanguageCoursePage';
 import LanguageSummaryPage from '@/pages/student/LanguageSummaryPage';
 import LanguageQuizPage from '@/pages/student/LanguageQuizPage';
+import SocialFeedPage from '@/pages/student/SocialFeedPage';
+import MessagesPage from '@/pages/student/MessagesPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -78,6 +80,10 @@ function App() {
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
+          
+          {/* Social features routes */}
+          <Route path="/student/social" element={<SocialFeedPage />} />
+          <Route path="/student/messages" element={<MessagesPage />} />
           
           {/* Nouvelles routes pour le système de cours simplifiés */}
           <Route path="/student/language-selection" element={<LanguageSelectionPage />} />
