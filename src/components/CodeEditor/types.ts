@@ -1,5 +1,5 @@
 
-export type ProgrammingLanguage = 'javascript' | 'python' | 'java' | 'c' | 'cpp';
+export type ProgrammingLanguage = 'javascript' | 'python' | 'java' | 'c' | 'cpp' | 'php';
 
 export interface CodeEditorProps {
   initialLanguage?: ProgrammingLanguage;
@@ -39,6 +39,11 @@ export const languageOptions: Record<ProgrammingLanguage, LanguageOption> = {
     label: 'C++',
     monacoId: 'cpp',
     fileExtension: 'cpp'
+  },
+  php: {
+    label: 'PHP',
+    monacoId: 'php',
+    fileExtension: 'php'
   }
 };
 
@@ -102,5 +107,18 @@ int main() {
     
     return 0;
 }
+`,
+  php: `<?php
+// PHP Code Editor
+// Bienvenue dans l'éditeur de code PHP!
+
+function helloWorld() {
+    echo "Bonjour, monde!";
+    return "Hello, world!";
+}
+
+// Exemple d'utilisation
+helloWorld();
+?>
 `
 };
