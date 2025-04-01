@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { Menu, X, Moon, Sun, User } from "lucide-react";
+import { Menu, X, Moon, Sun, User, Youtube } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -79,6 +78,16 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
+            {!loading && session && user?.role === 'student' && (
+              <Button
+                variant="outline"
+                className="gap-2 border-red-500 text-red-500 hover:bg-red-500/10"
+                onClick={() => navigate('/student/yt-dev-tutorials')}
+              >
+                <Youtube className="h-4 w-4" />
+                YT Dev Tutorials
+              </Button>
+            )}
             {!loading && session && (
               <Button
                 variant="outline"

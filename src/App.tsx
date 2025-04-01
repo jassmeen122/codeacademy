@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -35,6 +36,7 @@ import SocialFeedPage from '@/pages/student/SocialFeedPage';
 import MessagesPage from '@/pages/student/MessagesPage';
 import KnowledgeSharePage from '@/pages/KnowledgeSharePage';
 import InternshipOpportunitiesPage from '@/pages/student/InternshipOpportunitiesPage';
+import YTDevTutorialsPage from '@/pages/student/YTDevTutorialsPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -84,6 +86,9 @@ function App() {
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
+          
+          {/* New route for YT Dev Tutorials */}
+          <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
           
           {/* Social features routes */}
           <Route path="/student/social" element={<SocialFeedPage />} />

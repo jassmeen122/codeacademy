@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -22,7 +21,8 @@ import {
   Users,
   MessageCircle,
   Book,
-  Briefcase
+  Briefcase,
+  Youtube
 } from 'lucide-react';
 
 const links = [
@@ -50,6 +50,11 @@ const links = [
     title: 'Exercises',
     href: '/student/exercises',
     icon: FileCode,
+  },
+  {
+    title: 'YT Dev Tutorials',
+    href: '/student/yt-dev-tutorials',
+    icon: Youtube,
   },
   {
     title: 'Discussion Forum',

@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { YoutubeIcon, FileText, ArrowLeft, Book } from "lucide-react";
+import { YoutubeIcon, FileText, ArrowLeft, Book, Video } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { languageVideoMap, openYoutubeVideo } from '@/utils/youtubeVideoMap';
 
@@ -73,22 +73,22 @@ const LanguageCoursePage = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <Card className="overflow-hidden">
             <CardHeader className="bg-primary/10">
               <CardTitle className="flex items-center">
                 <YoutubeIcon className="mr-2 h-5 w-5 text-red-600" />
-                Cours Vidéo
+                Tutoriels YouTube
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <p className="mb-6">Accédez au cours complet sur YouTube et apprenez les bases de {languageName}.</p>
+              <p className="mb-6">Accédez à nos tutoriels YouTube pour {languageName} et d'autres langages de programmation.</p>
               <Button 
                 className="w-full bg-red-600 hover:bg-red-700"
-                onClick={() => openYoutubeVideo(videos.courseVideo)}
+                onClick={() => navigate('/student/yt-dev-tutorials')}
               >
                 <YoutubeIcon className="mr-2 h-4 w-4" />
-                Voir le Cours sur YouTube
+                Voir tous les Tutoriels
               </Button>
             </CardContent>
           </Card>
@@ -104,37 +104,36 @@ const LanguageCoursePage = () => {
               <p className="mb-6">Renforcez vos compétences avec ces exercices pratiques sur {languageName}.</p>
               <Button 
                 className="w-full"
-                onClick={() => openYoutubeVideo(videos.exercisesVideo)}
+                onClick={() => navigate('/student/exercises')}
               >
-                <YoutubeIcon className="mr-2 h-4 w-4" />
-                Voir les Exercices sur YouTube
+                <FileText className="mr-2 h-4 w-4" />
+                Voir les Exercices
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Card for detailed summary */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-primary/10">
+              <CardTitle className="flex items-center">
+                <Book className="mr-2 h-5 w-5 text-primary" />
+                Résumé Détaillé
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <p className="mb-6">
+                Consultez notre résumé détaillé pour apprendre les concepts clés de {languageName}.
+              </p>
+              <Button 
+                className="w-full"
+                onClick={() => navigate(`/student/language-summary/${languageId}`)}
+              >
+                <Book className="mr-2 h-4 w-4" />
+                Voir le Résumé
               </Button>
             </CardContent>
           </Card>
         </div>
-
-        {/* New card for detailed summary */}
-        <Card className="overflow-hidden">
-          <CardHeader className="bg-primary/10">
-            <CardTitle className="flex items-center">
-              <Book className="mr-2 h-5 w-5 text-primary" />
-              Résumé Détaillé du Langage
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p className="mb-6">
-              Consultez notre résumé détaillé pour apprendre les concepts clés de {languageName}, 
-              avec des explications claires et des exemples pratiques.
-            </p>
-            <Button 
-              className="w-full"
-              onClick={() => navigate(`/student/language-summary/${languageId}`)}
-            >
-              <Book className="mr-2 h-4 w-4" />
-              Voir le Résumé Détaillé
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

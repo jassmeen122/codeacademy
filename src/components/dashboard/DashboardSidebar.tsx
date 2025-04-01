@@ -1,4 +1,3 @@
-
 import {
   Book,
   Code,
@@ -28,7 +27,8 @@ import {
   ListChecks,
   Pencil,
   Gamepad2,
-  Briefcase
+  Briefcase,
+  Youtube
 } from "lucide-react";
 import {
   Sidebar,
@@ -181,7 +181,7 @@ const studentMenuItems: MenuItem[] = [
   {
     title: "Code Editor",
     icon: Code,
-    href: "/student/editor", // Updated to match the route in App.tsx
+    href: "/student/editor",
   },
   {
     title: "AI Assistant",
@@ -192,6 +192,11 @@ const studentMenuItems: MenuItem[] = [
     title: "Exercises",
     icon: FileCode,
     href: "/student/exercises",
+  },
+  {
+    title: "YT Dev Tutorials",
+    icon: Youtube,
+    href: "/student/yt-dev-tutorials",
   },
   {
     title: "Projects",
