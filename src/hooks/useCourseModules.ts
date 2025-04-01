@@ -24,8 +24,8 @@ type LessonRecord = {
   content: string | null;
   module_id: string;
   order_index: number;
-  is_published: boolean | null;
-  requires_completion: boolean | null;
+  is_published: boolean;
+  requires_completion: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -52,20 +52,28 @@ export const useCourseModules = (courseId: string) => {
       const moduleIds = (modulesData || []).map(module => module.id);
       
       if (moduleIds.length > 0) {
-        // Use direct table query
+        // Use the raw query approach with the new course_lessons table
         const { data: lessonsData, error: lessonsError } = await supabase
-          .from('course_lessons')
-          .select('*')
-          .in('module_id', moduleIds)
-          .order('order_index');
+          .rpc('get_course_lessons_for_modules', { module_ids: moduleIds })
+          .then(response => {
+            // If RPC doesn't exist yet, fall back to direct query
+            if (response.error && response.error.message.includes('function get_course_lessons_for_modules() does not exist')) {
+              return supabase
+                .from('course_lessons')
+                .select('*')
+                .in('module_id', moduleIds)
+                .order('order_index');
+            }
+            return response;
+          });
           
         if (lessonsError) {
           console.error("Error fetching lessons:", lessonsError);
           throw lessonsError;
         }
         
-        // Convert to proper type - first as unknown, then to our expected type
-        const typedLessonsData = lessonsData as unknown as LessonRecord[];
+        // Use a type assertion with unknown first
+        const typedLessonsData = (lessonsData || []) as unknown as LessonRecord[];
         
         // Combine modules with their lessons
         const modulesWithLessons = (modulesData || []).map(module => {

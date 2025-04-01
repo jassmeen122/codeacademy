@@ -10,9 +10,6 @@ const corsHeaders = {
 // Define allowed programming languages
 const ALLOWED_LANGUAGES = ["python", "java", "javascript", "c", "cpp", "c++", "php", "sql"];
 
-// Max daily queries per user
-const MAX_DAILY_QUERIES = 4;
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -48,41 +45,13 @@ serve(async (req) => {
       throw new Error('Format de requête invalide');
     });
     
-    const { prompt, messageHistory, code, language, userId } = requestData;
+    const { prompt, messageHistory, code, language } = requestData;
     
     console.log("Request details:");
     console.log("- Prompt preview:", prompt ? prompt.substring(0, 50) + '...' : 'No prompt');
     console.log("- Message history length:", messageHistory?.length || 0);
     console.log("- Code assistance:", code ? 'Yes' : 'No');
     console.log("- Language:", language || 'N/A');
-    console.log("- User ID:", userId || 'Anonymous user');
-    
-    // Check if the user has reached the daily limit (only if userId is provided)
-    if (userId) {
-      const { count, resetTime } = await checkUserDailyQueries(userId);
-      
-      console.log(`User daily query count: ${count}/${MAX_DAILY_QUERIES}`);
-      
-      if (count >= MAX_DAILY_QUERIES) {
-        const resetTimeFormatted = new Date(resetTime).toLocaleString('fr-FR', {
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'Europe/Paris'
-        });
-        
-        return new Response(
-          JSON.stringify({ 
-            reply: { 
-              role: "assistant", 
-              content: `Vous avez atteint votre limite quotidienne de ${MAX_DAILY_QUERIES} questions. La limite sera réinitialisée à minuit. Revenez demain pour continuer à apprendre!`
-            },
-            limitReached: true,
-            resetTime: resetTimeFormatted
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
     
     // Check if the query is related to programming languages
     const isProgrammingRelated = checkIfProgrammingRelated(prompt, code, language);
@@ -165,11 +134,6 @@ serve(async (req) => {
       
       const assistantReply = data.choices[0].message;
 
-      // Increment the user's daily query count after successful response (if userId provided)
-      if (userId) {
-        await incrementUserQueryCount(userId);
-      }
-
       return new Response(
         JSON.stringify({ reply: assistantReply }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -221,101 +185,4 @@ function checkIfProgrammingRelated(prompt: string, code?: string, codeLanguage?:
   );
   
   return containsLanguage || containsProgrammingKeyword;
-}
-
-// Check user's daily query count
-async function checkUserDailyQueries(userId: string) {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
-  
-  // Get supabase admin client
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
-  
-  const supabaseAdmin = {
-    url: supabaseUrl,
-    key: supabaseServiceKey,
-  };
-  
-  try {
-    // Check if we have the necessary environment variables
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase credentials in environment variables');
-      return { count: 0, resetTime: tomorrow };
-    }
-    
-    // Make a fetch request to Supabase REST API
-    const response = await fetch(
-      `${supabaseAdmin.url}/rest/v1/ai_query_logs?user_id=eq.${userId}&created_at=gte.${today}&created_at=lt.${tomorrow}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseAdmin.key,
-          'Authorization': `Bearer ${supabaseAdmin.key}`,
-          'Prefer': 'count=exact'
-        },
-      }
-    );
-    
-    if (!response.ok) {
-      console.error('Error fetching query count:', response.status, await response.text());
-      return { count: 0, resetTime: tomorrow };
-    }
-    
-    const count = parseInt(response.headers.get('content-range')?.split('/')[1] || '0');
-    return { count, resetTime: tomorrow };
-    
-  } catch (error) {
-    console.error('Error checking user query count:', error);
-    return { count: 0, resetTime: tomorrow };
-  }
-}
-
-// Increment user's daily query count
-async function incrementUserQueryCount(userId: string) {
-  const now = new Date().toISOString();
-  
-  // Get supabase admin client
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
-  
-  const supabaseAdmin = {
-    url: supabaseUrl,
-    key: supabaseServiceKey,
-  };
-  
-  try {
-    // Check if we have the necessary environment variables
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase credentials in environment variables');
-      return;
-    }
-    
-    // Make a fetch request to Supabase REST API to insert a log
-    const response = await fetch(
-      `${supabaseAdmin.url}/rest/v1/ai_query_logs`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseAdmin.key,
-          'Authorization': `Bearer ${supabaseAdmin.key}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          created_at: now
-        })
-      }
-    );
-    
-    if (!response.ok) {
-      console.error('Error incrementing query count:', response.status, await response.text());
-    }
-    
-  } catch (error) {
-    console.error('Error incrementing user query count:', error);
-  }
 }

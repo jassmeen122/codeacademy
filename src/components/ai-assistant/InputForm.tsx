@@ -2,20 +2,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { SendHorizontal, Code, Trash, FileCode, AlertCircle } from "lucide-react";
+import { SendHorizontal, Code, Trash, FileCode } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface InputFormProps {
   onSubmit: (input: string, code?: string, language?: string) => void;
   isLoading: boolean;
-  disabled?: boolean;
-  limitReached?: boolean;
 }
 
-export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached = false }: InputFormProps) => {
+export const InputForm = ({ onSubmit, isLoading }: InputFormProps) => {
   const [input, setInput] = useState("");
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [code, setCode] = useState("");
@@ -24,14 +21,14 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
 
   // Focus on textarea when component mounts
   useEffect(() => {
-    if (textareaRef.current && !disabled && !limitReached) {
+    if (textareaRef.current) {
       textareaRef.current.focus();
     }
-  }, [disabled, limitReached]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!input.trim() && !code.trim()) || isLoading || disabled || limitReached) return;
+    if ((!input.trim() && !code.trim()) || isLoading) return;
     
     onSubmit(input, showCodeInput ? code : undefined, showCodeInput ? language : undefined);
     setInput("");
@@ -55,28 +52,6 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
     "php", "ruby", "swift", "kotlin", "go", "rust", "html", "css", "c"
   ];
 
-  if (limitReached) {
-    return (
-      <Alert variant="destructive" className="mb-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Vous avez atteint votre limite quotidienne de questions. Revenez demain pour continuer à apprendre!
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (disabled) {
-    return (
-      <Alert className="mb-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Vous devez être connecté pour utiliser l'assistant IA.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
       <Textarea
@@ -88,7 +63,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
           ? "Posez une question sur votre code..." 
           : "Posez n'importe quelle question sur la programmation..."}
         className="flex-1 min-h-[80px] resize-none transition-all"
-        disabled={isLoading || disabled || limitReached}
+        disabled={isLoading}
       />
       
       <AnimatePresence>
@@ -104,7 +79,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
               <Select 
                 value={language} 
                 onValueChange={setLanguage}
-                disabled={isLoading || disabled || limitReached}
+                disabled={isLoading}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sélectionnez un langage" />
@@ -126,7 +101,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
                       variant="outline" 
                       size="icon"
                       onClick={clearInputs}
-                      disabled={isLoading || disabled || limitReached || (!input && !code)}
+                      disabled={isLoading || (!input && !code)}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
@@ -143,7 +118,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
               onChange={(e) => setCode(e.target.value)}
               placeholder={`Collez votre code ${language} ici...`}
               className="flex-1 min-h-[150px] font-mono text-sm resize-none"
-              disabled={isLoading || disabled || limitReached}
+              disabled={isLoading}
             />
           </motion.div>
         )}
@@ -159,7 +134,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
                   variant="outline" 
                   size="sm"
                   onClick={() => setShowCodeInput(!showCodeInput)}
-                  disabled={isLoading || disabled || limitReached}
+                  disabled={isLoading}
                 >
                   {showCodeInput ? <FileCode className="h-4 w-4 mr-2" /> : <Code className="h-4 w-4 mr-2" />}
                   {showCodeInput ? "Masquer Code" : "Ajouter Code"}
@@ -178,7 +153,7 @@ export const InputForm = ({ onSubmit, isLoading, disabled = false, limitReached 
         
         <Button 
           type="submit" 
-          disabled={isLoading || disabled || limitReached || (!input.trim() && !code.trim())}
+          disabled={isLoading || (!input.trim() && !code.trim())}
           className="transition-all"
         >
           <SendHorizontal className="h-4 w-4 mr-2" />
