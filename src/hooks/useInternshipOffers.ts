@@ -63,6 +63,15 @@ export const useInternshipOffers = () => {
     }
 
     try {
+      console.log('Creating internship offer:', offer);
+      
+      // Ensure required fields exist
+      if (!offer.title || !offer.company || !offer.description || !offer.required_skills || 
+          !offer.industry || !offer.location || !offer.duration) {
+        toast.error('Please fill in all required fields');
+        return null;
+      }
+      
       const newOffer = {
         ...offer,
         status: 'open' as InternshipStatus
@@ -74,7 +83,10 @@ export const useInternshipOffers = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error creating internship:', error);
+        throw error;
+      }
       
       // Notify students about the new internship
       try {
@@ -103,7 +115,7 @@ export const useInternshipOffers = () => {
       return data;
     } catch (err: any) {
       console.error('Error creating internship offer:', err);
-      toast.error('Failed to create internship offer');
+      toast.error(`Failed to create internship offer: ${err.message || 'Unknown error'}`);
       return null;
     }
   };

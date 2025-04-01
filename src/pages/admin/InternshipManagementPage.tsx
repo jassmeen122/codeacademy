@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { InternshipCard } from '@/components/internships/InternshipCard';
@@ -13,6 +13,7 @@ import { Briefcase, Plus, AlertTriangle } from 'lucide-react';
 import { ApplicationList } from '@/components/internships/ApplicationList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthState } from '@/hooks/useAuthState';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,11 +48,18 @@ export default function InternshipManagementPage() {
   const [activeTab, setActiveTab] = useState('manage');
 
   // Redirect if not admin
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && user.role !== 'admin') {
       window.location.href = '/student';
     }
   }, [user]);
+
+  // Fetch applications when page loads
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      fetchApplications();
+    }
+  }, [user, fetchApplications]);
 
   const handleCreateInternship = () => {
     setEditingInternship(null);
@@ -77,12 +85,21 @@ export default function InternshipManagementPage() {
   };
 
   const handleSubmitInternship = async (values: any) => {
-    if (editingInternship) {
-      await updateInternshipOffer(editingInternship.id, values);
-    } else {
-      await createInternshipOffer(values);
+    try {
+      if (editingInternship) {
+        await updateInternshipOffer(editingInternship.id, values);
+        toast.success("Internship updated successfully");
+      } else {
+        const result = await createInternshipOffer(values);
+        if (result) {
+          toast.success("New internship created successfully");
+        }
+      }
+      setFormSheetOpen(false);
+    } catch (error) {
+      console.error("Error handling internship submission:", error);
+      toast.error("Failed to save internship. Please try again.");
     }
-    setFormSheetOpen(false);
   };
 
   const handleApproveApplication = async (id: string) => {
@@ -99,10 +116,15 @@ export default function InternshipManagementPage() {
     isRemote?: boolean;
     searchTerm?: string;
   }) => {
+    // Normalize industry and location filters to handle "all" values
+    const industry = filters.industry === 'all-industries' ? undefined : filters.industry;
+    const location = filters.location === 'all-locations' ? undefined : filters.location;
+    
     fetchInternshipOffers({
-      industry: filters.industry,
-      location: filters.location,
+      industry,
+      location,
       isRemote: filters.isRemote,
+      searchTerm: filters.searchTerm
     });
   };
 
