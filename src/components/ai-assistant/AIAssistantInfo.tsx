@@ -1,85 +1,88 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Code, BookOpen, CheckCircle, XCircle } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Brain, Code, Terminal, Info, Check } from "lucide-react";
 
-export const AIAssistantInfo = () => {
+export const AIAssistantInfo: React.FC = () => {
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code className="h-5 w-5 text-primary" />
-            À propos de l'assistant IA de programmation
-          </CardTitle>
-          <CardDescription>
-            Votre assistant personnel pour l'apprentissage et la résolution de problèmes de programmation
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p>
-            Cet assistant IA est spécialement conçu pour vous aider avec les langages de programmation 
-            suivants : Python, Java, JavaScript, C, C++, PHP et SQL. Posez des questions sur la syntaxe, 
-            demandez des exemples de code, ou obtenez de l'aide pour déboguer votre code.
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
+          <Brain className="h-5 w-5 text-primary" />
+          Assistant IA de Programmation
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Un assistant spécialisé en programmation pour vous aider avec votre code et répondre à vos questions techniques.
+        </p>
+      </div>
+      
+      <div className="space-y-2">
+        <h4 className="font-medium">Capacités:</h4>
+        <div className="space-y-2">
+          <div className="flex items-start gap-2">
+            <Check className="h-4 w-4 text-green-500 mt-0.5" />
+            <div className="text-sm">
+              <span className="font-medium">Questions sur le code</span>
+              <p className="text-muted-foreground">Posez des questions sur Python, JavaScript, Java, C/C++, PHP et SQL.</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2">
+            <Check className="h-4 w-4 text-green-500 mt-0.5" />
+            <div className="text-sm">
+              <span className="font-medium">Analyse de code</span>
+              <p className="text-muted-foreground">Partagez votre code pour recevoir des suggestions d'amélioration.</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2">
+            <Check className="h-4 w-4 text-green-500 mt-0.5" />
+            <div className="text-sm">
+              <span className="font-medium">Explication des erreurs</span>
+              <p className="text-muted-foreground">Comprenez les erreurs dans votre code avec des explications claires.</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2">
+            <Check className="h-4 w-4 text-green-500 mt-0.5" />
+            <div className="text-sm">
+              <span className="font-medium">Concepts de programmation</span>
+              <p className="text-muted-foreground">Apprenez sur les algorithmes, les structures de données et les bonnes pratiques.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <Card className="bg-muted/50 p-3">
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            Pour de meilleurs résultats, soyez précis dans vos questions et fournissez des contextes clairs. Si l'assistant ne répond pas correctement, essayez de reformuler votre question ou utilisez le bouton "Changer de modèle".
           </p>
-          
-          <div className="mt-4">
-            <h3 className="text-lg font-medium mb-2 flex items-center">
-              <BookOpen className="h-4 w-4 mr-2 text-primary" />
-              Comment utiliser l'assistant
-            </h3>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>Posez une question spécifique sur un des langages supportés</li>
-              <li>Collez votre code pour obtenir des explications ou des corrections</li>
-              <li>Demandez des exemples pour illustrer des concepts de programmation</li>
-              <li>Utilisez l'option "Ajouter Code" pour inclure du code dans votre question</li>
-            </ul>
-          </div>
-          
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-lg font-medium mb-2 flex items-center">
-                <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-                Ce que l'assistant peut faire
-              </h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Expliquer des concepts de programmation</li>
-                <li>Fournir des exemples de code</li>
-                <li>Aider au débogage</li>
-                <li>Expliquer des erreurs courantes</li>
-                <li>Suggérer des bonnes pratiques</li>
-                <li>Répondre aux questions sur la syntaxe</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-medium mb-2 flex items-center">
-                <XCircle className="h-4 w-4 mr-2 text-red-500" />
-                Limitations de l'assistant
-              </h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Ne répond qu'aux questions sur les 7 langages supportés</li>
-                <li>Ne peut pas exécuter de code</li>
-                <li>N'a pas accès à Internet</li>
-                <li>Connaissances limitées sur les frameworks récents</li>
-                <li>Ne peut pas aider avec des langages non supportés</li>
-                <li>N'a pas accès à votre environnement de développement</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="mt-4 p-4 bg-amber-50 rounded-md border border-amber-200">
-            <h3 className="font-medium text-amber-800 mb-1">Langages supportés</h3>
-            <div className="flex flex-wrap gap-2">
-              {["Python", "Java", "JavaScript", "C", "C++", "PHP", "SQL"].map((lang) => (
-                <span key={lang} className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-sm">
-                  {lang}
-                </span>
-              ))}
-            </div>
-          </div>
-        </CardContent>
+        </div>
       </Card>
+      
+      <div className="border-t pt-4">
+        <h4 className="font-medium mb-2">Exemples de questions:</h4>
+        <ul className="space-y-2 text-sm">
+          <li className="flex items-center gap-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            "Comment créer une fonction récursive en Python?"
+          </li>
+          <li className="flex items-center gap-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            "Explique-moi les closures en JavaScript."
+          </li>
+          <li className="flex items-center gap-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            "Quelle est la différence entre un tableau et une liste chaînée?"
+          </li>
+          <li className="flex items-center gap-2">
+            <Terminal className="h-4 w-4 text-primary" />
+            "Comment optimiser une requête SQL qui est lente?"
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

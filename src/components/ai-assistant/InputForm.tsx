@@ -1,165 +1,128 @@
 
-import React, { useState, useRef, useEffect } from "react";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { SendHorizontal, Code, Trash, FileCode } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { motion, AnimatePresence } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Send, ArrowUpCircle } from "lucide-react";
 
 interface InputFormProps {
-  onSubmit: (input: string, code?: string, language?: string) => void;
+  onSendMessage: (input: string, code?: string, language?: string) => void;
   isLoading: boolean;
 }
 
-export const InputForm = ({ onSubmit, isLoading }: InputFormProps) => {
+export const InputForm: React.FC<InputFormProps> = ({ onSendMessage, isLoading }) => {
   const [input, setInput] = useState("");
-  const [showCodeInput, setShowCodeInput] = useState(false);
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("javascript");
+  const [activeTab, setActiveTab] = useState<"text" | "code">("text");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Focus on textarea when component mounts
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSend = () => {
     if ((!input.trim() && !code.trim()) || isLoading) return;
     
-    onSubmit(input, showCodeInput ? code : undefined, showCodeInput ? language : undefined);
+    onSendMessage(
+      input, 
+      activeTab === "code" ? code : undefined, 
+      activeTab === "code" ? language : undefined
+    );
+    
     setInput("");
-    setCode("");
+    // Don't clear code to allow for iterations
+    
+    // Focus back on textarea after sending
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Submit on Ctrl+Enter or Cmd+Enter
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      handleSubmit(e);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
-  const clearInputs = () => {
-    setInput("");
-    setCode("");
-  };
-
-  const programmingLanguages = [
-    "javascript", "typescript", "python", "java", "csharp", "cpp", 
-    "php", "ruby", "swift", "kotlin", "go", "rust", "html", "css", "c"
-  ];
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-      <Textarea
-        ref={textareaRef}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={showCodeInput 
-          ? "Posez une question sur votre code..." 
-          : "Posez n'importe quelle question sur la programmation..."}
-        className="flex-1 min-h-[80px] resize-none transition-all"
-        disabled={isLoading}
-      />
-      
-      <AnimatePresence>
-        {showCodeInput && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="flex flex-col gap-2 overflow-hidden"
-          >
-            <div className="flex gap-2">
-              <Select 
-                value={language} 
+    <div className="border-t pt-4">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "text" | "code")}>
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="text">Message Simple</TabsTrigger>
+          <TabsTrigger value="code">Partager du Code</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="text" className="m-0">
+          <div className="flex flex-col gap-2">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Posez votre question sur la programmation..."
+              className="min-h-[100px] flex-1 resize-none"
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="code" className="m-0">
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-2 items-center">
+              <label className="text-sm font-medium">Langage:</label>
+              <Select
+                value={language}
                 onValueChange={setLanguage}
-                disabled={isLoading}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sélectionnez un langage" />
+                  <SelectValue placeholder="Langage" />
                 </SelectTrigger>
                 <SelectContent>
-                  {programmingLanguages.map((lang) => (
-                    <SelectItem key={lang} value={lang}>
-                      {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="javascript">JavaScript</SelectItem>
+                  <SelectItem value="python">Python</SelectItem>
+                  <SelectItem value="java">Java</SelectItem>
+                  <SelectItem value="c">C</SelectItem>
+                  <SelectItem value="cpp">C++</SelectItem>
+                  <SelectItem value="php">PHP</SelectItem>
+                  <SelectItem value="sql">SQL</SelectItem>
                 </SelectContent>
               </Select>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="icon"
-                      onClick={clearInputs}
-                      disabled={isLoading || (!input && !code)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Effacer</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
             </div>
             
             <Textarea
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder={`Collez votre code ${language} ici...`}
-              className="flex-1 min-h-[150px] font-mono text-sm resize-none"
-              disabled={isLoading}
+              className="min-h-[150px] font-mono text-sm"
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
+            
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Question ou instruction pour l'assistant (optionnel)..."
+              className="min-h-[60px]"
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
       
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowCodeInput(!showCodeInput)}
-                  disabled={isLoading}
-                >
-                  {showCodeInput ? <FileCode className="h-4 w-4 mr-2" /> : <Code className="h-4 w-4 mr-2" />}
-                  {showCodeInput ? "Masquer Code" : "Ajouter Code"}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{showCodeInput ? "Masquer l'éditeur de code" : "Ajouter du code à votre question"}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          
-          <span className="text-xs text-gray-500 hidden sm:inline">
-            Appuyez sur Ctrl+Entrée pour envoyer
-          </span>
-        </div>
-        
+      <div className="flex justify-end mt-4">
         <Button 
-          type="submit" 
-          disabled={isLoading || (!input.trim() && !code.trim())}
-          className="transition-all"
+          onClick={handleSend} 
+          disabled={isLoading || ((!input.trim()) && (!code.trim() && activeTab === "code"))}
+          className="gap-2"
         >
-          <SendHorizontal className="h-4 w-4 mr-2" />
-          {isLoading ? "En attente..." : "Envoyer"}
+          {isLoading ? (
+            <>
+              <ArrowUpCircle className="h-4 w-4 animate-spin" />
+              Envoi en cours...
+            </>
+          ) : (
+            <>
+              <Send className="h-4 w-4" />
+              Envoyer
+            </>
+          )}
         </Button>
       </div>
-    </form>
+    </div>
   );
 };

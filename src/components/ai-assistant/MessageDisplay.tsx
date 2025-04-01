@@ -4,6 +4,7 @@ import { Brain, UserCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormattedMessage } from "./FormattedMessage";
 import { motion, AnimatePresence } from "framer-motion";
+import "./ai-assistant.css";
 
 type Message = {
   role: "user" | "assistant";
