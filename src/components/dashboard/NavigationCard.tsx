@@ -1,18 +1,15 @@
 
 import { LucideIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface NavigationCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
   buttonText: string;
-  buttonVariant?: "default" | "outline";
   onClick?: () => void;
-  href?: string;
-  children?: React.ReactNode;
+  className?: string;
 }
 
 export const NavigationCard = ({
@@ -20,48 +17,30 @@ export const NavigationCard = ({
   title,
   description,
   buttonText,
-  buttonVariant = "outline",
   onClick,
-  href,
-  children
+  className,
 }: NavigationCardProps) => {
-  // Render button based on whether href or onClick is provided
-  const renderButton = () => {
-    if (href) {
-      return (
-        <Button 
-          className="w-full" 
-          variant={buttonVariant}
-          asChild
-        >
-          <Link to={href}>{buttonText}</Link>
-        </Button>
-      );
-    }
-    
-    return (
-      <Button 
-        className="w-full" 
-        variant={buttonVariant}
-        onClick={onClick}
-      >
-        {buttonText}
-      </Button>
-    );
-  };
-
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Icon className="h-5 w-5" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600 mb-4">{description}</p>
-        {children || renderButton()}
-      </CardContent>
-    </Card>
+    <div 
+      className={cn(
+        "border rounded-lg p-5 hover:shadow-md transition-all duration-200", 
+        className
+      )}
+    >
+      <div className="flex flex-col h-full">
+        <div className="mb-4">
+          <Icon className="h-7 w-7 text-primary" />
+        </div>
+        <h3 className="font-semibold text-lg mb-2">{title}</h3>
+        <p className="text-muted-foreground text-sm mb-4 flex-grow">{description}</p>
+        <Button 
+          onClick={onClick} 
+          className="w-full mt-auto"
+          variant="secondary"
+        >
+          {buttonText}
+        </Button>
+      </div>
+    </div>
   );
 };
