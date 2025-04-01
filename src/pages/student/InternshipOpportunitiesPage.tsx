@@ -52,10 +52,15 @@ export default function InternshipOpportunitiesPage() {
     // Filter by searchTerm client-side
     const searchTerm = filters.searchTerm?.toLowerCase();
     
+    // Normalize industry and location filters to handle "all" values
+    const industry = filters.industry === 'all-industries' ? undefined : filters.industry;
+    const location = filters.location === 'all-locations' ? undefined : filters.location;
+    
     fetchInternshipOffers({
-      industry: filters.industry,
-      location: filters.location,
+      industry,
+      location,
       isRemote: filters.isRemote,
+      searchTerm
     });
   };
 

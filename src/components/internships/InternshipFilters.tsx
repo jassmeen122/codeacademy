@@ -41,10 +41,10 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
         
         if (industriesError) throw industriesError;
         
-        // Extract unique values
+        // Extract unique values and filter out empty values
         const uniqueIndustries = Array.from(
           new Set(industriesData.map(item => item.industry))
-        );
+        ).filter(industry => industry && industry.trim() !== '');
         
         setIndustries(uniqueIndustries);
         
@@ -57,10 +57,10 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
         
         if (locationsError) throw locationsError;
         
-        // Extract unique values
+        // Extract unique values and filter out empty values
         const uniqueLocations = Array.from(
           new Set(locationsData.map(item => item.location))
-        );
+        ).filter(location => location && location.trim() !== '');
         
         setLocations(uniqueLocations);
       } catch (error) {
@@ -152,7 +152,7 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Industries</SelectItem>
+                <SelectItem value="all-industries">All Industries</SelectItem>
                 {industries.map((ind) => (
                   <SelectItem key={ind} value={ind}>
                     {ind}
@@ -171,7 +171,7 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="all-locations">All Locations</SelectItem>
                 {locations.map((loc) => (
                   <SelectItem key={loc} value={loc}>
                     {loc}
