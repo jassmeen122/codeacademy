@@ -54,10 +54,19 @@ const ExercisesPage = () => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedLanguageToPractice, setSelectedLanguageToPractice] = useState<ProgrammingLanguage>("javascript");
-  const [activeTab, setActiveTab] = useState<"all" | "python">("all");
+  const [activeTabSection, setActiveTabSection] = useState<"all" | "python">("all");
   const navigate = useNavigate();
   
-  const { output, analysis, isRunning, isAnalyzing, activeTab: activeTabState, setActiveTab, runCode, getAIHelp } = useCodeExecution();
+  const { 
+    output, 
+    analysis, 
+    isRunning, 
+    isAnalyzing, 
+    activeTab: editorActiveTab, 
+    setActiveTab: setEditorActiveTab, 
+    runCode, 
+    getAIHelp 
+  } = useCodeExecution();
 
   useEffect(() => {
     fetchExercises();
@@ -290,8 +299,8 @@ def solution(s):
           <Tabs 
             defaultValue="output" 
             className="mt-4"
-            value={activeTab}
-            onValueChange={(value: "output" | "analysis") => setActiveTab(value)}
+            value={editorActiveTab}
+            onValueChange={(value) => setEditorActiveTab(value)}
           >
             <div className="flex justify-between items-center">
               <TabsList>
@@ -380,7 +389,11 @@ def solution(s):
             </AlertDescription>
           </Alert>
 
-          <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "python")}>
+          <Tabs 
+            defaultValue="all" 
+            value={activeTabSection} 
+            onValueChange={(value) => setActiveTabSection(value as "all" | "python")}
+          >
             <TabsList className="mb-6">
               <TabsTrigger value="all">Tous les exercices</TabsTrigger>
               <TabsTrigger value="python">Exercices Python</TabsTrigger>
