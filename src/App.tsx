@@ -34,6 +34,7 @@ import LanguageQuizPage from '@/pages/student/LanguageQuizPage';
 import SocialFeedPage from '@/pages/student/SocialFeedPage';
 import MessagesPage from '@/pages/student/MessagesPage';
 import KnowledgeSharePage from '@/pages/KnowledgeSharePage';
+import InternshipOpportunitiesPage from '@/pages/student/InternshipOpportunitiesPage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -47,6 +48,7 @@ import TeacherSettingsPage from '@/pages/teacher/SettingsPage';
 // Admin Pages
 import AdminDashboardPage from '@/pages/AdminDashboard';
 import AdminSettingsPage from '@/pages/admin/SettingsPage';
+import InternshipManagementPage from '@/pages/admin/InternshipManagementPage';
 
 function App() {
   const isLoggedIn = false; // Replace with actual authentication check
@@ -87,6 +89,7 @@ function App() {
           <Route path="/student/social" element={<SocialFeedPage />} />
           <Route path="/student/messages" element={<MessagesPage />} />
           <Route path="/student/knowledge" element={<KnowledgeSharePage />} />
+          <Route path="/student/internships" element={<InternshipOpportunitiesPage />} />
           
           {/* Nouvelles routes pour le système de cours simplifiés */}
           <Route path="/student/language-selection" element={<LanguageSelectionPage />} />
@@ -111,6 +114,7 @@ function App() {
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/knowledge" element={<KnowledgeSharePage />} />
+          <Route path="/admin/internships" element={<InternshipManagementPage />} />
           
           {/* Keep existing admin routes */}
           <Route path="/admin/settings" element={<AdminSettingsPage />} />

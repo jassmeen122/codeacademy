@@ -21,7 +21,8 @@ import {
   Gamepad2,
   Users,
   MessageCircle,
-  Book
+  Book,
+  Briefcase
 } from 'lucide-react';
 
 const links = [
@@ -59,6 +60,11 @@ const links = [
     title: 'Projects',
     href: '/student/projects',
     icon: FolderKanban,
+  },
+  {
+    title: 'Internship Opportunities',
+    href: '/student/internships',
+    icon: Briefcase,
   },
   {
     title: 'Code Editor',

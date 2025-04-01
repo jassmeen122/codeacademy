@@ -523,6 +523,108 @@ export type Database = {
           },
         ]
       }
+      internship_applications: {
+        Row: {
+          cover_letter_url: string | null
+          created_at: string
+          cv_url: string | null
+          id: string
+          internship_id: string
+          motivation_text: string | null
+          status: Database["public"]["Enums"]["application_status"] | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          cover_letter_url?: string | null
+          created_at?: string
+          cv_url?: string | null
+          id?: string
+          internship_id: string
+          motivation_text?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          cover_letter_url?: string | null
+          created_at?: string
+          cv_url?: string | null
+          id?: string
+          internship_id?: string
+          motivation_text?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internship_applications_internship_id_fkey"
+            columns: ["internship_id"]
+            isOneToOne: false
+            referencedRelation: "internship_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internship_applications_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internship_offers: {
+        Row: {
+          company: string
+          created_at: string
+          description: string
+          duration: string
+          end_date: string | null
+          id: string
+          industry: string
+          is_remote: boolean | null
+          location: string
+          required_skills: string[]
+          start_date: string | null
+          status: Database["public"]["Enums"]["internship_status"] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          description: string
+          duration: string
+          end_date?: string | null
+          id?: string
+          industry: string
+          is_remote?: boolean | null
+          location: string
+          required_skills: string[]
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["internship_status"] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          description?: string
+          duration?: string
+          end_date?: string | null
+          id?: string
+          industry?: string
+          is_remote?: boolean | null
+          location?: string
+          required_skills?: string[]
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["internship_status"] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       language_summaries: {
         Row: {
           content: string
@@ -930,6 +1032,44 @@ export type Database = {
           },
         ]
       }
+      student_internship_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          industries: string[] | null
+          is_remote: boolean | null
+          locations: string[] | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industries?: string[] | null
+          is_remote?: boolean | null
+          locations?: string[] | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industries?: string[] | null
+          is_remote?: boolean | null
+          locations?: string[] | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_internship_preferences_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_progress: {
         Row: {
           completed_materials: Json | null
@@ -1225,6 +1365,7 @@ export type Database = {
       }
     }
     Enums: {
+      application_status: "pending" | "approved" | "rejected"
       course_category:
         | "Programming Fundamentals"
         | "Frontend Development"
@@ -1240,6 +1381,7 @@ export type Database = {
       difficulty_level: "Beginner" | "Intermediate" | "Advanced"
       exercise_status: "draft" | "published"
       exercise_type: "mcq" | "open_ended" | "coding" | "file_upload"
+      internship_status: "open" | "filled" | "closed"
       user_role: "admin" | "teacher" | "student"
     }
     CompositeTypes: {
