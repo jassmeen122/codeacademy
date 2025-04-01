@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Terminal, User, Mail, Lock, Code, Server } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,6 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -23,6 +28,30 @@ const Auth = () => {
     fullName: "",
     role: "student" as "admin" | "teacher" | "student",
   });
+  const [animatedText, setAnimatedText] = useState("");
+  const welcomeText = isSignUp 
+    ? "> Initializing new user registration..." 
+    : "> Authenticating user credentials...";
+
+  // Animation effect for terminal-style text
+  useEffect(() => {
+    let i = 0;
+    const txt = welcomeText;
+    const speed = 50; // typing speed in ms
+
+    const typeWriter = () => {
+      if (i < txt.length) {
+        setAnimatedText(txt.substring(0, i + 1));
+        i++;
+        setTimeout(typeWriter, speed);
+      }
+    };
+
+    // Reset animation when switching between signup and signin
+    setAnimatedText("");
+    i = 0;
+    typeWriter();
+  }, [isSignUp, welcomeText]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -177,101 +206,169 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      {/* Logo/Brand Section */}
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-primary mb-2">Code Academy</h1>
-        <p className="text-gray-600">Your Journey to Programming Excellence</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-100 font-mono">
+      {/* Terminal header bar */}
+      <div className="w-full max-w-md bg-gray-800 rounded-t-lg p-2 flex items-center gap-2 border-b border-gray-700">
+        <div className="flex gap-2">
+          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+        </div>
+        <div className="flex-1 text-center text-xs text-gray-400">
+          {isSignUp ? "user-registration.sh" : "user-authentication.sh"}
+        </div>
+        <Terminal className="w-4 h-4 text-gray-400" />
       </div>
 
-      <div className="w-full max-w-md p-8 glass-card rounded-xl border border-blue-100 shadow-lg">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          {isSignUp ? "Create an Account" : "Welcome"}
-        </h2>
+      <div className="w-full max-w-md p-8 bg-gray-800 rounded-b-lg border border-gray-700 shadow-lg matrix-animation">
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-primary mb-2 flex items-center gap-2">
+            <Code className="h-5 w-5" />
+            <span>CodeAcademy</span>
+          </h2>
+          <div className="comment-text text-xs"># Programming Excellence Platform</div>
+          
+          <div className="mt-4 font-mono text-sm text-primary">
+            {animatedText}
+            <span className="terminal-cursor"></span>
+          </div>
+        </div>
+        
         <form onSubmit={handleAuth} className="space-y-4">
           {isSignUp && (
             <>
-              <div>
-                <label htmlFor="fullName" className="text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  required={isSignUp}
-                  className="mt-1"
-                  placeholder="Enter your full name"
-                />
+              <div className="code-block p-3 rounded-md bg-gray-900">
+                <div className="comment-text mb-1"># User identification</div>
+                <div className="flex flex-col space-y-2">
+                  <Label htmlFor="fullName" className="text-sm font-medium text-gray-400">
+                    <span className="keyword-text">const</span> <span className="variable-text">fullName</span> <span className="text-gray-500">=</span>
+                  </Label>
+                  <div className="flex items-center">
+                    <User className="w-4 h-4 mr-2 text-gray-500" />
+                    <Input
+                      id="fullName"
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      required={isSignUp}
+                      className="bg-gray-950 border-gray-700 text-gray-200"
+                      placeholder="JohnDoe"
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label htmlFor="role" className="text-sm font-medium text-gray-700">
-                  Role
-                </label>
-                <Select
-                  value={formData.role}
-                  onValueChange={(value: "admin" | "teacher" | "student") =>
-                    setFormData({ ...formData, role: value })
-                  }
-                >
-                  <SelectTrigger className="w-full mt-1">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student/Learner</SelectItem>
-                    <SelectItem value="teacher">Teacher/Professor</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
-                  </SelectContent>
-                </Select>
+              
+              <div className="code-block p-3 rounded-md bg-gray-900">
+                <div className="comment-text mb-1"># Access level</div>
+                <div className="flex flex-col space-y-2">
+                  <Label htmlFor="role" className="text-sm font-medium text-gray-400">
+                    <span className="keyword-text">const</span> <span className="variable-text">role</span> <span className="text-gray-500">=</span>
+                  </Label>
+                  <div className="flex items-center">
+                    <Server className="w-4 h-4 mr-2 text-gray-500" />
+                    <Select
+                      value={formData.role}
+                      onValueChange={(value: "admin" | "teacher" | "student") =>
+                        setFormData({ ...formData, role: value })
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-gray-950 border-gray-700 text-gray-200">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-900 border-gray-700 text-gray-200">
+                        <SelectItem value="student" className="hover:bg-gray-800">student</SelectItem>
+                        <SelectItem value="teacher" className="hover:bg-gray-800">teacher</SelectItem>
+                        <SelectItem value="admin" className="hover:bg-gray-800">admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             </>
           )}
-          <div>
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              className="mt-1"
-              placeholder="Enter your email"
-            />
+          
+          <div className="code-block p-3 rounded-md bg-gray-900">
+            <div className="comment-text mb-1"># Authentication credentials</div>
+            <div className="flex flex-col space-y-4">
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium text-gray-400">
+                  <span className="keyword-text">const</span> <span className="variable-text">email</span> <span className="text-gray-500">=</span>
+                </Label>
+                <div className="flex items-center mt-1">
+                  <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    className="bg-gray-950 border-gray-700 text-gray-200"
+                    placeholder="user@example.com"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="password" className="text-sm font-medium text-gray-400">
+                  <span className="keyword-text">const</span> <span className="variable-text">password</span> <span className="text-gray-500">=</span>
+                </Label>
+                <div className="flex items-center mt-1">
+                  <Lock className="w-4 h-4 mr-2 text-gray-500" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                    className="bg-gray-950 border-gray-700 text-gray-200"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-              className="mt-1"
-              placeholder="Enter your password"
-            />
+          
+          <div className="pt-2">
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90 text-black font-bold" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="typing-animation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Terminal className="w-4 h-4 mr-2" />
+                  {isSignUp ? "register()" : "login()"}
+                </>
+              )}
+            </Button>
           </div>
-          <Button 
-            type="submit" 
-            className="w-full bg-primary hover:bg-primary/90" 
-            disabled={isLoading}
-          >
-            {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
-          </Button>
         </form>
+        
         <div className="mt-6 text-center">
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-primary hover:underline text-sm"
+            className="text-primary hover:underline text-sm font-mono"
           >
             {isSignUp
-              ? "Already have an account? Sign In"
-              : "Don't have an account? Sign Up"}
+              ? "import { SignIn } from '@auth';"
+              : "import { SignUp } from '@auth';"}
           </button>
+        </div>
+        
+        <div className="mt-4 text-xs text-gray-500 font-mono">
+          <div className="comment-text">
+            {isSignUp 
+              ? "// A confirmation email will be sent to verify your account"
+              : "// Enter your credentials to access your account"}
+          </div>
         </div>
       </div>
     </div>
