@@ -63,12 +63,14 @@ export const useInternshipOffers = () => {
     }
 
     try {
+      const newOffer = {
+        ...offer,
+        status: 'open'
+      };
+      
       const { data, error } = await supabase
         .from('internship_offers')
-        .insert({
-          ...offer,
-          status: 'open'
-        } as any)
+        .insert(newOffer)
         .select()
         .single();
       
@@ -115,7 +117,7 @@ export const useInternshipOffers = () => {
     try {
       const { error } = await supabase
         .from('internship_offers')
-        .update(updates as any)
+        .update(updates)
         .eq('id', id);
       
       if (error) throw error;

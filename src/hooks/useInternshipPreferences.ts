@@ -27,7 +27,7 @@ export const useInternshipPreferences = () => {
       
       if (error && error.code !== 'PGRST116') throw error; // No rows found is not an error
       
-      setPreferences(data || null);
+      setPreferences(data as StudentInternshipPreferences || null);
     } catch (err: any) {
       console.error('Error fetching internship preferences:', err);
       setError(err);
@@ -61,7 +61,11 @@ export const useInternshipPreferences = () => {
         // Update existing preferences
         const { data, error } = await supabase
           .from('student_internship_preferences')
-          .update(preferences)
+          .update({
+            industries: preferences.industries,
+            locations: preferences.locations,
+            is_remote: preferences.is_remote
+          })
           .eq('id', existingPrefs.id)
           .select()
           .single();
@@ -74,7 +78,9 @@ export const useInternshipPreferences = () => {
           .from('student_internship_preferences')
           .insert({
             student_id: user.id,
-            ...preferences
+            industries: preferences.industries,
+            locations: preferences.locations,
+            is_remote: preferences.is_remote
           })
           .select()
           .single();
@@ -84,7 +90,7 @@ export const useInternshipPreferences = () => {
       }
       
       toast.success('Preferences saved successfully');
-      setPreferences(result);
+      setPreferences(result as StudentInternshipPreferences);
       
       return result;
     } catch (err: any) {
