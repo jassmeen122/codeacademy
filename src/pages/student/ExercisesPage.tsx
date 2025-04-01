@@ -22,6 +22,7 @@ import { JavaScriptExercises } from "@/components/student/exercises/JavaScriptEx
 import { CExercises } from "@/components/student/exercises/CExercises";
 import { CPPExercises } from "@/components/student/exercises/CPPExercises";
 import { PHPExercises } from "@/components/student/exercises/PHPExercises";
+import { SQLExercises } from "@/components/student/exercises/SQLExercises";
 
 interface Exercise {
   id: string;
@@ -59,7 +60,7 @@ const ExercisesPage = () => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedLanguageToPractice, setSelectedLanguageToPractice] = useState<ProgrammingLanguage>("javascript");
-  const [activeTabSection, setActiveTabSection] = useState<"all" | "python" | "java" | "javascript" | "c" | "cpp" | "php">("all");
+  const [activeTabSection, setActiveTabSection] = useState<"all" | "python" | "java" | "javascript" | "c" | "cpp" | "php" | "sql">("all");
   const navigate = useNavigate();
   
   const { 
@@ -397,7 +398,7 @@ def solution(s):
           <Tabs 
             defaultValue="all" 
             value={activeTabSection} 
-            onValueChange={(value) => setActiveTabSection(value as "all" | "python" | "java" | "javascript" | "c" | "cpp" | "php")}
+            onValueChange={(value) => setActiveTabSection(value as "all" | "python" | "java" | "javascript" | "c" | "cpp" | "php" | "sql")}
           >
             <TabsList className="mb-6">
               <TabsTrigger value="all">Tous les exercices</TabsTrigger>
@@ -407,6 +408,7 @@ def solution(s):
               <TabsTrigger value="c">Exercices C</TabsTrigger>
               <TabsTrigger value="cpp">Exercices C++</TabsTrigger>
               <TabsTrigger value="php">Exercices PHP</TabsTrigger>
+              <TabsTrigger value="sql">Exercices SQL</TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
@@ -510,6 +512,10 @@ def solution(s):
 
             <TabsContent value="php">
               <PHPExercises />
+            </TabsContent>
+
+            <TabsContent value="sql">
+              <SQLExercises />
             </TabsContent>
           </Tabs>
         </div>
