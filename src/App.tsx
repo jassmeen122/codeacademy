@@ -51,6 +51,7 @@ import AdminDashboardPage from '@/pages/AdminDashboard';
 import AdminSettingsPage from '@/pages/admin/SettingsPage';
 import InternshipManagementPage from '@/pages/admin/InternshipManagementPage';
 import PostManagementPage from '@/pages/admin/PostManagementPage';
+import UserManagementPage from '@/pages/admin/UserManagementPage';
 
 function App() {
   const isLoggedIn = false; // Replace with actual authentication check
@@ -121,6 +122,7 @@ function App() {
           <Route path="/admin/knowledge" element={<KnowledgeSharePage />} />
           <Route path="/admin/internships" element={<InternshipManagementPage />} />
           <Route path="/admin/posts" element={<PostManagementPage />} />
+          <Route path="/admin/users" element={<UserManagementPage />} />
           
           {/* Keep existing admin routes */}
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
