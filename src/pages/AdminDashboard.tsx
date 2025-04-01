@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +18,25 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, UserPlus, Edit, Trash2, RefreshCw, BookOpen, GraduationCap, Users } from "lucide-react";
+import { 
+  Search, 
+  UserPlus, 
+  Edit, 
+  Trash2, 
+  RefreshCw, 
+  BookOpen, 
+  GraduationCap, 
+  Users, 
+  AlertTriangle 
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { UserProfile } from "@/hooks/useAuthState";
 import type { Course, CourseLevel, CoursePath, CourseCategory } from "@/types/course";
 
@@ -35,6 +54,7 @@ const AdminDashboard = () => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [confirmDeleteUser, setConfirmDeleteUser] = useState<string | null>(null);
 
   useEffect(() => {
     checkUserRole();
@@ -164,6 +184,30 @@ const AdminDashboard = () => {
       fetchUsers();
     } catch (error: any) {
       toast.error(`Failed to update user role: ${error.message}`);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      // First, delete the user from the profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+        
+      if (profileError) throw profileError;
+      
+      // Then, delete the user from the auth.users table
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (authError) throw authError;
+      
+      toast.success('User deleted successfully');
+      setUsers(prev => prev.filter(user => user.id !== userId));
+      setConfirmDeleteUser(null);
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(`Failed to delete user: ${error.message}`);
     }
   };
 
@@ -357,6 +401,13 @@ const AdminDashboard = () => {
                                     Make Student
                                   </Button>
                                 )}
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => setConfirmDeleteUser(user.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -488,6 +539,46 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Delete User Confirmation Dialog */}
+        <Dialog open={!!confirmDeleteUser} onOpenChange={(open) => !open && setConfirmDeleteUser(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Confirm User Deletion
+              </DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete the user account
+                and remove all associated data.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="font-semibold">Are you absolutely sure you want to delete this user?</p>
+              {confirmDeleteUser && (
+                <div className="mt-2 p-3 bg-gray-100 rounded-md">
+                  <p className="font-medium">
+                    {users.find(u => u.id === confirmDeleteUser)?.full_name || "Unknown User"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {users.find(u => u.id === confirmDeleteUser)?.email}
+                  </p>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmDeleteUser(null)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => confirmDeleteUser && handleDeleteUser(confirmDeleteUser)}
+              >
+                Delete User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

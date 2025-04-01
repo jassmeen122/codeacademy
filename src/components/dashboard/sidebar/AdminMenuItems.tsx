@@ -8,6 +8,7 @@ import {
   Gauge,
   Settings,
   Users,
+  MessageSquare,
 } from "lucide-react";
 import { MenuItem } from "@/types/sidebar";
 
@@ -21,6 +22,11 @@ export const adminMenuItems: MenuItem[] = [
     title: "User Management",
     icon: Users,
     href: "/admin/users",
+  },
+  {
+    title: "Post Management",
+    icon: MessageSquare,
+    href: "/admin/posts",
   },
   {
     title: "Course Management",

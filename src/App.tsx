@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -51,6 +50,7 @@ import TeacherSettingsPage from '@/pages/teacher/SettingsPage';
 import AdminDashboardPage from '@/pages/AdminDashboard';
 import AdminSettingsPage from '@/pages/admin/SettingsPage';
 import InternshipManagementPage from '@/pages/admin/InternshipManagementPage';
+import PostManagementPage from '@/pages/admin/PostManagementPage';
 
 function App() {
   const isLoggedIn = false; // Replace with actual authentication check
@@ -120,6 +120,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/knowledge" element={<KnowledgeSharePage />} />
           <Route path="/admin/internships" element={<InternshipManagementPage />} />
+          <Route path="/admin/posts" element={<PostManagementPage />} />
           
           {/* Keep existing admin routes */}
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
