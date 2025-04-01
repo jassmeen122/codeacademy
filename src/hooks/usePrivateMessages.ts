@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -48,11 +49,11 @@ export const usePrivateMessages = () => {
         .from('private_messages')
         .select(`
           *,
-          sender:sender_id(
+          sender:profiles!private_messages_sender_id_fkey(
             full_name,
             avatar_url
           ),
-          receiver:receiver_id(
+          receiver:profiles!private_messages_receiver_id_fkey(
             full_name,
             avatar_url
           )
@@ -72,7 +73,7 @@ export const usePrivateMessages = () => {
         // Get correct user profile with null safety checks
         const otherUserProfile = isUserSender ? message.receiver : message.sender;
         
-        // Use nullish coalescing for safety
+        // Use nullish coalescing for safety and ensure profile objects are properly typed
         const otherUserFullName = otherUserProfile?.full_name ?? 'Unknown User';
         const otherUserAvatar = otherUserProfile?.avatar_url ?? null;
         
@@ -111,11 +112,11 @@ export const usePrivateMessages = () => {
         .from('private_messages')
         .select(`
           *,
-          sender:sender_id(
+          sender:profiles!private_messages_sender_id_fkey(
             full_name,
             avatar_url
           ),
-          receiver:receiver_id(
+          receiver:profiles!private_messages_receiver_id_fkey(
             full_name,
             avatar_url
           )
