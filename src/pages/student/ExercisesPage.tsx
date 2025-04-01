@@ -300,7 +300,7 @@ def solution(s):
             defaultValue="output" 
             className="mt-4"
             value={editorActiveTab}
-            onValueChange={(value) => setEditorActiveTab(value)}
+            onValueChange={(value) => setEditorActiveTab(value as "output" | "analysis")}
           >
             <div className="flex justify-between items-center">
               <TabsList>
