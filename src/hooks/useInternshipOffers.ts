@@ -9,6 +9,7 @@ export const useInternshipOffers = () => {
   const [offers, setOffers] = useState<InternshipOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const { user } = useAuthState();
 
   const fetchInternshipOffers = async (filters?: {
@@ -62,7 +63,14 @@ export const useInternshipOffers = () => {
       return null;
     }
 
+    // Prevent multiple submissions
+    if (submitting) {
+      console.log('Already submitting an internship, please wait');
+      return null;
+    }
+
     try {
+      setSubmitting(true);
       console.log('Creating internship offer:', offer);
       
       // Ensure required fields exist
@@ -117,6 +125,8 @@ export const useInternshipOffers = () => {
       console.error('Error creating internship offer:', err);
       toast.error(`Failed to create internship offer: ${err.message || 'Unknown error'}`);
       return null;
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -178,6 +188,7 @@ export const useInternshipOffers = () => {
     offers,
     loading,
     error,
+    submitting,
     fetchInternshipOffers,
     createInternshipOffer,
     updateInternshipOffer,

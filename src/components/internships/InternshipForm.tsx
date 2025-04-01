@@ -23,7 +23,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { InternshipOffer } from '@/types/internship';
 
@@ -46,9 +46,10 @@ interface InternshipFormProps {
   internship?: InternshipOffer;
   onSubmit: (values: InternshipFormValues) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-export function InternshipForm({ internship, onSubmit, onCancel }: InternshipFormProps) {
+export function InternshipForm({ internship, onSubmit, onCancel, isSubmitting = false }: InternshipFormProps) {
   const [skillInput, setSkillInput] = React.useState('');
 
   const defaultValues: Partial<InternshipFormValues> = internship
@@ -168,8 +169,9 @@ export function InternshipForm({ internship, onSubmit, onCancel }: InternshipFor
                       addSkill();
                     }
                   }}
+                  disabled={isSubmitting}
                 />
-                <Button type="button" onClick={addSkill} variant="secondary">
+                <Button type="button" onClick={addSkill} variant="secondary" disabled={isSubmitting}>
                   <Plus className="h-4 w-4 mr-1" />
                   Add
                 </Button>
@@ -185,6 +187,7 @@ export function InternshipForm({ internship, onSubmit, onCancel }: InternshipFor
                         size="sm"
                         className="h-5 w-5 p-0 ml-2"
                         onClick={() => removeSkill(index)}
+                        disabled={isSubmitting}
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -313,11 +316,14 @@ export function InternshipForm({ internship, onSubmit, onCancel }: InternshipFor
         />
         
         <div className="flex justify-end space-x-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit">
-            {internship ? 'Update Internship' : 'Create Internship'}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isSubmitting 
+              ? (internship ? 'Updating...' : 'Creating...') 
+              : (internship ? 'Update Internship' : 'Create Internship')}
           </Button>
         </div>
       </form>

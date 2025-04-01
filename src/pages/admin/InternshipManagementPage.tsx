@@ -30,6 +30,7 @@ export default function InternshipManagementPage() {
   const { 
     offers, 
     loading, 
+    submitting,
     fetchInternshipOffers, 
     createInternshipOffer, 
     updateInternshipOffer,
@@ -141,9 +142,9 @@ export default function InternshipManagementPage() {
               Create, manage, and track internship opportunities and applications
             </p>
           </div>
-          <Button onClick={handleCreateInternship}>
+          <Button onClick={handleCreateInternship} disabled={submitting}>
             <Plus className="h-4 w-4 mr-2" />
-            Add New Internship
+            {submitting ? 'Creating...' : 'Add New Internship'}
           </Button>
         </div>
 
@@ -203,7 +204,12 @@ export default function InternshipManagementPage() {
         </Tabs>
       </div>
 
-      <Sheet open={formSheetOpen} onOpenChange={setFormSheetOpen}>
+      <Sheet open={formSheetOpen} onOpenChange={(open) => {
+        // Only allow closing if not currently submitting
+        if (!submitting || !open) {
+          setFormSheetOpen(open);
+        }
+      }}>
         <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle>{editingInternship ? 'Edit Internship' : 'Create New Internship'}</SheetTitle>
@@ -217,7 +223,8 @@ export default function InternshipManagementPage() {
           <InternshipForm
             internship={editingInternship || undefined}
             onSubmit={handleSubmitInternship}
-            onCancel={() => setFormSheetOpen(false)}
+            onCancel={() => !submitting && setFormSheetOpen(false)}
+            isSubmitting={submitting}
           />
         </SheetContent>
       </Sheet>
