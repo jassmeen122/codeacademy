@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +16,7 @@ import { MonacoEditorWrapper } from "@/components/CodeEditor/MonacoEditorWrapper
 import { ProgrammingLanguage, defaultCode } from "@/components/CodeEditor/types";
 import { LanguageSelector } from "@/components/CodeEditor/LanguageSelector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PythonExercises } from "@/components/student/exercises/PythonExercises";
 
 interface Exercise {
   id: string;
@@ -54,16 +54,16 @@ const ExercisesPage = () => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedLanguageToPractice, setSelectedLanguageToPractice] = useState<ProgrammingLanguage>("javascript");
+  const [activeTab, setActiveTab] = useState<"all" | "python">("all");
   const navigate = useNavigate();
   
-  const { output, analysis, isRunning, isAnalyzing, activeTab, setActiveTab, runCode, getAIHelp } = useCodeExecution();
+  const { output, analysis, isRunning, isAnalyzing, activeTab: activeTabState, setActiveTab, runCode, getAIHelp } = useCodeExecution();
 
   useEffect(() => {
     fetchExercises();
   }, []);
 
   useEffect(() => {
-    // Réinitialiser le code lorsque l'exercice sélectionné change
     if (activeExercise) {
       setCode(defaultCode[selectedLanguageToPractice]);
     }
@@ -79,7 +79,6 @@ const ExercisesPage = () => {
 
       if (error) throw error;
 
-      // Enrichir les données avec des propriétés supplémentaires pour la démo
       const enrichedData = data.map((exercise, index) => ({
         ...exercise,
         status: ["completed", "in_progress", "not_started"][index % 3] as "completed" | "in_progress" | "not_started",
@@ -381,82 +380,95 @@ def solution(s):
             </AlertDescription>
           </Alert>
 
-          {!activeExercise && (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <div className="flex-grow">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input 
-                      placeholder="Rechercher par titre, description ou mot-clé..." 
-                      className="pl-10"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+          <Tabs defaultValue="all" value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "python")}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="all">Tous les exercices</TabsTrigger>
+              <TabsTrigger value="python">Exercices Python</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="all">
+              {!activeExercise && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                  <div className="flex flex-col lg:flex-row gap-4 mb-6">
+                    <div className="flex-grow">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Input 
+                          placeholder="Rechercher par titre, description ou mot-clé..." 
+                          className="pl-10"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                        <SelectTrigger className="w-[150px]">
+                          <Filter className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Langage" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Tous les langages</SelectItem>
+                          <SelectItem value="javascript">JavaScript</SelectItem>
+                          <SelectItem value="python">Python</SelectItem>
+                          <SelectItem value="java">Java</SelectItem>
+                          <SelectItem value="c">C</SelectItem>
+                          <SelectItem value="cpp">C++</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+                        <SelectTrigger className="w-[150px]">
+                          <Star className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Difficulté" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Toutes les difficultés</SelectItem>
+                          <SelectItem value="Beginner">Débutant</SelectItem>
+                          <SelectItem value="Intermediate">Intermédiaire</SelectItem>
+                          <SelectItem value="Advanced">Avancé</SelectItem>
+                          <SelectItem value="Expert">Expert</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+                        <SelectTrigger className="w-[150px]">
+                          <Code className="h-4 w-4 mr-2" />
+                          <SelectValue placeholder="Thème" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Tous les thèmes</SelectItem>
+                          {themes.map(theme => (
+                            <SelectItem key={theme} value={theme}>{theme}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h2 className="text-lg font-semibold mb-2">Progression globale</h2>
+                    <div className="flex items-center gap-3">
+                      <Progress value={35} className="h-2 flex-grow" />
+                      <span className="text-sm font-medium">35%</span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                    <SelectTrigger className="w-[150px]">
-                      <Filter className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Langage" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les langages</SelectItem>
-                      <SelectItem value="javascript">JavaScript</SelectItem>
-                      <SelectItem value="python">Python</SelectItem>
-                      <SelectItem value="java">Java</SelectItem>
-                      <SelectItem value="c">C</SelectItem>
-                      <SelectItem value="cpp">C++</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-                    <SelectTrigger className="w-[150px]">
-                      <Star className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Difficulté" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Toutes les difficultés</SelectItem>
-                      <SelectItem value="Beginner">Débutant</SelectItem>
-                      <SelectItem value="Intermediate">Intermédiaire</SelectItem>
-                      <SelectItem value="Advanced">Avancé</SelectItem>
-                      <SelectItem value="Expert">Expert</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select value={selectedTheme} onValueChange={setSelectedTheme}>
-                    <SelectTrigger className="w-[150px]">
-                      <Code className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Thème" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous les thèmes</SelectItem>
-                      {themes.map(theme => (
-                        <SelectItem key={theme} value={theme}>{theme}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold mb-2">Progression globale</h2>
-                <div className="flex items-center gap-3">
-                  <Progress value={35} className="h-2 flex-grow" />
-                  <span className="text-sm font-medium">35%</span>
-                </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
-          ) : (
-            activeExercise ? renderExerciseDetail() : renderExercisesList()
-          )}
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                activeExercise ? renderExerciseDetail() : renderExercisesList()
+              )}
+            </TabsContent>
+            
+            <TabsContent value="python">
+              <PythonExercises />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </DashboardLayout>

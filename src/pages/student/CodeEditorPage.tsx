@@ -13,8 +13,8 @@ const CodeEditorPage = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col space-y-1">
-            <h1 className="text-2xl font-bold text-gray-800">Code Editor</h1>
-            <p className="text-gray-600">Write, run and debug code with AI assistance</p>
+            <h1 className="text-2xl font-bold text-gray-800">Éditeur de Code</h1>
+            <p className="text-gray-600">Écrivez, exécutez et déboguez du code avec l'assistance IA</p>
           </div>
           
           <Alert className="bg-blue-50 border-blue-200">
