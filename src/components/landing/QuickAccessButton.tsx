@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Terminal } from "lucide-react";
 
 interface QuickAccessButtonProps {
   onClick: () => void;
@@ -16,7 +16,7 @@ export const QuickAccessButton: React.FC<QuickAccessButtonProps> = ({ onClick })
         onClick={onClick}
         title="Accéder à votre tableau de bord"
       >
-        <ArrowRight className="h-6 w-6" />
+        <Terminal className="h-6 w-6" />
       </Button>
     </div>
   );

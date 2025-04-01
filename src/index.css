@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,7 +34,7 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
+    --primary: 120 100% 50%; /* Bright green for developer theme */
     --primary-foreground: 240 5.9% 10%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -73,6 +74,39 @@
 
   .text-gradient {
     @apply bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent;
+  }
+
+  /* Developer theme utilities */
+  .terminal-text {
+    @apply font-mono;
+  }
+  
+  .code-block {
+    @apply bg-gray-800 text-gray-200 p-4 rounded-md font-mono text-sm overflow-x-auto border border-gray-700;
+  }
+  
+  .comment-text {
+    @apply text-gray-500 font-mono;
+  }
+  
+  .function-text {
+    @apply text-blue-400 font-mono;
+  }
+  
+  .keyword-text {
+    @apply text-purple-400 font-mono;
+  }
+  
+  .string-text {
+    @apply text-green-400 font-mono;
+  }
+  
+  .variable-text {
+    @apply text-orange-400 font-mono;
+  }
+  
+  .dev-card {
+    @apply bg-gray-800 border border-gray-700 rounded-md shadow-lg hover:border-primary/50 transition-all;
   }
 }
 
@@ -128,5 +162,47 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Terminal typing effect for developer theme */
+.terminal-cursor {
+  display: inline-block;
+  width: 10px;
+  height: 1.2em;
+  background-color: currentColor;
+  margin-left: 2px;
+  animation: cursor-blink 1.2s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Matrix-like animation for active elements */
+.matrix-animation {
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-animation::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0));
+  animation: matrix-fall 2s linear infinite;
+}
+
+@keyframes matrix-fall {
+  to {
+    top: 100%;
   }
 }

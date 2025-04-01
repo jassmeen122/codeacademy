@@ -4,6 +4,9 @@ import {
   GraduationCap,
   School,
   UserRound,
+  Terminal,
+  Code,
+  Cpu
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,9 +43,9 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
       case 'admin':
         return Database;
       case 'teacher':
-        return School;
+        return Code;
       case 'student':
-        return GraduationCap;
+        return Terminal;
       default:
         return UserRound;
     }
@@ -64,17 +67,23 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
   const RoleIcon = getRoleIcon();
 
   return (
-    <Sidebar className="border-r border-border">
-      <SidebarHeader className="border-b border-border p-4">
+    <Sidebar className="border-r border-gray-700 bg-gray-900">
+      <SidebarHeader className="border-b border-gray-700 p-4">
         <div className="flex items-center gap-2">
-          <RoleIcon className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-lg">{getRoleTitle()}</span>
+          <div className="p-2 bg-gray-800 rounded-md">
+            <RoleIcon className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <span className="font-mono font-semibold text-lg">{getRoleTitle()}</span>
+            <div className="text-xs text-gray-500 font-mono">{`> CodeAcademy`}</div>
+          </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-gray-900">
         <SidebarMenu menuItems={getMenuItems()} />
       </SidebarContent>
-      <SidebarFooter className="border-t border-border p-4">
+      <SidebarFooter className="border-t border-gray-700 p-4 bg-gray-800">
+        <div className="text-xs text-gray-500 font-mono mb-2">{`// Toggle sidebar`}</div>
         <SidebarTrigger />
       </SidebarFooter>
     </Sidebar>

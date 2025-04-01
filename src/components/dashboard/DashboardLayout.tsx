@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthState } from "@/hooks/useAuthState";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, UserCog, Mail, User } from "lucide-react";
+import { LogOut, UserCog, Mail, User, Terminal, Code, Database } from "lucide-react";
 import { toast } from "sonner";
 
 interface DashboardLayoutProps {
@@ -58,21 +58,21 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-gray-900 text-white">
         <DashboardSidebar userRole={user?.role || null} />
         <div className="flex-1">
           <Navigation />
-          <main className="pt-16 min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+          <main className="pt-16 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
             {/* Enhanced Profile header section */}
-            <div className="bg-background shadow-sm border-b border-border p-4">
+            <div className="bg-gray-800 shadow-md border-b border-gray-700 p-4">
               <div className="container mx-auto">
                 {loading ? (
                   <div className="animate-pulse flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-300"></div>
+                    <div className="w-16 h-16 rounded-full bg-gray-700"></div>
                     <div className="flex-1">
-                      <div className="h-5 bg-gray-300 rounded w-32 mb-2"></div>
-                      <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
-                      <div className="h-3 bg-gray-300 rounded w-48"></div>
+                      <div className="h-5 bg-gray-700 rounded w-32 mb-2"></div>
+                      <div className="h-4 bg-gray-700 rounded w-24 mb-2"></div>
+                      <div className="h-3 bg-gray-700 rounded w-48"></div>
                     </div>
                   </div>
                 ) : (
@@ -81,11 +81,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       <UserAvatar user={user} size="lg" />
                       <div>
                         <h2 className="font-bold text-xl">{user?.full_name || 'User'}</h2>
-                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <div className="flex items-center gap-2 text-gray-400 mb-1">
                           <User className="h-3.5 w-3.5" />
                           <span className="capitalize text-sm">{user?.role || 'User'}</span>
+                          {user?.role === 'admin' && <Database className="h-3.5 w-3.5 ml-2" />}
+                          {user?.role === 'teacher' && <Code className="h-3.5 w-3.5 ml-2" />}
+                          {user?.role === 'student' && <Terminal className="h-3.5 w-3.5 ml-2" />}
                         </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="flex items-center gap-2 text-gray-400">
                           <Mail className="h-3.5 w-3.5" />
                           <span className="text-sm">{user?.email || ''}</span>
                         </div>
@@ -96,7 +99,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         variant="outline" 
                         size="sm"
                         onClick={() => navigate(`/${user?.role}/settings`)}
-                        className="w-full sm:w-auto"
+                        className="w-full sm:w-auto border-gray-600 text-gray-300 hover:bg-gray-700"
                       >
                         <UserCog className="mr-2 h-4 w-4" />
                         Edit Profile
