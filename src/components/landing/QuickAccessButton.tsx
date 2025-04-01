@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Terminal } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 interface QuickAccessButtonProps {
   onClick: () => void;
@@ -12,11 +12,11 @@ export const QuickAccessButton: React.FC<QuickAccessButtonProps> = ({ onClick })
     <div className="fixed bottom-8 right-8 z-40">
       <Button
         size="lg"
-        className="rounded-full shadow-lg bg-primary hover:bg-primary/90 p-6"
+        className="rounded-full shadow-md bg-primary hover:bg-primary/90 p-6"
         onClick={onClick}
-        title="Accéder à votre tableau de bord"
+        title="Access your dashboard"
       >
-        <Terminal className="h-6 w-6" />
+        <BookOpen className="h-6 w-6" />
       </Button>
     </div>
   );

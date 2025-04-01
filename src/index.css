@@ -5,47 +5,47 @@
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 40% 98%;
     --foreground: 210 40% 20%;
     --card: 0 0% 100%;
     --card-foreground: 210 40% 20%;
     --popover: 0 0% 100%;
     --popover-foreground: 210 40% 20%;
-    --primary: 199 89% 48%;
+    --primary: 220 70% 50%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 210 40% 20%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 210 40% 50%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 210 40% 20%;
+    --accent: 220 70% 96%;
+    --accent-foreground: 220 70% 45%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 199 89% 48%;
+    --ring: 220 70% 50%;
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 120 100% 50%; /* Bright green for developer theme */
-    --primary-foreground: 240 5.9% 10%;
+    --background: 210 40% 98%;
+    --foreground: 0 0% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 20%;
+    --primary: 220 70% 50%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 220 70% 96%;
+    --accent-foreground: 220 70% 45%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 240 4.9% 83.9%;
   }
 
@@ -69,20 +69,20 @@
   }
 
   .glass-card {
-    @apply backdrop-blur-lg bg-white/90 dark:bg-black/50 border border-white/20 shadow-lg hover:shadow-primary/10 transition-shadow;
+    @apply backdrop-blur-lg bg-white/90 border border-white/20 shadow-lg hover:shadow-primary/10 transition-shadow;
   }
 
   .text-gradient {
     @apply bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent;
   }
 
-  /* Developer theme utilities */
+  /* Code education theme utilities */
   .terminal-text {
     @apply font-mono;
   }
   
   .code-block {
-    @apply bg-gray-800 text-gray-200 p-4 rounded-md font-mono text-sm overflow-x-auto border border-gray-700;
+    @apply bg-white text-gray-800 p-4 rounded-md font-mono text-sm overflow-x-auto border border-gray-200 shadow-sm;
   }
   
   .comment-text {
@@ -90,23 +90,23 @@
   }
   
   .function-text {
-    @apply text-blue-400 font-mono;
+    @apply text-blue-600 font-mono;
   }
   
   .keyword-text {
-    @apply text-purple-400 font-mono;
+    @apply text-purple-600 font-mono;
   }
   
   .string-text {
-    @apply text-green-400 font-mono;
+    @apply text-green-600 font-mono;
   }
   
   .variable-text {
-    @apply text-orange-400 font-mono;
+    @apply text-orange-600 font-mono;
   }
   
-  .dev-card {
-    @apply bg-gray-800 border border-gray-700 rounded-md shadow-lg hover:border-primary/50 transition-all;
+  .edu-card {
+    @apply bg-white border border-gray-200 rounded-md shadow-sm hover:border-primary/50 hover:shadow-md transition-all;
   }
 }
 
@@ -122,7 +122,7 @@
   width: 10px;
   display: block;
   border-radius: 50%;
-  background-color: #ccc;
+  background-color: #666;
   animation: typing 1s ease-in-out infinite;
 }
 
@@ -165,7 +165,7 @@
   }
 }
 
-/* Terminal typing effect for developer theme */
+/* Terminal typing effect for educational theme */
 .terminal-cursor {
   display: inline-block;
   width: 10px;
@@ -184,24 +184,24 @@
   }
 }
 
-/* Matrix-like animation for active elements */
-.matrix-animation {
+/* Soft highlight animation for active elements */
+.highlight-animation {
   position: relative;
   overflow: hidden;
 }
 
-.matrix-animation::before {
+.highlight-animation::before {
   content: "";
   position: absolute;
   top: -100%;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0));
-  animation: matrix-fall 2s linear infinite;
+  background: linear-gradient(rgba(30, 64, 175, 0.05), rgba(30, 64, 175, 0));
+  animation: highlight-fall 2s linear infinite;
 }
 
-@keyframes matrix-fall {
+@keyframes highlight-fall {
   to {
     top: 100%;
   }

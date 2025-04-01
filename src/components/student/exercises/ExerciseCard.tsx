@@ -33,28 +33,34 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
     return Array(count).fill(0).map((_, i) => <Star key={i} className="h-4 w-4 inline-block text-yellow-500 fill-yellow-500" />);
   };
 
+  const difficultyClasses = {
+    "easy": "bg-green-100 text-green-800",
+    "medium": "bg-yellow-100 text-yellow-800",
+    "hard": "bg-red-100 text-red-800"
+  };
+
   return (
     <Card 
-      className={`cursor-pointer hover:shadow-md transition-shadow ${isActive ? 'border-blue-500 ring-2 ring-blue-200' : ''}`}
+      className={`cursor-pointer hover:shadow-md transition-shadow ${isActive ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'}`}
       onClick={onClick}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
+        <CardTitle className="text-sm font-medium text-gray-800">
           {exercise.title}
         </CardTitle>
         {getStatusIcon(exercise.status)}
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
           {exercise.description}
         </p>
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-2">
-            <span className={`text-xs font-medium px-2 py-1 rounded-full ${difficulties[exercise.difficulty].className}`}>
+            <span className={`text-xs font-medium px-2 py-1 rounded-full ${difficultyClasses[exercise.difficulty as keyof typeof difficultyClasses] || difficulties[exercise.difficulty].className}`}>
               {renderStars(difficulties[exercise.difficulty].stars)}
             </span>
             {exercise.language && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs border-gray-200 text-gray-700">
                 {exercise.language}
               </Badge>
             )}
