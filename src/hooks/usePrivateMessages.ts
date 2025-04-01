@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -70,14 +69,12 @@ export const usePrivateMessages = () => {
         const isUserSender = message.sender_id === user.id;
         const otherUserId = isUserSender ? message.receiver_id : message.sender_id;
         
-        // Get correct user profile, handling potential error responses
+        // Get correct user profile with null safety checks
         const otherUserProfile = isUserSender ? message.receiver : message.sender;
-        const otherUserFullName = typeof otherUserProfile === 'object' && otherUserProfile !== null 
-          ? otherUserProfile.full_name 
-          : 'Unknown User';
-        const otherUserAvatar = typeof otherUserProfile === 'object' && otherUserProfile !== null 
-          ? otherUserProfile.avatar_url 
-          : null;
+        
+        // Use nullish coalescing for safety
+        const otherUserFullName = otherUserProfile?.full_name ?? 'Unknown User';
+        const otherUserAvatar = otherUserProfile?.avatar_url ?? null;
         
         if (!conversationsMap.has(otherUserId)) {
           conversationsMap.set(otherUserId, {

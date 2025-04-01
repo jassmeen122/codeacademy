@@ -62,3 +62,11 @@ COMMENT ON TABLE public.post_comments IS 'Stores comments on Knowledge Share pos
 COMMENT ON TABLE public.post_reactions IS 'Stores reactions (likes, etc.) to Knowledge Share posts';
 COMMENT ON TABLE public.user_follows IS 'Tracks user follow relationships in Knowledge Share';
 COMMENT ON TABLE public.private_messages IS 'Stores private messages between users in Knowledge Share';
+
+-- Create function for getting course lessons for modules if it doesn't exist
+CREATE OR REPLACE FUNCTION get_course_lessons_for_modules(module_ids UUID[])
+RETURNS SETOF course_lessons AS $$
+BEGIN
+  RETURN QUERY SELECT * FROM course_lessons WHERE module_id = ANY(module_ids) ORDER BY order_index;
+END;
+$$ LANGUAGE plpgsql;
