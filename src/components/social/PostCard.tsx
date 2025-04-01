@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PostCardProps {
   post: SocialPost;
@@ -37,35 +38,80 @@ export function PostCard({ post, onAddComment, onReaction, onDelete, onToggleFol
   
   // Fetch comments when showing comments section
   useEffect(() => {
-    const fetchComments = async () => {
-      if (showComments) {
-        // This function would need to be passed as a prop or imported from a context
-        const { fetchComments } = await import('@/hooks/useSocialPosts');
-        const result = await fetchComments(post.id);
-        setComments(result);
+    const fetchPostComments = async () => {
+      if (showComments && post.id) {
+        try {
+          const { data, error } = await supabase
+            .from('post_comments')
+            .select(`
+              *,
+              profiles:author_id (
+                full_name,
+                avatar_url
+              )
+            `)
+            .eq('post_id', post.id)
+            .order('created_at', { ascending: true });
+          
+          if (error) throw error;
+          
+          const commentsWithAuthor = data.map((item: any) => ({
+            id: item.id,
+            post_id: item.post_id,
+            author_id: item.author_id,
+            content: item.content,
+            created_at: item.created_at,
+            author: item.profiles
+          }));
+          
+          setComments(commentsWithAuthor);
+        } catch (error) {
+          console.error('Error fetching comments:', error);
+        }
       }
     };
     
-    fetchComments();
+    fetchPostComments();
   }, [showComments, post.id]);
   
   // Check if user has liked the post
   useEffect(() => {
     const checkLikeStatus = async () => {
-      if (user) {
-        // This function would need to be passed as a prop or imported from a context
-        const { checkReaction } = await import('@/hooks/useSocialPosts');
-        const result = await checkReaction(post.id);
-        setIsLiked(result);
+      if (user && post.id) {
+        try {
+          const { data, error } = await supabase
+            .from('post_reactions')
+            .select('*')
+            .eq('post_id', post.id)
+            .eq('user_id', user.id)
+            .eq('reaction_type', 'like')
+            .maybeSingle();
+          
+          if (error) throw error;
+          
+          setIsLiked(!!data);
+        } catch (error) {
+          console.error('Error checking reaction:', error);
+        }
       }
     };
     
     const checkFollowStatus = async () => {
-      if (user && post.author_id !== user.id) {
-        // This function would need to be passed as a prop or imported from a context
-        const { checkFollowing } = await import('@/hooks/useSocialPosts');
-        const result = await checkFollowing(post.author_id);
-        setIsFollowing(result);
+      if (user && post.author_id && post.author_id !== user.id) {
+        try {
+          const { data, error } = await supabase
+            .from('user_follows')
+            .select('*')
+            .eq('follower_id', user.id)
+            .eq('following_id', post.author_id)
+            .maybeSingle();
+          
+          if (error) throw error;
+          
+          setIsFollowing(!!data);
+        } catch (error) {
+          console.error('Error checking follow status:', error);
+        }
       }
     };
     

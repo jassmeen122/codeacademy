@@ -46,7 +46,9 @@ const MessagesPage = () => {
       if (selectedConversation) {
         setLoadingMessages(true);
         const msgs = await fetchMessages(selectedConversation.user_id);
-        setMessages(msgs);
+        if (msgs) {
+          setMessages(msgs);
+        }
         setLoadingMessages(false);
         if (window.innerWidth < 768) {
           setMobileView('conversation');

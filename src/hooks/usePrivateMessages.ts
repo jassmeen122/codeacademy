@@ -66,7 +66,7 @@ export const usePrivateMessages = () => {
       // Group messages by conversation (other user)
       const conversationsMap = new Map<string, Conversation>();
 
-      for (const message of data) {
+      for (const message of (data || [])) {
         const isUserSender = message.sender_id === user.id;
         const otherUserId = isUserSender ? message.receiver_id : message.sender_id;
         const otherUser = isUserSender ? message.receiver : message.sender;
@@ -74,8 +74,8 @@ export const usePrivateMessages = () => {
         if (!conversationsMap.has(otherUserId)) {
           conversationsMap.set(otherUserId, {
             user_id: otherUserId,
-            full_name: otherUser.full_name,
-            avatar_url: otherUser.avatar_url,
+            full_name: otherUser?.full_name,
+            avatar_url: otherUser?.avatar_url,
             last_message: message.content,
             last_message_date: message.created_at,
             unread_count: !isUserSender && !message.read ? 1 : 0
@@ -121,7 +121,7 @@ export const usePrivateMessages = () => {
       if (error) throw error;
 
       // Mark unread messages as read
-      const unreadMessages = data.filter(msg => msg.receiver_id === user.id && !msg.read);
+      const unreadMessages = (data || []).filter(msg => msg.receiver_id === user.id && !msg.read);
       if (unreadMessages.length > 0) {
         await supabase
           .from('private_messages')
@@ -129,11 +129,18 @@ export const usePrivateMessages = () => {
           .in('id', unreadMessages.map(msg => msg.id));
       }
 
-      return data.map(message => ({
-        ...message,
+      const typedMessages: PrivateMessage[] = (data || []).map(message => ({
+        id: message.id,
+        sender_id: message.sender_id,
+        receiver_id: message.receiver_id,
+        content: message.content,
+        read: message.read,
+        created_at: message.created_at,
         sender: message.sender,
         receiver: message.receiver
       }));
+
+      return typedMessages;
     } catch (error: any) {
       console.error('Error fetching messages:', error);
       toast.error('Failed to load messages');
@@ -176,10 +183,15 @@ export const usePrivateMessages = () => {
 
       toast.success('Message sent');
       return {
-        ...data,
+        id: data.id,
+        sender_id: data.sender_id,
+        receiver_id: data.receiver_id,
+        content: data.content,
+        read: data.read,
+        created_at: data.created_at,
         sender: data.sender,
         receiver: data.receiver
-      };
+      } as PrivateMessage;
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');

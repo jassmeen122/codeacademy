@@ -11,6 +11,7 @@ export type SocialPost = {
   code_snippet: string | null;
   language: string | null;
   created_at: string;
+  updated_at: string;
   // Include author details
   author?: {
     full_name: string | null;
@@ -45,7 +46,7 @@ export const useSocialPosts = () => {
       setLoading(true);
       setError(null);
       
-      const { data, error } = await supabase
+      const { data: postsData, error: postsError } = await supabase
         .from('social_posts')
         .select(`
           *,
@@ -56,22 +57,24 @@ export const useSocialPosts = () => {
         `)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (postsError) throw postsError;
       
       // Transform the data to include author details
-      const transformedPosts = data.map(post => ({
+      const transformedPosts: SocialPost[] = postsData.map((post: any) => ({
         ...post,
-        author: post.profiles
+        author: post.profiles,
+        comment_count: 0,
+        reaction_count: 0
       }));
       
       // Fetch comment counts for each post
       for (const post of transformedPosts) {
-        const { count } = await supabase
+        const { count: commentCount } = await supabase
           .from('post_comments')
           .select('*', { count: 'exact', head: true })
           .eq('post_id', post.id);
         
-        post.comment_count = count || 0;
+        post.comment_count = commentCount || 0;
         
         const { count: reactionCount } = await supabase
           .from('post_reactions')
@@ -118,7 +121,7 @@ export const useSocialPosts = () => {
       
       if (error) throw error;
       
-      const newPost = {
+      const newPost: SocialPost = {
         ...data,
         author: data.profiles,
         comment_count: 0,
@@ -132,34 +135,6 @@ export const useSocialPosts = () => {
       console.error('Error creating post:', error);
       toast.error('Failed to create post');
       return null;
-    }
-  };
-
-  // Fetch comments for a post
-  const fetchComments = async (postId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('post_comments')
-        .select(`
-          *,
-          profiles:author_id (
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('post_id', postId)
-        .order('created_at', { ascending: true });
-      
-      if (error) throw error;
-      
-      return data.map(comment => ({
-        ...comment,
-        author: comment.profiles
-      }));
-    } catch (error: any) {
-      console.error('Error fetching comments:', error);
-      toast.error('Failed to load comments');
-      return [];
     }
   };
 
@@ -202,7 +177,7 @@ export const useSocialPosts = () => {
       return {
         ...data,
         author: data.profiles
-      };
+      } as Comment;
     } catch (error: any) {
       console.error('Error adding comment:', error);
       toast.error('Failed to add comment');
@@ -274,28 +249,6 @@ export const useSocialPosts = () => {
     } catch (error: any) {
       console.error('Error toggling reaction:', error);
       toast.error('Failed to update reaction');
-      return false;
-    }
-  };
-
-  // Check if user has reacted to a post
-  const checkReaction = async (postId: string, reactionType: string = 'like') => {
-    if (!user) return false;
-    
-    try {
-      const { data, error } = await supabase
-        .from('post_reactions')
-        .select('*')
-        .eq('post_id', postId)
-        .eq('user_id', user.id)
-        .eq('reaction_type', reactionType)
-        .maybeSingle();
-      
-      if (error) throw error;
-      
-      return !!data;
-    } catch (error: any) {
-      console.error('Error checking reaction:', error);
       return false;
     }
   };
@@ -379,27 +332,6 @@ export const useSocialPosts = () => {
     }
   };
 
-  // Check if the current user is following another user
-  const checkFollowing = async (userId: string) => {
-    if (!user) return false;
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_follows')
-        .select('*')
-        .eq('follower_id', user.id)
-        .eq('following_id', userId)
-        .maybeSingle();
-      
-      if (error) throw error;
-      
-      return !!data;
-    } catch (error: any) {
-      console.error('Error checking follow status:', error);
-      return false;
-    }
-  };
-
   // Get follower count for a user
   const getFollowerCount = async (userId: string) => {
     try {
@@ -428,13 +360,10 @@ export const useSocialPosts = () => {
     error,
     fetchPosts,
     createPost,
-    fetchComments,
     addComment,
     addReaction,
-    checkReaction,
     deletePost,
     toggleFollow,
-    checkFollowing,
     getFollowerCount
   };
 };
