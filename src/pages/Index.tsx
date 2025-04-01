@@ -19,7 +19,9 @@ import {
   Globe,
   Smartphone,
   Braces,
-  Coffee
+  Coffee,
+  School,
+  MapPin
 } from "lucide-react";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { CoursePreview } from "@/components/landing/CoursePreview";
@@ -191,7 +193,7 @@ const Index = () => {
   const [typedText, setTypedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
   
-  const welcomeText = "console.log('Welcome to TechMentorAI');";
+  const welcomeText = "console.log('Welcome to CodeAcademy');";
 
   useEffect(() => {
     checkAuthAndRole();
