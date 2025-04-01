@@ -17,6 +17,7 @@ import { ProgrammingLanguage, defaultCode } from "@/components/CodeEditor/types"
 import { LanguageSelector } from "@/components/CodeEditor/LanguageSelector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PythonExercises } from "@/components/student/exercises/PythonExercises";
+import { JavaExercises } from "@/components/student/exercises/JavaExercises";
 
 interface Exercise {
   id: string;
@@ -54,7 +55,7 @@ const ExercisesPage = () => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedLanguageToPractice, setSelectedLanguageToPractice] = useState<ProgrammingLanguage>("javascript");
-  const [activeTabSection, setActiveTabSection] = useState<"all" | "python">("all");
+  const [activeTabSection, setActiveTabSection] = useState<"all" | "python" | "java">("all");
   const navigate = useNavigate();
   
   const { 
@@ -392,11 +393,12 @@ def solution(s):
           <Tabs 
             defaultValue="all" 
             value={activeTabSection} 
-            onValueChange={(value) => setActiveTabSection(value as "all" | "python")}
+            onValueChange={(value) => setActiveTabSection(value as "all" | "python" | "java")}
           >
             <TabsList className="mb-6">
               <TabsTrigger value="all">Tous les exercices</TabsTrigger>
               <TabsTrigger value="python">Exercices Python</TabsTrigger>
+              <TabsTrigger value="java">Exercices Java</TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
@@ -480,6 +482,10 @@ def solution(s):
             
             <TabsContent value="python">
               <PythonExercises />
+            </TabsContent>
+            
+            <TabsContent value="java">
+              <JavaExercises />
             </TabsContent>
           </Tabs>
         </div>
