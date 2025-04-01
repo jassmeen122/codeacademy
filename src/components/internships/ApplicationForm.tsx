@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InternshipOffer } from '@/types/internship';
-import { Upload, FileUpload, Check } from 'lucide-react';
+import { Upload, File, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from '@/hooks/useAuthState';
 import { toast } from 'sonner';
@@ -216,7 +216,7 @@ export function ApplicationForm({ internship, onSubmit, onCancel }: ApplicationF
                             </>
                           ) : (
                             <>
-                              <FileUpload className="h-8 w-8 text-muted-foreground" />
+                              <File className="h-8 w-8 text-muted-foreground" />
                               <div className="mt-2 text-sm">
                                 <span className="font-medium">Click to upload</span> or drag and drop
                               </div>

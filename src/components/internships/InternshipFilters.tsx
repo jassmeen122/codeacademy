@@ -73,10 +73,12 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
     const fetchFilterOptions = async () => {
       try {
         // Get unique industries
-        const { data: industryData } = await supabase
+        const { data: industryData, error: industryError } = await supabase
           .from('internship_offers')
           .select('industry')
           .eq('status', 'open');
+        
+        if (industryError) throw industryError;
         
         if (industryData) {
           const uniqueIndustries = [...new Set(industryData.map(item => item.industry))];
@@ -84,10 +86,12 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
         }
         
         // Get unique locations
-        const { data: locationData } = await supabase
+        const { data: locationData, error: locationError } = await supabase
           .from('internship_offers')
           .select('location')
           .eq('status', 'open');
+        
+        if (locationError) throw locationError;
         
         if (locationData) {
           const uniqueLocations = [...new Set(locationData.map(item => item.location))];
