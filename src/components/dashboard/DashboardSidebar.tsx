@@ -1,3 +1,4 @@
+
 import {
   Book,
   Code,
@@ -71,6 +72,11 @@ const adminMenuItems: MenuItem[] = [
     href: "/admin/exercises",
   },
   {
+    title: "Knowledge Share",
+    icon: BookOpen,
+    href: "/admin/knowledge",
+  },
+  {
     title: "Analytics",
     icon: Activity,
     href: "/admin/analytics",
@@ -111,6 +117,12 @@ const teacherMenuItems: MenuItem[] = [
     icon: Pencil,
     href: "/teacher/exercises/create",
     description: "Create new exercises"
+  },
+  {
+    title: "Knowledge Share",
+    icon: Book,
+    href: "/teacher/knowledge",
+    description: "Share knowledge and resources"
   },
   {
     title: "Student Progress",
@@ -174,6 +186,11 @@ const studentMenuItems: MenuItem[] = [
     title: "Projects",
     icon: Layout,
     href: "/student/projects",
+  },
+  {
+    title: "Knowledge Share",
+    icon: BookOpen,
+    href: "/student/knowledge",
   },
   {
     title: "Progress",
@@ -279,4 +296,4 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
       </SidebarFooter>
     </Sidebar>
   );
-};
+}

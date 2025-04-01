@@ -21,7 +21,7 @@ import {
   Gamepad2,
   Users,
   MessageCircle,
-  Edit
+  Book
 } from 'lucide-react';
 
 const links = [
@@ -89,6 +89,11 @@ const links = [
     title: 'Social Feed',
     href: '/student/social',
     icon: Users,
+  },
+  {
+    title: 'Knowledge Share',
+    href: '/student/knowledge',
+    icon: Book,
   },
   {
     title: 'Messages',

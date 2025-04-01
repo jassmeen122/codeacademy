@@ -49,11 +49,11 @@ export const usePrivateMessages = () => {
         .from('private_messages')
         .select(`
           *,
-          sender:sender_id (
+          sender:sender_id(
             full_name,
             avatar_url
           ),
-          receiver:receiver_id (
+          receiver:receiver_id(
             full_name,
             avatar_url
           )
@@ -69,13 +69,21 @@ export const usePrivateMessages = () => {
       for (const message of (data || [])) {
         const isUserSender = message.sender_id === user.id;
         const otherUserId = isUserSender ? message.receiver_id : message.sender_id;
-        const otherUser = isUserSender ? message.receiver : message.sender;
+        
+        // Get correct user profile, handling potential error responses
+        const otherUserProfile = isUserSender ? message.receiver : message.sender;
+        const otherUserFullName = typeof otherUserProfile === 'object' && otherUserProfile !== null 
+          ? otherUserProfile.full_name 
+          : 'Unknown User';
+        const otherUserAvatar = typeof otherUserProfile === 'object' && otherUserProfile !== null 
+          ? otherUserProfile.avatar_url 
+          : null;
         
         if (!conversationsMap.has(otherUserId)) {
           conversationsMap.set(otherUserId, {
             user_id: otherUserId,
-            full_name: otherUser?.full_name,
-            avatar_url: otherUser?.avatar_url,
+            full_name: otherUserFullName,
+            avatar_url: otherUserAvatar,
             last_message: message.content,
             last_message_date: message.created_at,
             unread_count: !isUserSender && !message.read ? 1 : 0
@@ -106,11 +114,11 @@ export const usePrivateMessages = () => {
         .from('private_messages')
         .select(`
           *,
-          sender:sender_id (
+          sender:sender_id(
             full_name,
             avatar_url
           ),
-          receiver:receiver_id (
+          receiver:receiver_id(
             full_name,
             avatar_url
           )
@@ -129,16 +137,28 @@ export const usePrivateMessages = () => {
           .in('id', unreadMessages.map(msg => msg.id));
       }
 
-      const typedMessages: PrivateMessage[] = (data || []).map(message => ({
-        id: message.id,
-        sender_id: message.sender_id,
-        receiver_id: message.receiver_id,
-        content: message.content,
-        read: message.read,
-        created_at: message.created_at,
-        sender: message.sender,
-        receiver: message.receiver
-      }));
+      // Convert to strongly-typed messages
+      const typedMessages: PrivateMessage[] = (data || []).map(message => {
+        // Handle potential error responses for sender and receiver
+        const senderProfile = typeof message.sender === 'object' && message.sender !== null 
+          ? message.sender 
+          : { full_name: 'Unknown User', avatar_url: null };
+        
+        const receiverProfile = typeof message.receiver === 'object' && message.receiver !== null 
+          ? message.receiver 
+          : { full_name: 'Unknown User', avatar_url: null };
+
+        return {
+          id: message.id,
+          sender_id: message.sender_id,
+          receiver_id: message.receiver_id,
+          content: message.content,
+          read: message.read,
+          created_at: message.created_at,
+          sender: senderProfile,
+          receiver: receiverProfile
+        };
+      });
 
       return typedMessages;
     } catch (error: any) {
@@ -165,11 +185,11 @@ export const usePrivateMessages = () => {
         })
         .select(`
           *,
-          sender:sender_id (
+          sender:sender_id(
             full_name,
             avatar_url
           ),
-          receiver:receiver_id (
+          receiver:receiver_id(
             full_name,
             avatar_url
           )
@@ -182,6 +202,16 @@ export const usePrivateMessages = () => {
       fetchConversations();
 
       toast.success('Message sent');
+      
+      // Handle potential error responses for sender and receiver
+      const senderProfile = typeof data.sender === 'object' && data.sender !== null 
+        ? data.sender 
+        : { full_name: 'Unknown User', avatar_url: null };
+      
+      const receiverProfile = typeof data.receiver === 'object' && data.receiver !== null 
+        ? data.receiver 
+        : { full_name: 'Unknown User', avatar_url: null };
+
       return {
         id: data.id,
         sender_id: data.sender_id,
@@ -189,8 +219,8 @@ export const usePrivateMessages = () => {
         content: data.content,
         read: data.read,
         created_at: data.created_at,
-        sender: data.sender,
-        receiver: data.receiver
+        sender: senderProfile,
+        receiver: receiverProfile
       } as PrivateMessage;
     } catch (error: any) {
       console.error('Error sending message:', error);

@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -34,6 +33,7 @@ import LanguageSummaryPage from '@/pages/student/LanguageSummaryPage';
 import LanguageQuizPage from '@/pages/student/LanguageQuizPage';
 import SocialFeedPage from '@/pages/student/SocialFeedPage';
 import MessagesPage from '@/pages/student/MessagesPage';
+import KnowledgeSharePage from '@/pages/KnowledgeSharePage';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -61,6 +61,8 @@ function App() {
 
           {/* Student Routes */}
           <Route path="/student" element={<StudentDashboard />} />
+          
+          {/* Keep existing student routes */}
           <Route path="/student/courses" element={<StudentCoursesPage />} />
           <Route path="/student/free-courses" element={<FreeCoursesDashboard />} />
           <Route path="/student/courses/:courseId/details" element={<StudentCourseDetailsPage />} />
@@ -84,6 +86,7 @@ function App() {
           {/* Social features routes */}
           <Route path="/student/social" element={<SocialFeedPage />} />
           <Route path="/student/messages" element={<MessagesPage />} />
+          <Route path="/student/knowledge" element={<KnowledgeSharePage />} />
           
           {/* Nouvelles routes pour le système de cours simplifiés */}
           <Route path="/student/language-selection" element={<LanguageSelectionPage />} />
@@ -95,6 +98,9 @@ function App() {
 
           {/* Teacher Routes */}
           <Route path="/teacher" element={<TeacherDashboardPage />} />
+          <Route path="/teacher/knowledge" element={<KnowledgeSharePage />} />
+          
+          {/* Keep existing teacher routes */}
           <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
           <Route path="/teacher/courses/create" element={<TeacherCreateCoursePage />} />
           <Route path="/teacher/courses/edit/:courseId" element={<TeacherEditCoursePage />} />
@@ -104,6 +110,9 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/knowledge" element={<KnowledgeSharePage />} />
+          
+          {/* Keep existing admin routes */}
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
 
           <Route path="*" element={<Navigate to="/not-found" replace />} />
