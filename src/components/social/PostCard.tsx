@@ -11,6 +11,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useAuthState } from '@/hooks/useAuthState';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PostCardProps {
   post: SocialPost;
@@ -37,8 +38,8 @@ export function PostCard({ post, onAddComment, onReaction, onDelete, onToggleFol
     if (!showComments && comments.length === 0) {
       setLoadingComments(true);
       try {
-        // Assuming there's a fetchComments function in the parent component
-        const fetchedComments = await window.supabase
+        // Fetch comments using the imported supabase client
+        const fetchedComments = await supabase
           .from('post_comments')
           .select(`
             id,
@@ -116,7 +117,7 @@ export function PostCard({ post, onAddComment, onReaction, onDelete, onToggleFol
     if (user && post.author_id && post.author_id !== user.id) {
       const checkFollowStatus = async () => {
         try {
-          const { data } = await window.supabase
+          const { data } = await supabase
             .from('user_follows')
             .select('id')
             .eq('follower_id', user.id)
@@ -138,7 +139,7 @@ export function PostCard({ post, onAddComment, onReaction, onDelete, onToggleFol
     if (user) {
       const checkLikeStatus = async () => {
         try {
-          const { data } = await window.supabase
+          const { data } = await supabase
             .from('post_reactions')
             .select('id')
             .eq('post_id', post.id)
