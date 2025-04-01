@@ -1,34 +1,9 @@
+
 import {
-  Book,
-  Code,
-  GraduationCap,
-  Layout,
-  MessageSquare,
-  Settings,
-  Trophy,
-  UserRound,
-  Activity,
-  FileCode,
-  Brain,
-  Users,
-  FilePlus,
-  Gauge,
-  School,
-  CircuitBoard,
   Database,
-  BookOpen,
-  ClipboardList,
-  BarChart,
-  Bell,
-  Video,
-  FileText,
-  Folder,
-  PlusCircle,
-  ListChecks,
-  Pencil,
-  Gamepad2,
-  Briefcase,
-  Youtube
+  GraduationCap,
+  School,
+  UserRound,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,212 +12,16 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "react-router-dom";
+import { adminMenuItems } from "./sidebar/AdminMenuItems";
+import { teacherMenuItems } from "./sidebar/TeacherMenuItems";
+import { studentMenuItems } from "./sidebar/StudentMenuItems";
+import { SidebarMenu } from "./sidebar/SidebarMenu";
 
 interface DashboardSidebarProps {
   userRole: 'admin' | 'teacher' | 'student' | null;
 }
 
-interface MenuItem {
-  title: string;
-  icon: React.ElementType;
-  href: string;
-  description?: string;
-}
-
-const adminMenuItems: MenuItem[] = [
-  {
-    title: "Dashboard",
-    icon: Gauge,
-    href: "/admin",
-  },
-  {
-    title: "User Management",
-    icon: Users,
-    href: "/admin/users",
-  },
-  {
-    title: "Course Management",
-    icon: Book,
-    href: "/admin/courses",
-  },
-  {
-    title: "Exercises",
-    icon: FileCode,
-    href: "/admin/exercises",
-  },
-  {
-    title: "Knowledge Share",
-    icon: BookOpen,
-    href: "/admin/knowledge",
-  },
-  {
-    title: "Internship Opportunities",
-    icon: Briefcase,
-    href: "/admin/internships",
-  },
-  {
-    title: "Analytics",
-    icon: Activity,
-    href: "/admin/analytics",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/admin/settings",
-  },
-];
-
-const teacherMenuItems: MenuItem[] = [
-  {
-    title: "Dashboard",
-    icon: School,
-    href: "/teacher",
-  },
-  {
-    title: "My Courses",
-    icon: BookOpen,
-    href: "/teacher/courses",
-    description: "Manage your courses"
-  },
-  {
-    title: "Course Creator",
-    icon: PlusCircle,
-    href: "/teacher/courses/create",
-    description: "Create new courses"
-  },
-  {
-    title: "Exercises",
-    icon: ClipboardList,
-    href: "/teacher/exercises",
-    description: "Manage exercises"
-  },
-  {
-    title: "Create Exercise",
-    icon: Pencil,
-    href: "/teacher/exercises/create",
-    description: "Create new exercises"
-  },
-  {
-    title: "Knowledge Share",
-    icon: Book,
-    href: "/teacher/knowledge",
-    description: "Share knowledge and resources"
-  },
-  {
-    title: "Student Progress",
-    icon: BarChart,
-    href: "/teacher/progress",
-    description: "Track student performance"
-  },
-  {
-    title: "Discussion",
-    icon: MessageSquare,
-    href: "/teacher/discussion",
-    description: "Course forums"
-  },
-  {
-    title: "Materials",
-    icon: FileText,
-    href: "/teacher/materials",
-    description: "Course resources"
-  },
-  {
-    title: "Notifications",
-    icon: Bell,
-    href: "/teacher/notifications",
-    description: "Alerts and updates"
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/teacher/settings",
-    description: "Personal preferences"
-  },
-];
-
-const studentMenuItems: MenuItem[] = [
-  {
-    title: "Dashboard",
-    icon: School,
-    href: "/student",
-  },
-  {
-    title: "Profile",
-    icon: UserRound,
-    href: "/student/profile",
-  },
-  {
-    title: "My Courses",
-    icon: Book,
-    href: "/student/courses",
-  },
-  {
-    title: "Code Editor",
-    icon: Code,
-    href: "/student/editor",
-  },
-  {
-    title: "AI Assistant",
-    icon: Brain,
-    href: "/student/ai-assistant",
-  },
-  {
-    title: "Exercises",
-    icon: FileCode,
-    href: "/student/exercises",
-  },
-  {
-    title: "YT Dev Tutorials",
-    icon: Youtube,
-    href: "/student/yt-dev-tutorials",
-  },
-  {
-    title: "Projects",
-    icon: Layout,
-    href: "/student/projects",
-  },
-  {
-    title: "Internship Opportunities",
-    icon: Briefcase,
-    href: "/student/internships",
-  },
-  {
-    title: "Knowledge Share",
-    icon: BookOpen,
-    href: "/student/knowledge",
-  },
-  {
-    title: "Progress",
-    icon: Activity,
-    href: "/student/progress",
-  },
-  {
-    title: "Achievements",
-    icon: Trophy,
-    href: "/student/achievements",
-  },
-  {
-    title: "Mini-Jeu",
-    icon: Gamepad2,
-    href: "/student/mini-game",
-  },
-  {
-    title: "Discussion",
-    icon: MessageSquare,
-    href: "/student/discussion",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/student/settings",
-  },
-];
-
 export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
-  const location = useLocation();
-
   const getMenuItems = () => {
     switch (userRole) {
       case 'admin':
@@ -293,28 +72,11 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <nav className="space-y-1 p-2">
-          {getMenuItems().map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            return (
-              <Link key={item.href} to={item.href}>
-                <Button
-                  variant={isActive ? "secondary" : "ghost"}
-                  className="w-full justify-start gap-2"
-                  title={item.description}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.title}
-                </Button>
-              </Link>
-            );
-          })}
-        </nav>
+        <SidebarMenu menuItems={getMenuItems()} />
       </SidebarContent>
       <SidebarFooter className="border-t border-border p-4">
         <SidebarTrigger />
       </SidebarFooter>
     </Sidebar>
   );
-}
+};
