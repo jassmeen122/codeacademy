@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { InternshipOffer } from '@/types/internship';
+import { InternshipOffer, InternshipStatus } from '@/types/internship';
 import { useAuthState } from '@/hooks/useAuthState';
 
 export const useInternshipOffers = () => {
@@ -65,7 +65,7 @@ export const useInternshipOffers = () => {
     try {
       const newOffer = {
         ...offer,
-        status: 'open'
+        status: 'open' as InternshipStatus
       };
       
       const { data, error } = await supabase

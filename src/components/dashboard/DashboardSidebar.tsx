@@ -27,7 +27,8 @@ import {
   PlusCircle,
   ListChecks,
   Pencil,
-  Gamepad2
+  Gamepad2,
+  Briefcase
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,6 +76,11 @@ const adminMenuItems: MenuItem[] = [
     title: "Knowledge Share",
     icon: BookOpen,
     href: "/admin/knowledge",
+  },
+  {
+    title: "Internship Opportunities",
+    icon: Briefcase,
+    href: "/admin/internships",
   },
   {
     title: "Analytics",
@@ -158,6 +164,11 @@ const teacherMenuItems: MenuItem[] = [
 
 const studentMenuItems: MenuItem[] = [
   {
+    title: "Dashboard",
+    icon: School,
+    href: "/student",
+  },
+  {
     title: "Profile",
     icon: UserRound,
     href: "/student/profile",
@@ -186,6 +197,11 @@ const studentMenuItems: MenuItem[] = [
     title: "Projects",
     icon: Layout,
     href: "/student/projects",
+  },
+  {
+    title: "Internship Opportunities",
+    icon: Briefcase,
+    href: "/student/internships",
   },
   {
     title: "Knowledge Share",
