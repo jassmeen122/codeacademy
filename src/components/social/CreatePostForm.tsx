@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthState } from '@/hooks/useAuthState';
 import { Code, Image, Users, X } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -49,6 +48,8 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
         
+        console.log("Uploading to:", filePath);
+        
         const { error: uploadError, data } = await supabase.storage
           .from('post_images')
           .upload(filePath, selectedImage, {
@@ -57,14 +58,18 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
           });
           
         if (uploadError) {
+          console.error("Upload error:", uploadError);
           throw uploadError;
         }
+        
+        console.log("Upload successful:", data);
         
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from('post_images')
           .getPublicUrl(filePath);
           
+        console.log("Public URL:", publicUrl);
         imageUrl = publicUrl;
       }
       
@@ -82,9 +87,11 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
       setImagePreview(null);
       setShowImageUpload(false);
       setUploadProgress(0);
-    } catch (error) {
+      
+      toast.success('Post created successfully!');
+    } catch (error: any) {
       console.error('Error creating post:', error);
-      toast.error('Error creating post. Please try again.');
+      toast.error(`Error creating post: ${error.message || 'Please try again'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +115,9 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
     // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
-      setImagePreview(e.target?.result as string);
+      if (e.target?.result) {
+        setImagePreview(e.target?.result as string);
+      }
     };
     reader.readAsDataURL(file);
   };

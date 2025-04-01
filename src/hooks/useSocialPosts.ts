@@ -224,6 +224,8 @@ export const useSocialPosts = () => {
         image_url: imageUrl || null
       };
       
+      console.log("Creating post with data:", newPost);
+      
       const { data, error } = await supabase
         .from('social_posts')
         .insert(newPost)
@@ -243,9 +245,14 @@ export const useSocialPosts = () => {
         `)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating post in database:", error);
+        throw error;
+      }
       
       if (!data) throw new Error("Couldn't retrieve the new post");
+      
+      console.log("Post created successfully:", data);
       
       // Here we make sure we're getting all the data correctly
       const createdPost: SocialPost = {
