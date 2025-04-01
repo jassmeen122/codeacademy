@@ -51,6 +51,7 @@ import AdminDashboardPage from '@/pages/AdminDashboard';
 import AdminSettingsPage from '@/pages/admin/SettingsPage';
 import InternshipManagementPage from '@/pages/admin/InternshipManagementPage';
 import PostManagementPage from '@/pages/admin/PostManagementPage';
+import CourseManagementPage from '@/pages/admin/CourseManagementPage';
 import UserManagementPage from '@/pages/admin/UserManagementPage';
 
 function App() {
@@ -123,6 +124,7 @@ function App() {
           <Route path="/admin/internships" element={<InternshipManagementPage />} />
           <Route path="/admin/posts" element={<PostManagementPage />} />
           <Route path="/admin/users" element={<UserManagementPage />} />
+          <Route path="/admin/courses" element={<CourseManagementPage />} />
           
           {/* Keep existing admin routes */}
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
