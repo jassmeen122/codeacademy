@@ -15,6 +15,7 @@ export const useInternshipOffers = () => {
     industry?: string;
     location?: string;
     isRemote?: boolean;
+    searchTerm?: string;
   }) => {
     try {
       setLoading(true);
@@ -35,13 +36,17 @@ export const useInternshipOffers = () => {
         if (filters.isRemote !== undefined) {
           query = query.eq('is_remote', filters.isRemote);
         }
+        if (filters.searchTerm) {
+          const term = `%${filters.searchTerm}%`;
+          query = query.or(`title.ilike.${term},description.ilike.${term},company.ilike.${term}`);
+        }
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      setOffers(data || []);
+      setOffers(data as InternshipOffer[]);
     } catch (err: any) {
       console.error('Error fetching internship offers:', err);
       setError(err);
@@ -63,7 +68,7 @@ export const useInternshipOffers = () => {
         .insert({
           ...offer,
           status: 'open'
-        })
+        } as any)
         .select()
         .single();
       
@@ -110,7 +115,7 @@ export const useInternshipOffers = () => {
     try {
       const { error } = await supabase
         .from('internship_offers')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id);
       
       if (error) throw error;

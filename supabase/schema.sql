@@ -1,9 +1,4 @@
 
-/*
- * This file contains type definitions for your Supabase database
- * It can be used by TypeScript utilities to offer better type safety
- */
-
 -- Create ENUM types
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'student');
 CREATE TYPE difficulty_level AS ENUM ('Beginner', 'Intermediate', 'Advanced', 'Expert');
@@ -115,5 +110,20 @@ CREATE OR REPLACE FUNCTION get_course_lessons_for_modules(module_ids UUID[])
 RETURNS SETOF course_lessons AS $$
 BEGIN
   RETURN QUERY SELECT * FROM course_lessons WHERE module_id = ANY(module_ids) ORDER BY order_index;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create helper functions for internship filters
+CREATE OR REPLACE FUNCTION get_unique_industries()
+RETURNS SETOF TEXT AS $$
+BEGIN
+  RETURN QUERY SELECT DISTINCT industry FROM internship_offers WHERE status = 'open' ORDER BY industry;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_unique_locations()
+RETURNS SETOF TEXT AS $$
+BEGIN
+  RETURN QUERY SELECT DISTINCT location FROM internship_offers WHERE status = 'open' ORDER BY location;
 END;
 $$ LANGUAGE plpgsql;

@@ -29,7 +29,10 @@ export interface InternshipApplication {
   status: ApplicationStatus;
   created_at: string;
   updated_at: string;
-  internship?: InternshipOffer;
+  internship?: {
+    title: string;
+    company: string;
+  };
   student?: {
     full_name: string | null;
     email: string;

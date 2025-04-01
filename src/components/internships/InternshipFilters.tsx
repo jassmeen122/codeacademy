@@ -74,28 +74,26 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
       try {
         // Get unique industries
         const { data: industryData, error: industryError } = await supabase
-          .from('internship_offers')
-          .select('industry')
-          .eq('status', 'open');
+          .rpc('get_unique_industries');
         
-        if (industryError) throw industryError;
-        
-        if (industryData) {
-          const uniqueIndustries = [...new Set(industryData.map(item => item.industry))];
-          setIndustries(uniqueIndustries);
+        if (industryError) {
+          console.error('Error fetching industries:', industryError);
+          const fallbackData = await fetchRawIndustries();
+          if (fallbackData) setIndustries(fallbackData);
+        } else if (industryData) {
+          setIndustries(industryData);
         }
         
         // Get unique locations
         const { data: locationData, error: locationError } = await supabase
-          .from('internship_offers')
-          .select('location')
-          .eq('status', 'open');
+          .rpc('get_unique_locations');
         
-        if (locationError) throw locationError;
-        
-        if (locationData) {
-          const uniqueLocations = [...new Set(locationData.map(item => item.location))];
-          setLocations(uniqueLocations);
+        if (locationError) {
+          console.error('Error fetching locations:', locationError);
+          const fallbackData = await fetchRawLocations();
+          if (fallbackData) setLocations(fallbackData);
+        } else if (locationData) {
+          setLocations(locationData);
         }
       } catch (error) {
         console.error('Error fetching filter options:', error);
@@ -104,6 +102,46 @@ export function InternshipFilters({ onFilterChange }: InternshipFiltersProps) {
 
     fetchFilterOptions();
   }, []);
+
+  // Fallback function to get industries directly
+  const fetchRawIndustries = async (): Promise<string[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('internship_offers')
+        .select('industry')
+        .eq('status', 'open');
+      
+      if (error) throw error;
+      
+      if (data) {
+        return [...new Set(data.map(item => item.industry))];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error in fallback industry fetch:', error);
+      return [];
+    }
+  };
+
+  // Fallback function to get locations directly
+  const fetchRawLocations = async (): Promise<string[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('internship_offers')
+        .select('location')
+        .eq('status', 'open');
+      
+      if (error) throw error;
+      
+      if (data) {
+        return [...new Set(data.map(item => item.location))];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error in fallback location fetch:', error);
+      return [];
+    }
+  };
 
   return (
     <Form {...form}>

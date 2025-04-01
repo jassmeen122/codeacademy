@@ -41,7 +41,7 @@ export const useInternshipApplications = () => {
       
       if (error) throw error;
       
-      setApplications(data || []);
+      setApplications(data as InternshipApplication[]);
     } catch (err: any) {
       console.error('Error fetching internship applications:', err);
       setError(err);
