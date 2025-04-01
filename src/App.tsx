@@ -53,6 +53,7 @@ import InternshipManagementPage from '@/pages/admin/InternshipManagementPage';
 import PostManagementPage from '@/pages/admin/PostManagementPage';
 import CourseManagementPage from '@/pages/admin/CourseManagementPage';
 import UserManagementPage from '@/pages/admin/UserManagementPage';
+import ExerciseManagementPage from '@/pages/admin/ExerciseManagementPage';
 
 function App() {
   const isLoggedIn = false; // Replace with actual authentication check
@@ -125,6 +126,7 @@ function App() {
           <Route path="/admin/posts" element={<PostManagementPage />} />
           <Route path="/admin/users" element={<UserManagementPage />} />
           <Route path="/admin/courses" element={<CourseManagementPage />} />
+          <Route path="/admin/exercises" element={<ExerciseManagementPage />} />
           
           {/* Keep existing admin routes */}
           <Route path="/admin/settings" element={<AdminSettingsPage />} />

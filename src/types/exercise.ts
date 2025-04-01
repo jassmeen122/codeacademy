@@ -13,6 +13,7 @@ export interface Exercise {
   teacher_id: string;
   updated_at: string;
   archived?: boolean;
+  teacher_name?: string; // Added to display teacher's name
 }
 
 export type ExerciseTabValue = "all" | "draft" | "published" | "archived";

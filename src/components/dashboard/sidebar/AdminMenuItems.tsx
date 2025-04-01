@@ -34,7 +34,7 @@ export const adminMenuItems: MenuItem[] = [
     href: "/admin/courses",
   },
   {
-    title: "Exercises",
+    title: "Exercise Management",
     icon: FileCode,
     href: "/admin/exercises",
   },
