@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { CourseModule, CourseLesson } from "@/types/course";
 import { toast } from "sonner";
 
-// Define simpler, non-recursive types for database records
-type ModuleRecord = {
+// Define simple, non-recursive interface types for the database records
+interface ModuleRecord {
   id: string;
   title: string;
   description: string | null;
@@ -15,9 +15,10 @@ type ModuleRecord = {
   estimated_duration?: string | null;
   created_at?: string;
   updated_at?: string;
+  course_id?: string;
 }
 
-type LessonRecord = {
+interface LessonRecord {
   id: string;
   title: string;
   content: string | null;
@@ -51,7 +52,7 @@ export const useCourseModules = (courseId: string) => {
       const moduleIds = (modulesData || []).map(module => module.id);
       
       if (moduleIds.length > 0) {
-        // Use direct query instead of RPC to avoid type issues
+        // Use direct query instead of RPC
         const { data: lessonsData, error: lessonsError } = await supabase
           .from('course_lessons')
           .select('*')
@@ -63,12 +64,9 @@ export const useCourseModules = (courseId: string) => {
           throw lessonsError;
         }
         
-        // Use a type assertion with unknown first
-        const typedLessonsData = (lessonsData || []) as unknown as LessonRecord[];
-        
-        // Combine modules with their lessons
-        const modulesWithLessons = (modulesData || []).map(module => {
-          const moduleLessons = typedLessonsData
+        // Use a more explicit type assertion to avoid deep nesting
+        const modulesWithLessons = (modulesData as ModuleRecord[] || []).map(module => {
+          const moduleLessons = (lessonsData as LessonRecord[] || [])
             .filter(lesson => lesson.module_id === module.id)
             .map(lesson => ({
               id: lesson.id,
@@ -89,7 +87,7 @@ export const useCourseModules = (courseId: string) => {
         setModules(modulesWithLessons);
       } else {
         // Just set the modules without lessons
-        setModules((modulesData || []) as CourseModule[]);
+        setModules((modulesData as ModuleRecord[]) || []);
       }
     } catch (err: any) {
       console.error("Error fetching course modules:", err);
