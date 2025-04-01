@@ -13,16 +13,17 @@ import { Briefcase } from 'lucide-react';
 import { ApplicationList } from '@/components/internships/ApplicationList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthState } from '@/hooks/useAuthState';
-import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function InternshipOpportunitiesPage() {
   const { user } = useAuthState();
   const { offers, loading, fetchInternshipOffers } = useInternshipOffers();
-  const { applications, applyForInternship } = useInternshipApplications();
+  const { applications, applyForInternship, loading: applicationsLoading } = useInternshipApplications();
   
   const [selectedInternship, setSelectedInternship] = useState<InternshipOffer | null>(null);
   const [applySheetOpen, setApplySheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('opportunities');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleApply = (internship: InternshipOffer) => {
     setSelectedInternship(internship);
@@ -34,12 +35,25 @@ export default function InternshipOpportunitiesPage() {
     cover_letter_url?: string;
     motivation_text?: string;
   }) => {
-    if (!selectedInternship) return;
+    if (!selectedInternship || !user) {
+      toast.error('You must be logged in to apply for internships');
+      return;
+    }
     
-    const result = await applyForInternship(selectedInternship.id, application);
-    if (result) {
-      setApplySheetOpen(false);
-      setActiveTab('applications');
+    try {
+      setSubmitting(true);
+      const result = await applyForInternship(selectedInternship.id, application);
+      
+      if (result) {
+        setApplySheetOpen(false);
+        setActiveTab('applications');
+        toast.success('Application submitted successfully');
+      }
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error('Failed to submit application. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -49,9 +63,6 @@ export default function InternshipOpportunitiesPage() {
     isRemote?: boolean;
     searchTerm?: string;
   }) => {
-    // Filter by searchTerm client-side
-    const searchTerm = filters.searchTerm?.toLowerCase();
-    
     // Normalize industry and location filters to handle "all" values
     const industry = filters.industry === 'all-industries' ? undefined : filters.industry;
     const location = filters.location === 'all-locations' ? undefined : filters.location;
@@ -60,38 +71,9 @@ export default function InternshipOpportunitiesPage() {
       industry,
       location,
       isRemote: filters.isRemote,
-      searchTerm
+      searchTerm: filters.searchTerm
     });
   };
-
-  // Create a storage bucket if it doesn't exist yet
-  React.useEffect(() => {
-    const createStorageBucket = async () => {
-      try {
-        // Check if bucket exists
-        const { data: buckets } = await supabase.storage.listBuckets();
-        const bucketExists = buckets?.some(bucket => bucket.name === 'internship-applications');
-        
-        if (!bucketExists) {
-          // Create bucket
-          const { data, error } = await supabase.storage.createBucket('internship-applications', {
-            public: true,
-            fileSizeLimit: 5242880, // 5MB
-          });
-          
-          if (error) {
-            console.error('Error creating storage bucket:', error);
-          } else {
-            console.log('Storage bucket created successfully');
-          }
-        }
-      } catch (error) {
-        console.error('Error checking/creating storage bucket:', error);
-      }
-    };
-    
-    createStorageBucket();
-  }, []);
 
   return (
     <DashboardLayout>
@@ -151,12 +133,31 @@ export default function InternshipOpportunitiesPage() {
           </TabsContent>
           
           <TabsContent value="applications" className="space-y-6">
-            <ApplicationList applications={applications} />
+            {applicationsLoading ? (
+              <div className="animate-pulse space-y-6">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="rounded-lg border bg-card p-6">
+                    <div className="h-6 bg-muted rounded w-3/4 mb-4"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                      <div className="h-4 bg-muted rounded w-full"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <ApplicationList applications={applications} />
+            )}
           </TabsContent>
         </Tabs>
       </div>
 
-      <Sheet open={applySheetOpen} onOpenChange={setApplySheetOpen}>
+      <Sheet open={applySheetOpen} onOpenChange={(open) => {
+        // Only allow closing if not currently submitting
+        if (!submitting || !open) {
+          setApplySheetOpen(open);
+        }
+      }}>
         <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto">
           <SheetHeader className="pb-4">
             <SheetTitle>Apply for Internship</SheetTitle>

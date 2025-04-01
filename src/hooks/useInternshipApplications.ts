@@ -9,6 +9,7 @@ export const useInternshipApplications = () => {
   const [applications, setApplications] = useState<InternshipApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const { user } = useAuthState();
 
   const fetchApplications = async (internshipId?: string) => {
@@ -64,7 +65,14 @@ export const useInternshipApplications = () => {
       return null;
     }
 
+    if (submitting) {
+      console.log('Already submitting an application, please wait');
+      return null;
+    }
+
     try {
+      setSubmitting(true);
+      
       // Check if user already applied
       const { data: existingApplication } = await supabase
         .from('internship_applications')
@@ -75,6 +83,12 @@ export const useInternshipApplications = () => {
       
       if (existingApplication) {
         toast.error('You have already applied for this internship');
+        return null;
+      }
+
+      // Validate motivation text
+      if (!application.motivation_text) {
+        toast.error('Motivation letter is required');
         return null;
       }
       
@@ -91,16 +105,20 @@ export const useInternshipApplications = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error applying for internship:', error);
+        throw error;
+      }
       
-      toast.success('Application submitted successfully');
       await fetchApplications();
       
       return data;
     } catch (err: any) {
       console.error('Error applying for internship:', err);
-      toast.error('Failed to submit application');
+      toast.error(`Failed to submit application: ${err.message || 'Unknown error'}`);
       return null;
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -139,6 +157,7 @@ export const useInternshipApplications = () => {
     applications,
     loading,
     error,
+    submitting,
     fetchApplications,
     applyForInternship,
     updateApplicationStatus

@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InternshipOffer } from '@/types/internship';
-import { Upload, File, Check } from 'lucide-react';
+import { Upload, File, Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from '@/hooks/useAuthState';
 import { toast } from 'sonner';
@@ -48,6 +48,7 @@ export function ApplicationForm({ internship, onSubmit, onCancel }: ApplicationF
   const [clUploading, setClUploading] = useState(false);
   const [cvUrl, setCvUrl] = useState<string | null>(null);
   const [coverLetterUrl, setCoverLetterUrl] = useState<string | null>(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(formSchema),
@@ -58,72 +59,83 @@ export function ApplicationForm({ internship, onSubmit, onCancel }: ApplicationF
     },
   });
 
-  const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+  const handleFileUpload = async (
+    file: File,
+    setUploading: React.Dispatch<React.SetStateAction<boolean>>,
+    setUrl: React.Dispatch<React.SetStateAction<string | null>>,
+    folderPath: string
+  ) => {
+    if (!file || !user) return null;
 
     try {
-      setCvUploading(true);
+      setUploading(true);
+      
+      // Create a safe file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const filePath = `${folderPath}/${fileName}`;
       
       // Upload to Supabase storage
-      const fileName = `${user.id}_${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('internship-applications')
-        .upload(`cv/${fileName}`, file);
+        .upload(filePath, file);
       
-      if (error) throw error;
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        throw uploadError;
+      }
       
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('internship-applications')
-        .getPublicUrl(`cv/${fileName}`);
+        .getPublicUrl(filePath);
       
-      setCvUrl(publicUrl);
-      toast.success('CV uploaded successfully');
+      setUrl(publicUrl);
+      return publicUrl;
     } catch (error: any) {
-      console.error('Error uploading CV:', error);
-      toast.error('Failed to upload CV');
+      console.error(`Error uploading to ${folderPath}:`, error);
+      toast.error(`Failed to upload file: ${error.message || 'Unknown error'}`);
+      return null;
     } finally {
-      setCvUploading(false);
+      setUploading(false);
+    }
+  };
+
+  const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const url = await handleFileUpload(file, setCvUploading, setCvUrl, 'cv');
+    if (url) {
+      toast.success('CV uploaded successfully');
     }
   };
 
   const handleCoverLetterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    try {
-      setClUploading(true);
-      
-      // Upload to Supabase storage
-      const fileName = `${user.id}_${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('internship-applications')
-        .upload(`cover-letters/${fileName}`, file);
-      
-      if (error) throw error;
-      
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('internship-applications')
-        .getPublicUrl(`cover-letters/${fileName}`);
-      
-      setCoverLetterUrl(publicUrl);
+    if (!file) return;
+    
+    const url = await handleFileUpload(file, setClUploading, setCoverLetterUrl, 'cover-letters');
+    if (url) {
       toast.success('Cover letter uploaded successfully');
-    } catch (error: any) {
-      console.error('Error uploading cover letter:', error);
-      toast.error('Failed to upload cover letter');
-    } finally {
-      setClUploading(false);
     }
   };
 
   const handleSubmit = async (values: ApplicationFormValues) => {
-    await onSubmit({
-      cv_url: cvUrl,
-      cover_letter_url: coverLetterUrl,
-      motivation_text: values.motivation_text,
-    });
+    try {
+      setFormSubmitting(true);
+      
+      await onSubmit({
+        cv_url: cvUrl,
+        cover_letter_url: coverLetterUrl,
+        motivation_text: values.motivation_text,
+      });
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast.error('Failed to submit application. Please try again.');
+    } finally {
+      setFormSubmitting(false);
+    }
   };
 
   return (
@@ -152,7 +164,14 @@ export function ApplicationForm({ internship, onSubmit, onCancel }: ApplicationF
                             cvUrl ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800' : ''
                           }`}
                         >
-                          {cvUrl ? (
+                          {cvUploading ? (
+                            <>
+                              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                              <div className="mt-2 text-sm font-medium">
+                                Uploading...
+                              </div>
+                            </>
+                          ) : cvUrl ? (
                             <>
                               <Check className="h-8 w-8 text-green-500" />
                               <div className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
@@ -207,7 +226,14 @@ export function ApplicationForm({ internship, onSubmit, onCancel }: ApplicationF
                             coverLetterUrl ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800' : ''
                           }`}
                         >
-                          {coverLetterUrl ? (
+                          {clUploading ? (
+                            <>
+                              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                              <div className="mt-2 text-sm font-medium">
+                                Uploading...
+                              </div>
+                            </>
+                          ) : coverLetterUrl ? (
                             <>
                               <Check className="h-8 w-8 text-green-500" />
                               <div className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
@@ -271,14 +297,21 @@ export function ApplicationForm({ internship, onSubmit, onCancel }: ApplicationF
             />
             
             <div className="flex justify-end space-x-4 pt-4">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button type="button" variant="outline" onClick={onCancel} disabled={formSubmitting}>
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                disabled={cvUploading || clUploading || form.formState.isSubmitting}
+                disabled={cvUploading || clUploading || formSubmitting}
               >
-                Submit Application
+                {formSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Application'
+                )}
               </Button>
             </div>
           </form>
