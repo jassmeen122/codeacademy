@@ -10,6 +10,7 @@ export type SocialPost = {
   content: string;
   code_snippet: string | null;
   language: string | null;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
   // Include author details
@@ -54,6 +55,7 @@ export const useSocialPosts = () => {
           content,
           code_snippet,
           language,
+          image_url,
           created_at,
           updated_at,
           profiles:author_id (
@@ -77,6 +79,7 @@ export const useSocialPosts = () => {
         content: post.content,
         code_snippet: post.code_snippet,
         language: post.language,
+        image_url: post.image_url,
         created_at: post.created_at,
         updated_at: post.updated_at,
         author: post.profiles,
@@ -148,6 +151,7 @@ export const useSocialPosts = () => {
           content,
           code_snippet,
           language,
+          image_url,
           created_at,
           updated_at,
           profiles:author_id (
@@ -185,6 +189,7 @@ export const useSocialPosts = () => {
           content: post.content,
           code_snippet: post.code_snippet,
           language: post.language,
+          image_url: post.image_url,
           created_at: post.created_at,
           updated_at: post.updated_at,
           author: post.profiles,
@@ -204,7 +209,7 @@ export const useSocialPosts = () => {
   };
 
   // Create a new post
-  const createPost = async (content: string, codeSnippet?: string, language?: string) => {
+  const createPost = async (content: string, codeSnippet?: string, language?: string, imageUrl?: string) => {
     if (!user) {
       toast.error('You must be logged in to create a post');
       return null;
@@ -215,7 +220,8 @@ export const useSocialPosts = () => {
         author_id: user.id,
         content,
         code_snippet: codeSnippet || null,
-        language: language || null
+        language: language || null,
+        image_url: imageUrl || null
       };
       
       const { data, error } = await supabase
@@ -227,6 +233,7 @@ export const useSocialPosts = () => {
           content,
           code_snippet,
           language,
+          image_url,
           created_at,
           updated_at,
           profiles:author_id (
@@ -246,6 +253,7 @@ export const useSocialPosts = () => {
         content: data.content,
         code_snippet: data.code_snippet,
         language: data.language,
+        image_url: data.image_url,
         created_at: data.created_at,
         updated_at: data.updated_at,
         author: data.profiles,

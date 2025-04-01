@@ -7,9 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthState } from '@/hooks/useAuthState';
 import { Code, Image, Users, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreatePostFormProps {
-  onSubmit: (content: string, codeSnippet?: string, language?: string) => Promise<any>;
+  onSubmit: (content: string, codeSnippet?: string, language?: string, imageUrl?: string) => Promise<any>;
 }
 
 export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
@@ -18,6 +20,10 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
   const [showCodeEditor, setShowCodeEditor] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [codeLanguage, setCodeLanguage] = useState('javascript');
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const { user } = useAuthState();
   
   if (!user) {
@@ -31,21 +37,85 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
   }
   
   const handleSubmit = async () => {
-    if (!content.trim() && !codeSnippet.trim()) return;
+    if (!content.trim() && !codeSnippet.trim() && !selectedImage) return;
     
     setIsSubmitting(true);
     try {
+      let imageUrl: string | undefined = undefined;
+      
+      // Upload image if selected
+      if (selectedImage) {
+        const fileExt = selectedImage.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('post_images')
+          .upload(filePath, selectedImage, {
+            cacheControl: '3600',
+            upsert: false
+          });
+          
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('post_images')
+          .getPublicUrl(filePath);
+          
+        imageUrl = publicUrl;
+      }
+      
       await onSubmit(
         content, 
         showCodeEditor && codeSnippet ? codeSnippet : undefined,
-        showCodeEditor && codeSnippet ? codeLanguage : undefined
+        showCodeEditor && codeSnippet ? codeLanguage : undefined,
+        imageUrl
       );
+      
       setContent('');
       setCodeSnippet('');
       setShowCodeEditor(false);
+      setSelectedImage(null);
+      setImagePreview(null);
+      setShowImageUpload(false);
+      setUploadProgress(0);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast.error('Error creating post. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      setSelectedImage(null);
+      setImagePreview(null);
+      return;
+    }
+    
+    const file = e.target.files[0];
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+    
+    setSelectedImage(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
   };
 
   const languageOptions = [
@@ -110,6 +180,50 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
                 />
               </div>
             )}
+            
+            {showImageUpload && (
+              <div className="mt-4 border rounded-md overflow-hidden p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-medium">Add an image</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setShowImageUpload(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {!imagePreview ? (
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-6">
+                    <Image className="h-10 w-10 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500 mb-2">Click to upload an image (max 5MB)</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="w-full cursor-pointer"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="max-h-64 max-w-full mx-auto rounded-md"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 rounded-full h-8 w-8"
+                      onClick={removeImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
@@ -120,7 +234,10 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
             variant="outline"
             size="sm"
             className="flex items-center gap-1"
-            onClick={() => setShowCodeEditor(!showCodeEditor)}
+            onClick={() => {
+              setShowCodeEditor(!showCodeEditor);
+              if (showImageUpload) setShowImageUpload(false);
+            }}
           >
             <Code className="h-4 w-4" />
             Code
@@ -129,6 +246,10 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
             variant="outline"
             size="sm"
             className="flex items-center gap-1"
+            onClick={() => {
+              setShowImageUpload(!showImageUpload);
+              if (showCodeEditor) setShowCodeEditor(false);
+            }}
           >
             <Image className="h-4 w-4" />
             Photo
@@ -145,9 +266,13 @@ export function CreatePostForm({ onSubmit }: CreatePostFormProps) {
         
         <Button 
           onClick={handleSubmit} 
-          disabled={(!content.trim() && (!showCodeEditor || !codeSnippet.trim())) || isSubmitting}
+          disabled={(
+            !content.trim() && 
+            (!showCodeEditor || !codeSnippet.trim()) && 
+            !selectedImage
+          ) || isSubmitting}
         >
-          Post
+          {isSubmitting ? 'Posting...' : 'Post'}
         </Button>
       </CardFooter>
     </Card>
