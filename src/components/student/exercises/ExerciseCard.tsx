@@ -3,10 +3,10 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Circle, Star } from "lucide-react";
-import { Exercise } from "@/types/exercise";
+import { ExerciseUI } from "@/types/exerciseUI";
 
 interface ExerciseCardProps {
-  exercise: Exercise;
+  exercise: ExerciseUI;
   isActive: boolean;
   onClick: () => void;
   difficulties: Record<string, { stars: number; className: string }>;
@@ -18,7 +18,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   onClick, 
   difficulties 
 }) => {
-  const getStatusIcon = (status: Exercise["status"]) => {
+  const getStatusIcon = (status: ExerciseUI["status"]) => {
     switch (status) {
       case "completed":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -53,11 +53,13 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${difficulties[exercise.difficulty].className}`}>
               {renderStars(difficulties[exercise.difficulty].stars)}
             </span>
-            <Badge variant="outline" className="text-xs">
-              {exercise.language}
-            </Badge>
+            {exercise.language && (
+              <Badge variant="outline" className="text-xs">
+                {exercise.language}
+              </Badge>
+            )}
           </div>
-          <Badge className="bg-blue-100 text-blue-800 border-none">{exercise.theme}</Badge>
+          {exercise.theme && <Badge className="bg-blue-100 text-blue-800 border-none">{exercise.theme}</Badge>}
         </div>
       </CardContent>
     </Card>

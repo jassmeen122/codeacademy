@@ -1,12 +1,12 @@
 
 import React from "react";
-import { Exercise } from "@/types/exercise";
+import { ExerciseUI } from "@/types/exerciseUI";
 import { ExerciseCard } from "./ExerciseCard";
 
 interface ExercisesListProps {
-  exercises: Exercise[];
-  activeExercise: Exercise | null;
-  onSelectExercise: (exercise: Exercise) => void;
+  exercises: ExerciseUI[];
+  activeExercise: ExerciseUI | null;
+  onSelectExercise: (exercise: ExerciseUI) => void;
   difficulties: Record<string, { stars: number; className: string }>;
 }
 

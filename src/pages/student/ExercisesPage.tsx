@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,18 +18,7 @@ import { ExercisesList } from "@/components/student/exercises/ExercisesList";
 import { ExerciseDetail } from "@/components/student/exercises/ExerciseDetail";
 import { EmptyExerciseState } from "@/components/student/exercises/EmptyExerciseState";
 import { LoadingState } from "@/components/student/exercises/LoadingState";
-
-interface Exercise {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Expert";
-  type: "mcq" | "open_ended" | "coding" | "file_upload";
-  status: "completed" | "in_progress" | "not_started";
-  language?: ProgrammingLanguage;
-  theme?: string;
-  tests?: { input: string; output: string }[];
-}
+import { ExerciseUI } from "@/types/exerciseUI";
 
 const difficulties = {
   "Beginner": { stars: 1, className: "bg-green-100 text-green-800" },
@@ -45,13 +33,13 @@ const themes = [
 ];
 
 const ExercisesPage = () => {
-  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [exercises, setExercises] = useState<ExerciseUI[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
   const [selectedTheme, setSelectedTheme] = useState<string>("all");
-  const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
+  const [activeExercise, setActiveExercise] = useState<ExerciseUI | null>(null);
   const [code, setCode] = useState("");
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
@@ -89,8 +77,12 @@ const ExercisesPage = () => {
 
       if (error) throw error;
 
-      const enrichedData = data.map((exercise, index) => ({
-        ...exercise,
+      const enrichedData: ExerciseUI[] = data.map((exercise, index) => ({
+        id: exercise.id,
+        title: exercise.title,
+        description: exercise.description || '',
+        difficulty: exercise.difficulty || 'Beginner',
+        type: exercise.type || 'coding',
         status: ["completed", "in_progress", "not_started"][index % 3] as "completed" | "in_progress" | "not_started",
         language: ["javascript", "python", "java", "c", "cpp"][index % 5] as ProgrammingLanguage,
         theme: themes[index % themes.length],

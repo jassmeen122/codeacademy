@@ -7,11 +7,11 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MonacoEditorWrapper } from "@/components/CodeEditor/MonacoEditorWrapper";
 import { LanguageSelector } from "@/components/CodeEditor/LanguageSelector";
-import { Exercise } from "@/types/exercise";
+import { ExerciseUI } from "@/types/exerciseUI";
 import { ProgrammingLanguage } from "@/components/CodeEditor/types";
 
 interface ExerciseDetailProps {
-  exercise: Exercise;
+  exercise: ExerciseUI;
   onBack: () => void;
   code: string;
   setCode: (code: string) => void;
@@ -66,10 +66,12 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${difficulties[exercise.difficulty].className}`}>
               {renderStars(difficulties[exercise.difficulty].stars)}
             </span>
-            <Badge variant="outline" className="text-sm">
-              {exercise.language}
-            </Badge>
-            <Badge className="bg-blue-100 text-blue-800 border-none">{exercise.theme}</Badge>
+            {exercise.language && (
+              <Badge variant="outline" className="text-sm">
+                {exercise.language}
+              </Badge>
+            )}
+            {exercise.theme && <Badge className="bg-blue-100 text-blue-800 border-none">{exercise.theme}</Badge>}
           </div>
         </div>
         <Button variant="outline" onClick={onBack}>Retour à la liste</Button>
