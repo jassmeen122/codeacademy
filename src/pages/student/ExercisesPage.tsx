@@ -18,6 +18,7 @@ import { LanguageSelector } from "@/components/CodeEditor/LanguageSelector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PythonExercises } from "@/components/student/exercises/PythonExercises";
 import { JavaExercises } from "@/components/student/exercises/JavaExercises";
+import { JavaScriptExercises } from "@/components/student/exercises/JavaScriptExercises";
 
 interface Exercise {
   id: string;
@@ -55,7 +56,7 @@ const ExercisesPage = () => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedLanguageToPractice, setSelectedLanguageToPractice] = useState<ProgrammingLanguage>("javascript");
-  const [activeTabSection, setActiveTabSection] = useState<"all" | "python" | "java">("all");
+  const [activeTabSection, setActiveTabSection] = useState<"all" | "python" | "java" | "javascript">("all");
   const navigate = useNavigate();
   
   const { 
@@ -393,12 +394,13 @@ def solution(s):
           <Tabs 
             defaultValue="all" 
             value={activeTabSection} 
-            onValueChange={(value) => setActiveTabSection(value as "all" | "python" | "java")}
+            onValueChange={(value) => setActiveTabSection(value as "all" | "python" | "java" | "javascript")}
           >
             <TabsList className="mb-6">
               <TabsTrigger value="all">Tous les exercices</TabsTrigger>
               <TabsTrigger value="python">Exercices Python</TabsTrigger>
               <TabsTrigger value="java">Exercices Java</TabsTrigger>
+              <TabsTrigger value="javascript">Exercices JavaScript</TabsTrigger>
             </TabsList>
             
             <TabsContent value="all">
@@ -486,6 +488,10 @@ def solution(s):
             
             <TabsContent value="java">
               <JavaExercises />
+            </TabsContent>
+            
+            <TabsContent value="javascript">
+              <JavaScriptExercises />
             </TabsContent>
           </Tabs>
         </div>
