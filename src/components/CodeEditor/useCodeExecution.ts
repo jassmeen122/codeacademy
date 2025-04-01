@@ -14,7 +14,7 @@ export const useCodeExecution = () => {
 
   const runCode = async (code: string, language: ProgrammingLanguage) => {
     if (!code.trim()) {
-      toast.error("Please enter some code to execute");
+      toast.error("Veuillez entrer du code à exécuter");
       return;
     }
     
@@ -25,22 +25,22 @@ export const useCodeExecution = () => {
     
     try {
       const result = await executeCode(code, language);
-      setOutput(result.output || "Program executed successfully!");
+      setOutput(result.output || "Programme exécuté avec succès!");
       
-      if (result.output.includes("error") || result.output.includes("Error")) {
-        toast.error("Code execution completed with errors");
+      if (result.output.includes("erreur") || result.output.includes("Error")) {
+        toast.error("L'exécution du code a rencontré des erreurs");
       } else {
-        toast.success("Code executed successfully");
+        toast.success("Code exécuté avec succès");
       }
       
       // After running code, automatically get some basic analysis
-      getAIHelp(code, language, "Analyze this code briefly.");
+      getAIHelp(code, language, "Analyse ce code brièvement.");
     } catch (error: any) {
       console.error('Error executing code:', error);
-      const errorMsg = error.message || 'Unknown error';
-      setOutput(`Error executing code: ${errorMsg}`);
+      const errorMsg = error.message || 'Erreur inconnue';
+      setOutput(`Erreur d'exécution du code: ${errorMsg}`);
       setErrorMessage(errorMsg);
-      toast.error("Failed to execute code");
+      toast.error("Échec de l'exécution du code");
     } finally {
       setIsRunning(false);
     }
@@ -48,7 +48,7 @@ export const useCodeExecution = () => {
 
   const getAIHelp = async (code: string, language: ProgrammingLanguage, question: string = "") => {
     if (!code.trim()) {
-      toast.error("Please enter some code for analysis");
+      toast.error("Veuillez entrer du code à analyser");
       return;
     }
     
@@ -59,11 +59,11 @@ export const useCodeExecution = () => {
       const reply = await getAICodeAssistance(code, language, question);
       setAnalysis(reply);
       setActiveTab("analysis"); // Switch to analysis tab
-      toast.success("AI analysis complete");
+      toast.success("Analyse AI terminée");
     } catch (error: any) {
       console.error('Error getting AI help:', error);
-      setErrorMessage(error.message || 'Failed to get AI assistance');
-      toast.error("Failed to get AI assistance");
+      setErrorMessage(error.message || "Échec de l'assistance AI");
+      toast.error("Échec de l'assistance AI");
     } finally {
       setIsAnalyzing(false);
     }
