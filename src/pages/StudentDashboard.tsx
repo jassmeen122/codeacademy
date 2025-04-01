@@ -155,7 +155,7 @@ const StudentDashboard = () => {
             </Tabs>
           </div>
           
-          <TabsContent value="overview" className="mt-0 space-y-6" forceMount={activeTab === "overview"}>
+          <TabsContent value="overview" className="mt-0 space-y-6" forceMount={activeTab === "overview" ? true : undefined}>
             {/* Main Dashboard Content */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Left Column */}
@@ -317,7 +317,7 @@ const StudentDashboard = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="progress" className="mt-0" forceMount={activeTab === "progress"}>
+          <TabsContent value="progress" className="mt-0" forceMount={activeTab === "progress" ? true : undefined}>
             <Card>
               <CardContent className="pt-6">
                 <h2 className="text-xl font-semibold mb-4">Learning Progress</h2>
@@ -332,7 +332,7 @@ const StudentDashboard = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="achievements" className="mt-0" forceMount={activeTab === "achievements"}>
+          <TabsContent value="achievements" className="mt-0" forceMount={activeTab === "achievements" ? true : undefined}>
             <Card>
               <CardContent className="pt-6">
                 <h2 className="text-xl font-semibold mb-4">Your Achievements</h2>
@@ -353,3 +353,4 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
+
