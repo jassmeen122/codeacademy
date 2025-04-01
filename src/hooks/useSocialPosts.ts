@@ -247,6 +247,7 @@ export const useSocialPosts = () => {
       
       if (!data) throw new Error("Couldn't retrieve the new post");
       
+      // Here we make sure we're getting all the data correctly
       const createdPost: SocialPost = {
         id: data.id,
         author_id: data.author_id,
