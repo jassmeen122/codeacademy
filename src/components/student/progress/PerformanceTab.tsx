@@ -12,15 +12,15 @@ import {
   BarChart,
   Bar,
   Cell,
-  PieChart,
+  PieChart as RechartsChart,
   Pie,
-  LineChart,
+  LineChart as RechartsLineChart,
   Line,
   Legend
 } from "recharts";
 import { 
   BarChart3, 
-  PieChart as LucidePieChart, 
+  PieChart, 
   Users, 
   Zap 
 } from "lucide-react";
@@ -30,13 +30,198 @@ import {
   projectsCompletionData, 
   performanceByMonth 
 } from "@/data/progressData";
+import { UserPerformanceMetric, UserActivity } from "@/hooks/useUserPerformance";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const PerformanceTab = () => {
+interface PerformanceTabProps {
+  loading: boolean;
+  metrics: UserPerformanceMetric[];
+  activities: UserActivity[];
+}
+
+const PerformanceTab = ({ loading, metrics, activities }: PerformanceTabProps) => {
   const COLORS = ['#16a34a', '#3b82f6', '#cbd5e1'];
+  
+  // Transform metrics into chart data if available
+  const performanceChartData = React.useMemo(() => {
+    if (!metrics.length) return performanceByMonth;
+    
+    // Group by month and calculate average score
+    const monthlyData = metrics.reduce((acc, metric) => {
+      const date = new Date(metric.recorded_at);
+      const month = date.toLocaleString('default', { month: 'short' });
+      
+      if (!acc[month]) {
+        acc[month] = { total: 0, count: 0 };
+      }
+      
+      // Calculate performance score based on response time (lower is better)
+      // and interaction count (higher is better)
+      let score = 50; // Default score
+      
+      if (metric.response_time) {
+        // Lower response time means higher score (max 25 points)
+        score += Math.min(25, Math.max(0, 25 - metric.response_time / 40));
+      }
+      
+      if (metric.interactions_count) {
+        // Higher interaction count means higher score (max 25 points)
+        score += Math.min(25, metric.interactions_count);
+      }
+      
+      acc[month].total += score;
+      acc[month].count += 1;
+      
+      return acc;
+    }, {} as Record<string, { total: number, count: number }>);
+    
+    return Object.entries(monthlyData).map(([month, data]) => ({
+      month,
+      score: Math.round(data.total / data.count)
+    }));
+  }, [metrics]);
+  
+  // Calculate user interactions data from activities
+  const calculatedInteractionsData = React.useMemo(() => {
+    if (!activities.length) return userInteractionsData;
+    
+    // Group activities by day and count different types
+    const last7Days = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+    
+    const dailyData = activities.reduce((acc, activity) => {
+      const date = activity.created_at.split('T')[0];
+      
+      if (!acc[date]) {
+        acc[date] = { comments: 0, likes: 0, shares: 0 };
+      }
+      
+      if (activity.activity_type === 'comment_added') {
+        acc[date].comments += 1;
+      } else if (activity.activity_type === 'like_added') {
+        acc[date].likes += 1;
+      } else if (activity.activity_type === 'share_content') {
+        acc[date].shares += 1;
+      }
+      
+      return acc;
+    }, {} as Record<string, { comments: number, likes: number, shares: number }>);
+    
+    // Fill in missing days with zeros
+    return last7Days.map(date => {
+      const dayName = new Date(date).toLocaleString('default', { weekday: 'short' });
+      return {
+        day: dayName,
+        comments: dailyData[date]?.comments || 0,
+        likes: dailyData[date]?.likes || 0,
+        shares: dailyData[date]?.shares || 0
+      };
+    });
+  }, [activities]);
+  
+  // Calculate project completion data
+  const calculatedProjectData = React.useMemo(() => {
+    if (!activities.length) return projectsCompletionData;
+    
+    // Count project activities
+    const projectActivities = activities.filter(a => 
+      a.activity_type === 'project_started' || 
+      a.activity_type === 'project_in_progress' || 
+      a.activity_type === 'project_completed'
+    );
+    
+    if (!projectActivities.length) return projectsCompletionData;
+    
+    const completed = projectActivities.filter(a => 
+      a.activity_type === 'project_completed'
+    ).length;
+    
+    const inProgress = projectActivities.filter(a => 
+      a.activity_type === 'project_in_progress'
+    ).length;
+    
+    const notStarted = projectActivities.filter(a => 
+      a.activity_type === 'project_started'
+    ).length - (completed + inProgress);
+    
+    const total = Math.max(1, completed + inProgress + notStarted);
+    
+    return [
+      { name: 'Completed', value: Math.round((completed / total) * 100), color: '#16a34a' },
+      { name: 'In Progress', value: Math.round((inProgress / total) * 100), color: '#3b82f6' },
+      { name: 'Not Started', value: Math.round((notStarted / total) * 100), color: '#cbd5e1' }
+    ];
+  }, [activities]);
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/3" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-80 flex items-center justify-center">
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <Skeleton className="h-4 w-3/4 mx-auto mt-4" />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/3" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-80 flex items-center justify-center">
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <Skeleton className="h-4 w-3/4 mx-auto mt-4" />
+          </CardContent>
+        </Card>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-1/3" />
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 flex items-center justify-center">
+                <Skeleton className="h-48 w-48 rounded-full" />
+              </div>
+              <div className="flex justify-center gap-6 mt-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-3 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-1/3" />
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 flex items-center justify-center">
+                <Skeleton className="h-48 w-full" />
+              </div>
+              <Skeleton className="h-4 w-3/4 mx-auto mt-4" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      {/* Rétention des utilisateurs */}
+      {/* User Retention Rate */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -79,7 +264,7 @@ const PerformanceTab = () => {
         </CardContent>
       </Card>
 
-      {/* Interactions utilisateur */}
+      {/* User Interactions */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -93,7 +278,7 @@ const PerformanceTab = () => {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={userInteractionsData}
+                data={calculatedInteractionsData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -113,13 +298,13 @@ const PerformanceTab = () => {
         </CardContent>
       </Card>
 
-      {/* Complétion des projets and Performance scores */}
+      {/* Projects Completion Status and Performance Score */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <LucidePieChart className="h-5 w-5 text-primary" />
+                <PieChart className="h-5 w-5 text-primary" />
                 Projects Completion Status
               </CardTitle>
             </div>
@@ -127,9 +312,9 @@ const PerformanceTab = () => {
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <RechartsChart>
                   <Pie
-                    data={projectsCompletionData}
+                    data={calculatedProjectData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -138,16 +323,16 @@ const PerformanceTab = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {projectsCompletionData.map((entry, index) => (
+                    {calculatedProjectData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
-                </PieChart>
+                </RechartsChart>
               </ResponsiveContainer>
             </div>
             <div className="flex justify-center gap-6 mt-4">
-              {projectsCompletionData.map((entry, index) => (
+              {calculatedProjectData.map((entry, index) => (
                 <div key={`legend-${index}`} className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
                   <span className="text-sm">{entry.name}</span>
@@ -157,7 +342,7 @@ const PerformanceTab = () => {
           </CardContent>
         </Card>
 
-        {/* Performance scores */}
+        {/* Performance scores using real data if available */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -170,8 +355,8 @@ const PerformanceTab = () => {
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={performanceByMonth}
+                <RechartsLineChart
+                  data={performanceChartData}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -187,7 +372,7 @@ const PerformanceTab = () => {
                     name="Performance Score"
                     strokeWidth={2}
                   />
-                </LineChart>
+                </RechartsLineChart>
               </ResponsiveContainer>
             </div>
             <p className="text-sm text-muted-foreground mt-4 text-center">

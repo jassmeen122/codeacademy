@@ -1118,6 +1118,38 @@ export type Database = {
           },
         ]
       }
+      user_activities: {
+        Row: {
+          activity_data: Json | null
+          activity_type: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_type: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_type?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_activity: {
         Row: {
           activity_data: Json | null
@@ -1375,6 +1407,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_performance_metrics: {
+        Row: {
+          id: string
+          interactions_count: number | null
+          pages_created: number | null
+          recorded_at: string
+          response_time: number | null
+          session_duration: number | null
+          site_generation_time: number | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          interactions_count?: number | null
+          pages_created?: number | null
+          recorded_at?: string
+          response_time?: number | null
+          session_duration?: number | null
+          site_generation_time?: number | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          interactions_count?: number | null
+          pages_created?: number | null
+          recorded_at?: string
+          response_time?: number | null
+          session_duration?: number | null
+          site_generation_time?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_performance_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           completed: boolean | null
@@ -1412,6 +1485,47 @@ export type Database = {
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "course_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_progress_reports: {
+        Row: {
+          completed_steps: Json | null
+          completion_percentage: number | null
+          estimated_completion_time: number | null
+          id: string
+          in_progress_steps: Json | null
+          pending_steps: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_steps?: Json | null
+          completion_percentage?: number | null
+          estimated_completion_time?: number | null
+          id?: string
+          in_progress_steps?: Json | null
+          pending_steps?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_steps?: Json | null
+          completion_percentage?: number | null
+          estimated_completion_time?: number | null
+          id?: string
+          in_progress_steps?: Json | null
+          pending_steps?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
