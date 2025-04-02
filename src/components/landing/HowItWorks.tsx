@@ -67,12 +67,18 @@ export const HowItWorks = () => {
                     </div>
                   )}
                   
-                  <div className="absolute -top-3 -left-3 bg-white rounded-full shadow-md h-8 w-8 flex items-center justify-center font-bold text-lg border border-gray-100 group-hover:bg-gradient-to-r group-hover:text-white transition-all duration-300" 
-                       style={{
-                        backgroundImage: `linear-gradient(to right, var(--tw-gradient-stops))`,
-                        '--tw-gradient-from': step.color.split(' ')[1],
-                        '--tw-gradient-to': step.color.split(' ')[3],
-                       }}
+                  <div 
+                    className={cn(
+                      "absolute -top-3 -left-3 rounded-full shadow-md h-8 w-8 flex items-center justify-center font-bold text-lg border border-gray-100",
+                      "group-hover:text-white transition-all duration-300"
+                    )}
+                    style={{
+                      background: index === 0 
+                        ? "linear-gradient(to right, #4F46E5, #4338CA)"
+                        : index === 1
+                          ? "linear-gradient(to right, #9333EA, #C026D3)"
+                          : "linear-gradient(to right, #F59E0B, #EA580C)"
+                    }}
                   >
                     {index + 1}
                   </div>
