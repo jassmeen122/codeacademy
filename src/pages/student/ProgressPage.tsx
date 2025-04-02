@@ -16,11 +16,13 @@ import {
   BarChart,
   Clock8,
   Star,
+  CheckCircle2,
+  Calendar,
+  ProgressCheck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
-import { ChartContainer, ChartTooltipContent, ChartTooltip } from "@/components/ui/chart";
 import { 
   AreaChart, 
   Area, 
@@ -39,6 +41,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -69,17 +72,30 @@ interface LearningStats {
   coursesCompleted: string;
   exercisesCompleted: string;
   achievementPoints: string;
+  streak: string;
+  lastLogin: string;
+}
+
+interface TaskStatus {
+  id: string;
+  name: string;
+  status: 'completed' | 'in-progress' | 'not-started';
+  dueDate: string;
+  priority: 'high' | 'medium' | 'low';
 }
 
 const ProgressPage = () => {
   const { user } = useAuthState();
   const [activeTab, setActiveTab] = useState("overview");
   const [weeklyActivity, setWeeklyActivity] = useState<UserActivity[]>([]);
+  const [monthlyActivity, setMonthlyActivity] = useState<{name: string; value: number}[]>([]);
   const [skills, setSkills] = useState<SkillProgress[]>([
     { name: "JavaScript", progress: 75 },
     { name: "React", progress: 60 },
     { name: "TypeScript", progress: 45 },
     { name: "Node.js", progress: 30 },
+    { name: "CSS/Tailwind", progress: 65 },
+    { name: "Database/SQL", progress: 40 },
   ]);
   const [courseCompletions, setCourseCompletions] = useState<CourseCompletion[]>([]);
   const [achievements, setAchievements] = useState<UserAchievement[]>([
@@ -107,6 +123,8 @@ const ProgressPage = () => {
     coursesCompleted: "3/5",
     exercisesCompleted: "45",
     achievementPoints: "1,250",
+    streak: "7 days",
+    lastLogin: "Today"
   });
   const [performanceData, setPerformanceData] = useState([
     { name: 'Monday', score: 85 },
@@ -116,6 +134,44 @@ const ProgressPage = () => {
     { name: 'Friday', score: 78 },
     { name: 'Saturday', score: 82 },
     { name: 'Sunday', score: 88 },
+  ]);
+  const [tasks, setTasks] = useState<TaskStatus[]>([
+    { 
+      id: "1", 
+      name: "Complete JavaScript Fundamentals", 
+      status: "completed", 
+      dueDate: "2023-08-15", 
+      priority: "high" 
+    },
+    { 
+      id: "2", 
+      name: "Finish React Components Exercise", 
+      status: "in-progress", 
+      dueDate: "2023-08-25", 
+      priority: "high" 
+    },
+    { 
+      id: "3", 
+      name: "Start TypeScript Module", 
+      status: "not-started", 
+      dueDate: "2023-09-05", 
+      priority: "medium" 
+    },
+    { 
+      id: "4", 
+      name: "Complete Backend Integration Project", 
+      status: "not-started", 
+      dueDate: "2023-09-20", 
+      priority: "medium" 
+    },
+  ]);
+  const [retentionRate, setRetentionRate] = useState([
+    { month: 'Jan', rate: 92 },
+    { month: 'Feb', rate: 89 },
+    { month: 'Mar', rate: 93 },
+    { month: 'Apr', rate: 91 },
+    { month: 'May', rate: 94 },
+    { month: 'Jun', rate: 97 },
   ]);
   const [recommendations, setRecommendations] = useState([
     {
@@ -143,6 +199,7 @@ const ProgressPage = () => {
       fetchUserData();
       generateMockWeeklyActivity();
       fetchCourseCompletions();
+      generateMonthlyActivityData();
     }
   }, [user]);
 
@@ -171,6 +228,25 @@ const ProgressPage = () => {
         updatedSkills[1].progress = Math.min(Math.round(avgCompletion * 0.9), 100); // React
         setSkills(updatedSkills);
       }
+
+      // Fetch user metrics if available
+      const { data: metricsData, error: metricsError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (!metricsError && metricsData) {
+        setStats({
+          totalHours: `${metricsData.total_time_spent || 0}h`,
+          coursesCompleted: `${metricsData.course_completions || 0}/5`,
+          exercisesCompleted: `${metricsData.exercises_completed || 0}`,
+          achievementPoints: `${user?.points || 0}`,
+          streak: `${Math.floor(Math.random() * 14) + 1} days`, // Mock data
+          lastLogin: metricsData.last_login ? new Date(metricsData.last_login).toLocaleDateString() : 'Today'
+        });
+      }
+
     } catch (error) {
       console.error('Error in fetch user data:', error);
     }
@@ -183,6 +259,15 @@ const ProgressPage = () => {
       hours: parseFloat((Math.random() * 4 + 0.5).toFixed(1))
     }));
     setWeeklyActivity(mockData);
+  };
+
+  const generateMonthlyActivityData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const mockData = months.map(name => ({
+      name,
+      value: Math.floor(Math.random() * 40) + 10
+    }));
+    setMonthlyActivity(mockData);
   };
 
   const fetchCourseCompletions = async () => {
@@ -206,10 +291,38 @@ const ProgressPage = () => {
     if (!user) return;
     
     try {
-      // In a real application, we would track user activities in the database
+      // Record user activity for analytics
+      const { error } = await supabase
+        .from('user_activity')
+        .insert({
+          user_id: user.id,
+          activity_type: activityType,
+          activity_data: { page: 'progress', tab: activeTab }
+        });
+        
+      if (error) throw error;
+      
       toast.success(`${activityType} tracked successfully!`);
     } catch (error) {
       console.error('Error tracking activity:', error);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'completed': return 'text-green-600';
+      case 'in-progress': return 'text-blue-600';
+      case 'not-started': return 'text-gray-600';
+      default: return '';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch(priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-green-100 text-green-800';
+      default: return '';
     }
   };
 
@@ -217,46 +330,58 @@ const ProgressPage = () => {
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Learning Progress</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Rapport de Progression</h1>
           <p className="text-gray-600">
-            Track your learning journey, view statistics, and get personalized recommendations
+            Suivez votre parcours d'apprentissage, consultez vos statistiques et obtenez des recommandations personnalisées
           </p>
         </div>
 
         <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-flex">
-            <TabsTrigger value="overview" onClick={() => trackActivity("Overview Tab View")}>Overview</TabsTrigger>
+            <TabsTrigger value="overview" onClick={() => trackActivity("Overview Tab View")}>Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="performance" onClick={() => trackActivity("Performance Tab View")}>Performance</TabsTrigger>
-            <TabsTrigger value="recommendations" onClick={() => trackActivity("Recommendations Tab View")}>Recommendations</TabsTrigger>
+            <TabsTrigger value="recommendations" onClick={() => trackActivity("Recommendations Tab View")}>Recommandations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-8">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
               {[
                 {
-                  title: "Total Learning Hours",
+                  title: "Heures d'apprentissage",
                   value: stats.totalHours,
                   icon: Clock,
-                  description: "Time spent learning",
+                  description: "Temps total d'apprentissage",
                 },
                 {
-                  title: "Courses Completed",
+                  title: "Cours terminés",
                   value: stats.coursesCompleted,
                   icon: BookOpen,
-                  description: "Completed courses",
+                  description: "Cours complétés",
                 },
                 {
-                  title: "Coding Exercises",
+                  title: "Exercices",
                   value: stats.exercisesCompleted,
                   icon: Code,
-                  description: "Exercises completed",
+                  description: "Exercices terminés",
                 },
                 {
-                  title: "Achievement Points",
+                  title: "Points",
                   value: stats.achievementPoints,
                   icon: Trophy,
-                  description: "Points earned",
+                  description: "Points gagnés",
+                },
+                {
+                  title: "Série actuelle",
+                  value: stats.streak,
+                  icon: Flame,
+                  description: "Jours consécutifs",
+                },
+                {
+                  title: "Dernière connexion",
+                  value: stats.lastLogin,
+                  icon: Calendar,
+                  description: "Dernière activité",
                 }
               ].map((stat) => {
                 const Icon = stat.icon;
@@ -284,7 +409,7 @@ const ProgressPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock8 className="h-5 w-5 text-primary" />
-                  Weekly Learning Activity
+                  Activité d'apprentissage hebdomadaire
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -298,7 +423,7 @@ const ProgressPage = () => {
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="day" />
-                      <YAxis label={{ value: 'Hours', angle: -90, position: 'insideLeft' }} />
+                      <YAxis label={{ value: 'Heures', angle: -90, position: 'insideLeft' }} />
                       <CartesianGrid strokeDasharray="3 3" />
                       <Tooltip />
                       <Area 
@@ -312,8 +437,57 @@ const ProgressPage = () => {
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Total weekly hours: {weeklyActivity.reduce((sum, day) => sum + day.hours, 0).toFixed(1)}
+                  Total hebdomadaire : {weeklyActivity.reduce((sum, day) => sum + day.hours, 0).toFixed(1)} heures
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Tasks and Progression Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ProgressCheck className="h-5 w-5 text-primary" />
+                  Tâches et progression
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tâche</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Date limite</TableHead>
+                      <TableHead>Priorité</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tasks.map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell className="font-medium">{task.name}</TableCell>
+                        <TableCell className={getStatusColor(task.status)}>
+                          {task.status === 'completed' && <CheckCircle2 className="h-4 w-4 inline mr-1" />}
+                          {task.status === 'completed' ? 'Terminé' : 
+                            task.status === 'in-progress' ? 'En cours' : 'À faire'}
+                        </TableCell>
+                        <TableCell>{new Date(task.dueDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${getPriorityColor(task.priority)}`}>
+                            {task.priority === 'high' ? 'Élevée' : 
+                              task.priority === 'medium' ? 'Moyenne' : 'Basse'}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-4 w-full"
+                  onClick={() => trackActivity("View All Tasks")}
+                >
+                  Voir toutes les tâches
+                </Button>
               </CardContent>
             </Card>
 
@@ -322,7 +496,7 @@ const ProgressPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  Skills Progress
+                  Progression des compétences
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -345,7 +519,7 @@ const ProgressPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Award className="h-5 w-5 text-yellow-500" />
-                  Achievements
+                  Réussites
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -383,7 +557,7 @@ const ProgressPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <LineChart className="h-5 w-5 text-primary" />
-                  Performance Trends
+                  Tendances de performance
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -392,15 +566,77 @@ const ProgressPage = () => {
                     <ReBarChart data={performanceData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
-                      <YAxis label={{ value: 'Performance Score', angle: -90, position: 'insideLeft' }} />
+                      <YAxis label={{ value: 'Score de performance', angle: -90, position: 'insideLeft' }} />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="score" fill="#8884d8" name="Daily Performance Score" />
+                      <Bar dataKey="score" fill="#8884d8" name="Score de performance quotidien" />
                     </ReBarChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Average performance score: {Math.round(performanceData.reduce((sum, day) => sum + day.score, 0) / performanceData.length)}
+                  Score de performance moyen : {Math.round(performanceData.reduce((sum, day) => sum + day.score, 0) / performanceData.length)}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Activity Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Distribution d'activité mensuelle
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80 mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ReBarChart data={monthlyActivity}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis label={{ value: 'Heures d\'apprentissage', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="value" fill="#82ca9d" name="Heures totales" />
+                    </ReBarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* User Retention and Engagement */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Flame className="h-5 w-5 text-orange-500" />
+                  Taux d'engagement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80 mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={retentionRate}>
+                      <defs>
+                        <linearGradient id="colorRetention" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#FF8042" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#FF8042" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis label={{ value: 'Taux d\'engagement (%)', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip />
+                      <Area 
+                        type="monotone" 
+                        dataKey="rate" 
+                        stroke="#FF8042" 
+                        fillOpacity={1} 
+                        fill="url(#colorRetention)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Engagement moyen : {Math.round(retentionRate.reduce((sum, item) => sum + item.rate, 0) / retentionRate.length)}%
                 </div>
               </CardContent>
             </Card>
@@ -409,8 +645,8 @@ const ProgressPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Flame className="h-5 w-5 text-orange-500" />
-                  Course Completion Progress
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  Progression des cours
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -457,7 +693,7 @@ const ProgressPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="h-5 w-5 text-primary" />
-                    Time Distribution
+                    Distribution du temps
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -466,10 +702,10 @@ const ProgressPage = () => {
                       <PieChart>
                         <Pie
                           data={[
-                            { name: 'Watching Videos', value: 40 },
-                            { name: 'Reading Docs', value: 25 },
-                            { name: 'Coding Exercises', value: 30 },
-                            { name: 'Quizzes', value: 5 },
+                            { name: 'Vidéos', value: 40 },
+                            { name: 'Documentation', value: 25 },
+                            { name: 'Exercices', value: 30 },
+                            { name: 'Quiz', value: 5 },
                           ]}
                           cx="50%"
                           cy="50%"
@@ -495,43 +731,43 @@ const ProgressPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Star className="h-5 w-5 text-yellow-500" />
-                    Strengths & Areas to Improve
+                    Forces et points à améliorer
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h3 className="font-medium text-sm mb-2">Strengths</h3>
+                      <h3 className="font-medium text-sm mb-2">Points forts</h3>
                       <ul className="space-y-1 text-sm">
                         <li className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          JavaScript fundamentals (top 15%)
+                          Fondamentaux JavaScript (top 15%)
                         </li>
                         <li className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          React component design (top 20%)
+                          Conception de composants React (top 20%)
                         </li>
                         <li className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          Consistency in learning (top 10%)
+                          Régularité d'apprentissage (top 10%)
                         </li>
                       </ul>
                     </div>
                     
                     <div>
-                      <h3 className="font-medium text-sm mb-2">Areas to Improve</h3>
+                      <h3 className="font-medium text-sm mb-2">Points à améliorer</h3>
                       <ul className="space-y-1 text-sm">
                         <li className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          TypeScript advanced types
+                          Types avancés TypeScript
                         </li>
                         <li className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          Backend development
+                          Développement backend
                         </li>
                         <li className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          Test-driven development
+                          Développement piloté par les tests
                         </li>
                       </ul>
                     </div>
@@ -547,7 +783,7 @@ const ProgressPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-5 w-5 text-primary" />
-                  Recommended Courses
+                  Cours recommandés
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -565,7 +801,7 @@ const ProgressPage = () => {
                               <div className="flex items-center justify-between">
                                 <h3 className="font-medium">{rec.title}</h3>
                                 <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-full">
-                                  {rec.relevance}% match
+                                  {rec.relevance}% correspondance
                                 </span>
                               </div>
                               <p className="text-sm text-muted-foreground mt-1">
@@ -577,7 +813,7 @@ const ProgressPage = () => {
                                 className="mt-2"
                                 onClick={() => trackActivity(`Viewed ${rec.title} recommendation`)}
                               >
-                                View Course
+                                Voir le cours
                               </Button>
                             </div>
                           </div>
@@ -594,7 +830,7 @@ const ProgressPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  Suggested Learning Path
+                  Parcours d'apprentissage suggéré
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -603,27 +839,27 @@ const ProgressPage = () => {
                   
                   {[
                     {
-                      title: "Complete TypeScript Mastery",
-                      description: "Focus on advanced types and patterns to strengthen your foundation",
-                      status: "Current", 
+                      title: "Maîtrise TypeScript",
+                      description: "Concentrez-vous sur les types avancés et les modèles pour renforcer vos fondamentaux",
+                      status: "Actuel", 
                       icon: Target
                     },
                     {
-                      title: "Node.js Backend Development",
-                      description: "Build RESTful APIs and understand server-side concepts",
-                      status: "Next Step", 
+                      title: "Développement Backend Node.js",
+                      description: "Créez des API RESTful et comprenez les concepts côté serveur",
+                      status: "Prochaine étape", 
                       icon: Code
                     },
                     {
-                      title: "Full-Stack Integration Project",
-                      description: "Combine your frontend and backend skills in a complete project",
-                      status: "Future", 
+                      title: "Projet d'intégration Full-Stack",
+                      description: "Combinez vos compétences frontend et backend dans un projet complet",
+                      status: "Futur", 
                       icon: BarChart
                     },
                     {
-                      title: "Testing & DevOps",
-                      description: "Learn how to test your applications and deploy them efficiently",
-                      status: "Future", 
+                      title: "Tests & DevOps",
+                      description: "Apprenez à tester vos applications et à les déployer efficacement",
+                      status: "Futur", 
                       icon: LineChart
                     },
                   ].map((step, index) => {
@@ -664,7 +900,7 @@ const ProgressPage = () => {
                               className="mt-2"
                               onClick={() => trackActivity(`Started path step: ${step.title}`)}
                             >
-                              Start Learning
+                              Commencer
                             </Button>
                           )}
                         </div>
@@ -672,6 +908,38 @@ const ProgressPage = () => {
                     );
                   })}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Themes and Topics Trends */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LineChart className="h-5 w-5 text-blue-500" />
+                  Tendances et sujets populaires
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { name: "Développement mobile React Native", trend: 92 },
+                    { name: "Serverless Architecture", trend: 87 },
+                    { name: "DevOps et CI/CD", trend: 83 },
+                    { name: "Intelligence artificielle et ML", trend: 78 },
+                    { name: "Blockchain et Web3", trend: 72 }
+                  ].map((topic) => (
+                    <div key={topic.name} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span>{topic.name}</span>
+                        <span className="font-medium text-blue-600">{topic.trend}%</span>
+                      </div>
+                      <Progress value={topic.trend} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Basé sur les tendances actuelles du marché et votre profil d'apprentissage
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
