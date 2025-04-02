@@ -35,3 +35,19 @@ export interface UserSkill {
   progress: number;
   last_updated: string;
 }
+
+// Add a database row type to represent what comes from the database
+export interface UserSkillRecord {
+  id: string;
+  user_id: string;
+  skill_name: string;
+  progress: number;
+  last_updated: string;
+}
+
+// Add interface for database tables that we're using
+export interface DatabaseTables {
+  user_skills_progress: UserSkillRecord;
+  user_activities: UserActivity;
+  user_metrics: UserMetric;
+}

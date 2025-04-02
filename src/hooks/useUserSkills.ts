@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
-import { UserSkill } from "@/types/progress";
+import { UserSkill, UserSkillRecord, DatabaseTables } from "@/types/progress";
 
-export { UserSkill };
+// Use the recommended TypeScript export syntax
+export type { UserSkill };
 
 export const useUserSkills = () => {
   const [skills, setSkills] = useState<UserSkill[]>([]);
@@ -27,21 +28,21 @@ export const useUserSkills = () => {
     try {
       setLoading(true);
       
-      // Using explicit type for the response to avoid TypeScript errors
+      // Properly type the response
       const { data, error } = await supabase
-        .from('user_skills_progress')
+        .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
         .select('*')
         .eq('user_id', user.id);
       
       if (error) throw error;
       
       // Transform the data to match our UserSkill interface
-      const typedSkills: UserSkill[] = data?.map(item => ({
+      const typedSkills: UserSkill[] = (data as UserSkillRecord[] || []).map(item => ({
         id: item.id,
         skill_name: item.skill_name,
         progress: item.progress,
         last_updated: item.last_updated
-      })) || [];
+      }));
       
       setSkills(typedSkills);
     } catch (error: any) {
@@ -56,9 +57,9 @@ export const useUserSkills = () => {
     if (!user) return;
     
     try {
-      // Use the raw query with explicit typing to avoid TypeScript errors
+      // Use proper typing for the Supabase client
       const { error } = await supabase
-        .from('user_skills_progress')
+        .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
         .upsert({
           user_id: user.id,
           skill_name: skillName,

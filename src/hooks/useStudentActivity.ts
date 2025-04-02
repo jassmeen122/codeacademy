@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "./useAuthState";
 import { updateUserSkillsForActivity } from "@/utils/skillProgressUpdater";
+import { DatabaseTables } from "@/types/progress";
 
 export const useStudentActivity = () => {
   const { user } = useAuthState();
@@ -11,9 +12,9 @@ export const useStudentActivity = () => {
     if (!user) return;
     
     try {
-      // Record the activity in the database using any type to avoid TypeScript errors
+      // Record the activity in the database with proper typing
       const { error } = await supabase
-        .from('user_activities')
+        .from<DatabaseTables['user_activities']>('user_activities')
         .insert({
           user_id: user.id,
           activity_type: 'lesson_viewed',
@@ -42,9 +43,9 @@ export const useStudentActivity = () => {
     if (!user) return;
     
     try {
-      // Record the activity
+      // Record the activity with proper typing
       const { error } = await supabase
-        .from('user_activities')
+        .from<DatabaseTables['user_activities']>('user_activities')
         .insert({
           user_id: user.id,
           activity_type: 'exercise_completed',
@@ -59,7 +60,7 @@ export const useStudentActivity = () => {
       
       // Since RPC functions aren't properly typed, we'll use a direct update query instead
       const { data: metrics, error: metricsError } = await supabase
-        .from('user_metrics')
+        .from<DatabaseTables['user_metrics']>('user_metrics')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -67,19 +68,24 @@ export const useStudentActivity = () => {
       if (!metricsError) {
         // If metrics exist, update them
         await supabase
-          .from('user_metrics')
+          .from<DatabaseTables['user_metrics']>('user_metrics')
           .update({ 
-            exercises_completed: (metrics.exercises_completed || 0) + 1,
+            exercises_completed: (metrics?.exercises_completed || 0) + 1,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id);
       } else if (metricsError.code === 'PGRST116') {
         // If no metrics record exists, create one
         await supabase
-          .from('user_metrics')
+          .from<DatabaseTables['user_metrics']>('user_metrics')
           .insert({
             user_id: user.id,
-            exercises_completed: 1
+            exercises_completed: 1,
+            course_completions: 0,
+            total_time_spent: 0,
+            last_login: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
       }
       
@@ -102,9 +108,9 @@ export const useStudentActivity = () => {
     if (!user) return;
     
     try {
-      // Record the activity
+      // Record the activity with proper typing
       const { error } = await supabase
-        .from('user_activities')
+        .from<DatabaseTables['user_activities']>('user_activities')
         .insert({
           user_id: user.id,
           activity_type: 'course_completed',
@@ -119,7 +125,7 @@ export const useStudentActivity = () => {
       
       // Since RPC functions aren't properly typed, we'll use a direct update query instead
       const { data: metrics, error: metricsError } = await supabase
-        .from('user_metrics')
+        .from<DatabaseTables['user_metrics']>('user_metrics')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -127,27 +133,34 @@ export const useStudentActivity = () => {
       if (!metricsError) {
         // If metrics exist, update them
         await supabase
-          .from('user_metrics')
+          .from<DatabaseTables['user_metrics']>('user_metrics')
           .update({ 
-            course_completions: (metrics.course_completions || 0) + 1,
+            course_completions: (metrics?.course_completions || 0) + 1,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id);
       } else if (metricsError.code === 'PGRST116') {
         // If no metrics record exists, create one
         await supabase
-          .from('user_metrics')
+          .from<DatabaseTables['user_metrics']>('user_metrics')
           .insert({
             user_id: user.id,
-            course_completions: 1
+            course_completions: 1,
+            exercises_completed: 0,
+            total_time_spent: 0,
+            last_login: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
       }
       
       // Add points to the user's profile
-      await supabase
-        .from('profiles')
-        .update({ points: (user.points || 0) + 100 })
-        .eq('id', user.id);
+      if (user.id) {
+        await supabase
+          .from('profiles')
+          .update({ points: (user.points || 0) + 100 })
+          .eq('id', user.id);
+      }
       
       // Update skills based on the course completed
       await updateUserSkillsForActivity(

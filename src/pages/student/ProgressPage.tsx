@@ -19,7 +19,7 @@ import { useUserSkills } from "@/hooks/useUserSkills";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
-import { UserMetric } from "@/types/progress";
+import { UserMetric, DatabaseTables } from "@/types/progress";
 
 const ProgressPage = () => {
   const { skills, loading: skillsLoading } = useUserSkills();
@@ -95,9 +95,9 @@ const ProgressPage = () => {
     
     try {
       setLoading(true);
-      // Fetch user metrics from the database
+      // Fetch user metrics from the database with proper typing
       const { data, error } = await supabase
-        .from('user_metrics')
+        .from<DatabaseTables['user_metrics']>('user_metrics')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -107,6 +107,7 @@ const ProgressPage = () => {
       }
       
       if (data) {
+        // Use proper typing when setting the metrics
         setMetrics(data as UserMetric);
         
         // Update stats with actual values
