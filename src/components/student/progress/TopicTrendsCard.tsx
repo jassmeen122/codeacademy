@@ -3,6 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { formatAsPercentage } from "@/utils/chartUtils";
 
 interface TopicTrend {
   name: string;
@@ -28,7 +29,7 @@ export const TopicTrendsCard = ({ topics }: TopicTrendsCardProps) => {
             <div key={topic.name} className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span>{topic.name}</span>
-                <span className="font-medium text-blue-600">{topic.trend}%</span>
+                <span className="font-medium text-blue-600">{formatAsPercentage(topic.trend)}</span>
               </div>
               <Progress value={topic.trend} className="h-2" />
             </div>

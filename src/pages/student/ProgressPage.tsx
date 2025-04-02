@@ -2,9 +2,6 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Trophy,
-  Clock,
-  BookOpen,
-  Code,
   Target,
   Award,
   TrendingUp,
@@ -12,10 +9,7 @@ import {
   Brain,
   LineChart,
   BarChart,
-  Clock8,
-  Star,
-  CheckCircle2,
-  Calendar,
+  Code,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
