@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { AnalyticsService } from "@/services/AnalyticsService";
 
 export interface UserProfile {
   id: string;
@@ -43,13 +42,6 @@ export const useAuthState = () => {
           } else if (profile) {
             console.log("Profile fetched:", profile);
             setUser(profile as UserProfile);
-            
-            // Track login event if this is a sign-in
-            if (_event === 'SIGNED_IN') {
-              setTimeout(() => {
-                AnalyticsService.trackLogin(profile.id);
-              }, 0);
-            }
           }
         } catch (error) {
           console.error("Error in profile fetch:", error);
@@ -94,14 +86,6 @@ export const useAuthState = () => {
 
   const handleSignOut = async () => {
     try {
-      // Track logout if we have a user
-      if (user) {
-        await AnalyticsService.trackActivity({
-          userId: user.id,
-          activityType: 'logout'
-        });
-      }
-      
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       setUser(null);
