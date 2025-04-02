@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Menu, X, Moon, Sun, User, Youtube } from "lucide-react";
 import { Button } from "./ui/button";
@@ -56,7 +55,7 @@ const Navigation = () => {
   }
 
   return (
-    <nav className="fixed top-0 z-50 w-full backdrop-blur-lg bg-white/90 border-b border-gray-200 shadow-sm">
+    <nav className="fixed top-0 z-50 w-full backdrop-blur-lg bg-background/90 border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center gap-4">
