@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -9,10 +10,20 @@ import {
   Code,
   Target,
   Award,
+  Database,
+  Server,
+  Smartphone,
+  Cloud,
 } from "lucide-react";
+import { useUserSkills } from "@/hooks/useUserSkills";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthState } from "@/hooks/useAuthState";
+import { toast } from "sonner";
 
 const ProgressPage = () => {
-  const stats = [
+  const { skills, loading: skillsLoading } = useUserSkills();
+  const { user } = useAuthState();
+  const [stats, setStats] = useState([
     {
       title: "Total Learning Hours",
       value: "24h",
@@ -37,14 +48,92 @@ const ProgressPage = () => {
       icon: Trophy,
       description: "Points earned",
     },
+  ]);
+
+  // Define available programming languages for skills
+  const availableSkills = [
+    { name: "JavaScript", progress: 0, icon: Code },
+    { name: "React", progress: 0, icon: Code },
+    { name: "TypeScript", progress: 0, icon: Code },
+    { name: "Node.js", progress: 0, icon: Server },
+    { name: "Python", progress: 0, icon: Code },
+    { name: "SQL", progress: 0, icon: Database },
+    { name: "HTML/CSS", progress: 0, icon: Code },
+    { name: "Mobile", progress: 0, icon: Smartphone },
+    { name: "DevOps", progress: 0, icon: Cloud },
   ];
 
-  const skills = [
-    { name: "JavaScript", progress: 75 },
-    { name: "React", progress: 60 },
-    { name: "TypeScript", progress: 45 },
-    { name: "Node.js", progress: 30 },
-  ];
+  // Merge available skills with user progress data
+  const [mergedSkills, setMergedSkills] = useState(availableSkills);
+
+  // Fetch user metrics/stats when component mounts
+  useEffect(() => {
+    if (user) {
+      fetchUserMetrics();
+    }
+  }, [user]);
+
+  // Update merged skills whenever user skills change
+  useEffect(() => {
+    if (skills.length > 0) {
+      const updated = availableSkills.map(skill => {
+        const userSkill = skills.find(s => s.skill_name === skill.name);
+        return {
+          ...skill,
+          progress: userSkill ? userSkill.progress : 0
+        };
+      });
+      setMergedSkills(updated);
+    }
+  }, [skills]);
+
+  const fetchUserMetrics = async () => {
+    try {
+      // Fetch user metrics from the database
+      const { data: metrics, error } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+      
+      if (metrics) {
+        // Update stats with actual values
+        setStats([
+          {
+            title: "Total Learning Hours",
+            value: `${metrics.total_time_spent || 0}h`,
+            icon: Clock,
+            description: "Time spent learning",
+          },
+          {
+            title: "Courses Completed",
+            value: `${metrics.course_completions || 0}`,
+            icon: BookOpen,
+            description: "Completed courses",
+          },
+          {
+            title: "Coding Exercises",
+            value: `${metrics.exercises_completed || 0}`,
+            icon: Code,
+            description: "Exercises completed",
+          },
+          {
+            title: "Achievement Points",
+            value: `${user?.points || 0}`,
+            icon: Trophy,
+            description: "Points earned",
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error fetching user metrics:", error);
+      toast.error("Failed to load progress metrics");
+    }
+  };
 
   const achievements = [
     {
@@ -102,15 +191,32 @@ const ProgressPage = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {skills.map((skill) => (
-                <div key={skill.name} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{skill.name}</span>
-                    <span>{skill.progress}%</span>
-                  </div>
-                  <Progress value={skill.progress} className="h-2" />
+              {skillsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="w-8 h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                mergedSkills.map((skill) => (
+                  <div key={skill.name} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="flex items-center gap-2">
+                        <skill.icon className="h-4 w-4 text-muted-foreground" />
+                        {skill.name}
+                      </span>
+                      <span>{skill.progress}%</span>
+                    </div>
+                    <Progress value={skill.progress} className="h-2" />
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
