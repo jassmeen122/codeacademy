@@ -28,3 +28,10 @@ export interface UserMetric {
   created_at: string;
   updated_at: string;
 }
+
+export interface UserSkill {
+  id: string;
+  skill_name: string;
+  progress: number;
+  last_updated: string;
+}

@@ -19,10 +19,13 @@ import { useUserSkills } from "@/hooks/useUserSkills";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
+import { UserMetric } from "@/types/progress";
 
 const ProgressPage = () => {
   const { skills, loading: skillsLoading } = useUserSkills();
   const { user } = useAuthState();
+  const [metrics, setMetrics] = useState<UserMetric | null>(null);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([
     {
       title: "Total Learning Hours",
@@ -88,9 +91,12 @@ const ProgressPage = () => {
   }, [skills]);
 
   const fetchUserMetrics = async () => {
+    if (!user) return;
+    
     try {
+      setLoading(true);
       // Fetch user metrics from the database
-      const { data: metrics, error } = await supabase
+      const { data, error } = await supabase
         .from('user_metrics')
         .select('*')
         .eq('user_id', user.id)
@@ -100,24 +106,26 @@ const ProgressPage = () => {
         throw error;
       }
       
-      if (metrics) {
+      if (data) {
+        setMetrics(data as UserMetric);
+        
         // Update stats with actual values
         setStats([
           {
             title: "Total Learning Hours",
-            value: `${metrics.total_time_spent || 0}h`,
+            value: `${data.total_time_spent || 0}h`,
             icon: Clock,
             description: "Time spent learning",
           },
           {
             title: "Courses Completed",
-            value: `${metrics.course_completions || 0}`,
+            value: `${data.course_completions || 0}`,
             icon: BookOpen,
             description: "Completed courses",
           },
           {
             title: "Coding Exercises",
-            value: `${metrics.exercises_completed || 0}`,
+            value: `${data.exercises_completed || 0}`,
             icon: Code,
             description: "Exercises completed",
           },
@@ -132,6 +140,8 @@ const ProgressPage = () => {
     } catch (error) {
       console.error("Error fetching user metrics:", error);
       toast.error("Failed to load progress metrics");
+    } finally {
+      setLoading(false);
     }
   };
 

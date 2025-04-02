@@ -11,7 +11,7 @@ export const useStudentActivity = () => {
     if (!user) return;
     
     try {
-      // Record the activity in the database
+      // Record the activity in the database using any type to avoid TypeScript errors
       const { error } = await supabase
         .from('user_activities')
         .insert({
@@ -57,12 +57,31 @@ export const useStudentActivity = () => {
         
       if (error) throw error;
       
-      // Update user metrics
-      await supabase.rpc('increment_user_metric', {
-        user_id_param: user.id,
-        metric_name: 'exercises_completed',
-        increment_value: 1
-      });
+      // Since RPC functions aren't properly typed, we'll use a direct update query instead
+      const { data: metrics, error: metricsError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!metricsError) {
+        // If metrics exist, update them
+        await supabase
+          .from('user_metrics')
+          .update({ 
+            exercises_completed: (metrics.exercises_completed || 0) + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+      } else if (metricsError.code === 'PGRST116') {
+        // If no metrics record exists, create one
+        await supabase
+          .from('user_metrics')
+          .insert({
+            user_id: user.id,
+            exercises_completed: 1
+          });
+      }
       
       // Update skills based on the exercise completed
       await updateUserSkillsForActivity(
@@ -98,12 +117,31 @@ export const useStudentActivity = () => {
         
       if (error) throw error;
       
-      // Update user metrics
-      await supabase.rpc('increment_user_metric', {
-        user_id_param: user.id,
-        metric_name: 'course_completions',
-        increment_value: 1
-      });
+      // Since RPC functions aren't properly typed, we'll use a direct update query instead
+      const { data: metrics, error: metricsError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!metricsError) {
+        // If metrics exist, update them
+        await supabase
+          .from('user_metrics')
+          .update({ 
+            course_completions: (metrics.course_completions || 0) + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+      } else if (metricsError.code === 'PGRST116') {
+        // If no metrics record exists, create one
+        await supabase
+          .from('user_metrics')
+          .insert({
+            user_id: user.id,
+            course_completions: 1
+          });
+      }
       
       // Add points to the user's profile
       await supabase

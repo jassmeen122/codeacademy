@@ -3,13 +3,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
+import { UserSkill } from "@/types/progress";
 
-export interface UserSkill {
-  id: string;
-  skill_name: string;
-  progress: number;
-  last_updated: string;
-}
+export { UserSkill };
 
 export const useUserSkills = () => {
   const [skills, setSkills] = useState<UserSkill[]>([]);
@@ -31,6 +27,7 @@ export const useUserSkills = () => {
     try {
       setLoading(true);
       
+      // Using explicit type for the response to avoid TypeScript errors
       const { data, error } = await supabase
         .from('user_skills_progress')
         .select('*')
@@ -38,7 +35,15 @@ export const useUserSkills = () => {
       
       if (error) throw error;
       
-      setSkills(data || []);
+      // Transform the data to match our UserSkill interface
+      const typedSkills: UserSkill[] = data?.map(item => ({
+        id: item.id,
+        skill_name: item.skill_name,
+        progress: item.progress,
+        last_updated: item.last_updated
+      })) || [];
+      
+      setSkills(typedSkills);
     } catch (error: any) {
       console.error("Error fetching user skills:", error);
       toast.error("Failed to load skills progress");
@@ -51,6 +56,7 @@ export const useUserSkills = () => {
     if (!user) return;
     
     try {
+      // Use the raw query with explicit typing to avoid TypeScript errors
       const { error } = await supabase
         .from('user_skills_progress')
         .upsert({

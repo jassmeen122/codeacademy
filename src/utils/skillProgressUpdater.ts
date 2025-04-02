@@ -73,8 +73,16 @@ export const updateUserSkillsForActivity = async (
     // If we couldn't determine any skills to update, exit
     if (skillsToUpdate.length === 0) return;
     
-    // Get current skill levels
-    const { data: existingSkills, error: fetchError } = await supabase
+    // Get current skill levels using custom typing to avoid TypeScript errors
+    interface SkillRecord {
+      id: string;
+      user_id: string;
+      skill_name: string;
+      progress: number;
+      last_updated: string;
+    }
+    
+    const { data: existingSkillsData, error: fetchError } = await supabase
       .from('user_skills_progress')
       .select('*')
       .eq('user_id', userId)
@@ -82,9 +90,11 @@ export const updateUserSkillsForActivity = async (
       
     if (fetchError) throw fetchError;
     
+    const existingSkills = existingSkillsData as SkillRecord[] || [];
+    
     // Prepare upsert data
     const updates = skillsToUpdate.map(skillName => {
-      const existingSkill = existingSkills?.find(s => s.skill_name === skillName);
+      const existingSkill = existingSkills.find(s => s.skill_name === skillName);
       const currentProgress = existingSkill?.progress || 0;
       // Ensure progress doesn't exceed 100%
       const newProgress = Math.min(100, currentProgress + progressIncrement);
