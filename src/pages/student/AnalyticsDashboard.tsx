@@ -94,7 +94,7 @@ const AnalyticsDashboard = () => {
       
       // Fetch user metrics
       const { data: metricsData, error: metricsError } = await supabase
-        .from('user_metrics')
+        .from('user_metrics' as any)
         .select('*')
         .eq('user_id', user?.id)
         .single();
@@ -107,16 +107,23 @@ const AnalyticsDashboard = () => {
         setUserMetrics(metricsData as UserMetrics);
       }
 
-      // Fetch progress summary using the stored function
-      const { data: summaryData, error: summaryError } = await supabase
-        .rpc('get_user_progress_summary', {
-          user_uuid: user?.id
-        });
+      // Use fetch for the stored function since rpc access is type-limited
+      const response = await fetch(
+        `https://tgjtkmduelappimtorwe.supabase.co/rest/v1/rpc/get_user_progress_summary?user_uuid=${user?.id}`,
+        {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnanRrbWR1ZWxhcHBpbXRvcndlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzOTQ1NTAsImV4cCI6MjA1NTk3MDU1MH0.4MT-8B_L86nFmGsrnDN612BIdL6gM1mrgenaFnbXHd0',
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      if (summaryError) {
-        throw summaryError;
+      if (!response.ok) {
+        throw new Error('Failed to fetch progress summary');
       }
-
+      
+      const summaryData = await response.json();
       if (summaryData) {
         setProgressSummary(summaryData as UserProgressSummary);
       }

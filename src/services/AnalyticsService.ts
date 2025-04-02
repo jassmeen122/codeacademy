@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export type ActivityType = 
@@ -47,7 +48,7 @@ export class AnalyticsService {
       if (!userId) return false;
 
       const { error } = await supabase
-        .from('user_activity')
+        .from('user_activity' as any)
         .insert({
           user_id: userId,
           activity_type: activityType,
@@ -80,7 +81,7 @@ export class AnalyticsService {
 
       // First check if user metrics record exists
       const { data: existingMetrics, error: fetchError } = await supabase
-        .from('user_metrics')
+        .from('user_metrics' as any)
         .select('id')
         .eq('user_id', userId)
         .single();
@@ -93,8 +94,8 @@ export class AnalyticsService {
       // If metrics exist, update them
       if (existingMetrics) {
         const { error: updateError } = await supabase
-          .from('user_metrics')
-          .update(updates)
+          .from('user_metrics' as any)
+          .update(updates as any)
           .eq('user_id', userId);
 
         if (updateError) {
@@ -104,11 +105,11 @@ export class AnalyticsService {
       } else {
         // Otherwise, create a new metrics record
         const { error: insertError } = await supabase
-          .from('user_metrics')
+          .from('user_metrics' as any)
           .insert({
             user_id: userId,
             ...updates
-          });
+          } as any);
 
         if (insertError) {
           console.error("Error creating user metrics:", insertError);
@@ -176,7 +177,7 @@ export class AnalyticsService {
 
       // Get current metrics to increment values
       const { data: metrics } = await supabase
-        .from('user_metrics')
+        .from('user_metrics' as any)
         .select('exercises_completed, total_time_spent')
         .eq('user_id', userId)
         .single();
@@ -184,8 +185,8 @@ export class AnalyticsService {
       const metricsUpdated = await this.updateUserMetrics({
         userId,
         updates: {
-          exercises_completed: (metrics?.exercises_completed || 0) + 1,
-          total_time_spent: (metrics?.total_time_spent || 0) + Math.floor(timeTaken / 60) // Convert to minutes
+          exercises_completed: ((metrics as any)?.exercises_completed || 0) + 1,
+          total_time_spent: ((metrics as any)?.total_time_spent || 0) + Math.floor(timeTaken / 60) // Convert to minutes
         }
       });
 
