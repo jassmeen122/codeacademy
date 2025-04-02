@@ -1118,6 +1118,51 @@ export type Database = {
           },
         ]
       }
+      user_activity: {
+        Row: {
+          activity_data: Json | null
+          activity_type: string
+          course_id: string | null
+          created_at: string
+          id: string
+          module_id: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_type: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_type?: string
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_activity_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_activity_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "course_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -1297,6 +1342,39 @@ export type Database = {
           },
         ]
       }
+      user_metrics: {
+        Row: {
+          course_completions: number | null
+          created_at: string
+          exercises_completed: number | null
+          id: string
+          last_login: string | null
+          total_time_spent: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_completions?: number | null
+          created_at?: string
+          exercises_completed?: number | null
+          id?: string
+          last_login?: string | null
+          total_time_spent?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_completions?: number | null
+          created_at?: string
+          exercises_completed?: number | null
+          id?: string
+          last_login?: string | null
+          total_time_spent?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           completed: boolean | null
@@ -1338,6 +1416,36 @@ export type Database = {
           },
         ]
       }
+      user_recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          is_viewed: boolean | null
+          item_id: string
+          recommendation_type: string
+          relevance_score: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_viewed?: boolean | null
+          item_id: string
+          recommendation_type: string
+          relevance_score?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_viewed?: boolean | null
+          item_id?: string
+          recommendation_type?: string
+          relevance_score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1352,6 +1460,12 @@ export type Database = {
       get_default_resources: {
         Args: {
           lang_id: string
+        }
+        Returns: Json
+      }
+      get_user_progress_summary: {
+        Args: {
+          user_uuid: string
         }
         Returns: Json
       }

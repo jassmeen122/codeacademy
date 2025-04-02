@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Book, Code, FileCode, Terminal, Youtube, Activity, Trophy, Brain } from "lucide-react";
+import { Book, Code, FileCode, Terminal, Youtube, Activity, Trophy, Brain, BarChart2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -188,12 +187,12 @@ const StudentDashboard = () => {
                       />
                       
                       <NavigationCard
-                        icon={Brain}
-                        title="AI Assistant"
-                        description="Get help with your code and learning questions."
-                        buttonText="Ask AI"
-                        onClick={() => navigate("/student/ai-assistant")}
-                        className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 hover:shadow-md transition-all border-teal-200 dark:border-teal-800"
+                        icon={BarChart2}
+                        title="Analytics"
+                        description="Track your learning stats and performance metrics."
+                        buttonText="View Analytics"
+                        onClick={() => navigate("/student/analytics")}
+                        className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 hover:shadow-md transition-all border-blue-200 dark:border-blue-800"
                       />
                     </div>
                     
@@ -271,7 +270,7 @@ const StudentDashboard = () => {
                             variant="outline" 
                             size="sm" 
                             className="w-full mt-2"
-                            onClick={() => navigate("/student/progress")}
+                            onClick={() => navigate("/student/analytics")}
                           >
                             View Detailed Stats
                           </Button>
@@ -323,9 +322,9 @@ const StudentDashboard = () => {
                     <p className="text-gray-500">Detailed progress stats will be displayed here.</p>
                     <Button 
                       className="mt-4" 
-                      onClick={() => navigate("/student/progress")}
+                      onClick={() => navigate("/student/analytics")}
                     >
-                      View Full Progress Report
+                      View Full Analytics
                     </Button>
                   </CardContent>
                 </Card>

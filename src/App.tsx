@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -36,6 +37,7 @@ import MessagesPage from '@/pages/student/MessagesPage';
 import KnowledgeSharePage from '@/pages/KnowledgeSharePage';
 import InternshipOpportunitiesPage from '@/pages/student/InternshipOpportunitiesPage';
 import YTDevTutorialsPage from '@/pages/student/YTDevTutorialsPage';
+import AnalyticsDashboard from '@/pages/student/AnalyticsDashboard';
 
 // Teacher Pages
 import TeacherDashboardPage from '@/pages/TeacherDashboard';
@@ -89,6 +91,9 @@ function App() {
           <Route path="/student/profile" element={<StudentProfilePage />} />
           <Route path="/student/notifications" element={<StudentNotificationsPage />} />
           <Route path="/student/settings" element={<StudentSettingsPage />} />
+          
+          {/* New route for Analytics Dashboard */}
+          <Route path="/student/analytics" element={<AnalyticsDashboard />} />
           
           {/* New route for YT Dev Tutorials */}
           <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
