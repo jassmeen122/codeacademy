@@ -11,8 +11,8 @@ import {
   Target,
   Award,
   BarChart3,
-  PieChart,
-  LineChart,
+  PieChart as LucidePieChart,
+  LineChart as LucideLineChart,
   Users,
   Zap,
 } from "lucide-react";
@@ -31,6 +31,8 @@ import {
   Cell,
   PieChart as RechartsPieChart,
   Pie,
+  LineChart,
+  Line,
   Legend
 } from "recharts";
 
@@ -306,7 +308,7 @@ const ProgressPage = () => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
-                      <PieChart className="h-5 w-5 text-primary" />
+                      <LucidePieChart className="h-5 w-5 text-primary" />
                       Projects Completion Status
                     </CardTitle>
                   </div>
