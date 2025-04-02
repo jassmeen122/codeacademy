@@ -31,10 +31,12 @@ import {
   Trash2,
   AlertTriangle,
   RefreshCw,
-  FileCode,
+  FileSearch,
   Edit,
   PlusCircle,
   EyeIcon,
+  BookText,
+  GraduationCap,
 } from "lucide-react";
 import type { Exercise } from "@/types/exercise";
 import { fetchExercises, deleteExercise, changeExerciseStatus } from "@/services/exerciseService";
@@ -205,8 +207,8 @@ const ExerciseManagementPage = () => {
       <div className="container mx-auto py-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Exercise Management</h1>
-            <p className="text-gray-600">Manage all exercises on the platform</p>
+            <h1 className="text-3xl font-bold text-gray-800">Learning Assessments</h1>
+            <p className="text-gray-600">Create and manage coding challenges, quizzes, and assessments</p>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -223,7 +225,7 @@ const ExerciseManagementPage = () => {
               className="gap-2"
             >
               <PlusCircle className="h-4 w-4" />
-              Add Exercise
+              Create Assessment
             </Button>
           </div>
         </div>
@@ -234,7 +236,7 @@ const ExerciseManagementPage = () => {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search exercises by title, description, teacher, difficulty, or type..."
+                placeholder="Search assessments by title, description, instructor, difficulty, or type..."
                 className="pl-8"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -243,23 +245,37 @@ const ExerciseManagementPage = () => {
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileCode className="h-5 w-5" />
-              <span>Platform Exercises</span>
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({filteredExercises.length} exercises)
+        <Card className="bg-white border-indigo-100 shadow-md">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
+            <CardTitle className="flex items-center gap-2 text-indigo-800">
+              <FileSearch className="h-5 w-5 text-indigo-600" />
+              <span>Learning Assessments Library</span>
+              <span className="ml-2 text-sm font-normal text-indigo-600">
+                ({filteredExercises.length} assessments)
               </span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
+          <CardContent className="p-0">
+            <div className="p-4 bg-indigo-50 border-b border-indigo-100">
+              <div className="text-sm text-indigo-800">
+                <div className="flex items-center mb-2">
+                  <BookText className="h-4 w-4 mr-2 text-indigo-600" />
+                  <span className="font-medium">Assessment Guidelines:</span>
+                </div>
+                <ul className="list-disc ml-6 space-y-1">
+                  <li>Ensure assessments align with learning objectives</li>
+                  <li>Provide clear instructions and expectations</li>
+                  <li>Use appropriate difficulty levels for target learners</li>
+                  <li>Include helpful feedback for incorrect answers</li>
+                </ul>
+              </div>
+            </div>
+            <div className="rounded-md">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-gray-50">
                   <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Teacher</TableHead>
+                    <TableHead>Assessment Title</TableHead>
+                    <TableHead>Instructor</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead>Difficulty</TableHead>
                     <TableHead>Status</TableHead>
@@ -269,19 +285,26 @@ const ExerciseManagementPage = () => {
                 <TableBody>
                   {filteredExercises.length > 0 ? (
                     filteredExercises.map((exercise) => (
-                      <TableRow key={exercise.id}>
+                      <TableRow key={exercise.id} className="hover:bg-indigo-50/30">
                         <TableCell>
-                          <div className="font-medium">{exercise.title}</div>
+                          <div className="font-medium text-indigo-900">{exercise.title}</div>
                           <div className="text-sm text-gray-500 truncate max-w-[250px]">
                             {exercise.description}
                           </div>
                         </TableCell>
                         <TableCell>
-                          {exercise.teacher_name || "Unknown"}
+                          <div className="flex items-center gap-2">
+                            <GraduationCap className="h-4 w-4 text-indigo-600" />
+                            <span>{exercise.teacher_name || "Unknown"}</span>
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">
-                            {exercise.type}
+                          <Badge variant="outline" className="capitalize font-medium">
+                            {exercise.type === "mcq" ? "Multiple Choice" : 
+                             exercise.type === "open_ended" ? "Open Ended" :
+                             exercise.type === "coding" ? "Coding Challenge" : 
+                             exercise.type === "file_upload" ? "Project Submission" : 
+                             exercise.type}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -296,6 +319,7 @@ const ExerciseManagementPage = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => navigate(`/admin/exercises/${exercise.id}`)}
+                              className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
                             >
                               <EyeIcon className="h-4 w-4" />
                             </Button>
@@ -303,6 +327,7 @@ const ExerciseManagementPage = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => navigate(`/admin/exercises/edit/${exercise.id}`)}
+                              className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -310,7 +335,7 @@ const ExerciseManagementPage = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
+                                className="bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border-green-200"
                                 onClick={() => handleChangeStatus(exercise.id, "published")}
                               >
                                 Publish
@@ -320,7 +345,7 @@ const ExerciseManagementPage = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="bg-yellow-50 text-yellow-600 hover:bg-yellow-100 hover:text-yellow-700"
+                                className="bg-yellow-50 text-yellow-600 hover:bg-yellow-100 hover:text-yellow-700 border-yellow-200"
                                 onClick={() => handleChangeStatus(exercise.id, "draft")}
                               >
                                 Unpublish
@@ -330,7 +355,7 @@ const ExerciseManagementPage = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-700"
+                                className="bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-700 border-gray-200"
                                 onClick={() => handleChangeStatus(exercise.id, "archived")}
                               >
                                 Archive
@@ -350,7 +375,17 @@ const ExerciseManagementPage = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={6} className="h-24 text-center">
-                        No exercises found.
+                        <div className="flex flex-col items-center justify-center text-gray-500">
+                          <FileSearch className="h-8 w-8 mb-2 text-gray-400" />
+                          <p>No assessments found.</p>
+                          <Button 
+                            variant="link" 
+                            onClick={() => navigate('/admin/exercises/create')}
+                            className="mt-2"
+                          >
+                            Create your first assessment
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}
@@ -365,11 +400,11 @@ const ExerciseManagementPage = () => {
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-red-500" />
-                Confirm Exercise Deletion
+                Confirm Assessment Deletion
               </AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the exercise
-                and remove it from the platform.
+                This action cannot be undone. This will permanently delete the assessment
+                and remove it from the learning platform.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -378,7 +413,7 @@ const ExerciseManagementPage = () => {
                 className="bg-red-500 text-white hover:bg-red-600"
                 onClick={() => confirmDeleteExercise && handleDeleteExercise(confirmDeleteExercise)}
               >
-                Delete Exercise
+                Delete Assessment
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

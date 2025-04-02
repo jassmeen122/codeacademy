@@ -9,53 +9,67 @@ import {
   Settings,
   Users,
   MessageSquare,
+  GraduationCap,
+  School,
+  BookText,
+  FileSearch,
+  Library
 } from "lucide-react";
 import { MenuItem } from "@/types/sidebar";
 
 export const adminMenuItems: MenuItem[] = [
   {
-    title: "Dashboard",
+    title: "Learning Dashboard",
     icon: Gauge,
     href: "/admin",
+    description: "Monitor platform statistics and activities"
   },
   {
-    title: "User Management",
-    icon: Users,
+    title: "Learners Management",
+    icon: GraduationCap,
     href: "/admin/users",
+    description: "Manage student and teacher accounts"
   },
   {
-    title: "Post Management",
+    title: "Community Discussions",
     icon: MessageSquare,
     href: "/admin/posts",
+    description: "Moderate and manage student discussions"
   },
   {
-    title: "Course Management",
-    icon: Book,
+    title: "Learning Modules",
+    icon: BookText,
     href: "/admin/courses",
+    description: "Create and manage educational courses"
   },
   {
-    title: "Exercise Management",
-    icon: FileCode,
+    title: "Learning Assessments",
+    icon: FileSearch,
     href: "/admin/exercises",
+    description: "Manage coding challenges and quizzes"
   },
   {
-    title: "Knowledge Share",
-    icon: BookOpen,
+    title: "Knowledge Library",
+    icon: Library,
     href: "/admin/knowledge",
+    description: "Manage educational resources"
   },
   {
-    title: "Internship Opportunities",
+    title: "Internship Program",
     icon: Briefcase,
     href: "/admin/internships",
+    description: "Manage work experience opportunities"
   },
   {
-    title: "Analytics",
+    title: "Learning Analytics",
     icon: Activity,
     href: "/admin/analytics",
+    description: "View educational performance metrics"
   },
   {
-    title: "Settings",
+    title: "Platform Settings",
     icon: Settings,
     href: "/admin/settings",
+    description: "Configure the learning platform"
   },
 ];
