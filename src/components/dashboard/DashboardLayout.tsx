@@ -58,21 +58,21 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-900 text-white">
+      <div className="min-h-screen flex w-full bg-white text-gray-800">
         <DashboardSidebar userRole={user?.role || null} />
         <div className="flex-1">
           <Navigation />
-          <main className="pt-16 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+          <main className="pt-16 min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
             {/* Enhanced Profile header section */}
-            <div className="bg-gray-800 shadow-md border-b border-gray-700 p-4">
+            <div className="bg-white shadow-md border-b border-gray-200 p-4">
               <div className="container mx-auto">
                 {loading ? (
                   <div className="animate-pulse flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-700"></div>
+                    <div className="w-16 h-16 rounded-full bg-gray-200"></div>
                     <div className="flex-1">
-                      <div className="h-5 bg-gray-700 rounded w-32 mb-2"></div>
-                      <div className="h-4 bg-gray-700 rounded w-24 mb-2"></div>
-                      <div className="h-3 bg-gray-700 rounded w-48"></div>
+                      <div className="h-5 bg-gray-200 rounded w-32 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-48"></div>
                     </div>
                   </div>
                 ) : (
@@ -81,14 +81,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       <UserAvatar user={user} size="lg" />
                       <div>
                         <h2 className="font-bold text-xl">{user?.full_name || 'User'}</h2>
-                        <div className="flex items-center gap-2 text-gray-400 mb-1">
+                        <div className="flex items-center gap-2 text-gray-500 mb-1">
                           <User className="h-3.5 w-3.5" />
                           <span className="capitalize text-sm">{user?.role || 'User'}</span>
                           {user?.role === 'admin' && <Database className="h-3.5 w-3.5 ml-2" />}
                           {user?.role === 'teacher' && <Code className="h-3.5 w-3.5 ml-2" />}
                           {user?.role === 'student' && <Terminal className="h-3.5 w-3.5 ml-2" />}
                         </div>
-                        <div className="flex items-center gap-2 text-gray-400">
+                        <div className="flex items-center gap-2 text-gray-500">
                           <Mail className="h-3.5 w-3.5" />
                           <span className="text-sm">{user?.email || ''}</span>
                         </div>
@@ -99,7 +99,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         variant="outline" 
                         size="sm"
                         onClick={() => navigate(`/${user?.role}/settings`)}
-                        className="w-full sm:w-auto border-gray-600 text-gray-300 hover:bg-gray-700"
+                        className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
                       >
                         <UserCog className="mr-2 h-4 w-4" />
                         Edit Profile

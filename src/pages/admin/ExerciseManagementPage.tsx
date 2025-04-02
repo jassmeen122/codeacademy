@@ -245,7 +245,7 @@ const ExerciseManagementPage = () => {
           </div>
         </div>
 
-        <Card className="bg-white border-indigo-100 shadow-md">
+        <Card className="bg-white border-indigo-100 shadow-sm">
           <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
             <CardTitle className="flex items-center gap-2 text-indigo-800">
               <FileSearch className="h-5 w-5 text-indigo-600" />
