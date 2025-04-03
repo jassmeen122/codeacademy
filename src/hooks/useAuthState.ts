@@ -20,15 +20,7 @@ export const useAuthState = () => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
-  
-  // Check if we're inside a Router context
-  let navigate;
-  try {
-    navigate = useNavigate();
-  } catch (e) {
-    // Outside Router context - useNavigate is not available
-    console.log("useNavigate() is not available yet");
-  }
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -98,11 +90,7 @@ export const useAuthState = () => {
       if (error) throw error;
       setUser(null);
       setSession(null);
-      
-      // Only navigate if we're inside a Router context
-      if (navigate) {
-        navigate('/auth');
-      }
+      navigate('/auth');
       return true;
     } catch (error) {
       console.error("Sign out error:", error);

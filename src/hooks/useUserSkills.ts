@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
-import { UserSkill, UserSkillRecord } from "@/types/progress";
+import { UserSkill, UserSkillRecord, DatabaseTables } from "@/types/progress";
 
-// Export the UserSkill type for external use
+// Use the recommended TypeScript export syntax
 export type { UserSkill };
 
 export const useUserSkills = () => {
@@ -28,8 +28,9 @@ export const useUserSkills = () => {
     try {
       setLoading(true);
       
+      // Properly type the response
       const { data, error } = await supabase
-        .from('user_skills_progress')
+        .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
         .select('*')
         .eq('user_id', user.id);
       
@@ -56,8 +57,9 @@ export const useUserSkills = () => {
     if (!user) return;
     
     try {
+      // Use proper typing for the Supabase client
       const { error } = await supabase
-        .from('user_skills_progress')
+        .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
         .upsert({
           user_id: user.id,
           skill_name: skillName,
