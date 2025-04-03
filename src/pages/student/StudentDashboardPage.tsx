@@ -1,9 +1,14 @@
 
 import React from 'react';
-import StudentDashboard from '../../pages/StudentDashboard';
+import StudentDashboard from '@/pages/StudentDashboard';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 
 export const StudentDashboardPage = () => {
-  return <StudentDashboard />;
+  return (
+    <DashboardLayout>
+      <StudentDashboard />
+    </DashboardLayout>
+  );
 };
 
 export default StudentDashboardPage;

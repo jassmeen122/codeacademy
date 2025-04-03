@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthState } from './hooks/useAuthState';
 import Auth from './pages/Auth';
 import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
@@ -31,36 +31,34 @@ function App() {
   const isLoggedIn = !!user;
 
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={!isLoggedIn ? <Auth /> : <Navigate to="/student/dashboard" />} />
-        <Route path="/signup" element={!isLoggedIn ? <Auth /> : <Navigate to="/student/dashboard" />} />
-        <Route path="/auth" element={!isLoggedIn ? <Auth /> : <Navigate to="/student/dashboard" />} />
-        <Route path="/" element={<Navigate to="/login" />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={!isLoggedIn ? <Auth /> : <Navigate to="/student/dashboard" />} />
+      <Route path="/signup" element={!isLoggedIn ? <Auth /> : <Navigate to="/student/dashboard" />} />
+      <Route path="/auth" element={!isLoggedIn ? <Auth /> : <Navigate to="/student/dashboard" />} />
+      <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* Student Routes */}
-        <Route path="/student/dashboard" element={isLoggedIn ? <StudentDashboardPage /> : <Navigate to="/login" />} />
-        <Route path="/student/courses" element={isLoggedIn ? <CoursesPage /> : <Navigate to="/login" />} />
-        <Route path="/student/profile" element={isLoggedIn ? <ProfilePage /> : <Navigate to="/login" />} />
-        <Route path="/student/progress" element={isLoggedIn ? <ProgressDashboardPage /> : <Navigate to="/login" />} />
-        <Route path="/student/progress-dashboard" element={isLoggedIn ? <ProgressDashboardPage /> : <Navigate to="/login" />} />
-        <Route path="/student/language-courses/:languageId" element={isLoggedIn ? <LanguageCoursesPage /> : <Navigate to="/login" />} />
-        <Route path="/student/language-summary/:languageId" element={isLoggedIn ? <LanguageSummaryPage /> : <Navigate to="/login" />} />
-        <Route path="/student/language-quiz/:languageId" element={isLoggedIn ? <LanguageQuizPage /> : <Navigate to="/login" />} />
-        <Route path="/student/exercise/:exerciseId" element={isLoggedIn ? <ExercisePage /> : <Navigate to="/login" />} />
-        <Route path="/student/social" element={isLoggedIn ? <SocialHomePage /> : <Navigate to="/login" />} />
-        <Route path="/student/ai-assistant" element={isLoggedIn ? <AIAssistantPage /> : <Navigate to="/login" />} />
-        <Route path="/student/projects" element={isLoggedIn ? <ProjectsPage /> : <Navigate to="/login" />} />
-        <Route path="/student/sql-exercises" element={isLoggedIn ? <SQLExercisesPage /> : <Navigate to="/login" />} />
+      {/* Student Routes */}
+      <Route path="/student/dashboard" element={isLoggedIn ? <StudentDashboardPage /> : <Navigate to="/login" />} />
+      <Route path="/student/courses" element={isLoggedIn ? <CoursesPage /> : <Navigate to="/login" />} />
+      <Route path="/student/profile" element={isLoggedIn ? <ProfilePage /> : <Navigate to="/login" />} />
+      <Route path="/student/progress" element={isLoggedIn ? <ProgressDashboardPage /> : <Navigate to="/login" />} />
+      <Route path="/student/progress-dashboard" element={isLoggedIn ? <ProgressDashboardPage /> : <Navigate to="/login" />} />
+      <Route path="/student/language-courses/:languageId" element={isLoggedIn ? <LanguageCoursesPage /> : <Navigate to="/login" />} />
+      <Route path="/student/language-summary/:languageId" element={isLoggedIn ? <LanguageSummaryPage /> : <Navigate to="/login" />} />
+      <Route path="/student/language-quiz/:languageId" element={isLoggedIn ? <LanguageQuizPage /> : <Navigate to="/login" />} />
+      <Route path="/student/exercise/:exerciseId" element={isLoggedIn ? <ExercisePage /> : <Navigate to="/login" />} />
+      <Route path="/student/social" element={isLoggedIn ? <SocialHomePage /> : <Navigate to="/login" />} />
+      <Route path="/student/ai-assistant" element={isLoggedIn ? <AIAssistantPage /> : <Navigate to="/login" />} />
+      <Route path="/student/projects" element={isLoggedIn ? <ProjectsPage /> : <Navigate to="/login" />} />
+      <Route path="/student/sql-exercises" element={isLoggedIn ? <SQLExercisesPage /> : <Navigate to="/login" />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin/dashboard" element={isLoggedIn && user?.role === 'admin' ? <AdminDashboardPage /> : <Navigate to="/login" />} />
+      {/* Admin Routes */}
+      <Route path="/admin/dashboard" element={isLoggedIn && user?.role === 'admin' ? <AdminDashboardPage /> : <Navigate to="/login" />} />
 
-        {/* Teacher Routes */}
-        <Route path="/teacher/dashboard" element={isLoggedIn && user?.role === 'teacher' ? <TeacherDashboardPage /> : <Navigate to="/login" />} />
-      </Routes>
-    </Router>
+      {/* Teacher Routes */}
+      <Route path="/teacher/dashboard" element={isLoggedIn && user?.role === 'teacher' ? <TeacherDashboardPage /> : <Navigate to="/login" />} />
+    </Routes>
   );
 }
 
