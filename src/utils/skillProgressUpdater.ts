@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { DatabaseTables, UserSkillRecord } from "@/types/progress";
+import { UserSkillRecord } from "@/types/progress";
 
 // Language to skill mapping
 const languageToSkillMap: Record<string, string[]> = {
@@ -74,9 +74,9 @@ export const updateUserSkillsForActivity = async (
     // If we couldn't determine any skills to update, exit
     if (skillsToUpdate.length === 0) return;
     
-    // Get current skill levels with proper typing
+    // Get current skill levels
     const { data: existingSkillsData, error: fetchError } = await supabase
-      .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
+      .from('user_skills_progress')
       .select('*')
       .eq('user_id', userId)
       .in('skill_name', skillsToUpdate);
@@ -100,9 +100,9 @@ export const updateUserSkillsForActivity = async (
       };
     });
     
-    // Upsert the skill progress with proper typing
+    // Upsert the skill progress
     const { error: upsertError } = await supabase
-      .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
+      .from('user_skills_progress')
       .upsert(updates, {
         onConflict: 'user_id,skill_name'
       });
