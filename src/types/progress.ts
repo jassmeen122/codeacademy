@@ -29,6 +29,7 @@ export interface UserMetric {
   updated_at: string;
 }
 
+// Make sure UserSkill is exported properly
 export interface UserSkill {
   id: string;
   skill_name: string;
