@@ -1,61 +1,80 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb } from 'lucide-react';
+import { Sparkles, Trophy, Lightbulb, Rocket } from 'lucide-react';
 
 interface QuickTipProps {
   stars: number;
-  recentSuccess: boolean;
+  recentSuccess?: boolean;
 }
 
-export const QuickTip: React.FC<QuickTipProps> = ({ stars, recentSuccess }) => {
-  // Get a personalized tip based on stars and recent success
+export const QuickTip: React.FC<QuickTipProps> = ({ 
+  stars, 
+  recentSuccess = true 
+}) => {
+  // Fonction pour obtenir le bon conseil selon le niveau et le succès récent
   const getTip = () => {
-    // If user has had recent success
+    // Si l'utilisateur a réussi récemment
     if (recentSuccess) {
-      if (stars === 0) return "Essaie de résoudre un premier exercice pour gagner ta première étoile! 🌟";
-      if (stars < 3) return "Tu progresses bien ! Essaie un exercice plus difficile pour gagner plus d'étoiles ! 🚀";
-      if (stars < 5) return "Tu es sur une belle lancée ! N'oublie pas de réviser les concepts fondamentaux ! 📚";
-      return "Excellent travail ! Tu pourrais aider d'autres étudiants maintenant ! 🧠";
+      if (stars < 3) return {
+        icon: <Rocket className="h-5 w-5 text-blue-500" />,
+        text: "Bravo ! Prochain défi : un quiz ! 🚀",
+        message: "Tu débutes bien, continue comme ça !"
+      };
+      
+      if (stars < 5) return {
+        icon: <Trophy className="h-5 w-5 text-purple-500" />,
+        text: "Super ! Essaie maintenant les fonctions ! 🧩",
+        message: "Tu progresses vite, continue !"
+      };
+      
+      return {
+        icon: <Sparkles className="h-5 w-5 text-amber-500" />,
+        text: "Incroyable ! Tente un mini-projet complet ! 🏗️",
+        message: "Tu es presque un expert !"
+      };
     } 
-    // If user hasn't had recent success
+    // Si l'utilisateur a des difficultés récemment
     else {
-      if (stars === 0) return "Commence par un exercice facile pour gagner ta première étoile ! 🌱";
-      if (stars < 3) return "Reprends les bases et essaie des exercices plus simples ! 🔍";
-      if (stars < 5) return "Une pause peut parfois aider ! Reviens avec un esprit frais ! 🌿";
-      return "Tu as prouvé que tu pouvais le faire ! Retourne à tes exercices ! 💪";
+      if (stars < 3) return {
+        icon: <Lightbulb className="h-5 w-5 text-amber-500" />,
+        text: "Astuce : Mets des () en Python ! 🐍",
+        message: "Pas grave, on apprend en faisant des erreurs !"
+      };
+      
+      if (stars < 5) return {
+        icon: <Lightbulb className="h-5 w-5 text-amber-500" />,
+        text: "N'oublie pas les deux-points après if ! 🔍",
+        message: "Continue, tu y es presque !"
+      };
+      
+      return {
+        icon: <Lightbulb className="h-5 w-5 text-amber-500" />,
+        text: "Vérifie l'indentation de ton code ! ➡️",
+        message: "Un petit détail et ça marchera !"
+      };
     }
   };
-
-  // Get randomly colored backgrounds for the tip
-  const getBgColor = () => {
-    const colors = [
-      'bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20',
-      'bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20',
-      'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20'
-    ];
-    return colors[stars % colors.length];
-  };
+  
+  const tip = getTip();
 
   return (
-    <Card className={getBgColor()}>
+    <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Lightbulb className="h-5 w-5 text-amber-500" /> Astuce Rapide
+          <span className="text-purple-500">🪄</span> Astuce Rapide
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="py-3 text-center">
-          <p className="text-lg font-medium">
-            {getTip()}
-          </p>
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-amber-100 dark:border-amber-700/30 bg-white dark:bg-black/20">
+            {tip.icon}
+            <p className="font-medium">{tip.text}</p>
+          </div>
           
-          {/* Extra encouragement for users with 0 stars */}
-          {stars === 0 && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-              Chaque parcours commence par un premier pas ! 🐾
-            </p>
-          )}
+          <p className="text-sm text-center text-gray-600 dark:text-gray-400">
+            {tip.message}
+          </p>
         </div>
       </CardContent>
     </Card>

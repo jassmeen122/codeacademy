@@ -14,35 +14,32 @@ export const useSimpleStarProgress = () => {
   useEffect(() => {
     setLoading(metricsLoading || logsLoading);
     
+    // Calculer les étoiles totales (1 étoile par exercice)
     if (metrics) {
-      console.log("Calculating stars from metrics:", metrics);
-      // Calculate total stars (1 star per exercise completed)
       const stars = metrics.exercises_completed || 0;
-      console.log("Setting total stars to:", stars);
       setTotalStars(stars);
     }
     
+    // Calculer les étoiles de la semaine actuelle
     if (activityLogs && activityLogs.length > 0) {
-      console.log("Calculating weekly stars from logs:", activityLogs);
       const today = new Date();
       const startOfWeek = new Date(today);
       const dayOfWeek = today.getDay();
-      const diff = startOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to start on Monday
+      const diff = startOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Ajuste pour commencer le lundi
       startOfWeek.setDate(diff);
       startOfWeek.setHours(0, 0, 0, 0);
       
-      // Filter logs for current week
+      // Filtrer les logs de la semaine
       const thisWeekLogs = activityLogs.filter(log => {
         const logDate = new Date(log.date);
         return logDate >= startOfWeek;
       });
       
-      // Count activities (1 star per activity)
+      // Compter les activités (1 étoile par activité)
       const stars = thisWeekLogs.reduce((total, log) => total + log.count, 0);
-      console.log("Weekly stars calculated:", stars);
       setWeeklyStars(stars);
       
-      // Determine if user has had recent success
+      // Déterminer si l'utilisateur a eu du succès récemment
       setRecentSuccess(thisWeekLogs.length >= 2);
     }
   }, [metrics, activityLogs, metricsLoading, logsLoading]);

@@ -13,17 +13,18 @@ export const StarDisplay: React.FC<StarDisplayProps> = ({
   loading = false,
   maxStars = 5
 }) => {
-  // Function to get emoji based on star count
+  // Fonction pour obtenir l'émoji selon le nombre d'étoiles
   const getMoodEmoji = () => {
-    if (stars >= maxStars * 0.75) return { emoji: '😊', text: 'Super !', color: 'text-green-500' };
-    if (stars >= maxStars * 0.4) return { emoji: '😐', text: 'Pas mal !', color: 'text-amber-500' };
+    const percentage = stars / maxStars;
+    if (percentage >= 0.75) return { emoji: '😊', text: 'Super !', color: 'text-green-500' };
+    if (percentage >= 0.4) return { emoji: '😐', text: 'Pas mal !', color: 'text-amber-500' };
     return { emoji: '😢', text: 'Continue !', color: 'text-blue-500' };
   };
 
-  // Get corresponding emoji and text
+  // Obtenir l'émoji et le texte correspondant
   const mood = getMoodEmoji();
   
-  // Generate filled and empty stars
+  // Générer les étoiles remplies et vides
   const renderStars = () => {
     const filledStars = '★'.repeat(Math.min(stars, maxStars));
     const emptyStars = '☆'.repeat(Math.max(0, maxStars - stars));
@@ -54,24 +55,21 @@ export const StarDisplay: React.FC<StarDisplayProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center space-y-4">
-          {/* Large mood emoji */}
+          {/* Grand émoji de l'humeur */}
           <div className="text-7xl">{mood.emoji}</div>
           
-          {/* Stars count */}
+          {/* Étoiles */}
           <div>
             <div className="text-3xl font-bold text-center text-yellow-500">
               {renderStars()}
             </div>
             <div className={`text-center ${mood.color} font-medium`}>{mood.text}</div>
-            <div className="text-sm text-center mt-1">
-              {stars} {stars <= 1 ? "étoile" : "étoiles"} gagnée{stars <= 1 ? "" : "s"}
-            </div>
           </div>
           
-          {/* Next level */}
+          {/* Prochain niveau */}
           <div className="text-sm text-center text-gray-600 dark:text-gray-400">
             {stars < maxStars ? (
-              <p>Encore {maxStars - stars} {(maxStars - stars) <= 1 ? "étoile" : "étoiles"} pour compléter le niveau!</p>
+              <p>Encore {maxStars - stars} étoiles pour compléter le niveau!</p>
             ) : (
               <p>Tu as atteint le niveau maximum! 🏆</p>
             )}

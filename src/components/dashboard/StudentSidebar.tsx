@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -23,8 +22,7 @@ import {
   MessageCircle,
   Book,
   Briefcase,
-  Youtube,
-  Star
+  Youtube
 } from 'lucide-react';
 
 const links = [
@@ -92,11 +90,6 @@ const links = [
     title: 'Progress',
     href: '/student/progress',
     icon: TrendingUp,
-  },
-  {
-    title: 'Suivi Étoiles',
-    href: '/student/simple-progress',
-    icon: Star,
   },
   {
     title: 'Achievements',
