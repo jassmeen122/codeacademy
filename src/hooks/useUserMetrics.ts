@@ -33,12 +33,13 @@ export const useUserMetrics = () => {
         if (error.code !== 'PGRST116') {
           console.error('Error fetching metrics:', error);
           toast.error("Couldn't load your progress data");
-          return;
         }
         
-        // If no metrics found, create default metrics
-        // Make sure user_id is explicitly set and not coming from a Partial type
-        const defaultMetrics = {
+        // Create default metrics if none found
+        console.log("No metrics found, creating default entry");
+        
+        // Make sure user_id is explicitly set to avoid TypeScript error
+        const defaultMetricsData = {
           user_id: user.id,
           course_completions: 0,
           exercises_completed: 0,
@@ -47,11 +48,9 @@ export const useUserMetrics = () => {
           updated_at: new Date().toISOString()
         };
         
-        console.log("No metrics found, creating default entry:", defaultMetrics);
-        
         const { data: newData, error: insertError } = await supabase
           .from('user_metrics')
-          .insert(defaultMetrics)
+          .insert(defaultMetricsData)
           .select();
           
         if (insertError) {
@@ -68,7 +67,26 @@ export const useUserMetrics = () => {
         setMetrics(data as UserMetric);
       } else {
         console.log("No metrics data found");
-        setMetrics(null);
+        
+        // Fallback case - create metrics if data is null
+        const defaultMetricsData = {
+          user_id: user.id,
+          course_completions: 0,
+          exercises_completed: 0,
+          total_time_spent: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('user_metrics')
+          .insert(defaultMetricsData)
+          .select();
+          
+        if (!fallbackError && fallbackData && fallbackData.length > 0) {
+          console.log("Created fallback metrics:", fallbackData[0]);
+          setMetrics(fallbackData[0] as UserMetric);
+        }
       }
     } catch (error) {
       console.error("Error in fetchMetrics:", error);
