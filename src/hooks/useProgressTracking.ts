@@ -176,6 +176,7 @@ export const useProgressTracking = () => {
   }, [user]);
   
   // Simple test function for exercise completion with motivational feedback
+  // Updating the type definition to match what's used in updateUserMetrics
   const testUpdateMetrics = useCallback(async (type: 'course' | 'exercise' = 'exercise', value: number = 1) => {
     if (!user) {
       toast.error('Vous devez être connecté pour tester');
