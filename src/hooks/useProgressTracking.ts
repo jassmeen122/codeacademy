@@ -14,12 +14,17 @@ export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
   
-  // Function to update user metrics
+  // Improved function to update user metrics with direct DB operations
   const updateUserMetrics = useCallback(async (type: 'course' | 'exercise' | 'time', value: number = 1) => {
-    if (!user) return false;
+    if (!user) {
+      toast.error('You need to be logged in to track progress');
+      return false;
+    }
     
     setUpdating(true);
     try {
+      console.log(`Direct metrics update: type=${type}, value=${value}, userId=${user.id}`);
+      
       // First check if metrics exist
       const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
@@ -33,7 +38,7 @@ export const useProgressTracking = () => {
       }
       
       if (existingMetrics) {
-        // Update existing metrics
+        // Update existing metrics with direct DB operation
         const updateData: any = {
           updated_at: new Date().toISOString()
         };
@@ -46,6 +51,8 @@ export const useProgressTracking = () => {
           updateData.total_time_spent = (existingMetrics.total_time_spent || 0) + value;
         }
         
+        console.log("Updating metrics with:", updateData);
+        
         const { error: updateError } = await supabase
           .from('user_metrics')
           .update(updateData)
@@ -55,17 +62,20 @@ export const useProgressTracking = () => {
           console.error('Error updating metrics:', updateError);
           return false;
         }
+        
+        console.log("Metrics updated successfully");
       } else {
-        // Create new metrics
-        const newMetrics: any = {
+        // Create new metrics for first-time users
+        const newMetrics = {
           user_id: user.id,
           course_completions: type === 'course' ? value : 0,
           exercises_completed: type === 'exercise' ? value : 0,
           total_time_spent: type === 'time' ? value : 0,
-          last_login: new Date().toISOString(),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
+        
+        console.log("Creating new metrics:", newMetrics);
         
         const { error: insertError } = await supabase
           .from('user_metrics')
@@ -75,11 +85,14 @@ export const useProgressTracking = () => {
           console.error('Error creating metrics:', insertError);
           return false;
         }
+        
+        console.log("New metrics created successfully");
       }
       
       return true;
     } catch (error) {
       console.error('Error in updateUserMetrics:', error);
+      toast.error('Failed to update your progress');
       return false;
     } finally {
       setUpdating(false);

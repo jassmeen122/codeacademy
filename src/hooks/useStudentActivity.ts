@@ -409,6 +409,8 @@ export const useStudentActivity = () => {
     if (user) {
       const initializeMetrics = async () => {
         try {
+          console.log("Checking if user metrics need to be initialized...");
+          
           // Check if metrics exist and create if not
           const { data, error } = await supabase
             .from('user_metrics')
@@ -423,7 +425,25 @@ export const useStudentActivity = () => {
           
           if (!data) {
             console.log("Initializing user metrics...");
-            await updateUserMetrics(user.id);
+            
+            const { error: insertError } = await supabase
+              .from('user_metrics')
+              .insert({
+                user_id: user.id,
+                course_completions: 0,
+                exercises_completed: 0,
+                total_time_spent: 0,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+              
+            if (insertError) {
+              console.error('Error initializing metrics:', insertError);
+            } else {
+              console.log("User metrics initialized successfully");
+            }
+          } else {
+            console.log("User metrics already exist:", data);
           }
         } catch (err) {
           console.error('Error initializing metrics:', err);

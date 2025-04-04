@@ -24,6 +24,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
   activityLogs = [],
   loading 
 }) => {
+  // Process skills data for the chart
   const skillsData = useMemo(() => {
     return skills.map(skill => ({
       name: skill.skill_name,
@@ -31,9 +32,10 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
     }));
   }, [skills]);
 
-  // Group activities by date for the activity chart
+  // Process activity logs for the activity chart
   const activityData = useMemo(() => {
-    const lastSevenDays = Array.from({ length: 7 }, (_, i) => {
+    // Create an array of the last 7 days
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
       return date.toISOString().split('T')[0];
@@ -41,15 +43,15 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
     
     // Create a map of dates to count
     const activityMap = new Map();
-    lastSevenDays.forEach(date => {
+    last7Days.forEach(date => {
       activityMap.set(date, 0);
     });
     
     // Fill in the actual activity counts
     activityLogs.forEach(log => {
-      const date = log.date.split('T')[0];
+      const date = log.date;
       if (activityMap.has(date)) {
-        activityMap.set(date, activityMap.get(date) + log.count);
+        activityMap.set(date, (activityMap.get(date) || 0) + log.count);
       }
     });
     
@@ -59,6 +61,17 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
       count
     }));
   }, [activityLogs]);
+
+  // Format time data for the chart
+  const timeData = useMemo(() => {
+    const totalHours = metrics?.total_time_spent ? metrics.total_time_spent / 60 : 0;
+    const avgDailyHours = totalHours / 30; // Assuming metrics are for 30 days
+    
+    return [
+      { name: 'Total Hours', hours: parseFloat(totalHours.toFixed(1)) },
+      { name: 'Avg. Daily', hours: parseFloat(avgDailyHours.toFixed(1)) }
+    ];
+  }, [metrics]);
 
   if (loading) {
     return (
@@ -90,65 +103,80 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
           
           <TabsContent value="skills" className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={skillsData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {skillsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `${value}%`} />
-                <Legend />
-              </PieChart>
+              {skillsData.length > 0 ? (
+                <PieChart>
+                  <Pie
+                    data={skillsData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {skillsData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => `${value}%`} />
+                  <Legend />
+                </PieChart>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center">
+                  <p className="text-gray-500">No skills data available</p>
+                </div>
+              )}
             </ResponsiveContainer>
           </TabsContent>
           
           <TabsContent value="activity" className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={activityData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  name="Activities" 
-                  stroke="#8884d8" 
-                  activeDot={{ r: 8 }} 
-                />
-              </LineChart>
+              {activityData.some(item => item.count > 0) ? (
+                <LineChart
+                  data={activityData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="count" 
+                    name="Activities" 
+                    stroke="#8884d8" 
+                    activeDot={{ r: 8 }} 
+                  />
+                </LineChart>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center">
+                  <p className="text-gray-500">No activity data available</p>
+                </div>
+              )}
             </ResponsiveContainer>
           </TabsContent>
           
           <TabsContent value="time" className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={[
-                  { name: 'Total Learning Hours', hours: metrics?.total_time_spent || 0 },
-                  { name: 'Avg. Daily Hours', hours: metrics?.total_time_spent ? (metrics.total_time_spent / 30).toFixed(1) : 0 },
-                ]}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="hours" fill="#82ca9d" name="Hours" />
-              </BarChart>
+              {metrics?.total_time_spent ? (
+                <BarChart
+                  data={timeData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="hours" fill="#82ca9d" name="Hours" />
+                </BarChart>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center">
+                  <p className="text-gray-500">No time data available</p>
+                </div>
+              )}
             </ResponsiveContainer>
           </TabsContent>
         </Tabs>

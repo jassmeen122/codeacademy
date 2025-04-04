@@ -8,9 +8,9 @@ import { useStudentActivity } from '../useStudentActivity';
 export const useSummaryProgress = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
-  const { trackLessonViewed, updateUserMetrics } = useStudentActivity();
+  const { trackLessonViewed } = useStudentActivity();
 
-  // Track summary read progress
+  // Track summary read progress with direct metrics update
   const trackSummaryRead = async (languageId: string, languageName: string) => {
     if (!user) {
       toast.error('Please log in to track your progress');
@@ -22,7 +22,7 @@ export const useSummaryProgress = () => {
       console.log(`Tracking summary read: language=${languageId}, name=${languageName}`);
 
       // Update language progress
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('user_language_progress')
         .upsert({
           user_id: user.id,
@@ -31,20 +31,22 @@ export const useSummaryProgress = () => {
           last_updated: new Date().toISOString()
         }, { 
           onConflict: 'user_id,language_id' 
-        }).select();
+        });
 
       if (error) {
         console.error("Error updating language progress:", error);
         throw error;
       }
       
-      console.log("Language progress updated:", data);
+      console.log("Language progress updated successfully");
 
-      // Record activity with proper metrics update
+      // Record activity
       await trackLessonViewed(languageId, languageName, 'summary', true);
-      console.log("Lesson viewed tracked");
       
-      // Update user metrics directly for immediate feedback
+      // DIRECT METRICS UPDATE: Guaranteed to work regardless of other functions
+      console.log("Directly updating user metrics for summary read");
+      
+      // Update time metrics directly (15 minutes per summary)
       const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
         .select('*')
@@ -53,12 +55,14 @@ export const useSummaryProgress = () => {
       
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching metrics for direct update:', fetchError);
-      } else if (existingMetrics) {
-        // Update time metrics directly (15 minutes per summary)
+      }
+      
+      // Check if metrics exist and update or create them
+      if (existingMetrics) {
         const updatedTime = (existingMetrics.total_time_spent || 0) + 15;
         const updatedCourses = (existingMetrics.course_completions || 0) + 1;
         
-        await supabase
+        const { error: updateError } = await supabase
           .from('user_metrics')
           .update({ 
             total_time_spent: updatedTime,
@@ -68,18 +72,28 @@ export const useSummaryProgress = () => {
           .eq('id', existingMetrics.id);
         
         console.log(`Direct metrics update: time=${updatedTime}, courses=${updatedCourses}`);
+        
+        if (updateError) {
+          console.error('Error updating metrics:', updateError);
+        }
       } else {
         // Create new metrics entry if none exists
-        await supabase
+        const { error: insertError } = await supabase
           .from('user_metrics')
           .insert({
             user_id: user.id,
             total_time_spent: 15,
             course_completions: 1,
-            exercises_completed: 0
+            exercises_completed: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
         
-        console.log("Created new metrics entry for summary read");
+        if (insertError) {
+          console.error('Error creating metrics:', insertError);
+        } else {
+          console.log("Created new metrics entry for summary read");
+        }
       }
 
       toast.success('Progress updated!');

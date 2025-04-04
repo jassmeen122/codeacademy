@@ -9,7 +9,7 @@ import { checkAndAwardBadge } from '@/utils/badgeUtils';
 export const useQuizProgress = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
-  const { trackExerciseCompleted, updateUserMetrics } = useStudentActivity();
+  const { trackExerciseCompleted } = useStudentActivity();
 
   // Track quiz completion progress
   const trackQuizCompletion = async (
@@ -52,7 +52,7 @@ export const useQuizProgress = () => {
         await checkAndAwardBadge(user.id, languageId);
       }
 
-      // Record activity with score and update metrics
+      // Record activity with score
       console.log("Recording exercise completion");
       await trackExerciseCompleted(
         `quiz-${languageId}`, 
@@ -60,7 +60,10 @@ export const useQuizProgress = () => {
         score
       );
 
-      // Direct update to user_metrics for immediate feedback
+      // DIRECT METRICS UPDATE: Regardless of other function behavior
+      console.log("Directly updating user metrics for quiz completion");
+      
+      // Directly update user metrics for exercises and time
       const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
         .select('*')
@@ -69,12 +72,15 @@ export const useQuizProgress = () => {
       
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching metrics for direct quiz update:', fetchError);
-      } else if (existingMetrics) {
+      }
+      
+      // Check if metrics exist and update or create them
+      if (existingMetrics) {
         // Update exercise metrics
         const updatedExercises = (existingMetrics.exercises_completed || 0) + 1;
         const updatedTime = (existingMetrics.total_time_spent || 0) + 30;
         
-        await supabase
+        const { error: updateError } = await supabase
           .from('user_metrics')
           .update({ 
             exercises_completed: updatedExercises,
@@ -84,18 +90,28 @@ export const useQuizProgress = () => {
           .eq('id', existingMetrics.id);
         
         console.log(`Direct quiz metrics update: exercises=${updatedExercises}, time=${updatedTime}`);
+        
+        if (updateError) {
+          console.error('Error updating quiz metrics:', updateError);
+        }
       } else {
         // Create new metrics entry if none exists
-        await supabase
+        const { error: insertError } = await supabase
           .from('user_metrics')
           .insert({
             user_id: user.id,
             exercises_completed: 1,
             total_time_spent: 30,
-            course_completions: 0
+            course_completions: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           });
         
-        console.log("Created new metrics entry for quiz completion");
+        if (insertError) {
+          console.error('Error creating quiz metrics:', insertError);
+        } else {
+          console.log("Created new metrics entry for quiz completion");
+        }
       }
 
       toast.success(isPassed ? 'Quiz passed! Progress updated!' : 'Quiz completed! Keep practicing!');

@@ -1,11 +1,10 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useAuthState } from '@/hooks/useAuthState';
-import { supabase } from '@/integrations/supabase/client';
-import { UserMetric, UserSkill, ActivityLog } from '@/types/progress';
+import { ActivityLog } from '@/types/progress';
 import { useUserSkills } from '@/hooks/useUserSkills';
 import { useUserActivityLogs } from '@/hooks/useUserActivityLogs';
 import { useUserRecommendations } from '@/hooks/useUserRecommendations';
+import { useUserMetrics } from '@/hooks/useUserMetrics';
 import { SkillsProgressChart } from '@/components/student/progress/SkillsProgressChart';
 import { ActivityCalendar } from '@/components/student/progress/ActivityCalendar';
 import { RecommendationsList } from '@/components/student/progress/RecommendationsList';
@@ -23,115 +22,51 @@ export default function ProgressPage() {
   const { skills, loading: skillsLoading, fetchUserSkills } = useUserSkills();
   const { activityLogs, loading: logsLoading, fetchActivityLogs } = useUserActivityLogs(30);
   const { recommendations, loading: recommendationsLoading, markRecommendationAsViewed } = useUserRecommendations();
-  const [metrics, setMetrics] = useState<UserMetric | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { metrics, loading: metricsLoading, fetchMetrics } = useUserMetrics();
+  const [refreshing, setRefreshing] = React.useState(false);
 
-  const fetchUserMetrics = useCallback(async () => {
-    if (user) {
-      try {
-        setLoading(true);
-        console.log("Fetching user metrics for", user.id);
-        
-        // Direct query to ensure we get fresh data
-        const { data, error } = await supabase
-          .from('user_metrics')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error) {
-          if (error.code !== 'PGRST116') {
-            console.error('Error fetching user metrics:', error);
-            toast.error("Couldn't load your progress metrics");
-          }
-          
-          // If no metrics found, create default metrics
-          console.log("No metrics found, creating default metrics");
-          
-          const { data: insertedData, error: insertError } = await supabase
-            .from('user_metrics')
-            .insert({
-              user_id: user.id,
-              course_completions: 0,
-              exercises_completed: 0,
-              total_time_spent: 0,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .select();
-            
-          if (insertError) {
-            console.error("Error creating default metrics:", insertError);
-          } else if (insertedData && insertedData.length > 0) {
-            console.log("Created default metrics:", insertedData[0]);
-            setMetrics(insertedData[0] as UserMetric);
-          } else {
-            setMetrics({
-              id: '',
-              user_id: user.id,
-              course_completions: 0,
-              exercises_completed: 0,
-              total_time_spent: 0,
-              last_login: null,
-              created_at: '',
-              updated_at: ''
-            });
-          }
-          
-          return;
-        }
-
-        console.log("Metrics found:", data);
-        setMetrics(data as UserMetric);
-      } catch (error) {
-        console.error('Error in fetchUserMetrics:', error);
-        toast.error("Error loading progress data");
-      } finally {
-        setLoading(false);
-      }
-    }
-  }, [user]);
-
-  // Fetch all user data on component mount
-  useEffect(() => {
-    if (user) {
-      fetchUserMetrics();
-      if (fetchUserSkills) fetchUserSkills();
-      if (fetchActivityLogs) fetchActivityLogs();
-    }
-  }, [user, fetchUserMetrics, fetchUserSkills, fetchActivityLogs]);
-
-  // Add an auto-refresh every 5 seconds to ensure data is current
   useEffect(() => {
     if (!user) return;
     
+    console.log("Initial data fetch for ProgressPage");
+    refreshAllData(false);
+    
     const interval = setInterval(() => {
       console.log("Auto-refreshing progress data...");
-      fetchUserMetrics();
-      if (fetchUserSkills) fetchUserSkills();
-      if (fetchActivityLogs) fetchActivityLogs();
-    }, 5000); // 5 seconds for more responsive updates
+      refreshAllData(false);
+    }, 5000);
     
     return () => clearInterval(interval);
-  }, [user, fetchUserMetrics, fetchUserSkills, fetchActivityLogs]);
-
+  }, [user]);
+  
   const handleRecommendationClick = (id: string, type: string, itemId: string) => {
     markRecommendationAsViewed(id);
   };
   
-  const refreshAllData = async () => {
-    setRefreshing(true);
+  const refreshAllData = async (showToast = true) => {
+    if (showToast) {
+      setRefreshing(true);
+    }
+    
     try {
-      await fetchUserMetrics();
-      if (fetchUserSkills) await fetchUserSkills();
-      if (fetchActivityLogs) await fetchActivityLogs();
-      toast.success("Progress data refreshed!");
+      await Promise.all([
+        fetchMetrics(),
+        fetchUserSkills(),
+        fetchActivityLogs()
+      ]);
+      
+      if (showToast) {
+        toast.success("Progress data refreshed!");
+      }
     } catch (error) {
       console.error("Error refreshing data:", error);
-      toast.error("Couldn't refresh progress data");
+      if (showToast) {
+        toast.error("Couldn't refresh progress data");
+      }
     } finally {
-      setRefreshing(false);
+      if (showToast) {
+        setRefreshing(false);
+      }
     }
   };
 
@@ -145,7 +80,7 @@ export default function ProgressPage() {
           />
           <Button 
             variant="default" 
-            onClick={refreshAllData} 
+            onClick={() => refreshAllData(true)} 
             disabled={refreshing}
             className="flex items-center gap-2"
           >
@@ -154,7 +89,6 @@ export default function ProgressPage() {
           </Button>
         </div>
 
-        {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardContent className="pt-6">
@@ -162,7 +96,7 @@ export default function ProgressPage() {
                 <Clock className="h-10 w-10 text-blue-500" />
                 <div>
                   <p className="text-sm text-muted-foreground">Time Spent Learning</p>
-                  {loading ? (
+                  {metricsLoading ? (
                     <Skeleton className="h-9 w-20" />
                   ) : (
                     <h3 className="text-3xl font-bold">{metrics?.total_time_spent || 0} min</h3>
@@ -178,7 +112,7 @@ export default function ProgressPage() {
                 <BookOpen className="h-10 w-10 text-green-500" />
                 <div>
                   <p className="text-sm text-muted-foreground">Courses Completed</p>
-                  {loading ? (
+                  {metricsLoading ? (
                     <Skeleton className="h-9 w-20" />
                   ) : (
                     <h3 className="text-3xl font-bold">{metrics?.course_completions || 0}</h3>
@@ -194,7 +128,7 @@ export default function ProgressPage() {
                 <Code className="h-10 w-10 text-purple-500" />
                 <div>
                   <p className="text-sm text-muted-foreground">Exercises Completed</p>
-                  {loading ? (
+                  {metricsLoading ? (
                     <Skeleton className="h-9 w-20" />
                   ) : (
                     <h3 className="text-3xl font-bold">{metrics?.exercises_completed || 0}</h3>
@@ -221,9 +155,7 @@ export default function ProgressPage() {
           </Card>
         </div>
 
-        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Skills */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="skills">
               <TabsList className="mb-4">
@@ -283,7 +215,6 @@ export default function ProgressPage() {
             </Tabs>
           </div>
 
-          {/* Right Column - Recommendations */}
           <div>
             <RecommendationsList 
               recommendations={recommendations}
@@ -292,6 +223,17 @@ export default function ProgressPage() {
             />
           </div>
         </div>
+        
+        {import.meta.env.DEV && (
+          <div className="mt-8 p-4 border border-gray-200 rounded-md">
+            <h3 className="text-sm font-medium mb-2">Debug Information:</h3>
+            <div className="text-xs text-gray-500">
+              <p>User ID: {user?.id || 'Not logged in'}</p>
+              <p>Last refresh: {new Date().toLocaleTimeString()}</p>
+              <p>Metrics data: {JSON.stringify(metrics || {})}</p>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
