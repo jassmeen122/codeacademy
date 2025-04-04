@@ -37,7 +37,8 @@ export const useUserMetrics = () => {
         }
         
         // If no metrics found, create default metrics
-        const defaultMetrics: Partial<UserMetric> = {
+        // Make sure user_id is explicitly set and not coming from a Partial type
+        const defaultMetrics = {
           user_id: user.id,
           course_completions: 0,
           exercises_completed: 0,
