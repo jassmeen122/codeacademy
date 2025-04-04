@@ -86,7 +86,7 @@ export default function ProgressPage() {
 
   const handleTestTimeUpdate = async () => {
     console.log("Running test update for time spent");
-    // Changed from 'time' to 'exercise' since that's what the function accepts
+    // We need to change 'time' to 'exercise' since that's what the function accepts
     await testUpdateMetrics('exercise', 15);
     // Fetch updated metrics
     console.log("Fetching fresh metrics after time update");
