@@ -51,3 +51,57 @@ export interface DatabaseTables {
   user_activities: UserActivity;
   user_metrics: UserMetric;
 }
+
+export interface UserRecommendation {
+  id: string;
+  user_id: string;
+  recommendation_type: 'course' | 'exercise' | 'module' | 'skill';
+  item_id: string;
+  relevance_score: number;
+  is_viewed: boolean;
+  created_at: string;
+  item_title?: string;
+  item_description?: string;
+  item_image?: string;
+  reason?: string;
+}
+
+export interface ActivityLog {
+  date: string;
+  count: number;
+  type: string;
+}
+
+export interface ProgressReportOptions {
+  includeSkills: boolean;
+  includeCourses: boolean;
+  includeActivities: boolean;
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+}
+
+export interface ProgressReport {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  summary: {
+    completion_percentage: number;
+    total_time_spent: number;
+    course_completions: number;
+    exercises_completed: number;
+    last_activity: string;
+  };
+  skills?: UserSkill[];
+  courses?: {
+    id: string;
+    title: string;
+    completion_percentage: number;
+    last_accessed: string;
+  }[];
+  activities?: ActivityLog[];
+  generated_at: string;
+}
