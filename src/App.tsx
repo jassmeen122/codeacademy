@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -85,6 +84,7 @@ function App() {
           <Route path="/student/code-editor" element={<StudentCodeEditorPage />} /> {/* Add this route as an alias */}
           <Route path="/student/ai-assistant" element={<StudentAIAssistantPage />} />
           <Route path="/student/progress" element={<SimpleProgressPage />} />
+          <Route path="/student/simple-progress" element={<SimpleProgressPage />} />
           <Route path="/student/achievements" element={<StudentAchievementsPage />} />
           <Route path="/student/mini-game" element={<MiniGamePage />} />
           <Route path="/student/profile" element={<StudentProfilePage />} />

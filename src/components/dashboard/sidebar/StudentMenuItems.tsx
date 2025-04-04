@@ -1,5 +1,18 @@
 
-import { LayoutDashboard, BookOpen, Code, TestTube2, Users2, Award, BrainCircuit, Settings, MessagesSquare, BriefcaseBusiness, LineChart, Star } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  BookOpen, 
+  Code, 
+  TestTube2, 
+  Users2, 
+  Award, 
+  BrainCircuit, 
+  Settings, 
+  MessagesSquare, 
+  BriefcaseBusiness, 
+  LineChart,
+  Star 
+} from 'lucide-react';
 import { MenuItem } from "@/types/sidebar";
 
 export const StudentMenuItems: MenuItem[] = [
@@ -54,7 +67,7 @@ export const StudentMenuItems: MenuItem[] = [
   {
     title: 'Progrès Étoiles',
     icon: <Star className="h-5 w-5" />,
-    href: '/student/progress',
+    href: '/student/simple-progress',
     items: []
   },
   {

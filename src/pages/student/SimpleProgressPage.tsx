@@ -1,6 +1,6 @@
 
 import React from 'react';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useSimpleStarProgress } from '@/hooks/useSimpleStarProgress';
 import { StarDisplay } from '@/components/student/progress/StarDisplay';
 import { QuickTip } from '@/components/student/progress/QuickTip';
