@@ -52,6 +52,9 @@ export const useQuizProgress = () => {
         score
       );
 
+      // Always update exercise completion counter
+      await updateUserMetrics(user.id, 'exercise', 1);
+      
       // Always update time spent metrics when completing a quiz
       await updateUserMetrics(user.id, 'time', 30); // Assuming quiz takes about 30 min
 

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuthState } from '@/hooks/useAuthState';
 import { supabase } from '@/integrations/supabase/client';
 import { UserMetric, UserSkill, ActivityLog } from '@/types/progress';
@@ -12,68 +13,116 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, Award, Code, BookOpen, Calendar, BarChart2 } from 'lucide-react';
+import { Clock, Award, Code, BookOpen, Calendar, BarChart2, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function ProgressPage() {
   const { user } = useAuthState();
-  const { skills, loading: skillsLoading } = useUserSkills();
-  const { activityLogs, loading: logsLoading } = useUserActivityLogs(30);
+  const { skills, loading: skillsLoading, fetchUserSkills } = useUserSkills();
+  const { activityLogs, loading: logsLoading, fetchActivityLogs } = useUserActivityLogs(30);
   const { recommendations, loading: recommendationsLoading, markRecommendationAsViewed } = useUserRecommendations();
   const [metrics, setMetrics] = useState<UserMetric | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchUserMetrics = async () => {
-      if (user) {
-        try {
-          const { data, error } = await supabase
-            .from('user_metrics')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+  const fetchUserMetrics = useCallback(async () => {
+    if (user) {
+      try {
+        setLoading(true);
+        console.log("Fetching user metrics for", user.id);
+        
+        const { data, error } = await supabase
+          .from('user_metrics')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-          if (error && error.code !== 'PGRST116') {
+        if (error) {
+          if (error.code !== 'PGRST116') {
             console.error('Error fetching user metrics:', error);
-            return;
+            toast.error("Couldn't load your progress metrics");
           }
-
-          // If we have user metrics, set them
-          if (data) {
-            setMetrics(data as UserMetric);
-          } else {
-            // Otherwise set some default values
-            setMetrics({
-              id: '',
+          
+          // If no metrics found, create default metrics
+          console.log("No metrics found, creating default metrics");
+          setMetrics({
+            id: '',
+            user_id: user.id,
+            course_completions: 0,
+            exercises_completed: 0,
+            total_time_spent: 0,
+            last_login: null,
+            created_at: '',
+            updated_at: ''
+          });
+          
+          // Try to insert default metrics if they don't exist
+          await supabase
+            .from('user_metrics')
+            .insert({
               user_id: user.id,
               course_completions: 0,
               exercises_completed: 0,
               total_time_spent: 0,
-              last_login: null,
-              created_at: '',
-              updated_at: ''
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             });
-          }
-        } catch (error) {
-          console.error('Error fetching metrics:', error);
-        } finally {
-          setLoading(false);
+            
+          return;
         }
-      }
-    };
 
-    fetchUserMetrics();
+        console.log("Metrics found:", data);
+        setMetrics(data as UserMetric);
+      } catch (error) {
+        console.error('Error in fetchUserMetrics:', error);
+        toast.error("Error loading progress data");
+      } finally {
+        setLoading(false);
+      }
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchUserMetrics();
+  }, [user, fetchUserMetrics]);
 
   const handleRecommendationClick = (id: string, type: string, itemId: string) => {
     markRecommendationAsViewed(id);
   };
+  
+  const refreshAllData = async () => {
+    setRefreshing(true);
+    try {
+      await fetchUserMetrics();
+      if (fetchUserSkills) await fetchUserSkills();
+      if (fetchActivityLogs) await fetchActivityLogs();
+      toast.success("Progress data refreshed!");
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      toast.error("Couldn't refresh progress data");
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <div className="container mx-auto py-6 space-y-8">
-      <PageHeader
-        heading="Your Learning Progress"
-        subheading="Track your skills, activities, and get personalized recommendations"
-      />
+      <div className="flex justify-between items-center">
+        <PageHeader
+          heading="Your Learning Progress"
+          subheading="Track your skills, activities, and get personalized recommendations"
+        />
+        <Button 
+          variant="outline" 
+          onClick={refreshAllData} 
+          disabled={refreshing}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing...' : 'Refresh Data'}
+        </Button>
+      </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

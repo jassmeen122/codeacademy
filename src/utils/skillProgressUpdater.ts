@@ -45,6 +45,8 @@ export const updateUserSkillsForActivity = async (
   if (!userId) return;
   
   try {
+    console.log(`Updating user skills: userId=${userId}, activityType=${activityType}, metadata=`, metadata);
+    
     // Default progress increment based on activity type
     let progressIncrement = metadata.progressIncrement || 0;
     if (!progressIncrement) {
@@ -69,7 +71,7 @@ export const updateUserSkillsForActivity = async (
       const language = metadata.language.toLowerCase();
       
       // Check if we have a direct mapping
-      if (languageToSkillMap[language]) {
+      if (language in languageToSkillMap) {
         skillsToUpdate.push(...languageToSkillMap[language]);
       } else {
         // If no direct mapping, add the language as a skill itself
@@ -82,7 +84,7 @@ export const updateUserSkillsForActivity = async (
       const topic = metadata.topic.toLowerCase();
       
       // Check if we have a direct mapping
-      if (languageToSkillMap[topic]) {
+      if (topic in languageToSkillMap) {
         skillsToUpdate.push(...languageToSkillMap[topic]);
       } else {
         // If no direct mapping, add the topic as a skill itself
@@ -95,6 +97,8 @@ export const updateUserSkillsForActivity = async (
       skillsToUpdate.push("General Programming");
     }
     
+    console.log(`Skills to update: ${skillsToUpdate.join(', ')}`);
+    
     // Get current skill levels
     const { data, error: fetchError } = await supabase
       .from('user_skills_progress')
@@ -102,9 +106,13 @@ export const updateUserSkillsForActivity = async (
       .eq('user_id', userId)
       .in('skill_name', skillsToUpdate);
       
-    if (fetchError) throw fetchError;
+    if (fetchError) {
+      console.error("Error fetching user skills:", fetchError);
+      throw fetchError;
+    }
     
     const existingSkills = data as UserSkillRecord[] || [];
+    console.log("Existing skills:", existingSkills);
     
     // Prepare upsert data
     const updates = skillsToUpdate.map(skillName => {
@@ -112,6 +120,8 @@ export const updateUserSkillsForActivity = async (
       const currentProgress = existingSkill?.progress || 0;
       // Ensure progress doesn't exceed 100%
       const newProgress = Math.min(100, currentProgress + progressIncrement);
+      
+      console.log(`Updating skill ${skillName}: ${currentProgress} -> ${newProgress}`);
       
       return {
         user_id: userId,
@@ -128,11 +138,16 @@ export const updateUserSkillsForActivity = async (
         onConflict: 'user_id,skill_name'
       });
       
-    if (upsertError) throw upsertError;
+    if (upsertError) {
+      console.error("Error upserting skills:", upsertError);
+      throw upsertError;
+    }
     
     console.log(`Skills updated for user ${userId}: ${skillsToUpdate.join(', ')}`);
+    return skillsToUpdate;
     
   } catch (error) {
     console.error("Error updating skills:", error);
+    return [];
   }
 };

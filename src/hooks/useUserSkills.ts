@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
@@ -13,20 +13,12 @@ export const useUserSkills = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuthState();
 
-  useEffect(() => {
-    if (user) {
-      fetchUserSkills();
-    } else {
-      setSkills([]);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchUserSkills = async () => {
+  const fetchUserSkills = useCallback(async () => {
     if (!user) return;
     
     try {
       setLoading(true);
+      console.log("Fetching skills for user", user.id);
       
       // Get user skills
       const { data, error } = await supabase
@@ -35,6 +27,8 @@ export const useUserSkills = () => {
         .eq('user_id', user.id);
       
       if (error) throw error;
+      
+      console.log("Skills data:", data);
       
       // Transform the data to match our UserSkill interface
       const typedSkills: UserSkill[] = (data as UserSkillRecord[] || []).map(item => ({
@@ -45,18 +39,31 @@ export const useUserSkills = () => {
       }));
       
       setSkills(typedSkills);
+      return typedSkills;
     } catch (error: any) {
       console.error("Error fetching user skills:", error);
       toast.error("Failed to load skills progress");
+      return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserSkills();
+    } else {
+      setSkills([]);
+      setLoading(false);
+    }
+  }, [user, fetchUserSkills]);
 
   const updateSkillProgress = async (skillName: string, progress: number) => {
     if (!user) return;
     
     try {
+      console.log(`Manually updating skill ${skillName} to ${progress}%`);
+      
       // Update the skill progress
       const { error } = await supabase
         .from('user_skills_progress')
@@ -92,15 +99,18 @@ export const useUserSkills = () => {
       });
       
       toast.success(`${skillName} progress updated`);
+      return true;
     } catch (error: any) {
       console.error("Error updating skill progress:", error);
       toast.error("Failed to update skill progress");
+      return false;
     }
   };
 
   return {
     skills,
     loading,
-    updateSkillProgress
+    updateSkillProgress,
+    fetchUserSkills
   };
 };

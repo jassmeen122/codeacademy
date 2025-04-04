@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
@@ -10,20 +10,12 @@ export function useUserActivityLogs(days = 30) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuthState();
 
-  useEffect(() => {
-    if (user) {
-      fetchActivityLogs();
-    } else {
-      setActivityLogs([]);
-      setLoading(false);
-    }
-  }, [user, days]);
-
-  const fetchActivityLogs = async () => {
+  const fetchActivityLogs = useCallback(async () => {
     if (!user) return;
     
     try {
       setLoading(true);
+      console.log(`Fetching activity logs for the last ${days} days for user ${user.id}`);
       
       // Calculate the date range
       const endDate = new Date();
@@ -40,6 +32,8 @@ export function useUserActivityLogs(days = 30) {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
+      
+      console.log(`Found ${data?.length || 0} activity records`);
       
       // Process and group activities by date and type
       const activityMap = new Map();
@@ -65,14 +59,26 @@ export function useUserActivityLogs(days = 30) {
       });
       
       const logs = Array.from(activityMap.values());
+      console.log("Processed activity logs:", logs);
       setActivityLogs(logs);
+      return logs;
     } catch (error: any) {
       console.error('Error fetching activity logs:', error);
       toast.error("Failed to load activity logs");
+      return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, days]);
+
+  useEffect(() => {
+    if (user) {
+      fetchActivityLogs();
+    } else {
+      setActivityLogs([]);
+      setLoading(false);
+    }
+  }, [user, days, fetchActivityLogs]);
 
   return {
     activityLogs,

@@ -8,7 +8,7 @@ import { useStudentActivity } from '../useStudentActivity';
 export const useSummaryProgress = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
-  const { trackLessonViewed } = useStudentActivity();
+  const { trackLessonViewed, updateUserMetrics } = useStudentActivity();
 
   // Track summary read progress
   const trackSummaryRead = async (languageId: string, languageName: string) => {
@@ -36,6 +36,12 @@ export const useSummaryProgress = () => {
 
       // Record activity with proper metrics update
       await trackLessonViewed(languageId, languageName, 'summary', true);
+      
+      // Directly update user metrics with time spent (estimated 15 minutes per summary)
+      await updateUserMetrics(user.id, 'time', 15);
+      
+      // Also increment course completion counter since a summary counts as course content
+      await updateUserMetrics(user.id, 'course', 1);
 
       toast.success('Progress updated!');
       return true;
