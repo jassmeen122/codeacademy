@@ -34,7 +34,7 @@ export default function ProgressPage() {
     const interval = setInterval(() => {
       console.log("Auto-refreshing progress data...");
       refreshAllData(false);
-    }, 5000);
+    }, 30000);
     
     return () => clearInterval(interval);
   }, [user]);
@@ -49,8 +49,9 @@ export default function ProgressPage() {
     }
     
     try {
+      await fetchMetrics();
+      
       await Promise.all([
-        fetchMetrics(),
         fetchUserSkills(),
         fetchActivityLogs()
       ]);
@@ -68,6 +69,12 @@ export default function ProgressPage() {
         setRefreshing(false);
       }
     }
+  };
+
+  const displayMetrics = metrics || { 
+    course_completions: 0, 
+    exercises_completed: 0, 
+    total_time_spent: 0 
   };
 
   return (
@@ -99,7 +106,7 @@ export default function ProgressPage() {
                   {metricsLoading ? (
                     <Skeleton className="h-9 w-20" />
                   ) : (
-                    <h3 className="text-3xl font-bold">{metrics?.total_time_spent || 0} min</h3>
+                    <h3 className="text-3xl font-bold">{displayMetrics.total_time_spent || 0} min</h3>
                   )}
                 </div>
               </div>
@@ -115,7 +122,7 @@ export default function ProgressPage() {
                   {metricsLoading ? (
                     <Skeleton className="h-9 w-20" />
                   ) : (
-                    <h3 className="text-3xl font-bold">{metrics?.course_completions || 0}</h3>
+                    <h3 className="text-3xl font-bold">{displayMetrics.course_completions || 0}</h3>
                   )}
                 </div>
               </div>
@@ -131,7 +138,7 @@ export default function ProgressPage() {
                   {metricsLoading ? (
                     <Skeleton className="h-9 w-20" />
                   ) : (
-                    <h3 className="text-3xl font-bold">{metrics?.exercises_completed || 0}</h3>
+                    <h3 className="text-3xl font-bold">{displayMetrics.exercises_completed || 0}</h3>
                   )}
                 </div>
               </div>

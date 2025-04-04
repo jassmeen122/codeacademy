@@ -21,10 +21,10 @@ export const useUserMetrics = () => {
       setLoading(true);
       console.log("Fetching user metrics directly from database...");
       
-      // First, try to fetch any existing metrics
+      // First, try to fetch any existing metrics with a full select statement
       const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
-        .select('*')
+        .select('id, user_id, course_completions, exercises_completed, total_time_spent, last_login, created_at, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
       
@@ -57,7 +57,7 @@ export const useUserMetrics = () => {
       const { data: newData, error: insertError } = await supabase
         .from('user_metrics')
         .insert(newMetricsData)
-        .select();
+        .select('*');
       
       if (insertError) {
         console.error("Failed to create metrics:", insertError);
