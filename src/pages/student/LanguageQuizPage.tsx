@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -105,7 +104,6 @@ const LanguageQuizPage = () => {
     }
   };
 
-  // FIX: Make this function async
   const handleNextQuestion = async () => {
     if (currentQuizIndex < quizzes.length - 1) {
       setCurrentQuizIndex(currentQuizIndex + 1);
