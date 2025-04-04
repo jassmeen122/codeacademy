@@ -42,17 +42,23 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
     setIsSubmitted(true);
     
     if (isCorrect && !exerciseTracked) {
-      // Track exercise completion in metrics
-      const updated = await updateUserMetrics('exercise', 1);
-      if (updated) {
-        console.log('Exercise completion tracked in metrics');
-        setExerciseTracked(true);
-        toast.success('Progress updated!');
-      } else {
-        console.error('Failed to track exercise in metrics');
-      }
-      
+      // First, call the onComplete callback
       onComplete(true);
+      
+      // Then update metrics with a short delay to ensure database consistency
+      setTimeout(async () => {
+        console.log('Tracking exercise completion in metrics...');
+        const updated = await updateUserMetrics('exercise', 1);
+        
+        if (updated) {
+          console.log('Exercise completion tracked in metrics successfully');
+          setExerciseTracked(true);
+          toast.success('Progress updated!');
+        } else {
+          console.error('Failed to track exercise in metrics');
+          toast.error('Could not update progress');
+        }
+      }, 500);
     }
   };
 

@@ -19,56 +19,68 @@ export const useUserMetrics = () => {
 
     try {
       setLoading(true);
-      console.log("Fetching user metrics directly from database...");
+      console.log("Fetching user metrics...");
       
-      // First, try to fetch any existing metrics with a full select statement
-      const { data: existingMetrics, error: fetchError } = await supabase
+      // First check if metrics exist at all for the user
+      const { data: metricsExists, error: checkError } = await supabase
         .from('user_metrics')
-        .select('id, user_id, course_completions, exercises_completed, total_time_spent, last_login, created_at, updated_at')
+        .select('id')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .limit(1);
       
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error fetching metrics:', fetchError);
-        toast.error("Couldn't load your progress data");
+      if (checkError) {
+        console.error('Error checking metrics existence:', checkError);
+        throw checkError;
       }
       
-      // If we already have metrics, use them
-      if (existingMetrics) {
-        console.log("Found existing metrics:", existingMetrics);
-        setMetrics(existingMetrics as UserMetric);
-        setLoading(false);
-        return;
-      }
-      
-      // If no metrics found, create a new entry
-      console.log("No metrics found, creating default metrics");
-      
-      // Create with explicit values to satisfy TypeScript
-      const newMetricsData = {
-        user_id: user.id,
-        course_completions: 0,
-        exercises_completed: 0,
-        total_time_spent: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      const { data: newData, error: insertError } = await supabase
-        .from('user_metrics')
-        .insert(newMetricsData)
-        .select('*');
-      
-      if (insertError) {
-        console.error("Failed to create metrics:", insertError);
-        toast.error("Couldn't initialize your progress data");
-        setMetrics(null);
-      } else if (newData && newData.length > 0) {
-        console.log("Created new metrics:", newData[0]);
-        setMetrics(newData[0] as UserMetric);
+      // If metrics don't exist, create a new record
+      if (!metricsExists || metricsExists.length === 0) {
+        console.log('No metrics found, creating new metrics record');
+        
+        const newMetricsData = {
+          user_id: user.id,
+          course_completions: 0,
+          exercises_completed: 0,
+          total_time_spent: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const { data: insertResult, error: insertError } = await supabase
+          .from('user_metrics')
+          .insert([newMetricsData])
+          .select('*');
+          
+        if (insertError) {
+          console.error('Error creating new metrics:', insertError);
+          toast.error("Couldn't initialize your progress data");
+          setMetrics(null);
+        } else if (insertResult && insertResult.length > 0) {
+          console.log('Created new metrics record:', insertResult[0]);
+          setMetrics(insertResult[0] as UserMetric);
+        } else {
+          console.error("No data returned after creating metrics");
+          setMetrics(null);
+        }
       } else {
-        console.error("No data returned after creating metrics");
-        setMetrics(null);
+        // If metrics exist, fetch the full record by ID
+        const metricsId = metricsExists[0].id;
+        console.log(`Found existing metrics with ID: ${metricsId}`);
+        
+        const { data: fullMetrics, error: fetchError } = await supabase
+          .from('user_metrics')
+          .select('*')
+          .eq('id', metricsId)
+          .single();
+        
+        if (fetchError) {
+          console.error('Error fetching current metrics:', fetchError);
+          toast.error("Couldn't load your progress data");
+          setMetrics(null);
+        } else {
+          console.log('Fetched metrics successfully:', fullMetrics);
+          setMetrics(fullMetrics as UserMetric);
+        }
       }
     } catch (error) {
       console.error("Error in fetchMetrics:", error);
@@ -81,8 +93,10 @@ export const useUserMetrics = () => {
 
   // Initial fetch
   useEffect(() => {
-    fetchMetrics();
-  }, [fetchMetrics]);
+    if (user) {
+      fetchMetrics();
+    }
+  }, [user, fetchMetrics]);
 
   return {
     metrics,
