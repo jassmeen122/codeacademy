@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
@@ -9,7 +8,9 @@ interface SummaryContentProps {
   isRead?: boolean;
 }
 
-export const SummaryContent = ({ title, content, isRead = false }: SummaryContentProps) => {
+export const SummaryContent = ({ title, content, isRead = false, onMarkAsRead }: SummaryContentProps & {
+  onMarkAsRead?: () => void;
+}) => {
   // La fonction pour formater le contenu avec des sections
   const formatContent = (text: string) => {
     // Diviser le contenu en sections
@@ -62,10 +63,23 @@ export const SummaryContent = ({ title, content, isRead = false }: SummaryConten
   return (
     <Card className="w-full bg-white shadow-md mb-6">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-3 text-2xl">
-          {title}
-          {isRead && <CheckCircle className="h-5 w-5 text-green-500" />}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-3 text-2xl">
+            {title}
+            {isRead && <CheckCircle className="h-5 w-5 text-green-500" />}
+          </CardTitle>
+          {!isRead && onMarkAsRead && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onMarkAsRead}
+              className="flex items-center gap-2"
+            >
+              <CheckCircle className="h-4 w-4" />
+              Mark as Read
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="prose max-w-none">

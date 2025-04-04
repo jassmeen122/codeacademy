@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "./useAuthState";
@@ -20,7 +19,8 @@ export const useStudentActivity = () => {
           activity_data: {
             lesson_id: lessonId,
             language,
-            topic
+            topic,
+            timestamp: new Date().toISOString()
           }
         });
         
@@ -42,7 +42,7 @@ export const useStudentActivity = () => {
     if (!user) return;
     
     try {
-      // Record the activity
+      // Record the activity with timestamp
       const { error } = await supabase
         .from('user_activities')
         .insert({
@@ -51,7 +51,8 @@ export const useStudentActivity = () => {
           activity_data: {
             exercise_id: exerciseId,
             language,
-            score
+            score,
+            timestamp: new Date().toISOString()
           }
         });
         
@@ -107,7 +108,7 @@ export const useStudentActivity = () => {
     if (!user) return;
     
     try {
-      // Record the activity
+      // Record the activity with timestamp
       const { error } = await supabase
         .from('user_activities')
         .insert({
@@ -116,7 +117,8 @@ export const useStudentActivity = () => {
           activity_data: {
             course_id: courseId,
             language,
-            category
+            category,
+            timestamp: new Date().toISOString()
           }
         });
         

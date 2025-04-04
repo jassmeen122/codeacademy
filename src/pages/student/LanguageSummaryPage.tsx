@@ -1,191 +1,99 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Book, CheckCircle, Youtube, PlayCircle, Code } from "lucide-react";
-import { useLanguageSummary } from '@/hooks/useLanguageSummary';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { SummaryContent } from '@/components/courses/SummaryContent';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuthState } from '@/hooks/useAuthState';
-import { useProgrammingLanguages } from '@/hooks/useProgrammingCourses';
-import { getYoutubeEmbedUrl, openYoutubeVideo, languageVideoMap } from '@/utils/youtubeVideoMap';
-
-type LanguageParams = {
-  languageId: string;
-};
+import { ArrowLeft, PlayCircle } from 'lucide-react';
+import { useLanguageSummary } from '@/hooks/useLanguageSummary';
+import { useProgressTracking } from '@/hooks/useProgressTracking';
 
 const LanguageSummaryPage = () => {
-  const { languageId } = useParams<LanguageParams>();
+  const { languageId } = useParams<{ languageId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthState();
-  const { summary, progress, loading, error, markAsRead } = useLanguageSummary(languageId);
-  const { languages, loading: loadingLanguages } = useProgrammingLanguages();
-  const [videoType, setVideoType] = useState<'course' | 'exercises'>('course');
-  
-  // Find the corresponding language to get its name
-  const currentLanguage = languages.find(lang => lang.id === languageId);
-  
-  const handleMarkAsRead = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
+  const { summary, progress, loading, error } = useLanguageSummary(languageId);
+  const { trackSummaryRead, updating } = useProgressTracking();
+
+  const handleMarkAsRead = async () => {
+    if (languageId && summary) {
+      await trackSummaryRead(languageId, summary.title);
     }
-    markAsRead();
   };
-  
-  // Get the YouTube URL based on the language and video type
-  const youtubeUrl = languageId && languageVideoMap[languageId] 
-    ? (videoType === 'course' 
-      ? languageVideoMap[languageId].courseVideo 
-      : languageVideoMap[languageId].exercisesVideo)
-    : '';
 
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-[200px] w-full" />
-          <Skeleton className="h-[400px] w-full" />
-        </div>
-      );
+  const handleStartQuiz = () => {
+    if (languageId) {
+      navigate(`/student/language-quiz/${languageId}`);
     }
-    
-    if (error) {
-      return (
-        <div className="text-center py-10">
-          <h3 className="text-xl text-red-500 mb-2">Une erreur est survenue</h3>
-          <p className="text-gray-600">
-            Impossible de charger le résumé. Veuillez réessayer plus tard.
-          </p>
-        </div>
-      );
-    }
-
-    if (!summary) {
-      return (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <Book className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-xl font-medium text-gray-800 mb-2">
-            Résumé non disponible
-          </h3>
-          <p className="text-gray-500 max-w-md mx-auto">
-            Le résumé pour ce langage est en cours de préparation. Veuillez revenir plus tard.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        {/* YouTube Video */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center">
-              <Youtube className="mr-2 h-5 w-5 text-red-600" />
-              {videoType === 'course' ? 'Vidéo d\'apprentissage' : 'Vidéo d\'exercices'}
-            </h2>
-            <div className="flex gap-2">
-              <Button 
-                size="sm"
-                variant={videoType === 'course' ? 'default' : 'outline'}
-                onClick={() => setVideoType('course')}
-                className="flex items-center"
-              >
-                <PlayCircle className="mr-1 h-4 w-4" />
-                Cours
-              </Button>
-              <Button 
-                size="sm"
-                variant={videoType === 'exercises' ? 'default' : 'outline'}
-                onClick={() => setVideoType('exercises')}
-                className="flex items-center"
-              >
-                <Code className="mr-1 h-4 w-4" />
-                Exercices
-              </Button>
-            </div>
-          </div>
-          <div className="aspect-video">
-            <iframe
-              className="w-full h-full rounded-lg"
-              src={youtubeUrl}
-              title={`${videoType === 'course' ? 'Tutoriel' : 'Exercices'} ${currentLanguage?.name || 'de programmation'}`}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
-          <div className="mt-2 flex justify-end">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => openYoutubeVideo(youtubeUrl)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <Youtube className="mr-1 h-4 w-4" />
-              Ouvrir sur YouTube
-            </Button>
-          </div>
-        </div>
-
-        {/* Summary Content */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <Book className="mr-2 h-5 w-5 text-primary" />
-            Résumé détaillé
-          </h2>
-          <SummaryContent 
-            title={summary.title} 
-            content={summary.content} 
-            isRead={progress?.summary_read}
-          />
-        </div>
-
-        {/* Mark as read button */}
-        {user && !progress?.summary_read && (
-          <Button 
-            onClick={handleMarkAsRead}
-            className="mb-8"
-            size="lg"
-          >
-            <CheckCircle className="mr-2 h-5 w-5" />
-            Marquer comme lu
-          </Button>
-        )}
-
-        {/* Link to quiz */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Tester vos connaissances</h2>
-          <Button 
-            variant="outline"
-            onClick={() => navigate(`/student/language-quiz/${languageId}`)}
-          >
-            Accéder au quiz
-          </Button>
-        </div>
-      </>
-    );
   };
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">
-            {loadingLanguages ? 'Chargement...' : `${currentLanguage?.name || 'Langage de programmation'}`}
-          </h1>
           <Button 
             variant="outline" 
-            onClick={() => navigate(`/student/language-courses/${languageId}`)}
+            onClick={() => navigate(`/student/languages`)}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour au cours
+            Back to Languages
           </Button>
+          
+          <div className="flex gap-3">
+            {progress?.summary_read && (
+              <Button 
+                onClick={handleStartQuiz}
+                className="flex items-center"
+              >
+                <PlayCircle className="mr-2 h-4 w-4" />
+                {progress?.quiz_completed ? 'Retake Quiz' : 'Start Quiz'}
+              </Button>
+            )}
+          </div>
         </div>
 
-        {renderContent()}
+        {loading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-2/3" />
+            <Skeleton className="h-[600px]" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-16 bg-gray-50 rounded-lg">
+            <h2 className="text-xl font-medium text-gray-800 mb-2">Error Loading Summary</h2>
+            <p className="text-gray-500 max-w-md mx-auto">
+              There was an issue loading the language summary. Please try again later.
+            </p>
+          </div>
+        ) : summary ? (
+          <SummaryContent 
+            title={summary.title} 
+            content={summary.content}
+            isRead={progress?.summary_read}
+            onMarkAsRead={!progress?.summary_read ? handleMarkAsRead : undefined}
+          />
+        ) : (
+          <div className="text-center py-16 bg-gray-50 rounded-lg">
+            <h2 className="text-xl font-medium text-gray-800 mb-2">No Summary Found</h2>
+            <p className="text-gray-500 max-w-md mx-auto">
+              We couldn't find a summary for this language. Try exploring other language options.
+            </p>
+          </div>
+        )}
+        
+        {progress?.summary_read && !progress?.quiz_completed && (
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-100 rounded-md">
+            <h3 className="text-lg font-medium text-blue-800 mb-2">Ready to test your knowledge?</h3>
+            <p className="text-blue-700 mb-4">Now that you've read the summary, take the quiz to reinforce your learning!</p>
+            <Button 
+              onClick={handleStartQuiz}
+              disabled={updating}
+              className="flex items-center"
+            >
+              <PlayCircle className="mr-2 h-4 w-4" />
+              Start Quiz
+            </Button>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
