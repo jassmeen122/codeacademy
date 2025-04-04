@@ -3,14 +3,22 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface SummaryContentProps {
   title: string;
   content: string;
   isRead?: boolean;
+  isUpdating?: boolean;
 }
 
-export const SummaryContent = ({ title, content, isRead = false, onMarkAsRead }: SummaryContentProps & {
+export const SummaryContent = ({ 
+  title, 
+  content, 
+  isRead = false, 
+  onMarkAsRead,
+  isUpdating = false 
+}: SummaryContentProps & {
   onMarkAsRead?: () => void;
 }) => {
   // La fonction pour formater le contenu avec des sections
@@ -62,16 +70,9 @@ export const SummaryContent = ({ title, content, isRead = false, onMarkAsRead }:
     });
   };
 
-  const handleMarkAsRead = async () => {
-    if (onMarkAsRead) {
-      // Appeler la fonction avec un await pour s'assurer qu'elle est bien exécutée
-      await onMarkAsRead();
-    }
-  };
-
   return (
     <Card className="w-full bg-white shadow-md mb-6">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-3 text-2xl">
             {title}
@@ -79,18 +80,26 @@ export const SummaryContent = ({ title, content, isRead = false, onMarkAsRead }:
           </CardTitle>
           {!isRead && onMarkAsRead && (
             <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleMarkAsRead}
-              className="flex items-center gap-2"
+              onClick={onMarkAsRead}
+              disabled={isUpdating}
+              className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
             >
-              <CheckCircle className="h-4 w-4" />
-              Mark as Read
+              {isUpdating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4" />
+                  Mark as Read
+                </>
+              )}
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-6">
         <div className="prose max-w-none">
           {formatContent(content)}
         </div>

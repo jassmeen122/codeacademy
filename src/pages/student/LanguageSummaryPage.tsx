@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { SummaryContent } from '@/components/courses/SummaryContent';
@@ -11,7 +12,7 @@ import { useProgressTracking } from '@/hooks/useProgressTracking';
 const LanguageSummaryPage = () => {
   const { languageId } = useParams<{ languageId: string }>();
   const navigate = useNavigate();
-  const { summary, progress, loading, error, markAsRead: markSummaryAsRead } = useLanguageSummary(languageId);
+  const { summary, progress, loading, error, refreshProgress } = useLanguageSummary(languageId);
   const { trackSummaryRead, updating } = useProgressTracking();
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -19,9 +20,10 @@ const LanguageSummaryPage = () => {
     if (languageId && summary) {
       setIsUpdating(true);
       try {
-        await trackSummaryRead(languageId, summary.title);
-        await markSummaryAsRead();
-        window.location.reload();
+        const success = await trackSummaryRead(languageId, summary.title);
+        if (success) {
+          await refreshProgress();
+        }
       } catch (error) {
         console.error("Erreur lors du marquage comme lu:", error);
       } finally {
@@ -79,6 +81,7 @@ const LanguageSummaryPage = () => {
             content={summary.content}
             isRead={progress?.summary_read}
             onMarkAsRead={!progress?.summary_read ? handleMarkAsRead : undefined}
+            isUpdating={isUpdating || updating}
           />
         ) : (
           <div className="text-center py-16 bg-gray-50 rounded-lg">
