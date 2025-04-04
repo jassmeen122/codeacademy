@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useAuthState } from '@/hooks/useAuthState';
 import { ActivityLog } from '@/types/progress';
@@ -5,6 +6,7 @@ import { useUserSkills } from '@/hooks/useUserSkills';
 import { useUserActivityLogs } from '@/hooks/useUserActivityLogs';
 import { useUserRecommendations } from '@/hooks/useUserRecommendations';
 import { useUserMetrics } from '@/hooks/useUserMetrics';
+import { useProgressTracking } from '@/hooks/useProgressTracking';
 import { SkillsProgressChart } from '@/components/student/progress/SkillsProgressChart';
 import { ActivityCalendar } from '@/components/student/progress/ActivityCalendar';
 import { RecommendationsList } from '@/components/student/progress/RecommendationsList';
@@ -12,7 +14,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, Award, Code, BookOpen, Calendar, BarChart2, RefreshCw } from 'lucide-react';
+import { Clock, Award, Code, BookOpen, Calendar, BarChart2, RefreshCw, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
@@ -23,6 +25,7 @@ export default function ProgressPage() {
   const { activityLogs, loading: logsLoading, fetchActivityLogs } = useUserActivityLogs(30);
   const { recommendations, loading: recommendationsLoading, markRecommendationAsViewed } = useUserRecommendations();
   const { metrics, loading: metricsLoading, fetchMetrics } = useUserMetrics();
+  const { testUpdateMetrics, updating: trackingUpdating } = useProgressTracking();
   const [refreshing, setRefreshing] = React.useState(false);
 
   useEffect(() => {
@@ -71,6 +74,13 @@ export default function ProgressPage() {
     }
   };
 
+  const handleTestMetricsUpdate = async () => {
+    await testUpdateMetrics();
+    // Fetch updated metrics
+    await fetchMetrics();
+  };
+
+  // Use a fallback object if metrics is null
   const displayMetrics = metrics || { 
     course_completions: 0, 
     exercises_completed: 0, 
@@ -85,15 +95,28 @@ export default function ProgressPage() {
             heading="Your Learning Progress"
             subheading="Track your skills, activities, and get personalized recommendations"
           />
-          <Button 
-            variant="default" 
-            onClick={() => refreshAllData(true)} 
-            disabled={refreshing}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-            {refreshing ? 'Refreshing...' : 'Refresh Data'}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="default" 
+              onClick={() => refreshAllData(true)} 
+              disabled={refreshing}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh Data'}
+            </Button>
+            {import.meta.env.DEV && (
+              <Button 
+                variant="outline" 
+                onClick={handleTestMetricsUpdate} 
+                disabled={trackingUpdating}
+                className="flex items-center gap-2"
+              >
+                <Zap className="h-4 w-4" />
+                Test Metrics
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
