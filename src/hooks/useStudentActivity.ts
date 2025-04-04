@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "./useAuthState";
@@ -6,7 +7,7 @@ import { updateUserSkillsForActivity } from "@/utils/skillProgressUpdater";
 export const useStudentActivity = () => {
   const { user } = useAuthState();
 
-  const trackLessonViewed = async (lessonId: string, language?: string, topic?: string) => {
+  const trackLessonViewed = async (lessonId: string, language?: string, topic?: string, updateMetrics: boolean = false) => {
     if (!user) return;
     
     try {
@@ -33,6 +34,10 @@ export const useStudentActivity = () => {
         { language, topic }
       );
       
+      // Update user metrics
+      if (updateMetrics) {
+        await updateUserMetrics(user.id);
+      }
     } catch (error) {
       console.error("Error tracking lesson view:", error);
     }
@@ -58,36 +63,8 @@ export const useStudentActivity = () => {
         
       if (error) throw error;
       
-      // Get current metrics
-      const { data: metrics, error: metricsError } = await supabase
-        .from('user_metrics')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (!metricsError && metrics) {
-        // If metrics exist, update them
-        await supabase
-          .from('user_metrics')
-          .update({ 
-            exercises_completed: (metrics.exercises_completed || 0) + 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-      } else if (metricsError.code === 'PGRST116') {
-        // If no metrics record exists, create one
-        await supabase
-          .from('user_metrics')
-          .insert({
-            user_id: user.id,
-            exercises_completed: 1,
-            course_completions: 0,
-            total_time_spent: 0,
-            last_login: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-      }
+      // Update metrics
+      await updateUserMetrics(user.id, 'exercise');
       
       // Update skills based on the exercise completed
       await updateUserSkillsForActivity(
@@ -98,7 +75,6 @@ export const useStudentActivity = () => {
           progressIncrement: score ? Math.round(score / 10) : undefined // Higher score = more skill progress
         }
       );
-      
     } catch (error) {
       console.error("Error tracking exercise completion:", error);
     }
@@ -124,36 +100,8 @@ export const useStudentActivity = () => {
         
       if (error) throw error;
       
-      // Get current metrics
-      const { data: metrics, error: metricsError } = await supabase
-        .from('user_metrics')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (!metricsError && metrics) {
-        // If metrics exist, update them
-        await supabase
-          .from('user_metrics')
-          .update({ 
-            course_completions: (metrics.course_completions || 0) + 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-      } else if (metricsError.code === 'PGRST116') {
-        // If no metrics record exists, create one
-        await supabase
-          .from('user_metrics')
-          .insert({
-            user_id: user.id,
-            course_completions: 1,
-            exercises_completed: 0,
-            total_time_spent: 0,
-            last_login: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-      }
+      // Update metrics
+      await updateUserMetrics(user.id, 'course');
       
       // Add points to the user's profile
       if (user.id) {
@@ -169,15 +117,66 @@ export const useStudentActivity = () => {
         'course_completed',
         { language, topic: category }
       );
-      
     } catch (error) {
       console.error("Error tracking course completion:", error);
+    }
+  };
+  
+  // Helper function to update user metrics
+  const updateUserMetrics = async (userId: string, type: 'course' | 'exercise' | 'time' = 'time', value: number = 15) => {
+    try {
+      // First check if metrics exist for user
+      const { data, error: fetchError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+        
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching user metrics:', fetchError);
+        return;
+      }
+      
+      if (data) {
+        // Update existing metrics
+        const updateData: any = { updated_at: new Date().toISOString() };
+        
+        if (type === 'course') {
+          updateData.course_completions = (data.course_completions || 0) + 1;
+        } else if (type === 'exercise') {
+          updateData.exercises_completed = (data.exercises_completed || 0) + 1;
+        } else if (type === 'time') {
+          updateData.total_time_spent = (data.total_time_spent || 0) + value;
+        }
+        
+        await supabase
+          .from('user_metrics')
+          .update(updateData)
+          .eq('id', data.id);
+      } else {
+        // Create new metrics entry
+        const newMetrics: any = {
+          user_id: userId,
+          course_completions: type === 'course' ? 1 : 0,
+          exercises_completed: type === 'exercise' ? 1 : 0,
+          total_time_spent: type === 'time' ? value : 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        await supabase
+          .from('user_metrics')
+          .insert([newMetrics]);
+      }
+    } catch (err) {
+      console.error('Error updating user metrics:', err);
     }
   };
   
   return {
     trackLessonViewed,
     trackExerciseCompleted,
-    trackCourseCompleted
+    trackCourseCompleted,
+    updateUserMetrics
   };
 };

@@ -9,7 +9,7 @@ import { checkAndAwardBadge } from '@/utils/badgeUtils';
 export const useQuizProgress = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
-  const { trackExerciseCompleted } = useStudentActivity();
+  const { trackExerciseCompleted, updateUserMetrics } = useStudentActivity();
 
   // Track quiz completion progress
   const trackQuizCompletion = async (
@@ -45,12 +45,15 @@ export const useQuizProgress = () => {
         await checkAndAwardBadge(user.id, languageId);
       }
 
-      // Record activity with score
+      // Record activity with score and update metrics
       await trackExerciseCompleted(
         `quiz-${languageId}`, 
         languageName,
         score
       );
+
+      // Always update time spent metrics when completing a quiz
+      await updateUserMetrics(user.id, 'time', 30); // Assuming quiz takes about 30 min
 
       toast.success(isPassed ? 'Quiz passed! Progress updated!' : 'Quiz completed! Keep practicing!');
       return true;

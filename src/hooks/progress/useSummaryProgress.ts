@@ -34,10 +34,8 @@ export const useSummaryProgress = () => {
 
       if (error) throw error;
 
-      console.log("Progress update result:", data);
-
-      // Record activity
-      await trackLessonViewed(languageId, languageName, 'summary');
+      // Record activity with proper metrics update
+      await trackLessonViewed(languageId, languageName, 'summary', true);
 
       toast.success('Progress updated!');
       return true;

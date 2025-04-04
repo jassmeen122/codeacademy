@@ -18,6 +18,19 @@ const languageToSkillMap: Record<string, string[]> = {
   "kubernetes": ["DevOps"],
   "aws": ["DevOps", "Cloud"],
   "azure": ["DevOps", "Cloud"],
+  // Add more common languages/topics
+  "java": ["Java"],
+  "c++": ["C++"],
+  "c#": ["C#", ".NET"],
+  "php": ["PHP"],
+  "ruby": ["Ruby"],
+  "go": ["Go"],
+  "rust": ["Rust"],
+  "dart": ["Dart", "Mobile"],
+  "swift": ["Swift", "Mobile"],
+  "kotlin": ["Kotlin", "Mobile"],
+  "android": ["Mobile", "Android"],
+  "ios": ["Mobile", "iOS"],
 };
 
 export const updateUserSkillsForActivity = async (
@@ -58,6 +71,9 @@ export const updateUserSkillsForActivity = async (
       // Check if we have a direct mapping
       if (languageToSkillMap[language]) {
         skillsToUpdate.push(...languageToSkillMap[language]);
+      } else {
+        // If no direct mapping, add the language as a skill itself
+        skillsToUpdate.push(metadata.language);
       }
     }
     
@@ -68,11 +84,16 @@ export const updateUserSkillsForActivity = async (
       // Check if we have a direct mapping
       if (languageToSkillMap[topic]) {
         skillsToUpdate.push(...languageToSkillMap[topic]);
+      } else {
+        // If no direct mapping, add the topic as a skill itself
+        skillsToUpdate.push(metadata.topic);
       }
     }
     
-    // If we couldn't determine any skills to update, exit
-    if (skillsToUpdate.length === 0) return;
+    // If we couldn't determine any skills to update, use a default skill
+    if (skillsToUpdate.length === 0) {
+      skillsToUpdate.push("General Programming");
+    }
     
     // Get current skill levels
     const { data, error: fetchError } = await supabase
@@ -108,6 +129,8 @@ export const updateUserSkillsForActivity = async (
       });
       
     if (upsertError) throw upsertError;
+    
+    console.log(`Skills updated for user ${userId}: ${skillsToUpdate.join(', ')}`);
     
   } catch (error) {
     console.error("Error updating skills:", error);
