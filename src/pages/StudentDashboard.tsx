@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -320,12 +319,12 @@ const StudentDashboard = () => {
                 <Card>
                   <CardContent className="pt-6">
                     <h2 className="text-xl font-semibold mb-4">Learning Progress</h2>
-                    <p className="text-gray-500">Detailed progress stats will be displayed here.</p>
+                    <p className="text-gray-500">Visualize your progress and track your learning journey.</p>
                     <Button 
                       className="mt-4" 
                       onClick={() => navigate("/student/progress")}
                     >
-                      View Full Progress Report
+                      View Étoiles Progress
                     </Button>
                   </CardContent>
                 </Card>
@@ -347,6 +346,8 @@ const StudentDashboard = () => {
               </TabsContent>
             </Tabs>
           </div>
+          
+          
         </div>
       </div>
     </DashboardLayout>
