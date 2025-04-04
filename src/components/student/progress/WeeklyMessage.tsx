@@ -7,7 +7,7 @@ interface WeeklyMessageProps {
   starsEarned: number;
 }
 
-export const WeeklyMessage: React.FC<WeeklyMessageProps> = ({ starsEarned }) => {
+export const WeeklyMessage: React.FC<WeeklyMessageProps> = ({ starsEarned = 0 }) => {
   // Get the current day of the week
   const today = new Date();
   const dayOfWeek = today.toLocaleDateString('fr-FR', { weekday: 'long' });

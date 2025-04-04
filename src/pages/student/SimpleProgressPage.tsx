@@ -27,8 +27,13 @@ const SimpleProgressPage = () => {
               </>
             ) : (
               <>
-                <StarDisplay stars={totalStars} maxStars={10} />
-                <WeeklyMessage starsEarned={weeklyStars} />
+                <StarDisplay 
+                  stars={totalStars || 0} 
+                  maxStars={10} 
+                />
+                <WeeklyMessage 
+                  starsEarned={weeklyStars || 0} 
+                />
               </>
             )}
           </div>

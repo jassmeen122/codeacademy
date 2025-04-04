@@ -9,7 +9,7 @@ interface StarDisplayProps {
 }
 
 export const StarDisplay: React.FC<StarDisplayProps> = ({ 
-  stars, 
+  stars = 0, 
   loading = false,
   maxStars = 5
 }) => {
