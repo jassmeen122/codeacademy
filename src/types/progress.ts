@@ -45,11 +45,12 @@ export interface UserSkillRecord {
   last_updated: string;
 }
 
-// Add interface for database tables that we're using
 export interface DatabaseTables {
   user_skills_progress: UserSkillRecord;
   user_activities: UserActivity;
   user_metrics: UserMetric;
+  // Add other tables as needed
+  user_recommendations: UserRecommendation;
 }
 
 export interface UserRecommendation {

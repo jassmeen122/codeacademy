@@ -44,7 +44,7 @@ export function useUserRecommendations() {
       if (error) throw error;
       
       // Fetch additional information for each recommendation
-      const enhancedRecommendations = await Promise.all((data || []).map(async recommendation => {
+      const enhancedRecommendations: UserRecommendation[] = await Promise.all((data || []).map(async recommendation => {
         // Depending on the type, fetch the relevant title/description
         let itemTitle = '';
         let itemDescription = '';
@@ -53,37 +53,62 @@ export function useUserRecommendations() {
         
         switch (recommendation.recommendation_type) {
           case 'course':
-            const { data: course } = await supabase
-              .from('courses')
-              .select('title, description, image_url')
-              .eq('id', recommendation.item_id)
-              .single();
-            
-            if (course) {
-              itemTitle = course.title;
-              itemDescription = course.description || '';
-              itemImage = course.image_url || '';
-              reason = 'Based on your learning history';
+            try {
+              const { data: course } = await supabase
+                .from('courses')
+                .select('title, description')
+                .eq('id', recommendation.item_id)
+                .single();
+              
+              if (course) {
+                itemTitle = course.title;
+                itemDescription = course.description || '';
+                reason = 'Based on your learning history';
+              }
+            } catch (error) {
+              console.error('Error fetching course details:', error);
             }
             break;
             
           case 'exercise':
-            const { data: exercise } = await supabase
-              .from('coding_exercises')
-              .select('title, description')
-              .eq('id', recommendation.item_id)
-              .single();
-            
-            if (exercise) {
-              itemTitle = exercise.title;
-              itemDescription = exercise.description || '';
-              reason = 'Practice makes perfect!';
+            try {
+              const { data: exercise } = await supabase
+                .from('coding_exercises')
+                .select('title, description')
+                .eq('id', recommendation.item_id)
+                .single();
+              
+              if (exercise) {
+                itemTitle = exercise.title;
+                itemDescription = exercise.description || '';
+                reason = 'Practice makes perfect!';
+              }
+            } catch (error) {
+              console.error('Error fetching exercise details:', error);
             }
             break;
             
           case 'skill':
             reason = 'Improve your skills in this area';
             itemTitle = recommendation.item_id; // In this case, the item_id is the skill name
+            break;
+            
+          case 'module':
+            try {
+              const { data: module } = await supabase
+                .from('course_modules')
+                .select('title, description')
+                .eq('id', recommendation.item_id)
+                .single();
+              
+              if (module) {
+                itemTitle = module.title;
+                itemDescription = module.description || '';
+                reason = 'Continue your learning journey';
+              }
+            } catch (error) {
+              console.error('Error fetching module details:', error);
+            }
             break;
         }
         
@@ -93,7 +118,7 @@ export function useUserRecommendations() {
           item_description: itemDescription,
           item_image: itemImage,
           reason
-        };
+        } as UserRecommendation;
       }));
       
       setRecommendations(enhancedRecommendations);
