@@ -27,50 +27,53 @@ export const useUserMetrics = () => {
       // Save previous metrics to check for changes
       setPreviousMetrics(metrics);
       
-      // Check if metrics exist for the user
+      // Check if metrics exist for the user - Correction de la requête ici
       const { data, error } = await supabase
         .from('user_metrics')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .limit(1)
+        .single();
       
       console.log("Query result:", { data, error });
       
       if (error) {
-        console.error('Erreur lors du chargement des métriques:', error);
-        toast.error("Impossible de charger vos statistiques");
-        setMetrics(null);
-      } 
-      // If no metrics exist yet, create a new record
-      else if (!data) {
-        console.log('🌟 Pas de statistiques trouvées, création d\'un nouveau profil');
-        
-        const newMetricsData = {
-          user_id: user.id,
-          course_completions: 0,
-          exercises_completed: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-          // Removed total_time_spent field
-        };
-        
-        const { data: insertResult, error: insertError } = await supabase
-          .from('user_metrics')
-          .insert([newMetricsData])
-          .select('*');
+        // Si l'erreur est "No rows found", c'est que l'utilisateur n'a pas encore de métriques
+        if (error.code === 'PGRST116' || error.message.includes('found no rows')) {
+          console.log('🌟 Pas de statistiques trouvées, création d\'un nouveau profil');
           
-        if (insertError) {
-          console.error('Erreur lors de la création des métriques:', insertError);
-          toast.error("Impossible de créer votre profil de progression");
+          const newMetricsData = {
+            user_id: user.id,
+            course_completions: 0,
+            exercises_completed: 0,
+            total_time_spent: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          const { data: insertResult, error: insertError } = await supabase
+            .from('user_metrics')
+            .insert([newMetricsData])
+            .select()
+            .single();
+            
+          if (insertError) {
+            console.error('Erreur lors de la création des métriques:', insertError);
+            toast.error("Impossible de créer votre profil de progression");
+            setMetrics(null);
+          } else if (insertResult) {
+            console.log('📊 Nouveau profil de métriques créé:', insertResult);
+            setMetrics(insertResult as UserMetric);
+            toast.success("Bienvenue! Votre parcours d'apprentissage commence maintenant! 🚀");
+          }
+        } else {
+          console.error('Erreur lors du chargement des métriques:', error);
+          toast.error("Impossible de charger vos statistiques");
           setMetrics(null);
-        } else if (insertResult && insertResult.length > 0) {
-          console.log('📊 Nouveau profil de métriques créé:', insertResult[0]);
-          setMetrics(insertResult[0] as UserMetric);
-          toast.success("Bienvenue! Votre parcours d'apprentissage commence maintenant! 🚀");
         }
       } 
       // If metrics exist, use the data and check for improvements
-      else {
+      else if (data) {
         console.log('📈 Métriques existantes trouvées:', data);
         setMetrics(data as UserMetric);
         
