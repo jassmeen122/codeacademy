@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb, CheckCircle, XCircle } from "lucide-react";
 import { CodeEditorWrapper } from "@/components/CodeEditor/CodeEditorWrapper";
+import { useProgressTracking } from '@/hooks/useProgressTracking';
+import { toast } from 'sonner';
 import type { CodingExercise } from '@/types/course';
 
 interface CodingExerciseComponentProps {
@@ -18,6 +20,8 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
   const [isCorrect, setIsCorrect] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [exerciseTracked, setExerciseTracked] = useState(false);
+  const { updateUserMetrics } = useProgressTracking();
 
   const handleCodeChange = (newCode: string) => {
     setCode(newCode);
@@ -34,10 +38,20 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsSubmitted(true);
     
-    if (isCorrect) {
+    if (isCorrect && !exerciseTracked) {
+      // Track exercise completion in metrics
+      const updated = await updateUserMetrics('exercise', 1);
+      if (updated) {
+        console.log('Exercise completion tracked in metrics');
+        setExerciseTracked(true);
+        toast.success('Progress updated!');
+      } else {
+        console.error('Failed to track exercise in metrics');
+      }
+      
       onComplete(true);
     }
   };
@@ -111,9 +125,9 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         </div>
         <Button 
           onClick={handleSubmit} 
-          disabled={!output}
+          disabled={!output || exerciseTracked}
         >
-          Submit Solution
+          {exerciseTracked ? "Submitted" : "Submit Solution"}
         </Button>
       </CardFooter>
     </Card>

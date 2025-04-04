@@ -14,7 +14,7 @@ export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
   
-  // Improved function to update user metrics with direct DB operations and retry logic
+  // Improved function to update user metrics with better consistency and exact primary key matching
   const updateUserMetrics = useCallback(async (type: 'course' | 'exercise' | 'time', value: number = 1) => {
     if (!user) {
       toast.error('You need to be logged in to track progress');
@@ -26,21 +26,21 @@ export const useProgressTracking = () => {
     const maxAttempts = 3;
     
     try {
-      console.log(`Direct metrics update: type=${type}, value=${value}, userId=${user.id}`);
+      console.log(`Updating metrics: type=${type}, value=${value}, userId=${user.id}`);
       
       while (attempts < maxAttempts) {
         attempts++;
         
-        // First check if metrics exist with specific field selection
+        // First check if metrics exist with specific id selection
         const { data: existingMetrics, error: fetchError } = await supabase
           .from('user_metrics')
-          .select('id, user_id, course_completions, exercises_completed, total_time_spent, last_login, created_at, updated_at')
+          .select('id')
           .eq('user_id', user.id)
+          .limit(1)
           .maybeSingle();
         
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          console.error(`Error fetching user metrics (attempt ${attempts}):`, fetchError);
-          // Wait a moment before retrying
+        if (fetchError) {
+          console.error(`Error fetching metrics (attempt ${attempts}):`, fetchError);
           if (attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 500));
             continue;
@@ -48,20 +48,41 @@ export const useProgressTracking = () => {
           return false;
         }
         
+        // If found metrics, get the full record
+        let metricsRecord = null;
         if (existingMetrics) {
-          console.log(`Found existing metrics for update: ID=${existingMetrics.id}`);
+          const { data: fullMetrics, error: fullError } = await supabase
+            .from('user_metrics')
+            .select('*')
+            .eq('id', existingMetrics.id)
+            .single();
+            
+          if (fullError) {
+            console.error(`Error fetching full metrics (attempt ${attempts}):`, fullError);
+            if (attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue;
+            }
+            return false;
+          }
           
-          // Update existing metrics with direct DB operation
+          metricsRecord = fullMetrics;
+        }
+        
+        if (metricsRecord) {
+          // Update existing metrics with direct update by ID
+          console.log(`Found metrics to update: ID=${metricsRecord.id}`);
+          
           const updateData: any = {
             updated_at: new Date().toISOString()
           };
           
           if (type === 'course') {
-            updateData.course_completions = (existingMetrics.course_completions || 0) + value;
+            updateData.course_completions = (metricsRecord.course_completions || 0) + value;
           } else if (type === 'exercise') {
-            updateData.exercises_completed = (existingMetrics.exercises_completed || 0) + value;
+            updateData.exercises_completed = (metricsRecord.exercises_completed || 0) + value;
           } else if (type === 'time') {
-            updateData.total_time_spent = (existingMetrics.total_time_spent || 0) + value;
+            updateData.total_time_spent = (metricsRecord.total_time_spent || 0) + value;
           }
           
           console.log("Updating metrics with:", updateData);
@@ -69,7 +90,7 @@ export const useProgressTracking = () => {
           const { error: updateError } = await supabase
             .from('user_metrics')
             .update(updateData)
-            .eq('id', existingMetrics.id);
+            .eq('id', metricsRecord.id);
             
           if (updateError) {
             console.error(`Error updating metrics (attempt ${attempts}):`, updateError);
@@ -83,7 +104,7 @@ export const useProgressTracking = () => {
           console.log("Metrics updated successfully:", type, updateData);
           return true;
         } else {
-          console.log("No existing metrics found, creating new entry");
+          console.log("No metrics found, creating new entry");
           
           // Create new metrics for first-time users
           const newMetrics = {
@@ -100,7 +121,8 @@ export const useProgressTracking = () => {
           const { data: insertData, error: insertError } = await supabase
             .from('user_metrics')
             .insert([newMetrics])
-            .select('*');
+            .select('*')
+            .single();
             
           if (insertError) {
             console.error(`Error creating metrics (attempt ${attempts}):`, insertError);
