@@ -14,17 +14,17 @@ export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
   
-  // Simplified function to update user metrics with better error handling
+  // Simplified function to update user metrics with better error handling and motivational messages
   const updateUserMetrics = useCallback(async (type: 'course' | 'exercise' | 'time', value: number = 1) => {
     if (!user) {
-      toast.error('You need to be logged in to track progress');
+      toast.error('Vous devez être connecté pour suivre votre progression');
       return false;
     }
     
     setUpdating(true);
     
     try {
-      console.log(`🎯 Updating metrics: type=${type}, value=${value}`);
+      console.log(`🎯 Mise à jour des métriques: type=${type}, valeur=${value}`);
       
       // First, get current metrics or create if not exists
       const { data, error } = await supabase
@@ -33,13 +33,11 @@ export const useProgressTracking = () => {
         .eq('user_id', user.id)
         .maybeSingle();
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
       // If no metrics exist yet, create a new record with the update
       if (!data) {
-        console.log('📊 Creating new metrics record');
+        console.log('📊 Création d\'un nouveau profil de métriques');
         
         const newMetricsData = {
           user_id: user.id,
@@ -54,12 +52,19 @@ export const useProgressTracking = () => {
           .from('user_metrics')
           .insert([newMetricsData]);
           
-        if (insertError) {
-          throw insertError;
+        if (insertError) throw insertError;
+        
+        console.log('✅ Nouvelles métriques créées avec succès');
+        
+        // Show motivational message based on type
+        if (type === 'exercise') {
+          toast.success('Premier exercice terminé! Continuez comme ça! 🎉');
+        } else if (type === 'course') {
+          toast.success('Premier cours terminé! Quel accomplissement! 🏆');
+        } else {
+          toast.success('Vous commencez votre parcours d\'apprentissage! 🌱');
         }
         
-        console.log('✅ Created new metrics record');
-        toast.success('Progress recorded! 🎉');
         return true;
       }
       
@@ -76,42 +81,59 @@ export const useProgressTracking = () => {
         updateData.total_time_spent = (data.total_time_spent || 0) + value;
       }
       
-      console.log('📝 Updating metrics with:', updateData);
+      console.log('📝 Mise à jour des métriques:', updateData);
       
       const { error: updateError } = await supabase
         .from('user_metrics')
         .update(updateData)
         .eq('user_id', user.id);
       
-      if (updateError) {
-        throw updateError;
+      if (updateError) throw updateError;
+      
+      console.log('✅ Métriques mises à jour avec succès');
+      
+      // Show motivational messages based on updated metrics and type
+      if (type === 'exercise') {
+        const newCount = (data.exercises_completed || 0) + value;
+        if (newCount % 5 === 0) {
+          toast.success(`Félicitations! Vous avez terminé ${newCount} exercices! 🎯`);
+        } else {
+          toast.success('Exercice terminé! Vous progressez bien! 💪');
+        }
+      } else if (type === 'course') {
+        toast.success('Cours terminé! Votre savoir grandit! 📚');
+      } else if (type === 'time') {
+        toast.success('Temps d\'apprentissage enregistré! La persévérance paie! ⏱️');
       }
       
-      console.log('✅ Successfully updated metrics');
-      toast.success('Progress updated! 🎉');
       return true;
       
     } catch (error) {
-      console.error('❌ Error in updateUserMetrics:', error);
-      toast.error('Failed to update your progress');
+      console.error('❌ Erreur dans updateUserMetrics:', error);
+      toast.error('Impossible de mettre à jour votre progression');
       return false;
     } finally {
       setUpdating(false);
     }
   }, [user]);
   
-  // Simple test function
-  const testUpdateMetrics = useCallback(async () => {
+  // Simple test function that supports different metric types
+  const testUpdateMetrics = useCallback(async (type: 'course' | 'exercise' | 'time' = 'exercise', value: number = 1) => {
     if (!user) {
-      toast.error('You need to be logged in');
+      toast.error('Vous devez être connecté pour tester');
       return;
     }
     
-    // Update exercise count
-    const result = await updateUserMetrics('exercise', 1);
+    const result = await updateUserMetrics(type, value);
     
     if (result) {
-      toast.success('Test exercise completion recorded! 🎮');
+      if (type === 'exercise') {
+        toast.success('Test: exercice complété! 🎮');
+      } else if (type === 'course') {
+        toast.success('Test: cours complété! 📚');
+      } else {
+        toast.success('Test: temps d\'apprentissage ajouté! ⏱️');
+      }
     }
   }, [user, updateUserMetrics]);
   

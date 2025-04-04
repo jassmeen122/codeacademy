@@ -86,100 +86,160 @@ export default function ProgressPage() {
     exercises_completed: 0, 
     total_time_spent: 0 
   };
+  
+  // Motivational messages based on metrics
+  const getTimeMessage = () => {
+    const time = displayMetrics.total_time_spent || 0;
+    if (time === 0) return "Commencez votre voyage d'apprentissage!";
+    if (time < 60) return "Bon début! Continuez!";
+    if (time < 120) return "Vous prenez le rythme!";
+    return "Quelle persévérance impressionnante!";
+  };
+  
+  const getExerciseMessage = () => {
+    const count = displayMetrics.exercises_completed || 0;
+    if (count === 0) return "Relevez votre premier défi!";
+    if (count < 5) return "Bon début! Continuez!";
+    if (count < 10) return "Vous progressez bien!";
+    return "Excellent travail! Continuez ainsi!";
+  };
 
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6 space-y-8">
         <div className="flex justify-between items-center">
           <PageHeader
-            heading="Your Learning Progress"
-            subheading="Track your skills, activities, and get personalized recommendations"
+            heading="Votre Progression d'Apprentissage"
+            subheading="Suivez vos compétences et obtenez des recommandations personnalisées"
           />
           <div className="flex gap-2">
             <Button 
               variant="default" 
               onClick={() => refreshAllData(true)} 
               disabled={refreshing}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
             >
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh Data'}
+              {refreshing ? 'Actualisation...' : 'Actualiser'}
             </Button>
             {import.meta.env.DEV && (
-              <Button 
-                variant="outline" 
-                onClick={handleTestMetricsUpdate} 
-                disabled={trackingUpdating}
-                className="flex items-center gap-2"
-              >
-                <Zap className="h-4 w-4" />
-                Test Metrics
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleTestMetricsUpdate()} 
+                  disabled={trackingUpdating}
+                  className="flex items-center gap-2 border-green-500 text-green-600 hover:bg-green-50"
+                >
+                  <Zap className="h-4 w-4" />
+                  Test Exercice
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => testUpdateMetrics('time', 15)} 
+                  disabled={trackingUpdating}
+                  className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+                >
+                  <Clock className="h-4 w-4" />
+                  +15 min
+                </Button>
+              </div>
             )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-4">
-                <Clock className="h-10 w-10 text-blue-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Time Spent Learning</p>
-                  {metricsLoading ? (
-                    <Skeleton className="h-9 w-20" />
-                  ) : (
-                    <h3 className="text-3xl font-bold">{displayMetrics.total_time_spent || 0} min</h3>
-                  )}
+          <Card className="overflow-hidden border-t-4 border-t-blue-400">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-100 dark:bg-blue-800 p-3 rounded-full">
+                    <Clock className="h-8 w-8 text-blue-500 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">Temps d'Apprentissage</p>
+                    {metricsLoading ? (
+                      <Skeleton className="h-9 w-20" />
+                    ) : (
+                      <h3 className="text-2xl font-bold">{displayMetrics.total_time_spent || 0} min</h3>
+                    )}
+                  </div>
                 </div>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-xs text-muted-foreground">{getTimeMessage()}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-4">
-                <BookOpen className="h-10 w-10 text-green-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Courses Completed</p>
-                  {metricsLoading ? (
-                    <Skeleton className="h-9 w-20" />
-                  ) : (
-                    <h3 className="text-3xl font-bold">{displayMetrics.course_completions || 0}</h3>
-                  )}
+          <Card className="overflow-hidden border-t-4 border-t-green-400">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-green-100 dark:bg-green-800 p-3 rounded-full">
+                    <BookOpen className="h-8 w-8 text-green-500 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-green-700 dark:text-green-300 font-medium">Cours Terminés</p>
+                    {metricsLoading ? (
+                      <Skeleton className="h-9 w-20" />
+                    ) : (
+                      <h3 className="text-2xl font-bold">{displayMetrics.course_completions || 0}</h3>
+                    )}
+                  </div>
                 </div>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-xs text-muted-foreground">
+                  {displayMetrics.course_completions ? "Excellent progrès!" : "Commencez votre premier cours!"}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-4">
-                <Code className="h-10 w-10 text-purple-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Exercises Completed</p>
-                  {metricsLoading ? (
-                    <Skeleton className="h-9 w-20" />
-                  ) : (
-                    <h3 className="text-3xl font-bold">{displayMetrics.exercises_completed || 0}</h3>
-                  )}
+          <Card className="overflow-hidden border-t-4 border-t-purple-400">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded-full">
+                    <Code className="h-8 w-8 text-purple-500 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">Exercices Terminés</p>
+                    {metricsLoading ? (
+                      <Skeleton className="h-9 w-20" />
+                    ) : (
+                      <h3 className="text-2xl font-bold">{displayMetrics.exercises_completed || 0}</h3>
+                    )}
+                  </div>
                 </div>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-xs text-muted-foreground">{getExerciseMessage()}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-4">
-                <Award className="h-10 w-10 text-amber-500" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Skills Developing</p>
-                  {skillsLoading ? (
-                    <Skeleton className="h-9 w-20" />
-                  ) : (
-                    <h3 className="text-3xl font-bold">{skills.length}</h3>
-                  )}
+          <Card className="overflow-hidden border-t-4 border-t-amber-400">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-amber-100 dark:bg-amber-800 p-3 rounded-full">
+                    <Award className="h-8 w-8 text-amber-500 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">Compétences en Développement</p>
+                    {skillsLoading ? (
+                      <Skeleton className="h-9 w-20" />
+                    ) : (
+                      <h3 className="text-2xl font-bold">{skills.length}</h3>
+                    )}
+                  </div>
                 </div>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-xs text-muted-foreground">
+                  {skills.length ? "Vos compétences grandissent!" : "Développez vos premières compétences!"}
+                </p>
               </div>
             </CardContent>
           </Card>

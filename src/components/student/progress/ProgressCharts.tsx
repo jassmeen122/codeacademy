@@ -16,7 +16,17 @@ interface ProgressChartsProps {
   loading: boolean;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1'];
+// Educational-friendly colors
+const COLORS = [
+  '#9b87f5', // Primary Purple
+  '#33C3F0', // Sky Blue
+  '#4CAF50', // Green
+  '#FF9800', // Orange
+  '#E91E63', // Pink
+  '#03A9F4', // Light Blue
+  '#FF5722', // Deep Orange
+  '#2196F3'  // Blue
+];
 
 export const ProgressCharts: React.FC<ProgressChartsProps> = ({ 
   skills, 
@@ -57,7 +67,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
     
     // Convert map to array for chart
     return Array.from(activityMap.entries()).map(([date, count]) => ({
-      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      date: new Date(date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
       count
     }));
   }, [activityLogs]);
@@ -68,8 +78,8 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
     const avgDailyHours = totalHours / 30; // Assuming metrics are for 30 days
     
     return [
-      { name: 'Total Hours', hours: parseFloat(totalHours.toFixed(1)) },
-      { name: 'Avg. Daily', hours: parseFloat(avgDailyHours.toFixed(1)) }
+      { name: 'Total Heures', hours: parseFloat(totalHours.toFixed(1)) },
+      { name: 'Moy. Quotidienne', hours: parseFloat(avgDailyHours.toFixed(1)) }
     ];
   }, [metrics]);
 
@@ -77,7 +87,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Learning Progress</CardTitle>
+          <CardTitle>Progression d'Apprentissage</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 w-full flex items-center justify-center">
@@ -90,15 +100,18 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Learning Progress</CardTitle>
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10">
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-purple-600 dark:text-purple-400">📊</span> 
+          Votre Progression d'Apprentissage
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <Tabs defaultValue="skills">
           <TabsList className="mb-4">
-            <TabsTrigger value="skills">Skills Distribution</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-            <TabsTrigger value="time">Time Spent</TabsTrigger>
+            <TabsTrigger value="skills">Distribution des Compétences</TabsTrigger>
+            <TabsTrigger value="activity">Activité</TabsTrigger>
+            <TabsTrigger value="time">Temps Passé</TabsTrigger>
           </TabsList>
           
           <TabsContent value="skills" className="h-64">
@@ -109,22 +122,38 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
                     data={skillsData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
+                    labelLine={true}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
+                    animationDuration={1000}
+                    animationBegin={200}
                   >
                     {skillsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={COLORS[index % COLORS.length]}
+                        stroke="#ffffff"
+                        strokeWidth={2}
+                      />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
-                  <Legend />
+                  <Tooltip 
+                    formatter={(value) => `${value}%`} 
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                  />
+                  <Legend 
+                    layout="horizontal" 
+                    verticalAlign="bottom" 
+                    align="center"
+                    wrapperStyle={{ paddingTop: '10px' }}
+                  />
                 </PieChart>
               ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <p className="text-gray-500">No skills data available</p>
+                <div className="h-full w-full flex flex-col items-center justify-center bg-blue-50/20 dark:bg-blue-900/10 rounded-lg p-6">
+                  <p className="text-xl text-blue-600 dark:text-blue-400 font-medium mb-2">Pas encore de données de compétences</p>
+                  <p className="text-muted-foreground text-center">Complétez des cours et exercices pour développer vos compétences et voir votre progression ici.</p>
                 </div>
               )}
             </ResponsiveContainer>
@@ -137,22 +166,33 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
                   data={activityData}
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip 
+                    contentStyle={{ 
+                      borderRadius: '8px', 
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }} 
+                  />
+                  <Legend 
+                    wrapperStyle={{ paddingTop: '10px' }}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="count" 
-                    name="Activities" 
-                    stroke="#8884d8" 
-                    activeDot={{ r: 8 }} 
+                    name="Activités" 
+                    stroke="#9b87f5"
+                    strokeWidth={2}
+                    activeDot={{ r: 8, fill: '#9b87f5', stroke: '#ffffff', strokeWidth: 2 }} 
+                    animationDuration={1500}
                   />
                 </LineChart>
               ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <p className="text-gray-500">No activity data available</p>
+                <div className="h-full w-full flex flex-col items-center justify-center bg-green-50/20 dark:bg-green-900/10 rounded-lg p-6">
+                  <p className="text-xl text-green-600 dark:text-green-400 font-medium mb-2">Pas encore d'activités enregistrées</p>
+                  <p className="text-muted-foreground text-center">Commencez à apprendre pour voir votre activité apparaître ici. Chaque action compte!</p>
                 </div>
               )}
             </ResponsiveContainer>
@@ -163,23 +203,42 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
               {metrics?.total_time_spent ? (
                 <BarChart
                   data={timeData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip 
+                    contentStyle={{ 
+                      borderRadius: '8px', 
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}
+                  />
                   <Legend />
-                  <Bar dataKey="hours" fill="#82ca9d" name="Hours" />
+                  <Bar 
+                    dataKey="hours" 
+                    fill="#33C3F0" 
+                    name="Heures"
+                    radius={[8, 8, 0, 0]}
+                    animationDuration={1500}
+                  />
                 </BarChart>
               ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <p className="text-gray-500">No time data available</p>
+                <div className="h-full w-full flex flex-col items-center justify-center bg-amber-50/20 dark:bg-amber-900/10 rounded-lg p-6">
+                  <p className="text-xl text-amber-600 dark:text-amber-400 font-medium mb-2">Pas encore de données de temps</p>
+                  <p className="text-muted-foreground text-center">Votre temps d'apprentissage sera enregistré lorsque vous suivrez des cours et compléterez des exercices.</p>
                 </div>
               )}
             </ResponsiveContainer>
           </TabsContent>
         </Tabs>
+        
+        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 rounded-lg">
+          <p className="text-sm text-center text-blue-700 dark:text-blue-300">
+            "La persévérance est la clé du succès. Chaque minute d'apprentissage vous rapproche de vos objectifs! 🌱"
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
