@@ -25,7 +25,7 @@ export const useProgressTracking = () => {
       setUpdating(true);
 
       // Update language progress
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('user_language_progress')
         .upsert({
           user_id: user.id,
@@ -34,9 +34,11 @@ export const useProgressTracking = () => {
           last_updated: new Date().toISOString()
         }, { 
           onConflict: 'user_id,language_id' 
-        });
+        }).select();
 
       if (error) throw error;
+
+      console.log("Progress update result:", data);
 
       // Record activity
       await trackLessonViewed(languageId, languageName, 'summary');

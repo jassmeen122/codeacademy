@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { SummaryContent } from '@/components/courses/SummaryContent';
@@ -12,12 +12,24 @@ import { useProgressTracking } from '@/hooks/useProgressTracking';
 const LanguageSummaryPage = () => {
   const { languageId } = useParams<{ languageId: string }>();
   const navigate = useNavigate();
-  const { summary, progress, loading, error } = useLanguageSummary(languageId);
+  const { summary, progress, loading, error, markAsRead: markSummaryAsRead } = useLanguageSummary(languageId);
   const { trackSummaryRead, updating } = useProgressTracking();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleMarkAsRead = async () => {
     if (languageId && summary) {
-      await trackSummaryRead(languageId, summary.title);
+      setIsUpdating(true);
+      try {
+        // Utiliser les deux méthodes pour assurer la synchronisation complète
+        await trackSummaryRead(languageId, summary.title);
+        await markSummaryAsRead();
+        // Forcer un rafraîchissement de la page pour refléter le changement
+        window.location.reload();
+      } catch (error) {
+        console.error("Erreur lors du marquage comme lu:", error);
+      } finally {
+        setIsUpdating(false);
+      }
     }
   };
 
@@ -86,7 +98,7 @@ const LanguageSummaryPage = () => {
             <p className="text-blue-700 mb-4">Now that you've read the summary, take the quiz to reinforce your learning!</p>
             <Button 
               onClick={handleStartQuiz}
-              disabled={updating}
+              disabled={updating || isUpdating}
               className="flex items-center"
             >
               <PlayCircle className="mr-2 h-4 w-4" />

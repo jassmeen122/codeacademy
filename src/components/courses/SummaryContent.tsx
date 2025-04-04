@@ -62,6 +62,13 @@ export const SummaryContent = ({ title, content, isRead = false, onMarkAsRead }:
     });
   };
 
+  const handleMarkAsRead = async () => {
+    if (onMarkAsRead) {
+      // Appeler la fonction avec un await pour s'assurer qu'elle est bien exécutée
+      await onMarkAsRead();
+    }
+  };
+
   return (
     <Card className="w-full bg-white shadow-md mb-6">
       <CardHeader className="pb-2">
@@ -74,7 +81,7 @@ export const SummaryContent = ({ title, content, isRead = false, onMarkAsRead }:
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={onMarkAsRead}
+              onClick={handleMarkAsRead}
               className="flex items-center gap-2"
             >
               <CheckCircle className="h-4 w-4" />
