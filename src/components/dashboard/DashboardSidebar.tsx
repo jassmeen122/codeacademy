@@ -19,6 +19,7 @@ import { adminMenuItems } from "./sidebar/AdminMenuItems";
 import { teacherMenuItems } from "./sidebar/TeacherMenuItems";
 import { StudentMenuItems } from "./sidebar/StudentMenuItems";
 import { SidebarMenu } from "./sidebar/SidebarMenu";
+import { MenuItem } from "@/types/sidebar";
 
 interface DashboardSidebarProps {
   userRole: 'admin' | 'teacher' | 'student' | null;
