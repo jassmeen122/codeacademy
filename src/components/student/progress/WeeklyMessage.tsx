@@ -8,12 +8,12 @@ interface WeeklyMessageProps {
 }
 
 export const WeeklyMessage: React.FC<WeeklyMessageProps> = ({ starsEarned }) => {
-  // Obtenir le jour de la semaine actuel
+  // Get the current day of the week
   const today = new Date();
   const dayOfWeek = today.toLocaleDateString('fr-FR', { weekday: 'long' });
   const isMonday = dayOfWeek.toLowerCase() === 'lundi';
   
-  // Personnaliser le message selon le jour et les étoiles
+  // Customize message based on day and stars
   const getMessage = () => {
     if (isMonday) {
       if (starsEarned === 0) return "Nouvelle semaine ! Prêt à gagner des étoiles ? 🚀";

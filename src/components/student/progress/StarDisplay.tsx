@@ -13,7 +13,7 @@ export const StarDisplay: React.FC<StarDisplayProps> = ({
   loading = false,
   maxStars = 5
 }) => {
-  // Fonction pour obtenir l'émoji selon le nombre d'étoiles
+  // Function to get emoji based on star count
   const getMoodEmoji = () => {
     const percentage = stars / maxStars;
     if (percentage >= 0.75) return { emoji: '😊', text: 'Super !', color: 'text-green-500' };
@@ -21,10 +21,10 @@ export const StarDisplay: React.FC<StarDisplayProps> = ({
     return { emoji: '😢', text: 'Continue !', color: 'text-blue-500' };
   };
 
-  // Obtenir l'émoji et le texte correspondant
+  // Get emoji and text
   const mood = getMoodEmoji();
   
-  // Générer les étoiles remplies et vides
+  // Generate filled and empty stars
   const renderStars = () => {
     const filledStars = '★'.repeat(Math.min(stars, maxStars));
     const emptyStars = '☆'.repeat(Math.max(0, maxStars - stars));
@@ -55,10 +55,10 @@ export const StarDisplay: React.FC<StarDisplayProps> = ({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center space-y-4">
-          {/* Grand émoji de l'humeur */}
+          {/* Large mood emoji */}
           <div className="text-7xl">{mood.emoji}</div>
           
-          {/* Étoiles */}
+          {/* Stars */}
           <div>
             <div className="text-3xl font-bold text-center text-yellow-500">
               {renderStars()}
@@ -66,7 +66,7 @@ export const StarDisplay: React.FC<StarDisplayProps> = ({
             <div className={`text-center ${mood.color} font-medium`}>{mood.text}</div>
           </div>
           
-          {/* Prochain niveau */}
+          {/* Next level */}
           <div className="text-sm text-center text-gray-600 dark:text-gray-400">
             {stars < maxStars ? (
               <p>Encore {maxStars - stars} étoiles pour compléter le niveau!</p>
