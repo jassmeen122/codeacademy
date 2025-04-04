@@ -21,12 +21,41 @@ export const useSummaryProgress = () => {
       setUpdating(true);
       console.log(`Tracking summary read: language=${languageId}, name=${languageName}`);
 
-      // Update language progress
+      // Check if languageId is a valid UUID or a shorthand code
+      let validLanguageId = languageId;
+      
+      // If it's not a UUID format, try to find the corresponding language in the database
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(languageId)) {
+        // Try to find the language by name or shortcode
+        const { data: languageData, error: langError } = await supabase
+          .from('programming_languages')
+          .select('id')
+          .or(`name.ilike.${languageName},name.ilike.${languageId}`)
+          .maybeSingle();
+        
+        if (langError) {
+          console.error("Error finding language:", langError);
+          throw new Error(`Could not find a valid language ID for ${languageName}`);
+        }
+        
+        if (languageData) {
+          validLanguageId = languageData.id;
+          console.log(`Found valid language ID: ${validLanguageId} for ${languageName}`);
+        } else {
+          console.warn(`No valid UUID found for language: ${languageId}, using as-is for activity tracking only`);
+          // Skip database update that requires UUID but continue with activity tracking
+          await trackLessonViewed(languageId, languageName, 'summary', true);
+          toast.success('Progress tracked for activity only');
+          return true;
+        }
+      }
+
+      // Update language progress with valid UUID
       const { error } = await supabase
         .from('user_language_progress')
         .upsert({
           user_id: user.id,
-          language_id: languageId,
+          language_id: validLanguageId,
           summary_read: true,
           last_updated: new Date().toISOString()
         }, { 
