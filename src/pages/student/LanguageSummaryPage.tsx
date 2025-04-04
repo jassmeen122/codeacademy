@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
@@ -20,10 +19,8 @@ const LanguageSummaryPage = () => {
     if (languageId && summary) {
       setIsUpdating(true);
       try {
-        // Utiliser les deux méthodes pour assurer la synchronisation complète
         await trackSummaryRead(languageId, summary.title);
         await markSummaryAsRead();
-        // Forcer un rafraîchissement de la page pour refléter le changement
         window.location.reload();
       } catch (error) {
         console.error("Erreur lors du marquage comme lu:", error);
