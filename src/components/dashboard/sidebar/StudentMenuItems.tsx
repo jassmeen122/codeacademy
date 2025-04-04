@@ -1,120 +1,97 @@
 
-import {
-  Book,
-  Code,
-  BookOpen,
-  MessageSquare,
-  Globe,
-  FileCode,
-  Terminal,
-  Trophy,
-  Star,
-  Youtube,
-  MessagesSquare,
-  Briefcase,
-  Users,
-  Brain
-} from "lucide-react";
-import { SidebarItem } from "@/types/sidebar";
+import { 
+  LayoutDashboard, 
+  BookOpen, 
+  Code, 
+  TestTube2, 
+  Users2, 
+  Award, 
+  BrainCircuit, 
+  Settings, 
+  MessagesSquare, 
+  BriefcaseBusiness, 
+  LineChart,
+  Star 
+} from 'lucide-react';
+import { MenuItem } from "@/types/sidebar";
 
-export const StudentMenuItems: SidebarItem[] = [
+export const StudentMenuItems: MenuItem[] = [
   {
-    title: "Apprentissage",
-    items: [
-      {
-        title: "Tableau de Bord",
-        icon: Terminal,
-        href: "/student",
-        description: "Vue d'ensemble de votre parcours"
-      },
-      {
-        title: "Cours",
-        icon: Book,
-        href: "/student/courses",
-        description: "Parcourir et suivre des cours"
-      },
-      {
-        title: "Cours Gratuits",
-        icon: BookOpen,
-        href: "/student/free-courses",
-        description: "Cours gratuits populaires"
-      },
-      {
-        title: "Exercices",
-        icon: Code,
-        href: "/student/exercises",
-        description: "Exercices de programmation"
-      },
-      {
-        title: "Éditeur de Code",
-        icon: FileCode,
-        href: "/student/code-editor",
-        description: "Environnement de développement"
-      },
-      {
-        title: "Parcours Étoilé",
-        icon: Star,
-        href: "/student/progress",
-        description: "Suivi visuel de vos progrès"
-      },
-      {
-        title: "Badges & Achievements",
-        icon: Trophy,
-        href: "/student/achievements",
-        description: "Vos récompenses et objectifs"
-      }
-    ]
+    title: 'Tableau de bord',
+    icon: <LayoutDashboard className="h-5 w-5" />,
+    href: '/student',
+    items: []
   },
   {
-    title: "Ressources",
-    items: [
-      {
-        title: "Tutoriels Vidéo",
-        icon: Youtube,
-        href: "/student/yt-dev-tutorials",
-        description: "Tutoriels de développement"
-      },
-      {
-        title: "IA Assistant",
-        icon: Brain,
-        href: "/student/ai-assistant",
-        description: "Aide à l'apprentissage par IA"
-      },
-      {
-        title: "Mini-Jeux",
-        icon: Globe,
-        href: "/student/mini-game",
-        description: "Apprendre en s'amusant"
-      }
-    ]
+    title: 'Cours',
+    icon: <BookOpen className="h-5 w-5" />,
+    href: '/student/courses',
+    items: []
   },
   {
-    title: "Communauté",
-    items: [
-      {
-        title: "Forum",
-        icon: MessageSquare,
-        href: "/student/discussion",
-        description: "Poser vos questions"
-      },
-      {
-        title: "Messagerie",
-        icon: MessagesSquare,
-        href: "/student/messages",
-        description: "Messagerie privée"
-      },
-      {
-        title: "Social",
-        icon: Users,
-        href: "/student/social",
-        description: "Fil d'actualité social"
-      },
-      {
-        title: "Stages",
-        icon: Briefcase,
-        href: "/student/internships",
-        description: "Opportunités de stages"
-      }
-    ]
+    title: 'Cours Gratuits',
+    icon: <BookOpen className="h-5 w-5" />,
+    href: '/student/free-courses',
+    items: []
+  },
+  {
+    title: 'Exercices',
+    icon: <TestTube2 className="h-5 w-5" />,
+    href: '/student/exercises',
+    items: []
+  },
+  {
+    title: 'Discussions',
+    icon: <Users2 className="h-5 w-5" />,
+    href: '/student/discussion',
+    items: []
+  },
+  {
+    title: 'Editor de Code',
+    icon: <Code className="h-5 w-5" />,
+    href: '/student/code-editor',
+    items: []
+  },
+  {
+    title: 'IA Assistant',
+    icon: <BrainCircuit className="h-5 w-5" />,
+    href: '/student/ai-assistant',
+    items: []
+  },
+  {
+    title: 'Progrès',
+    icon: <LineChart className="h-5 w-5" />,
+    href: '/student/progress',
+    items: []
+  },
+  {
+    title: 'Progrès Étoiles',
+    icon: <Star className="h-5 w-5" />,
+    href: '/student/simple-progress',
+    items: []
+  },
+  {
+    title: 'Réalisations',
+    icon: <Award className="h-5 w-5" />,
+    href: '/student/achievements',
+    items: []
+  },
+  {
+    title: 'Messages',
+    icon: <MessagesSquare className="h-5 w-5" />,
+    href: '/student/messages',
+    items: []
+  },
+  {
+    title: 'Stages',
+    icon: <BriefcaseBusiness className="h-5 w-5" />,
+    href: '/student/internships',
+    items: []
+  },
+  {
+    title: 'Paramètres',
+    icon: <Settings className="h-5 w-5" />,
+    href: '/student/settings',
+    items: []
   }
 ];
