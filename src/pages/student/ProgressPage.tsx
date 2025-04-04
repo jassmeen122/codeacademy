@@ -10,6 +10,9 @@ import { useProgressTracking } from '@/hooks/useProgressTracking';
 import { SkillsProgressChart } from '@/components/student/progress/SkillsProgressChart';
 import { ActivityCalendar } from '@/components/student/progress/ActivityCalendar';
 import { RecommendationsList } from '@/components/student/progress/RecommendationsList';
+import { PointsDisplay } from '@/components/student/progress/PointsDisplay';
+import { MagicTips } from '@/components/student/progress/MagicTips';
+import { WeeklySummary } from '@/components/student/progress/WeeklySummary';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +30,7 @@ export default function ProgressPage() {
   const { metrics, loading: metricsLoading, fetchMetrics } = useUserMetrics();
   const { testUpdateMetrics, updating: trackingUpdating } = useProgressTracking();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [weeklyPoints, setWeeklyPoints] = React.useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -41,6 +45,28 @@ export default function ProgressPage() {
     
     return () => clearInterval(interval);
   }, [user]);
+  
+  useEffect(() => {
+    // Calculer les points de la semaine en cours à partir des logs d'activité
+    if (activityLogs && activityLogs.length) {
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      const dayOfWeek = today.getDay();
+      const diff = startOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Ajuste pour commencer le lundi
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      // Filtrer les logs de la semaine et calculer les points
+      const thisWeekLogs = activityLogs.filter(log => {
+        const logDate = new Date(log.date);
+        return logDate >= startOfWeek;
+      });
+      
+      // 10 points par activité
+      const points = thisWeekLogs.reduce((total, log) => total + (log.count * 10), 0);
+      setWeeklyPoints(points);
+    }
+  }, [activityLogs]);
   
   const handleRecommendationClick = (id: string, type: string, itemId: string) => {
     markRecommendationAsViewed(id);
@@ -100,33 +126,25 @@ export default function ProgressPage() {
     total_time_spent: 0 
   };
   
-  // Debug metrics information
-  console.log("Current metrics state:", { metrics, displayMetrics, loading: metricsLoading });
+  // Total points calculation (10 points per exercise, 50 points per course)
+  const totalPoints = (displayMetrics.exercises_completed * 10) + (displayMetrics.course_completions * 50);
   
-  // Motivational messages based on metrics
-  const getTimeMessage = () => {
-    const time = displayMetrics.total_time_spent || 0;
-    if (time === 0) return "Commencez votre voyage d'apprentissage!";
-    if (time < 60) return "Bon début! Continuez!";
-    if (time < 120) return "Vous prenez le rythme!";
-    return "Quelle persévérance impressionnante!";
-  };
-  
-  const getExerciseMessage = () => {
-    const count = displayMetrics.exercises_completed || 0;
-    if (count === 0) return "Relevez votre premier défi!";
-    if (count < 5) return "Bon début! Continuez!";
-    if (count < 10) return "Vous progressez bien!";
-    return "Excellent travail! Continuez ainsi!";
-  };
+  // Success status based on recent activity (this would ideally come from actual data)
+  const recentSuccess = React.useMemo(() => {
+    if (activityLogs && activityLogs.length > 0) {
+      // Simuler un succès basé sur le nombre de logs récents
+      return activityLogs.length > 2;
+    }
+    return true; // Par défaut, on suppose un succès
+  }, [activityLogs]);
 
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6 space-y-8">
         <div className="flex justify-between items-center">
           <PageHeader
-            heading="Votre Progression d'Apprentissage"
-            subheading="Suivez vos compétences et obtenez des recommandations personnalisées"
+            heading="Ta Progression"
+            subheading="Suis tes points et tes succès !"
           />
           <div className="flex gap-2">
             <Button 
@@ -146,19 +164,27 @@ export default function ProgressPage() {
                 className="flex items-center gap-2 border-green-500 text-green-600 hover:bg-green-50"
               >
                 <Zap className="h-4 w-4" />
-                Test Exercice
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => handleTestTimeUpdate()} 
-                disabled={trackingUpdating}
-                className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
-              >
-                <Clock className="h-4 w-4" />
-                +15 min
+                +10 Points
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Nouveau système de suivi visuel */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <PointsDisplay 
+            points={totalPoints} 
+            loading={metricsLoading} 
+          />
+          
+          <MagicTips 
+            points={totalPoints} 
+            recentSuccess={recentSuccess} 
+          />
+          
+          <WeeklySummary 
+            weeklyPoints={weeklyPoints} 
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -178,9 +204,6 @@ export default function ProgressPage() {
                     )}
                   </div>
                 </div>
-              </div>
-              <div className="px-6 py-4">
-                <p className="text-xs text-muted-foreground">{getTimeMessage()}</p>
               </div>
             </CardContent>
           </Card>
@@ -202,11 +225,6 @@ export default function ProgressPage() {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4">
-                <p className="text-xs text-muted-foreground">
-                  {displayMetrics.course_completions ? "Excellent progrès!" : "Commencez votre premier cours!"}
-                </p>
-              </div>
             </CardContent>
           </Card>
 
@@ -227,9 +245,6 @@ export default function ProgressPage() {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4">
-                <p className="text-xs text-muted-foreground">{getExerciseMessage()}</p>
-              </div>
             </CardContent>
           </Card>
 
@@ -241,7 +256,7 @@ export default function ProgressPage() {
                     <Award className="h-8 w-8 text-amber-500 dark:text-amber-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">Compétences en Développement</p>
+                    <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">Compétences</p>
                     {skillsLoading ? (
                       <Skeleton className="h-9 w-20" />
                     ) : (
@@ -249,11 +264,6 @@ export default function ProgressPage() {
                     )}
                   </div>
                 </div>
-              </div>
-              <div className="px-6 py-4">
-                <p className="text-xs text-muted-foreground">
-                  {skills.length ? "Vos compétences grandissent!" : "Développez vos premières compétences!"}
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -265,18 +275,18 @@ export default function ProgressPage() {
               <TabsList className="mb-4">
                 <TabsTrigger value="skills" className="flex items-center">
                   <BarChart2 className="mr-2 h-4 w-4" />
-                  Skills Progress
+                  Tes Compétences
                 </TabsTrigger>
                 <TabsTrigger value="activity" className="flex items-center">
                   <Calendar className="mr-2 h-4 w-4" />
-                  Activity Log
+                  Ton Activité
                 </TabsTrigger>
               </TabsList>
               
               <TabsContent value="skills">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Your Skills Development</CardTitle>
+                    <CardTitle>Tes Compétences</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {skillsLoading ? (
@@ -287,8 +297,8 @@ export default function ProgressPage() {
                       <SkillsProgressChart skills={skills} />
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
-                        <p>No skills data available yet.</p>
-                        <p className="text-sm">Complete courses and exercises to build your skills!</p>
+                        <p>Pas encore de compétences.</p>
+                        <p className="text-sm">Fais des exercices pour développer tes compétences!</p>
                       </div>
                     )}
                   </CardContent>
@@ -298,7 +308,7 @@ export default function ProgressPage() {
               <TabsContent value="activity">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Your Activity (Last 30 Days)</CardTitle>
+                    <CardTitle>Ton Activité (30 Derniers Jours)</CardTitle>
                   </CardHeader>
                   <CardContent>
                     {logsLoading ? (
@@ -309,8 +319,8 @@ export default function ProgressPage() {
                       <ActivityCalendar activities={activityLogs as ActivityLog[]} />
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
-                        <p>No activity data available for the last 30 days.</p>
-                        <p className="text-sm">Start learning to see your activity here!</p>
+                        <p>Pas encore d'activité enregistrée.</p>
+                        <p className="text-sm">Commence à apprendre pour voir ton activité ici !</p>
                       </div>
                     )}
                   </CardContent>
@@ -325,16 +335,6 @@ export default function ProgressPage() {
               loading={recommendationsLoading}
               onRecommendationClick={handleRecommendationClick}
             />
-          </div>
-        </div>
-        
-        <div className="mt-8 p-4 border border-gray-200 rounded-md">
-          <h3 className="text-sm font-medium mb-2">Debug Information:</h3>
-          <div className="text-xs text-gray-500">
-            <p>User ID: {user?.id || 'Not logged in'}</p>
-            <p>Last refresh: {new Date().toLocaleTimeString()}</p>
-            <p>Loading states: metrics={String(metricsLoading)}, skills={String(skillsLoading)}, logs={String(logsLoading)}</p>
-            <p>Metrics data: {JSON.stringify(metrics || {})}</p>
           </div>
         </div>
       </div>
