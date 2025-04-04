@@ -14,7 +14,7 @@ export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
   
-  // More robust function to update user metrics with better error handling and consistency checks
+  // Simplified function to update user metrics with better error handling
   const updateUserMetrics = useCallback(async (type: 'course' | 'exercise' | 'time', value: number = 1) => {
     if (!user) {
       toast.error('You need to be logged in to track progress');
@@ -24,23 +24,22 @@ export const useProgressTracking = () => {
     setUpdating(true);
     
     try {
-      console.log(`Updating metrics: type=${type}, value=${value}, userId=${user.id}`);
+      console.log(`🎯 Updating metrics: type=${type}, value=${value}`);
       
-      // First check if metrics exist at all for the user
-      const { data: metricsExists, error: checkError } = await supabase
+      // First, get current metrics or create if not exists
+      const { data, error } = await supabase
         .from('user_metrics')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id)
-        .limit(1);
+        .maybeSingle();
       
-      if (checkError) {
-        console.error('Error checking metrics existence:', checkError);
-        throw checkError;
+      if (error) {
+        throw error;
       }
       
-      // If metrics don't exist, create a new record
-      if (!metricsExists || metricsExists.length === 0) {
-        console.log('No metrics found, creating new record');
+      // If no metrics exist yet, create a new record with the update
+      if (!data) {
+        console.log('📊 Creating new metrics record');
         
         const newMetricsData = {
           user_id: user.id,
@@ -51,66 +50,49 @@ export const useProgressTracking = () => {
           updated_at: new Date().toISOString()
         };
         
-        const { data: insertResult, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from('user_metrics')
-          .insert([newMetricsData])
-          .select('*');
+          .insert([newMetricsData]);
           
         if (insertError) {
-          console.error('Error creating new metrics:', insertError);
           throw insertError;
         }
         
-        console.log('Created new metrics record:', insertResult);
-        toast.success('Progress recorded!');
+        console.log('✅ Created new metrics record');
+        toast.success('Progress recorded! 🎉');
         return true;
       }
       
-      // If metrics exist, get the full record by ID to update
-      const metricsId = metricsExists[0].id;
-      console.log(`Found existing metrics with ID: ${metricsId}`);
-      
-      const { data: currentMetrics, error: fetchError } = await supabase
-        .from('user_metrics')
-        .select('*')
-        .eq('id', metricsId)
-        .single();
-      
-      if (fetchError) {
-        console.error('Error fetching current metrics:', fetchError);
-        throw fetchError;
-      }
-      
-      // Prepare update data based on the metric type
-      const updateData: any = { updated_at: new Date().toISOString() };
+      // If metrics exist, update the appropriate field
+      const updateData: any = { 
+        updated_at: new Date().toISOString() 
+      };
       
       if (type === 'course') {
-        updateData.course_completions = (currentMetrics.course_completions || 0) + value;
+        updateData.course_completions = (data.course_completions || 0) + value;
       } else if (type === 'exercise') {
-        updateData.exercises_completed = (currentMetrics.exercises_completed || 0) + value;
+        updateData.exercises_completed = (data.exercises_completed || 0) + value;
       } else if (type === 'time') {
-        updateData.total_time_spent = (currentMetrics.total_time_spent || 0) + value;
+        updateData.total_time_spent = (data.total_time_spent || 0) + value;
       }
       
-      console.log('Updating metrics with:', updateData);
+      console.log('📝 Updating metrics with:', updateData);
       
-      // Update the metrics by ID for precision
       const { error: updateError } = await supabase
         .from('user_metrics')
         .update(updateData)
-        .eq('id', metricsId);
+        .eq('user_id', user.id);
       
       if (updateError) {
-        console.error('Error updating metrics:', updateError);
         throw updateError;
       }
       
-      console.log('Successfully updated metrics');
-      toast.success('Progress updated!');
+      console.log('✅ Successfully updated metrics');
+      toast.success('Progress updated! 🎉');
       return true;
       
     } catch (error) {
-      console.error('Error in updateUserMetrics:', error);
+      console.error('❌ Error in updateUserMetrics:', error);
       toast.error('Failed to update your progress');
       return false;
     } finally {
@@ -118,26 +100,21 @@ export const useProgressTracking = () => {
     }
   }, [user]);
   
-  // Add a simple test function to manually update metrics
+  // Simple test function
   const testUpdateMetrics = useCallback(async () => {
     if (!user) {
-      toast.error('You need to be logged in to track progress');
+      toast.error('You need to be logged in');
       return;
     }
     
-    // Update each metric type
-    const courseResult = await updateUserMetrics('course', 1);
-    const exerciseResult = await updateUserMetrics('exercise', 1);
-    const timeResult = await updateUserMetrics('time', 15);
+    // Update exercise count
+    const result = await updateUserMetrics('exercise', 1);
     
-    if (courseResult && exerciseResult && timeResult) {
-      toast.success('Test metrics updated successfully!');
-    } else {
-      toast.error('Some metrics updates failed');
+    if (result) {
+      toast.success('Test exercise completion recorded! 🎮');
     }
   }, [user, updateUserMetrics]);
   
-  // Determine if any tracking operation is in progress
   const isUpdating = summaryUpdating || quizUpdating || videoUpdating || updating;
 
   return {

@@ -10,6 +10,7 @@ export const useUserMetrics = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuthState();
 
+  // Simplified fetch metrics function
   const fetchMetrics = useCallback(async () => {
     if (!user) {
       setMetrics(null);
@@ -19,23 +20,23 @@ export const useUserMetrics = () => {
 
     try {
       setLoading(true);
-      console.log("Fetching user metrics...");
+      console.log("⭐ Fetching user metrics...");
       
-      // First check if metrics exist at all for the user
-      const { data: metricsExists, error: checkError } = await supabase
+      // Check if metrics exist for the user
+      const { data, error } = await supabase
         .from('user_metrics')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id)
-        .limit(1);
+        .maybeSingle();
       
-      if (checkError) {
-        console.error('Error checking metrics existence:', checkError);
-        throw checkError;
-      }
-      
-      // If metrics don't exist, create a new record
-      if (!metricsExists || metricsExists.length === 0) {
-        console.log('No metrics found, creating new metrics record');
+      if (error) {
+        console.error('Error fetching metrics:', error);
+        toast.error("Couldn't load your progress data");
+        setMetrics(null);
+      } 
+      // If no metrics exist yet, create a new record
+      else if (!data) {
+        console.log('🌟 No metrics found, creating new metrics record');
         
         const newMetricsData = {
           user_id: user.id,
@@ -52,46 +53,28 @@ export const useUserMetrics = () => {
           .select('*');
           
         if (insertError) {
-          console.error('Error creating new metrics:', insertError);
-          toast.error("Couldn't initialize your progress data");
+          console.error('Error creating metrics:', insertError);
+          toast.error("Couldn't create your progress data");
           setMetrics(null);
         } else if (insertResult && insertResult.length > 0) {
-          console.log('Created new metrics record:', insertResult[0]);
+          console.log('📊 Created new metrics record:', insertResult[0]);
           setMetrics(insertResult[0] as UserMetric);
-        } else {
-          console.error("No data returned after creating metrics");
-          setMetrics(null);
         }
-      } else {
-        // If metrics exist, fetch the full record by ID
-        const metricsId = metricsExists[0].id;
-        console.log(`Found existing metrics with ID: ${metricsId}`);
-        
-        const { data: fullMetrics, error: fetchError } = await supabase
-          .from('user_metrics')
-          .select('*')
-          .eq('id', metricsId)
-          .single();
-        
-        if (fetchError) {
-          console.error('Error fetching current metrics:', fetchError);
-          toast.error("Couldn't load your progress data");
-          setMetrics(null);
-        } else {
-          console.log('Fetched metrics successfully:', fullMetrics);
-          setMetrics(fullMetrics as UserMetric);
-        }
+      } 
+      // If metrics exist, use the data
+      else {
+        console.log('📈 Found existing metrics:', data);
+        setMetrics(data as UserMetric);
       }
     } catch (error) {
       console.error("Error in fetchMetrics:", error);
-      toast.error("An error occurred while loading your progress");
       setMetrics(null);
     } finally {
       setLoading(false);
     }
   }, [user]);
 
-  // Initial fetch
+  // Initial fetch when component mounts or user changes
   useEffect(() => {
     if (user) {
       fetchMetrics();

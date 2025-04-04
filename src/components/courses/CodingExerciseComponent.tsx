@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,7 +20,7 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
   const [isCorrect, setIsCorrect] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [exerciseTracked, setExerciseTracked] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const { updateUserMetrics } = useProgressTracking();
 
   const handleCodeChange = (newCode: string) => {
@@ -41,24 +41,29 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
   const handleSubmit = async () => {
     setIsSubmitted(true);
     
-    if (isCorrect && !exerciseTracked) {
-      // First, call the onComplete callback
-      onComplete(true);
-      
-      // Then update metrics with a short delay to ensure database consistency
-      setTimeout(async () => {
-        console.log('Tracking exercise completion in metrics...');
+    if (isCorrect && !isCompleted) {
+      try {
+        // First call onComplete to update exercise state
+        onComplete(true);
+        
+        // Then update metrics
+        console.log('🎮 Tracking exercise completion in metrics...');
         const updated = await updateUserMetrics('exercise', 1);
         
         if (updated) {
-          console.log('Exercise completion tracked in metrics successfully');
-          setExerciseTracked(true);
-          toast.success('Progress updated!');
+          console.log('✅ Exercise completion tracked successfully');
+          setIsCompleted(true);
+          toast.success('Bravo! Exercise completed! 🎉');
         } else {
-          console.error('Failed to track exercise in metrics');
-          toast.error('Could not update progress');
+          console.error('❌ Failed to track exercise completion');
+          toast.error('Progress saved, but stats update failed');
         }
-      }, 500);
+      } catch (error) {
+        console.error('❌ Error during exercise submission:', error);
+        toast.error('Something went wrong with your submission');
+      }
+    } else if (isCorrect && isCompleted) {
+      toast.info('You already completed this exercise! 👍');
     }
   };
 
@@ -116,8 +121,8 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
               }
               <AlertDescription>
                 {isCorrect 
-                  ? "Great job! Your solution is correct." 
-                  : "Not quite right. Try again and ensure your output matches exactly what's expected."}
+                  ? "Great job! Your solution is correct. 🎉" 
+                  : "Not quite right. Try again and ensure your output matches exactly what's expected. 💪"}
               </AlertDescription>
             </div>
           </Alert>
@@ -131,9 +136,9 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         </div>
         <Button 
           onClick={handleSubmit} 
-          disabled={!output || exerciseTracked}
+          disabled={!output || isCompleted}
         >
-          {exerciseTracked ? "Submitted" : "Submit Solution"}
+          {isCompleted ? "Completed! ✅" : "Submit Solution"}
         </Button>
       </CardFooter>
     </Card>
