@@ -99,6 +99,7 @@ export const useUserSkills = () => {
       });
       
       toast.success(`${skillName} progress updated`);
+      await fetchUserSkills();
       return true;
     } catch (error: any) {
       console.error("Error updating skill progress:", error);

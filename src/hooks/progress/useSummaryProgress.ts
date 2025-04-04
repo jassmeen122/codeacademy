@@ -19,6 +19,7 @@ export const useSummaryProgress = () => {
 
     try {
       setUpdating(true);
+      console.log(`Tracking summary read: language=${languageId}, name=${languageName}`);
 
       // Update language progress
       const { data, error } = await supabase
@@ -32,16 +33,24 @@ export const useSummaryProgress = () => {
           onConflict: 'user_id,language_id' 
         }).select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating language progress:", error);
+        throw error;
+      }
+      
+      console.log("Language progress updated:", data);
 
       // Record activity with proper metrics update
       await trackLessonViewed(languageId, languageName, 'summary', true);
+      console.log("Lesson viewed tracked");
       
       // Directly update user metrics with time spent (estimated 15 minutes per summary)
       await updateUserMetrics(user.id, 'time', 15);
+      console.log("Time metrics updated");
       
       // Also increment course completion counter since a summary counts as course content
       await updateUserMetrics(user.id, 'course', 1);
+      console.log("Course metrics updated");
 
       toast.success('Progress updated!');
       return true;

@@ -25,6 +25,7 @@ export const useQuizProgress = () => {
 
     try {
       setUpdating(true);
+      console.log(`Tracking quiz completion: language=${languageId}, name=${languageName}, passed=${isPassed}, score=${score}`);
 
       // Update language progress
       const { error } = await supabase
@@ -38,14 +39,21 @@ export const useQuizProgress = () => {
           onConflict: 'user_id,language_id' 
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating language progress:", error);
+        throw error;
+      }
+      
+      console.log("Quiz completion recorded in language progress");
 
       // Check if the user passed and deserves a badge
       if (isPassed && user.id) {
+        console.log("Quiz passed, checking for badge award");
         await checkAndAwardBadge(user.id, languageId);
       }
 
       // Record activity with score and update metrics
+      console.log("Recording exercise completion");
       await trackExerciseCompleted(
         `quiz-${languageId}`, 
         languageName,
@@ -53,9 +61,11 @@ export const useQuizProgress = () => {
       );
 
       // Always update exercise completion counter
+      console.log("Updating exercise metrics");
       await updateUserMetrics(user.id, 'exercise', 1);
       
       // Always update time spent metrics when completing a quiz
+      console.log("Updating time spent metrics");
       await updateUserMetrics(user.id, 'time', 30); // Assuming quiz takes about 30 min
 
       toast.success(isPassed ? 'Quiz passed! Progress updated!' : 'Quiz completed! Keep practicing!');

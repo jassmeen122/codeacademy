@@ -44,7 +44,7 @@ export const useStudentActivity = () => {
       
       // Update user metrics if needed
       if (updateMetrics) {
-        await updateUserMetrics(user.id);
+        await updateUserMetrics(user.id, 'time', 15);
         console.log("User metrics updated");
       }
       
@@ -83,7 +83,7 @@ export const useStudentActivity = () => {
       console.log("Exercise completion recorded successfully");
       
       // Update metrics
-      await updateUserMetrics(user.id, 'exercise');
+      await updateUserMetrics(user.id, 'exercise', 1);
       
       // Update skills based on the exercise completed
       await updateUserSkillsForActivity(
@@ -130,7 +130,7 @@ export const useStudentActivity = () => {
       console.log("Course completion recorded successfully");
       
       // Update metrics
-      await updateUserMetrics(user.id, 'course');
+      await updateUserMetrics(user.id, 'course', 1);
       
       // Add points to the user's profile
       if (user.id) {
@@ -191,10 +191,12 @@ export const useStudentActivity = () => {
       }
       
       if (data) {
-        console.log("Existing metrics found, updating...");
+        console.log("Existing metrics found, updating...", data);
         
         // Update existing metrics
-        const updateData: any = { updated_at: new Date().toISOString() };
+        const updateData: any = { 
+          updated_at: new Date().toISOString() 
+        };
         
         if (type === 'course') {
           updateData.course_completions = (data.course_completions || 0) + value;
@@ -203,6 +205,8 @@ export const useStudentActivity = () => {
         } else if (type === 'time') {
           updateData.total_time_spent = (data.total_time_spent || 0) + value;
         }
+        
+        console.log("Updating with:", updateData);
         
         const { error: updateError } = await supabase
           .from('user_metrics')
@@ -227,6 +231,8 @@ export const useStudentActivity = () => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
+        
+        console.log("Creating new metrics:", newMetrics);
         
         const { error: insertError } = await supabase
           .from('user_metrics')
