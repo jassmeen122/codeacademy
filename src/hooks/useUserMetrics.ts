@@ -11,7 +11,7 @@ export const useUserMetrics = () => {
   const { user } = useAuthState();
   const [previousMetrics, setPreviousMetrics] = useState<UserMetric | null>(null);
 
-  // Improved fetch metrics function with better error handling and debugging
+  // Improved fetch metrics function with better error handling and motivational feedback
   const fetchMetrics = useCallback(async () => {
     if (!user) {
       console.log("No user found, cannot fetch metrics");
@@ -49,9 +49,9 @@ export const useUserMetrics = () => {
           user_id: user.id,
           course_completions: 0,
           exercises_completed: 0,
-          total_time_spent: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
+          // Removed total_time_spent field
         };
         
         const { data: insertResult, error: insertError } = await supabase
@@ -78,16 +78,13 @@ export const useUserMetrics = () => {
         if (previousMetrics) {
           if (data.exercises_completed > previousMetrics.exercises_completed) {
             const diff = data.exercises_completed - previousMetrics.exercises_completed;
-            toast.success(`Vous avez terminé ${diff} nouvel${diff > 1 ? 'les' : 'le'} exercice${diff > 1 ? 's' : ''} depuis la dernière vérification! 🎉`);
+            toast.success(`🎯 Nouveau record ! +${diff} point${diff > 1 ? 's' : ''} depuis la dernière vérification!`);
+            
+            // Affiche un conseil basé sur les points obtenus
+            showPointBasedTip(data.exercises_completed);
           }
           if (data.course_completions > previousMetrics.course_completions) {
             toast.success("Félicitations pour votre nouveau cours terminé! 🏆");
-          }
-          if (data.total_time_spent > previousMetrics.total_time_spent) {
-            const diffMinutes = data.total_time_spent - previousMetrics.total_time_spent;
-            if (diffMinutes >= 30) {
-              toast.success(`+${diffMinutes} minutes d'apprentissage! Votre persévérance est admirable! ⏱️`);
-            }
           }
         }
       }
@@ -99,6 +96,30 @@ export const useUserMetrics = () => {
     }
   }, [user, metrics]);
 
+  // Fonction pour afficher des conseils personnalisés basés sur les points
+  const showPointBasedTip = (points: number) => {
+    const tips = [
+      "Essayez les exercices de niveau supérieur pour gagner plus de points! 🚀",
+      "Une séance d'exercices quotidienne de 10 minutes peut améliorer vos compétences rapidement! 💡",
+      "Pensez à revoir les concepts fondamentaux pour renforcer votre base! 📚",
+      "Avez-vous essayé de résoudre des problèmes avec une approche différente? 🧩",
+      "Les grands programmeurs s'améliorent en pratiquant régulièrement! 💪",
+      "Pourquoi ne pas essayer un nouveau langage de programmation? 🌍",
+      "Les algorithmes sont comme des recettes - pratiquez-les souvent! 🍳",
+      "N'oubliez pas de célébrer vos petites victoires! Chaque point compte! 🎉",
+      "La persévérance est la clé du succès en programmation! 🔑",
+      "Fixez-vous un objectif de points à atteindre cette semaine! 🎯"
+    ];
+    
+    // Choisir un conseil basé sur les points (rotation cyclique)
+    const tipIndex = Math.floor(points / 10) % tips.length;
+    
+    // Afficher le conseil avec un délai pour ne pas écraser le toast précédent
+    setTimeout(() => {
+      toast.info(`Conseil: ${tips[tipIndex]}`);
+    }, 1500);
+  };
+
   // Initial fetch when component mounts or user changes
   useEffect(() => {
     if (user) {
@@ -108,9 +129,6 @@ export const useUserMetrics = () => {
       console.log("No user available for fetching metrics");
     }
   }, [user, fetchMetrics]);
-
-  // Add debug info
-  console.log("useUserMetrics hook state:", { user: user?.id, metrics, loading });
 
   return {
     metrics,

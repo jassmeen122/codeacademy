@@ -19,7 +19,7 @@ export const useQuizProgress = () => {
     score: number
   ) => {
     if (!user) {
-      toast.error('Please log in to track your progress');
+      toast.error('Veuillez vous connecter pour suivre votre progression');
       return false;
     }
 
@@ -55,7 +55,7 @@ export const useQuizProgress = () => {
             languageName,
             score
           );
-          toast.success('Quiz progress tracked for activity only');
+          toast.success('Quiz terminé! Progrès enregistré');
           return true;
         }
       }
@@ -93,10 +93,10 @@ export const useQuizProgress = () => {
         score
       );
 
-      // DIRECT METRICS UPDATE: Regardless of other function behavior
+      // DIRECT METRICS UPDATE: Update exercise count
       console.log("Directly updating user metrics for quiz completion");
       
-      // Directly update user metrics for exercises and time
+      // Directly update user metrics for exercises
       const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
         .select('*')
@@ -111,18 +111,16 @@ export const useQuizProgress = () => {
       if (existingMetrics) {
         // Update exercise metrics
         const updatedExercises = (existingMetrics.exercises_completed || 0) + 1;
-        const updatedTime = (existingMetrics.total_time_spent || 0) + 30;
         
         const { error: updateError } = await supabase
           .from('user_metrics')
           .update({ 
             exercises_completed: updatedExercises,
-            total_time_spent: updatedTime,
             updated_at: new Date().toISOString()
           })
           .eq('id', existingMetrics.id);
         
-        console.log(`Direct quiz metrics update: exercises=${updatedExercises}, time=${updatedTime}`);
+        console.log(`Direct quiz metrics update: exercises=${updatedExercises}`);
         
         if (updateError) {
           console.error('Error updating quiz metrics:', updateError);
@@ -134,7 +132,6 @@ export const useQuizProgress = () => {
           .insert({
             user_id: user.id,
             exercises_completed: 1,
-            total_time_spent: 30,
             course_completions: 0,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -147,11 +144,26 @@ export const useQuizProgress = () => {
         }
       }
 
-      toast.success(isPassed ? 'Quiz passed! Progress updated!' : 'Quiz completed! Keep practicing!');
+      // Afficher des messages motivants et des conseils
+      toast.success(isPassed 
+        ? '🎯 Quiz réussi! +1 point pour votre parcours d\'apprentissage!' 
+        : '📝 Quiz terminé! Continuez à pratiquer pour vous améliorer!');
+      
+      // Afficher un conseil personnalisé après un délai
+      setTimeout(() => {
+        const tips = [
+          "Essayez de refaire ce quiz dans quelques jours pour consolider vos connaissances! 🔄",
+          "Pratiquez des exercices liés à ces concepts pour approfondir votre compréhension! 💪",
+          "Expliquez ces concepts à quelqu'un d'autre pour mieux les retenir! 🗣️",
+          "Créez un petit projet utilisant ces connaissances pour les appliquer concrètement! 🛠️"
+        ];
+        toast.info(`Conseil: ${tips[Math.floor(Math.random() * tips.length)]}`);
+      }, 1500);
+      
       return true;
     } catch (error) {
       console.error('Error tracking quiz completion:', error);
-      toast.error('Failed to update progress');
+      toast.error('Impossible de mettre à jour votre progression');
       return false;
     } finally {
       setUpdating(false);

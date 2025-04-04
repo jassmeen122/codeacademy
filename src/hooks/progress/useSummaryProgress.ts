@@ -13,7 +13,7 @@ export const useSummaryProgress = () => {
   // Track summary read progress with direct metrics update
   const trackSummaryRead = async (languageId: string, languageName: string) => {
     if (!user) {
-      toast.error('Please log in to track your progress');
+      toast.error('Veuillez vous connecter pour suivre votre progression');
       return false;
     }
 
@@ -45,7 +45,7 @@ export const useSummaryProgress = () => {
           console.warn(`No valid UUID found for language: ${languageId}, using as-is for activity tracking only`);
           // Skip database update that requires UUID but continue with activity tracking
           await trackLessonViewed(languageId, languageName, 'summary', true);
-          toast.success('Progress tracked for activity only');
+          toast.success('Progression enregistrée pour l\'activité uniquement');
           return true;
         }
       }
@@ -72,10 +72,9 @@ export const useSummaryProgress = () => {
       // Record activity
       await trackLessonViewed(languageId, languageName, 'summary', true);
       
-      // DIRECT METRICS UPDATE: Guaranteed to work regardless of other functions
+      // DIRECT METRICS UPDATE: Update courses completed
       console.log("Directly updating user metrics for summary read");
       
-      // Update time metrics directly (15 minutes per summary)
       const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
         .select('*')
@@ -88,19 +87,17 @@ export const useSummaryProgress = () => {
       
       // Check if metrics exist and update or create them
       if (existingMetrics) {
-        const updatedTime = (existingMetrics.total_time_spent || 0) + 15;
         const updatedCourses = (existingMetrics.course_completions || 0) + 1;
         
         const { error: updateError } = await supabase
           .from('user_metrics')
           .update({ 
-            total_time_spent: updatedTime,
             course_completions: updatedCourses,
             updated_at: new Date().toISOString()
           })
           .eq('id', existingMetrics.id);
         
-        console.log(`Direct metrics update: time=${updatedTime}, courses=${updatedCourses}`);
+        console.log(`Direct metrics update: courses=${updatedCourses}`);
         
         if (updateError) {
           console.error('Error updating metrics:', updateError);
@@ -111,7 +108,6 @@ export const useSummaryProgress = () => {
           .from('user_metrics')
           .insert({
             user_id: user.id,
-            total_time_spent: 15,
             course_completions: 1,
             exercises_completed: 0,
             created_at: new Date().toISOString(),
@@ -125,11 +121,22 @@ export const useSummaryProgress = () => {
         }
       }
 
-      toast.success('Progress updated!');
+      // Affichage motivant avec un conseil personnalisé
+      toast.success('🎉 Résumé terminé! +1 point pour votre parcours d\'apprentissage!');
+      setTimeout(() => {
+        const tips = [
+          "Essayez de répondre au quiz maintenant pour renforcer vos connaissances! 🧠",
+          "Pratiquer des exercices sur ce sujet vous aidera à consolider vos acquis! 💪",
+          "Créer un petit projet avec ces connaissances est une excellente façon d'apprendre! 🛠️",
+          "Expliquez ce concept à quelqu'un d'autre pour vraiment le maîtriser! 🗣️"
+        ];
+        toast.info(`Conseil: ${tips[Math.floor(Math.random() * tips.length)]}`);
+      }, 1500);
+      
       return true;
     } catch (error) {
       console.error('Error tracking summary read:', error);
-      toast.error('Failed to update progress');
+      toast.error('Impossible de mettre à jour votre progression');
       return false;
     } finally {
       setUpdating(false);

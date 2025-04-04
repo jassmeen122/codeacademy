@@ -59,7 +59,7 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         // First call onComplete to update exercise state
         onComplete(true);
         
-        // Then update metrics with detailed logging
+        // Then update metrics
         console.log('🎮 Enregistrement de l\'exercice dans les statistiques...');
         console.log(`Exercise details: id=${exercise.id}, title=${exercise.title}`);
         
@@ -70,10 +70,6 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         if (updated) {
           console.log('✅ Exercice enregistré avec succès dans les métriques');
           setIsCompleted(true);
-          
-          // Also add time spent (estimate 15 minutes per exercise)
-          await updateUserMetrics('time', 15);
-          console.log('✅ Temps passé enregistré avec succès');
           
           // Show different motivational messages randomly
           const messages = [

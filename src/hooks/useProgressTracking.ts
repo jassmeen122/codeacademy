@@ -14,8 +14,37 @@ export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
   
-  // Enhanced function to update user metrics with better debugging
-  const updateUserMetrics = useCallback(async (type: 'course' | 'exercise' | 'time', value: number = 1) => {
+  // Liste de conseils d'amélioration par catégorie
+  const improvementTips = {
+    beginner: [
+      "Essayez de résoudre un exercice simple chaque jour! 🌱",
+      "Lisez un article court sur les bases de la programmation! 📚",
+      "Regardez une vidéo tutoriel de 5 minutes! 🎬"
+    ],
+    intermediate: [
+      "Créez un petit projet personnel en utilisant ce que vous avez appris! 🛠️",
+      "Participez à un forum de discussion pour poser vos questions! 💬",
+      "Essayez d'expliquer un concept à quelqu'un d'autre! 🗣️"
+    ],
+    advanced: [
+      "Contribuez à un projet open source! 🌐",
+      "Refactorisez un ancien code que vous avez écrit! ♻️",
+      "Résolvez un problème d'algorithme complexe! 🧠"
+    ]
+  };
+  
+  // Fonction pour obtenir un conseil aléatoire basé sur le niveau
+  const getRandomTip = (exercisesCompleted: number) => {
+    let level = 'beginner';
+    if (exercisesCompleted > 50) level = 'advanced';
+    else if (exercisesCompleted > 20) level = 'intermediate';
+    
+    const tips = improvementTips[level as keyof typeof improvementTips];
+    return tips[Math.floor(Math.random() * tips.length)];
+  };
+  
+  // Enhanced function to update user metrics with motivational feedback
+  const updateUserMetrics = useCallback(async (type: 'course' | 'exercise', value: number = 1) => {
     if (!user) {
       toast.error('Vous devez être connecté pour suivre votre progression');
       console.log("updateUserMetrics: No user logged in");
@@ -50,9 +79,9 @@ export const useProgressTracking = () => {
           user_id: user.id,
           course_completions: type === 'course' ? value : 0,
           exercises_completed: type === 'exercise' ? value : 0,
-          total_time_spent: type === 'time' ? value : 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
+          // Removed total_time_spent field
         };
         
         console.log("Inserting new metrics:", newMetricsData);
@@ -74,10 +103,12 @@ export const useProgressTracking = () => {
         // Show motivational message based on type
         if (type === 'exercise') {
           toast.success('Premier exercice terminé! Continuez comme ça! 🎉');
+          // Afficher un conseil pour débutant
+          setTimeout(() => {
+            toast.info(`Conseil: ${getRandomTip(1)}`);
+          }, 1500);
         } else if (type === 'course') {
           toast.success('Premier cours terminé! Quel accomplissement! 🏆');
-        } else {
-          toast.success('Vous commencez votre parcours d\'apprentissage! 🌱');
         }
         
         return true;
@@ -92,8 +123,6 @@ export const useProgressTracking = () => {
         updateData.course_completions = (data.course_completions || 0) + value;
       } else if (type === 'exercise') {
         updateData.exercises_completed = (data.exercises_completed || 0) + value;
-      } else if (type === 'time') {
-        updateData.total_time_spent = (data.total_time_spent || 0) + value;
       }
       
       console.log('📝 Mise à jour des métriques:', updateData);
@@ -116,15 +145,23 @@ export const useProgressTracking = () => {
       // Show motivational messages based on updated metrics and type
       if (type === 'exercise') {
         const newCount = (data.exercises_completed || 0) + value;
-        if (newCount % 5 === 0) {
-          toast.success(`Félicitations! Vous avez terminé ${newCount} exercices! 🎯`);
+        
+        // Différents messages selon le nombre d'exercices complétés
+        if (newCount % 10 === 0) {
+          toast.success(`🎯 Félicitations! ${newCount} exercices terminés! Quel parcours impressionnant!`);
+        } else if (newCount % 5 === 0) {
+          toast.success(`🌟 ${newCount} exercices complétés! Votre persévérance est admirable!`);
         } else {
-          toast.success('Exercice terminé! Vous progressez bien! 💪');
+          toast.success(`💪 +${value} point${value > 1 ? 's' : ''}! Total: ${newCount}`);
         }
+        
+        // Afficher un conseil personnalisé après un délai
+        setTimeout(() => {
+          toast.info(`Conseil: ${getRandomTip(newCount)}`);
+        }, 1500);
       } else if (type === 'course') {
-        toast.success('Cours terminé! Votre savoir grandit! 📚');
-      } else if (type === 'time') {
-        toast.success('Temps d\'apprentissage enregistré! La persévérance paie! ⏱️');
+        const newCourseCount = (data.course_completions || 0) + value;
+        toast.success(`📚 Cours terminé! Vous avez complété ${newCourseCount} cours au total!`);
       }
       
       return true;
@@ -138,8 +175,8 @@ export const useProgressTracking = () => {
     }
   }, [user]);
   
-  // Simple test function that supports different metric types
-  const testUpdateMetrics = useCallback(async (type: 'course' | 'exercise' | 'time' = 'exercise', value: number = 1) => {
+  // Simple test function for exercise completion with motivational feedback
+  const testUpdateMetrics = useCallback(async (type: 'course' | 'exercise' = 'exercise', value: number = 1) => {
     if (!user) {
       toast.error('Vous devez être connecté pour tester');
       return;
@@ -153,8 +190,6 @@ export const useProgressTracking = () => {
         toast.success('Test: exercice complété! 🎮');
       } else if (type === 'course') {
         toast.success('Test: cours complété! 📚');
-      } else {
-        toast.success('Test: temps d\'apprentissage ajouté! ⏱️');
       }
     }
   }, [user, updateUserMetrics]);
