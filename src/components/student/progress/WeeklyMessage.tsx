@@ -4,48 +4,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
 
 interface WeeklyMessageProps {
-  starsEarned: number;
+  weeklyStars: number;
 }
 
-export const WeeklyMessage: React.FC<WeeklyMessageProps> = ({ starsEarned }) => {
-  // Obtenir le jour de la semaine actuel
-  const today = new Date();
-  const dayOfWeek = today.toLocaleDateString('fr-FR', { weekday: 'long' });
-  const isMonday = dayOfWeek.toLowerCase() === 'lundi';
-  
-  // Personnaliser le message selon le jour et les étoiles
-  const getMessage = () => {
-    if (isMonday) {
-      if (starsEarned === 0) return "Nouvelle semaine ! Prêt à gagner des étoiles ? 🚀";
-      if (starsEarned < 3) return `Tu as gagné ${starsEarned} étoile${starsEarned > 1 ? 's' : ''} cette semaine ! C'est un bon début ! ✨`;
-      if (starsEarned < 5) return `Tu as gagné ${starsEarned} étoiles cette semaine ! Bien joué ! 🌟`;
-      return `Tu as gagné ${starsEarned} étoiles cette semaine ! Incroyable ! 🏆`;
-    } else {
-      if (starsEarned === 0) return "Commence à faire des exercices pour gagner des étoiles ! 🌱";
-      if (starsEarned < 3) return `${starsEarned} étoile${starsEarned > 1 ? 's' : ''} cette semaine ! Continue comme ça ! 💪`;
-      if (starsEarned < 5) return `${starsEarned} étoiles ! Tu fais de bons progrès ! 🌟`;
-      return `${starsEarned} étoiles ! Tu es en feu cette semaine ! 🔥`;
-    }
+export const WeeklyMessage: React.FC<WeeklyMessageProps> = ({ weeklyStars }) => {
+  const getWeeklyMessage = () => {
+    if (weeklyStars === 0) return "Cette semaine, commence à résoudre des exercices pour gagner des étoiles! 💫";
+    if (weeklyStars === 1) return "Tu as gagné 1 étoile cette semaine! Bon début! ✨";
+    if (weeklyStars < 3) return `Tu as gagné ${weeklyStars} étoiles cette semaine! Continue sur ta lancée! 🌟`;
+    if (weeklyStars < 5) return `Impressionnant! ${weeklyStars} étoiles cette semaine! Tu avances bien! 🚀`;
+    return `Extraordinaire! ${weeklyStars} étoiles cette semaine! Tu maîtrises le sujet! 🏆`;
   };
 
   return (
-    <Card className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20">
+    <Card className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-green-500" /> Message Hebdo
+          <Calendar className="h-5 w-5 text-indigo-500" /> Récapitulatif Hebdomadaire
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="py-3 text-center">
           <p className="text-lg font-medium">
-            {getMessage()}
+            {getWeeklyMessage()}
           </p>
-          
-          {!isMonday && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              Nouveau résumé complet lundi prochain !
-            </p>
-          )}
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
+            Nouvelle semaine, nouveaux défis à relever! 💻
+          </p>
         </div>
       </CardContent>
     </Card>
