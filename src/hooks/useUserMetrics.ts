@@ -21,75 +21,59 @@ export const useUserMetrics = () => {
       setLoading(true);
       console.log("Fetching user metrics directly from database...");
       
-      // Direct DB query to get fresh metrics data
-      const { data, error } = await supabase
+      // First, try to fetch any existing metrics
+      const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
       
-      if (error) {
-        // Only show error if it's not a "no rows returned" error
-        if (error.code !== 'PGRST116') {
-          console.error('Error fetching metrics:', error);
-          toast.error("Couldn't load your progress data");
-        }
-        
-        // Create default metrics if none found
-        console.log("No metrics found, creating default entry");
-        
-        // Make sure user_id is explicitly set to avoid TypeScript error
-        const defaultMetricsData = {
-          user_id: user.id,
-          course_completions: 0,
-          exercises_completed: 0,
-          total_time_spent: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        const { data: newData, error: insertError } = await supabase
-          .from('user_metrics')
-          .insert(defaultMetricsData)
-          .select();
-          
-        if (insertError) {
-          console.error("Failed to create default metrics:", insertError);
-          return;
-        }
-        
-        if (newData && newData.length > 0) {
-          console.log("Created default metrics:", newData[0]);
-          setMetrics(newData[0] as UserMetric);
-        }
-      } else if (data) {
-        console.log("Fetched metrics:", data);
-        setMetrics(data as UserMetric);
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching metrics:', fetchError);
+        toast.error("Couldn't load your progress data");
+      }
+      
+      // If we already have metrics, use them
+      if (existingMetrics) {
+        console.log("Found existing metrics:", existingMetrics);
+        setMetrics(existingMetrics as UserMetric);
+        setLoading(false);
+        return;
+      }
+      
+      // If no metrics found, create a new entry
+      console.log("No metrics found, creating default metrics");
+      
+      // Create with explicit values to satisfy TypeScript
+      const newMetricsData = {
+        user_id: user.id,
+        course_completions: 0,
+        exercises_completed: 0,
+        total_time_spent: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      const { data: newData, error: insertError } = await supabase
+        .from('user_metrics')
+        .insert(newMetricsData)
+        .select();
+      
+      if (insertError) {
+        console.error("Failed to create metrics:", insertError);
+        toast.error("Couldn't initialize your progress data");
+        setMetrics(null);
+      } else if (newData && newData.length > 0) {
+        console.log("Created new metrics:", newData[0]);
+        setMetrics(newData[0] as UserMetric);
       } else {
-        console.log("No metrics data found");
-        
-        // Fallback case - create metrics if data is null
-        const defaultMetricsData = {
-          user_id: user.id,
-          course_completions: 0,
-          exercises_completed: 0,
-          total_time_spent: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('user_metrics')
-          .insert(defaultMetricsData)
-          .select();
-          
-        if (!fallbackError && fallbackData && fallbackData.length > 0) {
-          console.log("Created fallback metrics:", fallbackData[0]);
-          setMetrics(fallbackData[0] as UserMetric);
-        }
+        console.error("No data returned after creating metrics");
+        setMetrics(null);
       }
     } catch (error) {
       console.error("Error in fetchMetrics:", error);
+      toast.error("An error occurred while loading your progress");
+      setMetrics(null);
     } finally {
       setLoading(false);
     }
