@@ -30,9 +30,12 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
 
   const handleRun = (executionOutput: string) => {
     setOutput(executionOutput);
+    console.log("Code execution output:", executionOutput);
+    console.log("Expected output:", exercise.expected_output);
     
     // Check if the output matches the expected output
     if (exercise.expected_output && executionOutput.trim() === exercise.expected_output.trim()) {
+      console.log("Output matches expected result - solution is correct");
       setIsCorrect(true);
       if (!isSubmitted) {
         toast.info("🎯 La solution semble correcte! Cliquez sur 'Soumettre' pour valider.", {
@@ -40,6 +43,7 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         });
       }
     } else {
+      console.log("Output does not match expected result - solution is incorrect");
       setIsCorrect(false);
     }
   };
@@ -55,13 +59,21 @@ export const CodingExerciseComponent = ({ exercise, onComplete }: CodingExercise
         // First call onComplete to update exercise state
         onComplete(true);
         
-        // Then update metrics
+        // Then update metrics with detailed logging
         console.log('🎮 Enregistrement de l\'exercice dans les statistiques...');
+        console.log(`Exercise details: id=${exercise.id}, title=${exercise.title}`);
+        
+        // Update metrics with exercise type
         const updated = await updateUserMetrics('exercise', 1);
+        console.log("Update metrics result:", updated);
         
         if (updated) {
-          console.log('✅ Exercice enregistré avec succès');
+          console.log('✅ Exercice enregistré avec succès dans les métriques');
           setIsCompleted(true);
+          
+          // Also add time spent (estimate 15 minutes per exercise)
+          await updateUserMetrics('time', 15);
+          console.log('✅ Temps passé enregistré avec succès');
           
           // Show different motivational messages randomly
           const messages = [

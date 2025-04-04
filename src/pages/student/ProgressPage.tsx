@@ -31,7 +31,7 @@ export default function ProgressPage() {
   useEffect(() => {
     if (!user) return;
     
-    console.log("Initial data fetch for ProgressPage");
+    console.log("Initial data fetch for ProgressPage - User:", user.id);
     refreshAllData(false);
     
     const interval = setInterval(() => {
@@ -52,20 +52,22 @@ export default function ProgressPage() {
     }
     
     try {
+      console.log("Refreshing metrics data");
       await fetchMetrics();
       
+      console.log("Refreshing skills and activity logs");
       await Promise.all([
         fetchUserSkills(),
         fetchActivityLogs()
       ]);
       
       if (showToast) {
-        toast.success("Progress data refreshed!");
+        toast.success("Données de progression actualisées !");
       }
     } catch (error) {
       console.error("Error refreshing data:", error);
       if (showToast) {
-        toast.error("Couldn't refresh progress data");
+        toast.error("Impossible d'actualiser les données de progression");
       }
     } finally {
       if (showToast) {
@@ -75,8 +77,18 @@ export default function ProgressPage() {
   };
 
   const handleTestMetricsUpdate = async () => {
-    await testUpdateMetrics();
+    console.log("Running test update for exercise completion");
+    await testUpdateMetrics('exercise', 1);
     // Fetch updated metrics
+    console.log("Fetching fresh metrics after test update");
+    await fetchMetrics();
+  };
+
+  const handleTestTimeUpdate = async () => {
+    console.log("Running test update for time spent");
+    await testUpdateMetrics('time', 15);
+    // Fetch updated metrics
+    console.log("Fetching fresh metrics after time update");
     await fetchMetrics();
   };
 
@@ -86,6 +98,9 @@ export default function ProgressPage() {
     exercises_completed: 0, 
     total_time_spent: 0 
   };
+  
+  // Debug metrics information
+  console.log("Current metrics state:", { metrics, displayMetrics, loading: metricsLoading });
   
   // Motivational messages based on metrics
   const getTimeMessage = () => {
@@ -122,28 +137,26 @@ export default function ProgressPage() {
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
               {refreshing ? 'Actualisation...' : 'Actualiser'}
             </Button>
-            {import.meta.env.DEV && (
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleTestMetricsUpdate()} 
-                  disabled={trackingUpdating}
-                  className="flex items-center gap-2 border-green-500 text-green-600 hover:bg-green-50"
-                >
-                  <Zap className="h-4 w-4" />
-                  Test Exercice
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => testUpdateMetrics('time', 15)} 
-                  disabled={trackingUpdating}
-                  className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
-                >
-                  <Clock className="h-4 w-4" />
-                  +15 min
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => handleTestMetricsUpdate()} 
+                disabled={trackingUpdating}
+                className="flex items-center gap-2 border-green-500 text-green-600 hover:bg-green-50"
+              >
+                <Zap className="h-4 w-4" />
+                Test Exercice
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleTestTimeUpdate()} 
+                disabled={trackingUpdating}
+                className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50"
+              >
+                <Clock className="h-4 w-4" />
+                +15 min
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -314,16 +327,15 @@ export default function ProgressPage() {
           </div>
         </div>
         
-        {import.meta.env.DEV && (
-          <div className="mt-8 p-4 border border-gray-200 rounded-md">
-            <h3 className="text-sm font-medium mb-2">Debug Information:</h3>
-            <div className="text-xs text-gray-500">
-              <p>User ID: {user?.id || 'Not logged in'}</p>
-              <p>Last refresh: {new Date().toLocaleTimeString()}</p>
-              <p>Metrics data: {JSON.stringify(metrics || {})}</p>
-            </div>
+        <div className="mt-8 p-4 border border-gray-200 rounded-md">
+          <h3 className="text-sm font-medium mb-2">Debug Information:</h3>
+          <div className="text-xs text-gray-500">
+            <p>User ID: {user?.id || 'Not logged in'}</p>
+            <p>Last refresh: {new Date().toLocaleTimeString()}</p>
+            <p>Loading states: metrics={String(metricsLoading)}, skills={String(skillsLoading)}, logs={String(logsLoading)}</p>
+            <p>Metrics data: {JSON.stringify(metrics || {})}</p>
           </div>
-        )}
+        </div>
       </div>
     </DashboardLayout>
   );

@@ -34,6 +34,8 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
   activityLogs = [],
   loading 
 }) => {
+  console.log("ProgressCharts rendering with:", { skills, metrics, activityLogsCount: activityLogs.length, loading });
+  
   // Process skills data for the chart
   const skillsData = useMemo(() => {
     return skills.map(skill => ({
@@ -74,6 +76,7 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
 
   // Format time data for the chart
   const timeData = useMemo(() => {
+    console.log("Computing time data from metrics:", metrics);
     const totalHours = metrics?.total_time_spent ? metrics.total_time_spent / 60 : 0;
     const avgDailyHours = totalHours / 30; // Assuming metrics are for 30 days
     

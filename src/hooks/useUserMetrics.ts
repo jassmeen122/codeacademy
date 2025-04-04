@@ -11,9 +11,10 @@ export const useUserMetrics = () => {
   const { user } = useAuthState();
   const [previousMetrics, setPreviousMetrics] = useState<UserMetric | null>(null);
 
-  // Simplified fetch metrics function with motivational feedback
+  // Improved fetch metrics function with better error handling and debugging
   const fetchMetrics = useCallback(async () => {
     if (!user) {
+      console.log("No user found, cannot fetch metrics");
       setMetrics(null);
       setLoading(false);
       return;
@@ -21,7 +22,7 @@ export const useUserMetrics = () => {
 
     try {
       setLoading(true);
-      console.log("⭐ Chargement de vos statistiques...");
+      console.log(`⭐ Chargement des statistiques pour l'utilisateur ${user.id}...`);
       
       // Save previous metrics to check for changes
       setPreviousMetrics(metrics);
@@ -32,6 +33,8 @@ export const useUserMetrics = () => {
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
+      
+      console.log("Query result:", { data, error });
       
       if (error) {
         console.error('Erreur lors du chargement des métriques:', error);
@@ -99,9 +102,15 @@ export const useUserMetrics = () => {
   // Initial fetch when component mounts or user changes
   useEffect(() => {
     if (user) {
+      console.log("User found, fetching metrics:", user.id);
       fetchMetrics();
+    } else {
+      console.log("No user available for fetching metrics");
     }
   }, [user, fetchMetrics]);
+
+  // Add debug info
+  console.log("useUserMetrics hook state:", { user: user?.id, metrics, loading });
 
   return {
     metrics,

@@ -14,13 +14,15 @@ export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
   const { user } = useAuthState();
   
-  // Simplified function to update user metrics with better error handling and motivational messages
+  // Enhanced function to update user metrics with better debugging
   const updateUserMetrics = useCallback(async (type: 'course' | 'exercise' | 'time', value: number = 1) => {
     if (!user) {
       toast.error('Vous devez être connecté pour suivre votre progression');
+      console.log("updateUserMetrics: No user logged in");
       return false;
     }
     
+    console.log(`updateUserMetrics: Starting update for ${type} with value ${value} for user ${user.id}`);
     setUpdating(true);
     
     try {
@@ -33,7 +35,12 @@ export const useProgressTracking = () => {
         .eq('user_id', user.id)
         .maybeSingle();
       
-      if (error) throw error;
+      console.log("Current metrics query result:", { data, error });
+      
+      if (error) {
+        console.error("Error fetching metrics:", error);
+        throw error;
+      }
       
       // If no metrics exist yet, create a new record with the update
       if (!data) {
@@ -48,11 +55,19 @@ export const useProgressTracking = () => {
           updated_at: new Date().toISOString()
         };
         
-        const { error: insertError } = await supabase
+        console.log("Inserting new metrics:", newMetricsData);
+        
+        const { error: insertError, data: insertData } = await supabase
           .from('user_metrics')
-          .insert([newMetricsData]);
+          .insert([newMetricsData])
+          .select();
           
-        if (insertError) throw insertError;
+        console.log("Insert result:", { insertData, insertError });
+          
+        if (insertError) {
+          console.error("Error creating metrics:", insertError);
+          throw insertError;
+        }
         
         console.log('✅ Nouvelles métriques créées avec succès');
         
@@ -83,12 +98,18 @@ export const useProgressTracking = () => {
       
       console.log('📝 Mise à jour des métriques:', updateData);
       
-      const { error: updateError } = await supabase
+      const { error: updateError, data: updateResult } = await supabase
         .from('user_metrics')
         .update(updateData)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();
       
-      if (updateError) throw updateError;
+      console.log("Update result:", { updateResult, updateError });
+      
+      if (updateError) {
+        console.error("Error updating metrics:", updateError);
+        throw updateError;
+      }
       
       console.log('✅ Métriques mises à jour avec succès');
       
@@ -124,6 +145,7 @@ export const useProgressTracking = () => {
       return;
     }
     
+    console.log(`testUpdateMetrics: Testing ${type} update with value ${value}`);
     const result = await updateUserMetrics(type, value);
     
     if (result) {
