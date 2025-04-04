@@ -1,18 +1,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
 import { ActivityLog } from '@/types/progress';
 
-export function useUserActivityLogs(days = 30) {
+export const useUserActivityLogs = (days: number = 30) => {
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuthState();
 
   const fetchActivityLogs = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       console.log(`Fetching activity logs for the last ${days} days for user ${user.id}`);
@@ -22,55 +21,67 @@ export function useUserActivityLogs(days = 30) {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
       
-      // Get user activities from the database
-      const { data, error } = await supabase
+      // Format for database query
+      const startDateStr = startDate.toISOString();
+      
+      // Get user activities
+      const { data: activities, error } = await supabase
         .from('user_activities')
-        .select('created_at, activity_type, activity_data')
+        .select('*')
         .eq('user_id', user.id)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString())
+        .gte('created_at', startDateStr)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      console.log(`Found ${data?.length || 0} activity records`);
+      if (!activities || activities.length === 0) {
+        console.log("No activities found");
+        setActivityLogs([]);
+        return;
+      }
+      
+      console.log(`Found ${activities.length} activity records`);
       
       // Process and group activities by date and type
-      const activityMap = new Map();
+      const groupedActivities: Map<string, Map<string, number>> = new Map();
       
-      (data || []).forEach(activity => {
-        const date = activity.created_at.split('T')[0];
+      activities.forEach(activity => {
+        const date = new Date(activity.created_at).toISOString().split('T')[0];
         const type = activity.activity_type;
-        const key = `${date}-${type}`;
         
-        if (activityMap.has(key)) {
-          activityMap.set(key, {
-            date,
-            type,
-            count: activityMap.get(key).count + 1
-          });
-        } else {
-          activityMap.set(key, {
-            date,
-            type,
-            count: 1
-          });
+        if (!groupedActivities.has(date)) {
+          groupedActivities.set(date, new Map());
         }
+        
+        const dateGroup = groupedActivities.get(date)!;
+        dateGroup.set(type, (dateGroup.get(type) || 0) + 1);
       });
       
-      const logs = Array.from(activityMap.values());
-      console.log("Processed activity logs:", logs);
-      setActivityLogs(logs);
-      return logs;
-    } catch (error: any) {
-      console.error('Error fetching activity logs:', error);
-      toast.error("Failed to load activity logs");
-      return [];
+      // Convert to the expected format
+      const processedLogs: ActivityLog[] = [];
+      
+      groupedActivities.forEach((typeMap, date) => {
+        typeMap.forEach((count, type) => {
+          processedLogs.push({
+            date,
+            type,
+            count
+          });
+        });
+      });
+      
+      console.log("Processed activity logs:", processedLogs);
+      setActivityLogs(processedLogs);
+      
+    } catch (error) {
+      console.error("Error fetching activity logs:", error);
+      setActivityLogs([]);
     } finally {
       setLoading(false);
     }
   }, [user, days]);
 
+  // Fetch logs on component mount and when dependencies change
   useEffect(() => {
     if (user) {
       fetchActivityLogs();
@@ -85,4 +96,4 @@ export function useUserActivityLogs(days = 30) {
     loading,
     fetchActivityLogs
   };
-}
+};

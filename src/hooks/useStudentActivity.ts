@@ -42,10 +42,63 @@ export const useStudentActivity = () => {
         { language, topic }
       );
       
-      // Update user metrics if needed
+      // Update user metrics if needed - force direct update to fix the bug
       if (updateMetrics) {
-        await updateUserMetrics(user.id, 'time', 15);
-        console.log("User metrics updated");
+        // First check if metrics exist for user
+        const { data: existingMetrics, error: fetchError } = await supabase
+          .from('user_metrics')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+          
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error('Error fetching user metrics:', fetchError);
+          return false;
+        }
+        
+        const timeSpentValue = 15; // 15 minutes for lesson viewed
+        
+        if (existingMetrics) {
+          console.log("Updating existing metrics for lesson:", existingMetrics);
+          const updatedTimeSpent = (existingMetrics.total_time_spent || 0) + timeSpentValue;
+          
+          // Direct update with consistent values
+          const { error: updateError } = await supabase
+            .from('user_metrics')
+            .update({ 
+              total_time_spent: updatedTimeSpent,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingMetrics.id);
+            
+          if (updateError) {
+            console.error('Error updating metrics:', updateError);
+            return false;
+          }
+          
+          console.log(`User metrics updated: time_spent=${updatedTimeSpent}`);
+        } else {
+          console.log("Creating new metrics for lesson view");
+          
+          // Create new metrics entry
+          const { error: insertError } = await supabase
+            .from('user_metrics')
+            .insert({
+              user_id: user.id,
+              total_time_spent: timeSpentValue,
+              course_completions: 0,
+              exercises_completed: 0,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+            
+          if (insertError) {
+            console.error('Error creating metrics:', insertError);
+            return false;
+          }
+          
+          console.log(`New user metrics created: time_spent=${timeSpentValue}`);
+        }
       }
       
       return true;
@@ -82,8 +135,56 @@ export const useStudentActivity = () => {
       
       console.log("Exercise completion recorded successfully");
       
-      // Update metrics
-      await updateUserMetrics(user.id, 'exercise', 1);
+      // Direct update to user_metrics
+      const { data: existingMetrics, error: fetchError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching user metrics:', fetchError);
+      }
+      
+      if (existingMetrics) {
+        console.log("Updating existing metrics for exercise:", existingMetrics);
+        const exercisesCompleted = (existingMetrics.exercises_completed || 0) + 1;
+        
+        // Direct update with consistent values
+        const { error: updateError } = await supabase
+          .from('user_metrics')
+          .update({ 
+            exercises_completed: exercisesCompleted,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingMetrics.id);
+          
+        if (updateError) {
+          console.error('Error updating exercise metrics:', updateError);
+        } else {
+          console.log(`User metrics updated: exercises_completed=${exercisesCompleted}`);
+        }
+      } else {
+        console.log("Creating new metrics for exercise completion");
+        
+        // Create new metrics entry
+        const { error: insertError } = await supabase
+          .from('user_metrics')
+          .insert({
+            user_id: user.id,
+            exercises_completed: 1,
+            course_completions: 0,
+            total_time_spent: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+          
+        if (insertError) {
+          console.error('Error creating exercise metrics:', insertError);
+        } else {
+          console.log("New user metrics created for exercise completion");
+        }
+      }
       
       // Update skills based on the exercise completed
       await updateUserSkillsForActivity(
@@ -129,8 +230,56 @@ export const useStudentActivity = () => {
       
       console.log("Course completion recorded successfully");
       
-      // Update metrics
-      await updateUserMetrics(user.id, 'course', 1);
+      // Direct update to user_metrics
+      const { data: existingMetrics, error: fetchError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching user metrics:', fetchError);
+      }
+      
+      if (existingMetrics) {
+        console.log("Updating existing metrics for course completion:", existingMetrics);
+        const courseCompletions = (existingMetrics.course_completions || 0) + 1;
+        
+        // Direct update with consistent values
+        const { error: updateError } = await supabase
+          .from('user_metrics')
+          .update({ 
+            course_completions: courseCompletions,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingMetrics.id);
+          
+        if (updateError) {
+          console.error('Error updating course metrics:', updateError);
+        } else {
+          console.log(`User metrics updated: course_completions=${courseCompletions}`);
+        }
+      } else {
+        console.log("Creating new metrics for course completion");
+        
+        // Create new metrics entry
+        const { error: insertError } = await supabase
+          .from('user_metrics')
+          .insert({
+            user_id: user.id,
+            course_completions: 1,
+            exercises_completed: 0,
+            total_time_spent: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+          
+        if (insertError) {
+          console.error('Error creating course metrics:', insertError);
+        } else {
+          console.log("New user metrics created for course completion");
+        }
+      }
       
       // Add points to the user's profile
       if (user.id) {
@@ -173,13 +322,13 @@ export const useStudentActivity = () => {
     }
   };
   
-  // Helper function to update user metrics
+  // Helper function to update user metrics with more direct approach to fix the bug
   const updateUserMetrics = async (userId: string, type: 'course' | 'exercise' | 'time' = 'time', value: number = 15) => {
     try {
       console.log(`Updating user metrics: userId=${userId}, type=${type}, value=${value}`);
       
       // First check if metrics exist for user
-      const { data, error: fetchError } = await supabase
+      const { data: existingMetrics, error: fetchError } = await supabase
         .from('user_metrics')
         .select('*')
         .eq('user_id', userId)
@@ -190,39 +339,40 @@ export const useStudentActivity = () => {
         return false;
       }
       
-      if (data) {
-        console.log("Existing metrics found, updating...", data);
+      if (existingMetrics) {
+        console.log("Existing metrics found, updating...", existingMetrics);
         
-        // Update existing metrics
-        const updateData: any = { 
+        // Prepare update data
+        let updateData: any = { 
           updated_at: new Date().toISOString() 
         };
         
         if (type === 'course') {
-          updateData.course_completions = (data.course_completions || 0) + value;
+          updateData.course_completions = (existingMetrics.course_completions || 0) + value;
         } else if (type === 'exercise') {
-          updateData.exercises_completed = (data.exercises_completed || 0) + value;
+          updateData.exercises_completed = (existingMetrics.exercises_completed || 0) + value;
         } else if (type === 'time') {
-          updateData.total_time_spent = (data.total_time_spent || 0) + value;
+          updateData.total_time_spent = (existingMetrics.total_time_spent || 0) + value;
         }
         
-        console.log("Updating with:", updateData);
+        console.log("Updating metrics with:", updateData);
         
+        // Directly update the record
         const { error: updateError } = await supabase
           .from('user_metrics')
           .update(updateData)
-          .eq('id', data.id);
+          .eq('id', existingMetrics.id);
           
         if (updateError) {
           console.error('Error updating metrics:', updateError);
           return false;
         }
         
-        console.log("Metrics updated successfully");
+        console.log("Metrics updated successfully:", updateData);
       } else {
         console.log("No existing metrics found, creating new entry...");
         
-        // Create new metrics entry
+        // Create new metrics entry with specific initial values
         const newMetrics: any = {
           user_id: userId,
           course_completions: type === 'course' ? value : 0,
@@ -234,16 +384,17 @@ export const useStudentActivity = () => {
         
         console.log("Creating new metrics:", newMetrics);
         
-        const { error: insertError } = await supabase
+        const { data, error: insertError } = await supabase
           .from('user_metrics')
-          .insert([newMetrics]);
+          .insert([newMetrics])
+          .select();
           
         if (insertError) {
           console.error('Error inserting metrics:', insertError);
           return false;
         }
         
-        console.log("New metrics created successfully");
+        console.log("New metrics created successfully:", data);
       }
       
       return true;
@@ -258,6 +409,7 @@ export const useStudentActivity = () => {
     if (user) {
       const initializeMetrics = async () => {
         try {
+          // Check if metrics exist and create if not
           const { data, error } = await supabase
             .from('user_metrics')
             .select('id')

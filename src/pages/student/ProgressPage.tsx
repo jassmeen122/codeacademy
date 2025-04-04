@@ -33,6 +33,7 @@ export default function ProgressPage() {
         setLoading(true);
         console.log("Fetching user metrics for", user.id);
         
+        // Direct query to ensure we get fresh data
         const { data, error } = await supabase
           .from('user_metrics')
           .select('*')
@@ -47,19 +48,8 @@ export default function ProgressPage() {
           
           // If no metrics found, create default metrics
           console.log("No metrics found, creating default metrics");
-          setMetrics({
-            id: '',
-            user_id: user.id,
-            course_completions: 0,
-            exercises_completed: 0,
-            total_time_spent: 0,
-            last_login: null,
-            created_at: '',
-            updated_at: ''
-          });
           
-          // Try to insert default metrics if they don't exist
-          await supabase
+          const { data: insertedData, error: insertError } = await supabase
             .from('user_metrics')
             .insert({
               user_id: user.id,
@@ -68,8 +58,27 @@ export default function ProgressPage() {
               total_time_spent: 0,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
-            });
+            })
+            .select();
             
+          if (insertError) {
+            console.error("Error creating default metrics:", insertError);
+          } else if (insertedData && insertedData.length > 0) {
+            console.log("Created default metrics:", insertedData[0]);
+            setMetrics(insertedData[0] as UserMetric);
+          } else {
+            setMetrics({
+              id: '',
+              user_id: user.id,
+              course_completions: 0,
+              exercises_completed: 0,
+              total_time_spent: 0,
+              last_login: null,
+              created_at: '',
+              updated_at: ''
+            });
+          }
+          
           return;
         }
 
@@ -93,7 +102,7 @@ export default function ProgressPage() {
     }
   }, [user, fetchUserMetrics, fetchUserSkills, fetchActivityLogs]);
 
-  // Add an auto-refresh every 30 seconds
+  // Add an auto-refresh every 5 seconds to ensure data is current
   useEffect(() => {
     if (!user) return;
     
@@ -102,7 +111,7 @@ export default function ProgressPage() {
       fetchUserMetrics();
       if (fetchUserSkills) fetchUserSkills();
       if (fetchActivityLogs) fetchActivityLogs();
-    }, 30000); // 30 seconds
+    }, 5000); // 5 seconds for more responsive updates
     
     return () => clearInterval(interval);
   }, [user, fetchUserMetrics, fetchUserSkills, fetchActivityLogs]);

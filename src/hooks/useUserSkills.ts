@@ -49,6 +49,7 @@ export const useUserSkills = () => {
     }
   }, [user]);
 
+  // Initialize skills on component mount
   useEffect(() => {
     if (user) {
       fetchUserSkills();

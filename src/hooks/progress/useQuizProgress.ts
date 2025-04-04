@@ -60,13 +60,43 @@ export const useQuizProgress = () => {
         score
       );
 
-      // Always update exercise completion counter
-      console.log("Updating exercise metrics");
-      await updateUserMetrics(user.id, 'exercise', 1);
+      // Direct update to user_metrics for immediate feedback
+      const { data: existingMetrics, error: fetchError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
       
-      // Always update time spent metrics when completing a quiz
-      console.log("Updating time spent metrics");
-      await updateUserMetrics(user.id, 'time', 30); // Assuming quiz takes about 30 min
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching metrics for direct quiz update:', fetchError);
+      } else if (existingMetrics) {
+        // Update exercise metrics
+        const updatedExercises = (existingMetrics.exercises_completed || 0) + 1;
+        const updatedTime = (existingMetrics.total_time_spent || 0) + 30;
+        
+        await supabase
+          .from('user_metrics')
+          .update({ 
+            exercises_completed: updatedExercises,
+            total_time_spent: updatedTime,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingMetrics.id);
+        
+        console.log(`Direct quiz metrics update: exercises=${updatedExercises}, time=${updatedTime}`);
+      } else {
+        // Create new metrics entry if none exists
+        await supabase
+          .from('user_metrics')
+          .insert({
+            user_id: user.id,
+            exercises_completed: 1,
+            total_time_spent: 30,
+            course_completions: 0
+          });
+        
+        console.log("Created new metrics entry for quiz completion");
+      }
 
       toast.success(isPassed ? 'Quiz passed! Progress updated!' : 'Quiz completed! Keep practicing!');
       return true;

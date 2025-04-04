@@ -44,13 +44,43 @@ export const useSummaryProgress = () => {
       await trackLessonViewed(languageId, languageName, 'summary', true);
       console.log("Lesson viewed tracked");
       
-      // Directly update user metrics with time spent (estimated 15 minutes per summary)
-      await updateUserMetrics(user.id, 'time', 15);
-      console.log("Time metrics updated");
+      // Update user metrics directly for immediate feedback
+      const { data: existingMetrics, error: fetchError } = await supabase
+        .from('user_metrics')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
       
-      // Also increment course completion counter since a summary counts as course content
-      await updateUserMetrics(user.id, 'course', 1);
-      console.log("Course metrics updated");
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching metrics for direct update:', fetchError);
+      } else if (existingMetrics) {
+        // Update time metrics directly (15 minutes per summary)
+        const updatedTime = (existingMetrics.total_time_spent || 0) + 15;
+        const updatedCourses = (existingMetrics.course_completions || 0) + 1;
+        
+        await supabase
+          .from('user_metrics')
+          .update({ 
+            total_time_spent: updatedTime,
+            course_completions: updatedCourses,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingMetrics.id);
+        
+        console.log(`Direct metrics update: time=${updatedTime}, courses=${updatedCourses}`);
+      } else {
+        // Create new metrics entry if none exists
+        await supabase
+          .from('user_metrics')
+          .insert({
+            user_id: user.id,
+            total_time_spent: 15,
+            course_completions: 1,
+            exercises_completed: 0
+          });
+        
+        console.log("Created new metrics entry for summary read");
+      }
 
       toast.success('Progress updated!');
       return true;
