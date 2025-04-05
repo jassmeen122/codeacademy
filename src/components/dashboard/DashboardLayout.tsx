@@ -1,6 +1,7 @@
 
 import React, { ReactNode } from 'react';
 import { DashboardSidebar } from './DashboardSidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -8,14 +9,16 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      <DashboardSidebar userRole="student" />
-      <div className="flex-1 overflow-auto">
-        <main className="py-6">
-          {children}
-        </main>
+    <SidebarProvider>
+      <div className="flex h-screen w-full bg-gray-100 dark:bg-gray-900">
+        <DashboardSidebar userRole="student" />
+        <div className="flex-1 overflow-auto">
+          <main className="py-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
