@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -16,7 +15,7 @@ import {
   CheckCircle2,
   Star,
   Calendar,
-  Certificate,
+  Scroll,
   Target,
   Users,
   Flame,
@@ -166,14 +165,13 @@ const AchievementsPage = () => {
                 <Target className="h-4 w-4" /> Défis
               </TabsTrigger>
               <TabsTrigger value="certificates" className="flex gap-2 items-center">
-                <Certificate className="h-4 w-4" /> Certificats
+                <Scroll className="h-4 w-4" /> Certificats
               </TabsTrigger>
               <TabsTrigger value="leaderboard" className="flex gap-2 items-center">
                 <Users className="h-4 w-4" /> Classement
               </TabsTrigger>
             </TabsList>
 
-            {/* Badges Tab */}
             <TabsContent value="badges" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -223,7 +221,6 @@ const AchievementsPage = () => {
               </Card>
             </TabsContent>
 
-            {/* Challenges Tab */}
             <TabsContent value="challenges" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
@@ -366,7 +363,6 @@ const AchievementsPage = () => {
               </div>
             </TabsContent>
 
-            {/* Certificates Tab */}
             <TabsContent value="certificates" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -381,7 +377,7 @@ const AchievementsPage = () => {
                       {certificates.map((certificate) => (
                         <Card key={certificate.id} className="border hover:shadow-md transition-all">
                           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 flex items-center justify-center">
-                            <Certificate className="h-12 w-12 text-blue-700" />
+                            <Scroll className="h-12 w-12 text-blue-700" />
                           </div>
                           <CardContent className="pt-4">
                             <h3 className="font-semibold mb-1 text-blue-700">{certificate.title}</h3>
@@ -402,7 +398,7 @@ const AchievementsPage = () => {
                     </div>
                   ) : (
                     <div className="text-center py-10">
-                      <Certificate className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
+                      <Scroll className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
                       <h3 className="text-lg font-medium">Pas encore de certificats</h3>
                       <p className="text-muted-foreground mb-6">
                         Complétez des cours pour obtenir des certificats
@@ -413,7 +409,6 @@ const AchievementsPage = () => {
               </Card>
             </TabsContent>
 
-            {/* Leaderboard Tab */}
             <TabsContent value="leaderboard" className="space-y-6">
               <Card>
                 <CardHeader>
