@@ -1,4 +1,3 @@
-
 // This edge function handles various gamification features
 // including points, challenges, badges, and certificates
 
@@ -255,6 +254,112 @@ serve(async (req) => {
           success: true, 
           leaderboard: leaderboardData,
           period
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    else if (endpoint === 'save-note') {
+      console.log('Processing note saving...');
+      const { exercise_id, content } = await req.json();
+      
+      if (!exercise_id || !content) {
+        throw new Error('Exercise ID and content are required');
+      }
+      
+      // Check if a note already exists
+      const { data: existingNote, error: checkError } = await supabase
+        .from('exercise_notes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('exercise_id', exercise_id)
+        .maybeSingle();
+        
+      if (checkError) throw checkError;
+      
+      let noteData;
+      let pointsAwarded = 0;
+      
+      if (existingNote) {
+        // Just update existing note
+        const { data, error } = await supabase
+          .from('exercise_notes')
+          .update({
+            content,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingNote.id)
+          .select();
+          
+        if (error) throw error;
+        noteData = data;
+      } else {
+        // Create new note and award points
+        const { data, error } = await supabase
+          .from('exercise_notes')
+          .insert({
+            user_id: user.id,
+            exercise_id,
+            content,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select();
+          
+        if (error) throw error;
+        noteData = data;
+        
+        // Award points for first note on this exercise
+        pointsAwarded = 5;
+        
+        if (pointsAwarded > 0) {
+          const { error: pointsError } = await supabase.rpc('update_user_points', {
+            user_uuid: user.id,
+            points_to_add: pointsAwarded
+          });
+          
+          if (pointsError) throw pointsError;
+        }
+        
+        // Update note-taking challenge if exists
+        const { data: challenges, error: challengesError } = await supabase
+          .from('user_daily_challenges')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('expires_at', new Date().toISOString())
+          .eq('completed', false);
+          
+        if (!challengesError && challenges) {
+          for (const challenge of challenges) {
+            if (challenge.description.toLowerCase().includes('note')) {
+              const newProgress = Math.min(challenge.current_progress + 1, challenge.target);
+              const completed = newProgress >= challenge.target;
+              
+              await supabase
+                .from('user_daily_challenges')
+                .update({
+                  current_progress: newProgress,
+                  completed,
+                  completed_at: completed ? new Date().toISOString() : null
+                })
+                .eq('id', challenge.id);
+                
+              if (completed) {
+                // Award challenge XP
+                await supabase.rpc('update_user_points', {
+                  user_uuid: user.id,
+                  points_to_add: challenge.reward_xp
+                });
+              }
+            }
+          }
+        }
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          pointsAwarded,
+          note: noteData ? noteData[0] : null
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

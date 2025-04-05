@@ -40,7 +40,7 @@ export const generateUserChallenges = async (userId: string): Promise<boolean> =
  */
 export const updateChallengeProgress = async (
   userId: string,
-  challengeType: 'lesson_completed' | 'xp_earned' | 'login' | 'exercise_completed'
+  challengeType: 'lesson_completed' | 'xp_earned' | 'login' | 'exercise_completed' | 'notes_created'
 ): Promise<void> => {
   try {
     console.log(`Updating challenge progress for ${userId}, type: ${challengeType}`);
@@ -99,6 +99,13 @@ export const updateChallengeProgress = async (
             shouldUpdate = true;
             increment = 1;
             console.log('Updating exercise challenge');
+          }
+          break;
+        case 'notes_created':
+          if (challenge.description.toLowerCase().includes('note')) {
+            shouldUpdate = true;
+            increment = 1;
+            console.log('Updating notes challenge');
           }
           break;
       }
