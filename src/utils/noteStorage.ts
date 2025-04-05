@@ -35,8 +35,7 @@ export const saveExerciseNote = async (
           content, 
           updated_at: new Date().toISOString() 
         })
-        .eq('id', existingNote.id)
-        .select();
+        .eq('id', existingNote.id);
         
       console.log('Updated existing note');
     } else {
@@ -49,8 +48,7 @@ export const saveExerciseNote = async (
           content,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        })
-        .select();
+        });
       
       // Award points for creating first note for this exercise
       try {
@@ -117,7 +115,7 @@ export const getUserNotes = async (
       .from('exercise_notes')
       .select(`
         *,
-        exercises:exercise_id (
+        exercises (
           title,
           description,
           difficulty
