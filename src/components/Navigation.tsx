@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Menu, X, Moon, Sun, User, Youtube } from "lucide-react";
+import { Menu, X, Moon, Sun, User, Youtube, Github, Code } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -60,7 +61,7 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center gap-4">
             <Link to="/" className="text-xl font-bold text-primary">
-              CodeAcademy
+              DevAcademy
             </Link>
             <Button
               variant="ghost"
@@ -79,14 +80,32 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             {!loading && session && user?.role === 'student' && (
-              <Button
-                variant="outline"
-                className="gap-2 border-red-500 text-red-500 hover:bg-red-500/10"
-                onClick={() => navigate('/student/yt-dev-tutorials')}
-              >
-                <Youtube className="h-4 w-4" />
-                YT Dev Tutorials
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="gap-2 border-red-500 text-red-500 hover:bg-red-500/10"
+                  onClick={() => navigate('/student/yt-dev-tutorials')}
+                >
+                  <Youtube className="h-4 w-4" />
+                  Dev Tutorials
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2 border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                  onClick={() => navigate('/student/github-projects')}
+                >
+                  <Github className="h-4 w-4" />
+                  GitHub Projects
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2 border-green-500 text-green-500 hover:bg-green-500/10"
+                  onClick={() => navigate('/student/code-editor')}
+                >
+                  <Code className="h-4 w-4" />
+                  Code Editor
+                </Button>
+              </>
             )}
             {!loading && session && (
               <Button
@@ -95,7 +114,7 @@ const Navigation = () => {
                 onClick={goToUserDashboard}
               >
                 <User className="h-4 w-4" />
-                Mon Profil
+                My Profile
               </Button>
             )}
             {!loading && user && (user.role === 'teacher' || user.role === 'admin') && (

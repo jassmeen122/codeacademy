@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -22,7 +23,16 @@ import {
   MessageCircle,
   Book,
   Briefcase,
-  Youtube
+  Youtube,
+  Github,
+  Database,
+  Server,
+  Terminal,
+  Coffee,
+  Boxes,
+  FileJson,
+  BadgeCheck,
+  Cpu
 } from 'lucide-react';
 
 const links = [
@@ -32,7 +42,7 @@ const links = [
     icon: LayoutDashboard,
   },
   {
-    title: 'Premium Courses',
+    title: 'Courses',
     href: '/student/courses',
     icon: BookOpen,
   },
@@ -47,22 +57,47 @@ const links = [
     icon: Languages,
   },
   {
-    title: 'Exercises',
+    title: 'Coding Exercises',
     href: '/student/exercises',
     icon: FileCode,
   },
   {
-    title: 'YT Dev Tutorials',
+    title: 'Developer Tutorials',
     href: '/student/yt-dev-tutorials',
     icon: Youtube,
   },
   {
-    title: 'Discussion Forum',
+    title: 'GitHub Projects',
+    href: '/student/github-projects',
+    icon: Github,
+  },
+  {
+    title: 'Code Editor',
+    href: '/student/code-editor',
+    icon: Code,
+  },
+  {
+    title: 'AI Coding Assistant',
+    href: '/student/ai-assistant',
+    icon: Brain,
+  },
+  {
+    title: 'API Playground',
+    href: '/student/api-playground',
+    icon: Database,
+  },
+  {
+    title: 'System Architecture',
+    href: '/student/architecture',
+    icon: Cpu,
+  },
+  {
+    title: 'Technical Forums',
     href: '/student/discussion',
     icon: MessageSquare,
   },
   {
-    title: 'Projects',
+    title: 'Projects Repository',
     href: '/student/projects',
     icon: FolderKanban,
   },
@@ -72,22 +107,12 @@ const links = [
     icon: Briefcase,
   },
   {
-    title: 'Code Editor',
-    href: '/student/code-editor',
-    icon: Code,
-  },
-  {
-    title: 'AI Assistant',
-    href: '/student/ai-assistant',
-    icon: Brain,
-  },
-  {
-    title: 'Mini Game',
+    title: 'Developer Games',
     href: '/student/mini-game',
     icon: Gamepad2,
   },
   {
-    title: 'Progress',
+    title: 'Learning Progress',
     href: '/student/progress',
     icon: TrendingUp,
   },
@@ -97,12 +122,12 @@ const links = [
     icon: Award,
   },
   {
-    title: 'Social Feed',
+    title: 'Developer Network',
     href: '/student/social',
     icon: Users,
   },
   {
-    title: 'Knowledge Share',
+    title: 'Knowledge Base',
     href: '/student/knowledge',
     icon: Book,
   },

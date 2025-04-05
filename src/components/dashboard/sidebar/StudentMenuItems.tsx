@@ -13,107 +13,168 @@ import {
   MessagesSquare,
   Briefcase,
   Users,
-  Brain
+  Brain,
+  Github,
+  Database,
+  Coffee,
+  Cpu,
+  Boxes,
+  FileJson,
+  Folder,
+  FolderArchive
 } from "lucide-react";
 import { SidebarItem } from "@/types/sidebar";
 
 export const StudentMenuItems: SidebarItem[] = [
   {
-    title: "Apprentissage",
+    title: "Learning",
     items: [
       {
-        title: "Tableau de Bord",
+        title: "Dashboard",
         icon: Terminal,
         href: "/student",
-        description: "Vue d'ensemble de votre parcours"
+        description: "Overview of your learning path"
       },
       {
-        title: "Cours",
+        title: "Courses",
         icon: Book,
         href: "/student/courses",
-        description: "Parcourir et suivre des cours"
+        description: "Browse and follow courses"
       },
       {
-        title: "Cours Gratuits",
+        title: "Free Courses",
         icon: BookOpen,
         href: "/student/free-courses",
-        description: "Cours gratuits populaires"
+        description: "Popular free courses"
       },
       {
-        title: "Exercices",
+        title: "Exercises",
         icon: Code,
         href: "/student/exercises",
-        description: "Exercices de programmation"
+        description: "Programming exercises"
       },
       {
-        title: "Éditeur de Code",
+        title: "Code Editor",
         icon: FileCode,
         href: "/student/code-editor",
-        description: "Environnement de développement"
+        description: "Development environment"
       },
       {
-        title: "Parcours Étoilé",
+        title: "Progress Path",
         icon: Star,
         href: "/student/progress",
-        description: "Suivi visuel de vos progrès"
+        description: "Visual tracking of your progress"
       },
       {
         title: "Badges & Achievements",
         icon: Trophy,
         href: "/student/achievements",
-        description: "Vos récompenses et objectifs"
+        description: "Your rewards and goals"
       }
     ]
   },
   {
-    title: "Ressources",
+    title: "Developer Resources",
     items: [
       {
-        title: "Tutoriels Vidéo",
+        title: "Dev Tutorials",
         icon: Youtube,
         href: "/student/yt-dev-tutorials",
-        description: "Tutoriels de développement"
+        description: "Video tutorials for developers"
       },
       {
-        title: "IA Assistant",
+        title: "AI Coding Assistant",
         icon: Brain,
         href: "/student/ai-assistant",
-        description: "Aide à l'apprentissage par IA"
+        description: "AI-powered learning support"
       },
       {
-        title: "Mini-Jeux",
+        title: "Developer Games",
         icon: Globe,
         href: "/student/mini-game",
-        description: "Apprendre en s'amusant"
+        description: "Learn while having fun"
+      },
+      {
+        title: "GitHub Projects",
+        icon: Github,
+        href: "/student/github-projects",
+        description: "Open source contributions"
+      },
+      {
+        title: "API Playground",
+        icon: Database,
+        href: "/student/api-playground",
+        description: "Test and explore APIs"
       }
     ]
   },
   {
-    title: "Communauté",
+    title: "Dev Community",
     items: [
       {
         title: "Forum",
         icon: MessageSquare,
         href: "/student/discussion",
-        description: "Poser vos questions"
+        description: "Ask your questions"
       },
       {
-        title: "Messagerie",
+        title: "Messages",
         icon: MessagesSquare,
         href: "/student/messages",
-        description: "Messagerie privée"
+        description: "Private messaging"
       },
       {
-        title: "Social",
+        title: "Developer Network",
         icon: Users,
         href: "/student/social",
-        description: "Fil d'actualité social"
+        description: "Social feed for developers"
       },
       {
-        title: "Stages",
+        title: "Internships",
         icon: Briefcase,
         href: "/student/internships",
-        description: "Opportunités de stages"
+        description: "Internship opportunities"
+      },
+      {
+        title: "Open Source",
+        icon: Coffee,
+        href: "/student/open-source",
+        description: "Contribute to projects"
+      }
+    ]
+  },
+  {
+    title: "Tools & Resources",
+    items: [
+      {
+        title: "Technical Documentation",
+        icon: FileJson,
+        href: "/student/documentation",
+        description: "Reference materials"
+      },
+      {
+        title: "System Architecture",
+        icon: Cpu,
+        href: "/student/architecture",
+        description: "Architecture diagrams"
+      },
+      {
+        title: "Package Manager",
+        icon: Boxes,
+        href: "/student/packages",
+        description: "Find and install packages"
+      },
+      {
+        title: "Project Templates",
+        icon: Folder,
+        href: "/student/templates",
+        description: "Starter project templates"
+      },
+      {
+        title: "Code Snippets",
+        icon: FolderArchive,
+        href: "/student/snippets",
+        description: "Reusable code snippets"
       }
     ]
   }

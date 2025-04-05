@@ -72,8 +72,7 @@ export const updateChallengeProgress = async (
       
       switch (challengeType) {
         case 'lesson_completed':
-          if (challenge.description.toLowerCase().includes('leçon') || 
-              challenge.description.toLowerCase().includes('lesson')) {
+          if (challenge.description.toLowerCase().includes('lesson')) {
             shouldUpdate = true;
             increment = 1;
             console.log('Updating lesson challenge');
@@ -87,15 +86,14 @@ export const updateChallengeProgress = async (
           }
           break;
         case 'login':
-          if (challenge.description.toLowerCase().includes('connecte')) {
+          if (challenge.description.toLowerCase().includes('login')) {
             shouldUpdate = true;
             increment = 1;
             console.log('Updating login challenge');
           }
           break;
         case 'exercise_completed':
-          if (challenge.description.toLowerCase().includes('exercice') || 
-              challenge.description.toLowerCase().includes('exercise')) {
+          if (challenge.description.toLowerCase().includes('exercise')) {
             shouldUpdate = true;
             increment = 1;
             console.log('Updating exercise challenge');
