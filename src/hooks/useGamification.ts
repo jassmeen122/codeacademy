@@ -214,85 +214,52 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      // Use a direct query since the RPC function is not in the type definition
-      const { data, error } = await supabase
-        .from('badges')
-        .select(`
-          id, 
-          name, 
-          description, 
-          icon, 
-          points,
-          user_badges!inner(earned_at, user_id)
-        `)
-        .eq('user_badges.user_id', user.id);
-        
-      if (error) {
-        // If no badges found, try getting all badges to show unearned ones
-        const { data: allBadgesData, error: allBadgesError } = await supabase
-          .from('badges')
-          .select('*');
-          
-        if (allBadgesError) throw allBadgesError;
-        
-        if (allBadgesData) {
-          // Convert to Badge interface with earned = false
-          const badgesWithEarnedStatus: Badge[] = allBadgesData.map(badge => ({
-            ...badge,
-            earned: false
-          }));
-          
-          setAllBadges(badgesWithEarnedStatus);
-          setBadges([]);
-        }
-        
-        return { success: true, data: [] };
-      }
+      // Get the badges that the user has earned
+      const { data: userBadgesData, error: userBadgesError } = await supabase
+        .from('user_badges')
+        .select('badge_id, earned_at')
+        .eq('user_id', user.id);
       
-      if (data) {
-        // Get all badges to show both earned and unearned
-        const { data: allBadgesData, error: allBadgesError } = await supabase
-          .from('badges')
-          .select('*');
-          
-        if (allBadgesError) throw allBadgesError;
-        
-        // Format earned badges
-        const earnedBadges: Badge[] = data.map(badge => ({
-          id: badge.id,
-          name: badge.name,
-          description: badge.description,
-          icon: badge.icon,
-          points: badge.points,
-          earned: true,
-          earned_at: badge.user_badges[0]?.earned_at
-        }));
-        
-        setBadges(earnedBadges);
+      if (userBadgesError) throw userBadgesError;
+      
+      // Get all badges from the badges table
+      const { data: allBadgesData, error: allBadgesError } = await supabase
+        .from('badges')
+        .select('*');
+      
+      if (allBadgesError) throw allBadgesError;
+      
+      if (allBadgesData) {
+        // Create a map of earned badges with their earned_at date
+        const earnedBadgesMap = new Map();
+        if (userBadgesData) {
+          userBadgesData.forEach(userBadge => {
+            earnedBadgesMap.set(userBadge.badge_id, userBadge.earned_at);
+          });
+        }
         
         // Format all badges with earned status
-        if (allBadgesData) {
-          const earnedBadgeIds = new Set(earnedBadges.map(b => b.id));
-          const badgesWithEarnedStatus: Badge[] = allBadgesData.map(badge => {
-            const isEarned = earnedBadgeIds.has(badge.id);
-            const earnedBadge = earnedBadges.find(b => b.id === badge.id);
-            
-            return {
-              id: badge.id,
-              name: badge.name,
-              description: badge.description,
-              icon: badge.icon,
-              points: badge.points,
-              earned: isEarned,
-              earned_at: isEarned ? earnedBadge?.earned_at : undefined
-            };
-          });
+        const badgesWithEarnedStatus: Badge[] = allBadgesData.map(badge => {
+          const isEarned = earnedBadgesMap.has(badge.id);
           
-          setAllBadges(badgesWithEarnedStatus);
-        }
+          return {
+            id: badge.id,
+            name: badge.name,
+            description: badge.description,
+            icon: badge.icon,
+            points: badge.points,
+            earned: isEarned,
+            earned_at: isEarned ? earnedBadgesMap.get(badge.id) : undefined
+          };
+        });
+        
+        // Set both earned badges and all badges
+        const earnedBadges = badgesWithEarnedStatus.filter(badge => badge.earned);
+        setBadges(earnedBadges);
+        setAllBadges(badgesWithEarnedStatus);
       }
       
-      return { success: true, data };
+      return { success: true };
     } catch (error) {
       console.error('Error fetching badges:', error);
       return { success: false, error };
@@ -386,28 +353,54 @@ export const useGamification = () => {
     }
   };
   
-  // Get leaderboard
+  // Get leaderboard - Modified to only show students
   const getLeaderboard = async (period: 'global' | 'weekly' = 'global') => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.functions.invoke('gamification', {
-        method: 'GET',
-        headers: {
-          'endpoint': 'get-leaderboard',
-          'period': period
+      let query;
+      
+      if (period === 'weekly') {
+        // For weekly leaderboard, join with profiles to filter by role
+        query = supabase
+          .from('user_points')
+          .select(`
+            user_id,
+            weekly_points,
+            profiles:user_id (
+              id,
+              full_name,
+              avatar_url,
+              role
+            )
+          `)
+          .order('weekly_points', { ascending: false })
+          .limit(20);
+      } else {
+        // For global leaderboard, filter profiles by role
+        query = supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, points, role')
+          .eq('role', 'student')
+          .order('points', { ascending: false })
+          .limit(20);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      if (data) {
+        if (period === 'weekly') {
+          // Filter to only include students from the weekly leaderboard result
+          const studentData = data.filter(item => item.profiles?.role === 'student');
+          setLeaderboard(studentData);
+        } else {
+          setLeaderboard(data);
         }
-      });
-      
-      if (error) {
-        throw new Error(error.message || 'Failed to fetch leaderboard');
       }
       
-      if (data?.leaderboard) {
-        setLeaderboard(data.leaderboard);
-      }
-      
-      return { success: true, data: data?.leaderboard };
+      return { success: true, data };
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       return { success: false, error };

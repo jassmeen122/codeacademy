@@ -17,6 +17,7 @@ import {
   Star
 } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 const AchievementsPage = () => {
   const { user } = useAuthState();
@@ -75,19 +76,27 @@ const AchievementsPage = () => {
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
+        >
           <div>
-            <h1 className="text-3xl font-bold mb-1">Achievements & Gamification</h1>
+            <h1 className="text-3xl font-bold mb-1 flex items-center">
+              <Trophy className="h-8 w-8 text-yellow-500 mr-2" />
+              Achievements & Gamification
+            </h1>
             <p className="text-muted-foreground">
               Suivez vos progrès, défis et récompenses
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-muted p-2 rounded-lg">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            <span className="font-semibold">{points?.total_points || 0} XP</span>
+          <div className="flex items-center gap-2 bg-gradient-to-r from-primary/20 to-primary/5 p-3 rounded-lg shadow-sm">
+            <Trophy className="h-6 w-6 text-yellow-500" />
+            <span className="font-semibold text-lg">{points?.total_points || 0} XP</span>
           </div>
-        </div>
+        </motion.div>
         
         {loading && activeTab !== "badges" ? (
           <div className="flex justify-center py-12">
@@ -97,17 +106,17 @@ const AchievementsPage = () => {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-2">
-              <TabsTrigger value="badges" className="flex gap-2 items-center">
+            <TabsList className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-2 bg-muted/50 p-1 rounded-lg">
+              <TabsTrigger value="badges" className="flex gap-2 items-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Medal className="h-4 w-4" /> Badges
               </TabsTrigger>
-              <TabsTrigger value="challenges" className="flex gap-2 items-center">
+              <TabsTrigger value="challenges" className="flex gap-2 items-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Target className="h-4 w-4" /> Défis
               </TabsTrigger>
-              <TabsTrigger value="certificates" className="flex gap-2 items-center">
+              <TabsTrigger value="certificates" className="flex gap-2 items-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Scroll className="h-4 w-4" /> Certificats
               </TabsTrigger>
-              <TabsTrigger value="leaderboard" className="flex gap-2 items-center">
+              <TabsTrigger value="leaderboard" className="flex gap-2 items-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Users className="h-4 w-4" /> Classement
               </TabsTrigger>
             </TabsList>
@@ -129,36 +138,45 @@ const AchievementsPage = () => {
             </TabsContent>
 
             <TabsContent value="certificates" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Vos Certificats</CardTitle>
-                  <CardDescription>
+              <Card className="border-none shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-background">
+                  <CardTitle className="flex items-center text-2xl">
+                    <Scroll className="h-6 w-6 mr-2 text-blue-600" />
+                    Vos Certificats
+                  </CardTitle>
+                  <CardDescription className="text-base">
                     Certificats obtenus en complétant des cours
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   {certificates && certificates.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {certificates.map((certificate) => (
-                        <Card key={certificate.id} className="border hover:shadow-md transition-all">
-                          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 flex items-center justify-center">
-                            <Scroll className="h-12 w-12 text-blue-700" />
-                          </div>
-                          <CardContent className="pt-4">
-                            <h3 className="font-semibold mb-1 text-blue-700">{certificate.title}</h3>
-                            <p className="text-sm text-muted-foreground mb-3">{certificate.description}</p>
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-muted-foreground">
-                                Délivré le {formatDate(certificate.issued_at)}
-                              </span>
-                              {certificate.certificate_url && (
-                                <Button size="sm" variant="outline" className="text-xs">
-                                  Voir
-                                </Button>
-                              )}
+                        <motion.div
+                          key={certificate.id}
+                          whileHover={{ scale: 1.03 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <Card className="border hover:shadow-md transition-all overflow-hidden">
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 flex items-center justify-center">
+                              <Scroll className="h-16 w-16 text-blue-700" />
                             </div>
-                          </CardContent>
-                        </Card>
+                            <CardContent className="p-5">
+                              <h3 className="font-semibold text-lg mb-2 text-blue-700">{certificate.title}</h3>
+                              <p className="text-sm text-muted-foreground mb-4">{certificate.description}</p>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs text-muted-foreground">
+                                  Délivré le {formatDate(certificate.issued_at)}
+                                </span>
+                                {certificate.certificate_url && (
+                                  <Button size="sm" variant="outline" className="text-xs">
+                                    Voir
+                                  </Button>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
                       ))}
                     </div>
                   ) : (
@@ -175,15 +193,18 @@ const AchievementsPage = () => {
             </TabsContent>
 
             <TabsContent value="leaderboard" className="space-y-6">
-              <Card>
-                <CardHeader>
+              <Card className="border-none shadow-lg overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-yellow-50 to-background">
                   <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                     <div>
-                      <CardTitle>Classement</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="flex items-center text-2xl">
+                        <Trophy className="h-6 w-6 mr-2 text-yellow-600" />
+                        Classement des Étudiants
+                      </CardTitle>
+                      <CardDescription className="text-base">
                         {leaderboardPeriod === 'global' 
                           ? "Classement global basé sur les points totaux"
-                          : "Classement de la semaine en cours"}
+                          : "Classement des étudiants de la semaine en cours"}
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">
@@ -204,9 +225,9 @@ const AchievementsPage = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   {leaderboard && leaderboard.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {leaderboard.map((entry, index) => {
                         const points = leaderboardPeriod === 'global' 
                           ? entry.points 
@@ -216,31 +237,37 @@ const AchievementsPage = () => {
                           : entry.profiles?.full_name;
                           
                         return (
-                          <div 
-                            key={index} 
-                            className={`flex items-center p-3 rounded-lg ${
-                              index === 0 ? 'bg-yellow-50 border border-yellow-100' :
-                              index === 1 ? 'bg-gray-50 border border-gray-100' :
-                              index === 2 ? 'bg-amber-50 border border-amber-100' :
-                              'bg-white border'
-                            }`}
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
                           >
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 font-bold ${
-                              index === 0 ? 'bg-yellow-200 text-yellow-800' :
-                              index === 1 ? 'bg-gray-200 text-gray-800' :
-                              index === 2 ? 'bg-amber-200 text-amber-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {index + 1}
+                            <div 
+                              className={`flex items-center p-4 rounded-lg shadow-sm ${
+                                index === 0 ? 'bg-gradient-to-r from-yellow-100 to-yellow-50 border border-yellow-200' :
+                                index === 1 ? 'bg-gradient-to-r from-gray-100 to-gray-50 border border-gray-200' :
+                                index === 2 ? 'bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-200' :
+                                'bg-white border hover:bg-gray-50 transition-colors'
+                              }`}
+                            >
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 font-bold text-lg ${
+                                index === 0 ? 'bg-yellow-200 text-yellow-800' :
+                                index === 1 ? 'bg-gray-200 text-gray-800' :
+                                index === 2 ? 'bg-amber-200 text-amber-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {index + 1}
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium text-lg">{name || 'Utilisateur'}</p>
+                              </div>
+                              <div className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
+                                <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                                <span className="font-bold">{points}</span>
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <p className="font-medium">{name || 'Utilisateur'}</p>
-                            </div>
-                            <div className="flex items-center">
-                              <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                              <span className="font-semibold">{points}</span>
-                            </div>
-                          </div>
+                          </motion.div>
                         );
                       })}
                     </div>
