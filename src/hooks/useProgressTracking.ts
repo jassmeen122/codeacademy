@@ -33,10 +33,35 @@ export const useProgressTracking = () => {
     return true;
   };
 
+  // Add missing methods that were causing the errors
+  const updateUserMetrics = async (type: string, value: number) => {
+    console.log('Update user metrics stub called', { type, value });
+    setUpdating(true);
+    
+    // Simulate a delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    setUpdating(false);
+    return true;
+  };
+
+  const testUpdateMetrics = async (type: string, value: number) => {
+    console.log('Test update metrics stub called', { type, value });
+    setUpdating(true);
+    
+    // Simulate a delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    setUpdating(false);
+    return true;
+  };
+
   return {
     trackVideoProgress,
     trackQuizCompletion,
     trackSummaryRead,
+    updateUserMetrics,
+    testUpdateMetrics,
     updating
   };
 };
