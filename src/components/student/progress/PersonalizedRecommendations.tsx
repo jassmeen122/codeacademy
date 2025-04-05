@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, Code, Clock, ChevronRight, Lightbulb, Zap, BarChart2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserRecommendation } from '@/types/progress';
-import { useRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface PersonalizedRecommendationsProps {
   recommendations: UserRecommendation[];
@@ -18,7 +18,7 @@ export const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsPr
   loading,
   onRecommendationClick
 }) => {
-  const router = useRouter();
+  const navigate = useNavigate();
   
   // Helper to get appropriate icon based on recommendation type
   const getIconForType = (type: string) => {
@@ -64,19 +64,19 @@ export const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsPr
     // Then navigate to appropriate page
     switch (recommendation.recommendation_type) {
       case 'course':
-        router.navigate(`/student/courses/${recommendation.item_id}`);
+        navigate(`/student/courses/${recommendation.item_id}`);
         break;
       case 'exercise':
-        router.navigate(`/student/exercises?id=${recommendation.item_id}`);
+        navigate(`/student/exercises?id=${recommendation.item_id}`);
         break;
       case 'module':
-        router.navigate(`/student/courses/modules/${recommendation.item_id}`);
+        navigate(`/student/courses/modules/${recommendation.item_id}`);
         break;
       case 'skill':
-        router.navigate(`/student/progress?skill=${recommendation.item_id}`);
+        navigate(`/student/progress?skill=${recommendation.item_id}`);
         break;
       default:
-        router.navigate(`/student/dashboard`);
+        navigate(`/student/dashboard`);
     }
   };
 
@@ -150,7 +150,7 @@ export const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsPr
       <CardFooter className="flex justify-center border-t pt-4">
         <Button 
           variant="outline"
-          onClick={() => router.navigate('/student/progress')}
+          onClick={() => navigate('/student/progress')}
         >
           View All Recommendations
         </Button>

@@ -11,6 +11,23 @@ import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+// Add this to properly handle jsPDF with autotable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => any;
+    lastAutoTable: {
+      finalY: number;
+    };
+    internal: {
+      pageSize: {
+        width: number;
+        height: number;
+      };
+      getNumberOfPages: () => number;
+    };
+  }
+}
+
 interface ProgressReportProps {
   metrics: UserMetric | null;
   skills: UserSkill[];
@@ -53,7 +70,7 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         ['Total Learning Time', `${metrics?.total_time_spent || 0} minutes`],
       ];
       
-      // @ts-ignore - jspdf-autotable types
+      // Use autoTable with proper typing
       doc.autoTable({
         startY: 55,
         head: [['Metric', 'Value']],
@@ -79,7 +96,7 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         skillsData.push(['No skills data available yet', '']);
       }
       
-      // @ts-ignore - jspdf-autotable types
+      // Use autoTable with proper typing
       doc.autoTable({
         startY: doc.lastAutoTable.finalY + 25,
         head: [['Skill', 'Progress']],
@@ -106,7 +123,7 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         activityData.push(['No recent activity', '', '']);
       }
       
-      // @ts-ignore - jspdf-autotable types
+      // Use autoTable with proper typing
       doc.autoTable({
         startY: doc.lastAutoTable.finalY + 25,
         head: [['Date', 'Type', 'Count']],
