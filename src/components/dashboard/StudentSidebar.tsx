@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -32,8 +32,14 @@ import {
   Boxes,
   FileJson,
   BadgeCheck,
-  Cpu
+  Cpu,
+  LogOut,
+  Home
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuthState } from '@/hooks/useAuthState';
+import { UserAvatar } from '@/components/UserAvatar';
+import { toast } from 'sonner';
 
 const links = [
   {
@@ -155,13 +161,64 @@ interface StudentSidebarProps {
 export function StudentSidebar({ className }: StudentSidebarProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { session, user, loading, handleSignOut } = useAuthState();
 
   const toggleExpand = (title: string) => {
     setExpanded(expanded === title ? null : title);
   };
 
+  const handleLogout = async () => {
+    try {
+      await handleSignOut();
+      toast.success("Successfully logged out");
+      navigate("/auth");
+    } catch (error) {
+      toast.error("Failed to log out");
+      console.error("Logout error:", error);
+    }
+  };
+
+  const goToDashboard = () => {
+    navigate("/");
+  };
+
   return (
     <div className={cn('pb-12', className)}>
+      {/* User Profile Section */}
+      <div className="px-3 py-4 border-b border-gray-700 dark:border-gray-700">
+        <div className="flex items-center gap-3 mb-4">
+          <UserAvatar user={user} size="lg" />
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 truncate">
+              {user?.full_name || 'User'}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+              {user?.role || 'Loading...'}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full flex items-center gap-2"
+            onClick={goToDashboard}
+          >
+            <Home className="h-4 w-4" />
+            Home
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full flex items-center gap-2 bg-red-500/10 text-red-600 hover:bg-red-500/20 border-red-200 dark:border-red-800"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      </div>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="space-y-1">

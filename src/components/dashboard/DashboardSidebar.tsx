@@ -20,12 +20,16 @@ import { teacherMenuItems } from "./sidebar/TeacherMenuItems";
 import { StudentMenuItems } from "./sidebar/StudentMenuItems";
 import { SidebarMenu } from "./sidebar/SidebarMenu";
 import { MenuItem } from "@/types/sidebar";
+import { useAuthState } from "@/hooks/useAuthState";
+import { UserAvatar } from "@/components/UserAvatar";
 
 interface DashboardSidebarProps {
   userRole: 'admin' | 'teacher' | 'student' | null;
 }
 
 export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
+  const { user } = useAuthState();
+  
   const getMenuItems = () => {
     switch (userRole) {
       case 'admin':
@@ -71,13 +75,25 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
     <Sidebar className="border-r border-gray-700 bg-gray-900">
       <SidebarHeader className="border-b border-gray-700 p-4">
         <div className="flex items-center gap-2">
-          <div className="p-2 bg-gray-800 rounded-md">
-            <RoleIcon className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <span className="font-mono font-semibold text-lg">{getRoleTitle()}</span>
-            <div className="text-xs text-gray-500 font-mono">{`> CodeAcademy`}</div>
-          </div>
+          {user ? (
+            <>
+              <UserAvatar user={user} size="md" />
+              <div>
+                <span className="font-mono font-semibold text-lg">{user.full_name || 'User'}</span>
+                <div className="text-xs text-gray-500 font-mono capitalize">{user.role || '> CodeAcademy'}</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="p-2 bg-gray-800 rounded-md">
+                <RoleIcon className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <span className="font-mono font-semibold text-lg">{getRoleTitle()}</span>
+                <div className="text-xs text-gray-500 font-mono">{`> CodeAcademy`}</div>
+              </div>
+            </>
+          )}
         </div>
       </SidebarHeader>
       <SidebarContent className="bg-gray-900">
