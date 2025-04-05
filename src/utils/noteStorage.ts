@@ -2,9 +2,10 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { updateChallengeProgress } from './challengeGenerator';
+import { Database } from '@/integrations/supabase/types';
 
 // Define the type for exercise notes
-interface ExerciseNote {
+export interface ExerciseNote {
   id: string;
   user_id: string;
   exercise_id: string;
@@ -69,7 +70,8 @@ export const saveExerciseNote = async (
       try {
         await supabase.functions.invoke('gamification', {
           body: { 
-            points: 5 
+            points: 5,
+            activity_type: 'notes_created'
           },
           method: 'POST',
           headers: {
@@ -112,7 +114,7 @@ export const getExerciseNote = async (
     
     if (error) throw error;
     
-    return { success: true, data };
+    return { success: true, data: data as ExerciseNote | null };
   } catch (error) {
     console.error('Error getting exercise note:', error);
     return { success: false, error };
@@ -141,7 +143,7 @@ export const getUserNotes = async (
     
     if (error) throw error;
     
-    return { success: true, data };
+    return { success: true, data: data as ExerciseNote[] };
   } catch (error) {
     console.error('Error getting user notes:', error);
     return { success: false, error };
