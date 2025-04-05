@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useGamification } from "@/hooks/useGamification";
+import { BadgesTab } from "@/components/student/badges/BadgesTab";
 import {
   Trophy,
   Medal,
@@ -23,23 +24,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-interface UserBadge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  points: number;
-  earned_at: string;
-}
-
-interface UserCertificate {
-  id: string;
-  title: string;
-  description: string;
-  certificate_url: string | null;
-  issued_at: string;
-}
-
 interface UserChallenge {
   id: string;
   description: string;
@@ -51,11 +35,19 @@ interface UserChallenge {
   completed: boolean;
 }
 
+interface UserCertificate {
+  id: string;
+  title: string;
+  description: string;
+  certificate_url: string | null;
+  issued_at: string;
+}
+
 const AchievementsPage = () => {
   const { user } = useAuthState();
   const {
     loading,
-    badges,
+    allBadges,
     challenges,
     certificates,
     points,
@@ -78,11 +70,13 @@ const AchievementsPage = () => {
 
   const loadGamificationData = async () => {
     try {
-      await getUserBadges();
-      await getUserChallenges();
-      await getUserCertificates();
-      await getUserPoints();
-      await getLeaderboard(leaderboardPeriod);
+      await Promise.all([
+        getUserBadges(),
+        getUserChallenges(),
+        getUserCertificates(),
+        getUserPoints(),
+        getLeaderboard(leaderboardPeriod)
+      ]);
     } catch (error) {
       console.error("Erreur lors du chargement des données de gamification:", error);
       toast.error("Impossible de charger les données de gamification");
@@ -149,7 +143,7 @@ const AchievementsPage = () => {
           </div>
         </div>
         
-        {loading ? (
+        {loading && activeTab !== "badges" ? (
           <div className="flex justify-center py-12">
             <div className="animate-pulse text-center">
               <p className="text-lg">Chargement des données de gamification...</p>
@@ -173,52 +167,11 @@ const AchievementsPage = () => {
             </TabsList>
 
             <TabsContent value="badges" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Vos Badges</CardTitle>
-                  <CardDescription>
-                    Gagnez des badges en complétant des défis et en progressant dans vos cours
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {badges && badges.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {badges.map((badge) => (
-                        <Card key={badge.id} className="overflow-hidden border hover:shadow-md transition-all">
-                          <div className="bg-primary/10 p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-primary rounded-full p-2 text-primary-foreground">
-                                {getIconComponent(badge.icon)}
-                              </div>
-                              <div>
-                                <h3 className="font-semibold">{badge.name}</h3>
-                                <p className="text-xs text-muted-foreground">
-                                  Obtenu le {formatDate(badge.earned_at)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <CardContent className="pt-3">
-                            <p className="text-sm text-muted-foreground mb-2">{badge.description}</p>
-                            <Badge variant="secondary">{badge.points} points</Badge>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-10">
-                      <Medal className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
-                      <h3 className="text-lg font-medium">Pas encore de badges</h3>
-                      <p className="text-muted-foreground mb-6">
-                        Complétez des défis et progressez dans vos cours pour gagner des badges
-                      </p>
-                      <Button variant="outline" onClick={loadGamificationData}>
-                        Actualiser
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <BadgesTab 
+                badges={allBadges || []} 
+                loading={loading} 
+                onRefresh={loadGamificationData} 
+              />
             </TabsContent>
 
             <TabsContent value="challenges" className="space-y-6">

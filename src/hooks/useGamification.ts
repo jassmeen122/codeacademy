@@ -23,6 +23,16 @@ interface Certificate {
   issued_at: string;
 }
 
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  points: number;
+  earned?: boolean;
+  earned_at?: string;
+}
+
 interface UserPoints {
   daily_points: number;
   weekly_points: number;
@@ -33,7 +43,8 @@ interface UserPoints {
 export const useGamification = () => {
   const { user } = useAuthState();
   const [loading, setLoading] = useState(false);
-  const [badges, setBadges] = useState<any[]>([]);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [challenges, setChallenges] = useState<UserChallenge[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [points, setPoints] = useState<UserPoints | null>(null);
@@ -69,7 +80,10 @@ export const useGamification = () => {
       }
       
       // Check if user earned any new badges
-      if (data.newBadges && data.newBadges.length > 0) {
+      if (data?.newBadges && data.newBadges.length > 0) {
+        // Refresh badges to get the newly earned ones
+        await getUserBadges();
+        
         toast.success("Nouveau badge débloqué !", {
           description: "Consultez votre profil pour voir vos badges"
         });
@@ -113,11 +127,42 @@ export const useGamification = () => {
         toast.success("Défi terminé !", {
           description: `+${data.pointsAwarded} XP`
         });
+        
+        // Check for new badges
+        await checkForBadges();
       }
       
       return { success: true, data: data };
     } catch (error) {
       console.error('Error updating challenge:', error);
+      return { success: false, error };
+    }
+  };
+  
+  // Check for new badges
+  const checkForBadges = async () => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
+    try {
+      const { data, error } = await supabase.rpc('check_and_award_badges', {
+        user_uuid: user.id
+      });
+      
+      if (error) throw error;
+      
+      // If new badges were earned, refresh the badges
+      if (data && data.length > 0) {
+        await getUserBadges();
+        
+        // Display notification
+        toast.success("Nouveau badge débloqué !", {
+          description: "Consultez votre page d'achievements pour voir vos badges"
+        });
+      }
+      
+      return { success: true, data: data };
+    } catch (error) {
+      console.error('Error checking badges:', error);
       return { success: false, error };
     }
   };
@@ -161,119 +206,6 @@ export const useGamification = () => {
     }
   };
   
-  // Track user activity and award points
-  const trackActivity = async (activityType: string, detail: any, pointsToAward: number) => {
-    if (!user) return { success: false, error: 'User not authenticated' };
-    
-    try {
-      // First record the activity in user_activities
-      const { error } = await supabase
-        .from('user_activities')
-        .insert({
-          user_id: user.id,
-          activity_type: activityType,
-          activity_data: detail
-        });
-        
-      if (error) throw error;
-      
-      // Then award points if specified
-      if (pointsToAward > 0) {
-        await addPoints(pointsToAward, `Activité: ${activityType}`);
-      }
-      
-      // Check for and update challenges that might be affected
-      await updateChallengesBasedOnActivity(activityType);
-      
-      return { success: true };
-    } catch (error) {
-      console.error('Error tracking activity:', error);
-      return { success: false, error };
-    }
-  };
-  
-  // Update challenges based on activity type
-  const updateChallengesBasedOnActivity = async (activityType: string) => {
-    if (!user) return;
-    
-    try {
-      // Get user's daily challenges
-      const { data: activeDaily, error: dailyError } = await supabase
-        .from('user_daily_challenges')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('challenge_type', 'daily')
-        .eq('completed', false)
-        .gte('expires_at', new Date().toISOString())
-        .maybeSingle();
-      
-      if (dailyError && dailyError.code !== 'PGRST116') {
-        console.error('Error fetching daily challenge:', dailyError);
-        return;
-      }
-      
-      // Get user's weekly challenges
-      const { data: activeWeekly, error: weeklyError } = await supabase
-        .from('user_daily_challenges')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('challenge_type', 'weekly')
-        .eq('completed', false)
-        .gte('expires_at', new Date().toISOString())
-        .maybeSingle();
-      
-      if (weeklyError && weeklyError.code !== 'PGRST116') {
-        console.error('Error fetching weekly challenge:', weeklyError);
-        return;
-      }
-      
-      // Update lesson challenge if applicable
-      if (activityType === 'lesson_viewed' && activeDaily) {
-        await updateChallengeProgress(
-          activeDaily.id, 
-          activeDaily.current_progress + 1, 
-          activeDaily.target
-        );
-      }
-      
-      // Update login streak for weekly challenge
-      if (activityType === 'login' && activeWeekly) {
-        // Get last 5 days of activity
-        const fiveDaysAgo = new Date();
-        fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-        
-        const { data: recentActivity } = await supabase
-          .from('user_activities')
-          .select('created_at')
-          .eq('user_id', user.id)
-          .eq('activity_type', 'login')
-          .gte('created_at', fiveDaysAgo.toISOString());
-          
-        if (recentActivity) {
-          // Count unique days
-          const uniqueDays = new Set();
-          recentActivity.forEach(activity => {
-            if (activity.created_at) {
-              const date = new Date(activity.created_at);
-              uniqueDays.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);
-            }
-          });
-          
-          const daysActive = uniqueDays.size;
-          
-          // Update progress
-          await updateChallengeProgress(
-            activeWeekly.id,
-            daysActive,
-            activeWeekly.target
-          );
-        }
-      }
-    } catch (error) {
-      console.error('Error updating challenges based on activity:', error);
-    }
-  };
-  
   // Get user badges
   const getUserBadges = async () => {
     if (!user) return { success: false, error: 'User not authenticated' };
@@ -281,24 +213,23 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('user_badges')
-        .select(`
-          id, earned_at,
-          badges:badge_id (
-            id, name, description, icon, points
-          )
-        `)
-        .eq('user_id', user.id);
+      // Use the RPC function to get all badges with earned status
+      const { data, error } = await supabase.rpc('get_user_badges', {
+        user_uuid: user.id
+      });
         
       if (error) throw error;
       
       if (data) {
-        setBadges(data.map(item => ({
-          id: item.id,
-          earned_at: item.earned_at,
-          ...item.badges
-        })));
+        // Split badges into earned and not earned
+        const earned = data.filter(badge => badge.earned);
+        const notEarned = data.filter(badge => !badge.earned);
+        
+        // Set all badges for display on the achievements page
+        setAllBadges(data);
+        
+        // Set earned badges for other components that might need them
+        setBadges(earned);
       }
       
       return { success: true, data };
@@ -428,14 +359,15 @@ export const useGamification = () => {
   return {
     loading,
     badges,
+    allBadges,
     challenges,
     certificates,
     points,
     leaderboard,
     addPoints,
     updateChallengeProgress,
+    checkForBadges,
     generateCertificate,
-    trackActivity,
     getUserBadges,
     getUserChallenges,
     getUserCertificates,

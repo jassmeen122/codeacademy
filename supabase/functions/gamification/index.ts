@@ -1,248 +1,236 @@
 
+// This edge function handles various gamification features
+// including points, challenges, badges, and certificates
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, endpoint, period',
 };
 
 serve(async (req) => {
-  // Handle CORS preflight request
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !serviceRoleKey) {
-      throw new Error('Missing environment variables for Supabase');
-    }
-    
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-    
-    // Get the JWT token from the request
+    // Get the authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Missing Authorization header');
+      throw new Error('Authorization header is required');
     }
+
+    const endpoint = req.headers.get('endpoint') || '';
     
-    // Extract the token without the "Bearer " prefix
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Get the JWT token from the Authorization header
     const token = authHeader.replace('Bearer ', '');
     
     // Verify the token and get the user
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
-    if (userError || !user) {
+    if (authError || !user) {
       throw new Error('Invalid token or user not found');
     }
     
-    // Parse request URL to get the endpoint path
-    const url = new URL(req.url);
-    const endpoint = url.pathname.split('/').pop();
-    
-    // Parse request body if it exists
-    let requestBody = null;
-    if (req.method !== 'GET') {
-      try {
-        requestBody = await req.json();
-      } catch (e) {
-        // No body or invalid JSON
+    // Process based on the endpoint
+    if (endpoint === 'add-points') {
+      // Handle adding points
+      const { points } = await req.json();
+      
+      // Call the function to update user points
+      const { data, error } = await supabase.rpc('update_user_points', {
+        user_uuid: user.id,
+        points_to_add: points
+      });
+      
+      if (error) throw error;
+      
+      // Check if any new badges were earned
+      const { data: newBadges, error: badgeError } = await supabase.rpc('check_and_award_badges', {
+        user_uuid: user.id
+      });
+      
+      if (badgeError) throw badgeError;
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          pointsAdded: points,
+          newBadges: newBadges
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } 
+    else if (endpoint === 'update-challenge') {
+      // Handle updating challenge progress
+      const { challenge_id, progress, target, completed } = await req.json();
+      
+      // Update the challenge progress
+      const { data, error } = await supabase
+        .from('user_daily_challenges')
+        .update({ 
+          current_progress: progress,
+          completed: completed,
+          completed_at: completed ? new Date().toISOString() : null
+        })
+        .eq('id', challenge_id)
+        .eq('user_id', user.id)
+        .select();
+        
+      if (error) throw error;
+      
+      let pointsAwarded = 0;
+      
+      // Award points if the challenge is completed
+      if (completed && data && data.length > 0) {
+        pointsAwarded = data[0].reward_xp || 0;
+        
+        if (pointsAwarded > 0) {
+          // Update user points
+          const { error: pointsError } = await supabase.rpc('update_user_points', {
+            user_uuid: user.id,
+            points_to_add: pointsAwarded
+          });
+          
+          if (pointsError) throw pointsError;
+        }
       }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          pointsAwarded,
+          challenge: data ? data[0] : null
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
-    
-    let result: any = null;
-    
-    // Handle different API endpoints
-    switch (endpoint) {
-      case 'add-points':
-        // Add points to user
-        if (!requestBody || typeof requestBody.points !== 'number') {
-          throw new Error('Missing or invalid points value');
-        }
+    else if (endpoint === 'generate-certificate') {
+      // Generate a certificate for course completion
+      const { course_id, course_title } = await req.json();
+      
+      // Check if the user already has a certificate for this course
+      const { data: existingCert, error: certCheckError } = await supabase
+        .from('user_certificates')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('course_id', course_id)
+        .maybeSingle();
         
-        const { data: pointsData, error: pointsError } = await supabaseAdmin.rpc(
-          'update_user_points',
-          { 
-            user_uuid: user.id, 
-            points_to_add: requestBody.points
-          }
+      if (certCheckError) throw certCheckError;
+      
+      // If certificate already exists, return it
+      if (existingCert) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            alreadyExists: true,
+            certificate_id: existingCert.id
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+      
+      // Create a new certificate
+      const { data: newCert, error: createError } = await supabase
+        .from('user_certificates')
+        .insert({
+          user_id: user.id,
+          course_id: course_id,
+          title: `Certificat de réussite: ${course_title}`,
+          description: `Ce certificat atteste que l'utilisateur a complété avec succès le cours ${course_title}.`,
+          // We could generate a real PDF certificate here and store it in storage
+          certificate_url: null
+        })
+        .select()
+        .single();
         
-        if (pointsError) throw pointsError;
-        
-        // Check for new badges
-        const { data: badgesData, error: badgesError } = await supabaseAdmin.rpc(
-          'check_and_award_badges',
-          { user_uuid: user.id }
-        );
-        
-        if (badgesError) throw badgesError;
-        
-        result = {
-          success: true,
-          pointsAdded: requestBody.points,
-          newBadges: badgesData || []
-        };
-        break;
-        
-      case 'update-challenge':
-        // Update challenge progress
-        if (!requestBody || !requestBody.challenge_id || typeof requestBody.progress !== 'number') {
-          throw new Error('Missing or invalid challenge update data');
-        }
-        
-        const { data: challengeData, error: challengeError } = await supabaseAdmin
-          .from('user_daily_challenges')
-          .update({
-            current_progress: requestBody.progress,
-            completed: requestBody.progress >= requestBody.target,
-            completed_at: requestBody.progress >= requestBody.target ? new Date().toISOString() : null
-          })
-          .eq('id', requestBody.challenge_id)
-          .eq('user_id', user.id)
-          .select()
-          .single();
+      if (createError) throw createError;
+      
+      // Award points for completing a course
+      const courseCompletionPoints = 100;
+      const { error: pointsError } = await supabase.rpc('update_user_points', {
+        user_uuid: user.id,
+        points_to_add: courseCompletionPoints
+      });
+      
+      if (pointsError) throw pointsError;
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          alreadyExists: false,
+          certificate: newCert,
+          pointsAwarded: courseCompletionPoints
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    else if (endpoint === 'get-leaderboard') {
+      // Get the leaderboard data
+      const period = req.headers.get('period') || 'global';
+      
+      let leaderboardData;
+      let leaderboardError;
+      
+      if (period === 'weekly') {
+        // Get weekly leaderboard
+        const { data, error } = await supabase
+          .from('user_points')
+          .select(`
+            user_id,
+            weekly_points,
+            profiles:user_id (
+              full_name,
+              avatar_url
+            )
+          `)
+          .order('weekly_points', { ascending: false })
+          .limit(10);
           
-        if (challengeError) throw challengeError;
-        
-        // If challenge is completed, award XP
-        if (challengeData && challengeData.completed && !requestBody.completed) {
-          await supabaseAdmin.rpc(
-            'update_user_points',
-            { 
-              user_uuid: user.id, 
-              points_to_add: challengeData.reward_xp
-            }
-          );
-          
-          result = {
-            success: true,
-            challenge: challengeData,
-            pointsAwarded: challengeData.reward_xp
-          };
-        } else {
-          result = {
-            success: true,
-            challenge: challengeData
-          };
-        }
-        break;
-        
-      case 'generate-certificate':
-        // Generate certificate for a course
-        if (!requestBody || !requestBody.course_id || !requestBody.course_title) {
-          throw new Error('Missing or invalid certificate data');
-        }
-        
-        // Check if certificate already exists
-        const { data: existingCert, error: certQueryError } = await supabaseAdmin
-          .from('user_certificates')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', requestBody.course_id)
-          .maybeSingle();
-          
-        if (certQueryError) throw certQueryError;
-        
-        if (existingCert) {
-          result = {
-            success: true,
-            certificateId: existingCert.id,
-            alreadyExists: true
-          };
-        } else {
-          // Create a new certificate
-          const { data: newCert, error: newCertError } = await supabaseAdmin
-            .from('user_certificates')
-            .insert({
-              user_id: user.id,
-              course_id: requestBody.course_id,
-              title: `Certificat: ${requestBody.course_title}`,
-              description: `Ce certificat atteste que l'utilisateur a complété avec succès le cours "${requestBody.course_title}"`,
-              certificate_url: null // Would generate an actual certificate URL in production
-            })
-            .select()
-            .single();
-            
-          if (newCertError) throw newCertError;
-          
-          // Award XP for completing a course
-          await supabaseAdmin.rpc(
-            'update_user_points',
-            { 
-              user_uuid: user.id, 
-              points_to_add: 100 // Award 100 XP for course completion
-            }
-          );
-          
-          result = {
-            success: true,
-            certificateId: newCert.id,
-            pointsAwarded: 100
-          };
-        }
-        break;
-        
-      case 'get-leaderboard':
-        // Get global or weekly leaderboard
-        const period = url.searchParams.get('period') || 'global';
-        
-        let leaderboardQuery = supabaseAdmin
+        leaderboardData = data;
+        leaderboardError = error;
+      } else {
+        // Get global leaderboard
+        const { data, error } = await supabase
           .from('profiles')
           .select('id, full_name, avatar_url, points')
           .order('points', { ascending: false })
           .limit(10);
           
-        if (period === 'weekly') {
-          // For weekly leaderboard, use user_points instead
-          leaderboardQuery = supabaseAdmin
-            .from('user_points')
-            .select('user_id, weekly_points, profiles:user_id(full_name, avatar_url)')
-            .order('weekly_points', { ascending: false })
-            .limit(10);
-        }
-        
-        const { data: leaderboardData, error: leaderboardError } = await leaderboardQuery;
-        
-        if (leaderboardError) throw leaderboardError;
-        
-        result = {
-          success: true,
-          leaderboard: leaderboardData
-        };
-        break;
-        
-      default:
-        throw new Error(`Unknown endpoint: ${endpoint}`);
-    }
-    
-    return new Response(
-      JSON.stringify(result),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        leaderboardData = data;
+        leaderboardError = error;
       }
-    );
-    
+      
+      if (leaderboardError) throw leaderboardError;
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          leaderboard: leaderboardData,
+          period
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    else {
+      throw new Error('Invalid endpoint specified');
+    }
   } catch (error) {
-    console.error(`Error processing request:`, error.message);
-    
+    console.error('Error in gamification function:', error);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
-      }),
+      JSON.stringify({ error: error.message }),
       { 
-        status: 400,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }

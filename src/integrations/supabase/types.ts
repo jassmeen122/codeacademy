@@ -1729,6 +1729,20 @@ export type Database = {
         }
         Returns: Json
       }
+      get_user_badges: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          icon: string
+          points: number
+          earned: boolean
+          earned_at: string
+        }[]
+      }
       get_user_progress_summary: {
         Args: {
           user_uuid: string
