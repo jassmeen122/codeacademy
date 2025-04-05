@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+// Define the jsPDF interface with all needed properties in a single declaration
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF;
