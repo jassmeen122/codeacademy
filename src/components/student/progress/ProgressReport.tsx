@@ -15,20 +15,19 @@ interface PubSub {
   [key: string]: any;
 }
 
-// Simplified type declaration for jsPDF to avoid TypeScript errors
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-    lastAutoTable: {
-      finalY: number;
-    };
-    setFontSize(size: number): jsPDF;
-    setPage(pageNumber: number): jsPDF;
-    text(text: string, x: number, y: number, options?: any): jsPDF;
-    splitTextToSize(text: string, maxWidth: number, options?: any): string[];
-    save(filename: string): jsPDF;
-    internal: any; // Using any type to avoid conflicts with existing declarations
-  }
+// Rather than trying to extend the jsPDF interface directly, we'll create our own interface
+// that extends the base jsPDF type and use a type assertion when needed
+interface ExtendedJsPDF extends jsPDF {
+  autoTable: (options: any) => jsPDF;
+  lastAutoTable: {
+    finalY: number;
+  };
+  setFontSize(size: number): jsPDF;
+  setPage(pageNumber: number): jsPDF;
+  text(text: string, x: number, y: number, options?: any): jsPDF;
+  splitTextToSize(text: string, maxWidth: number, options?: any): string[];
+  save(filename: string): jsPDF;
+  internal: any; // We'll use type assertions when accessing properties
 }
 
 interface ProgressReportProps {
@@ -53,7 +52,8 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
     setGenerating(true);
     
     try {
-      const doc = new jsPDF();
+      // Use our ExtendedJsPDF interface with a type assertion
+      const doc = new jsPDF() as ExtendedJsPDF;
       
       doc.setFontSize(20);
       doc.text('Learning Progress Report', 20, 20);
@@ -147,8 +147,8 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
       const splitText = doc.splitTextToSize(feedback, 170);
       doc.text(splitText, 20, doc.lastAutoTable.finalY + 30);
       
-      // Fix for TypeScript error - use type assertion to access getNumberOfPages
-      const pageCount = (doc.internal as any).getNumberOfPages();
+      // Using a type assertion to access getNumberOfPages
+      const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(10);
