@@ -16,7 +16,10 @@ import {
   Tag,
   BookOpen,
   Terminal,
-  FileCode
+  FileCode,
+  GitBranch,
+  Cpu,
+  Database
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { languageVideoMap, openYoutubeVideo } from '@/utils/youtubeVideoMap';
@@ -26,14 +29,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 const YTDevTutorialsPage = () => {
   const navigate = useNavigate();
   const { languages, loading } = useProgrammingLanguages();
-  const [videoType, setVideoType] = useState<'course' | 'exercises'>('course');
+  const [videoType, setVideoType] = useState<'course' | 'exercises' | 'advanced'>('course');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('allLanguages');
   
   const handleOpenVideo = (languageId: string) => {
     const videos = languageVideoMap[languageId];
     if (videos) {
-      openYoutubeVideo(videoType === 'course' ? videos.courseVideo : videos.exercisesVideo);
+      if (videoType === 'advanced' && videos.advancedVideo) {
+        openYoutubeVideo(videos.advancedVideo);
+      } else {
+        openYoutubeVideo(videoType === 'course' ? videos.courseVideo : videos.exercisesVideo);
+      }
     }
   };
   
@@ -115,11 +122,11 @@ const YTDevTutorialsPage = () => {
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl p-8 mb-8 shadow-lg">
           <h1 className="text-4xl font-bold mb-3 flex items-center">
             <Youtube className="mr-3 h-8 w-8 text-red-500" />
-            Développeur Tutorials
+            Developer Tutorials
           </h1>
           <p className="text-lg opacity-90 mb-6 max-w-3xl">
-            Développez vos compétences avec notre bibliothèque de tutoriels vidéo soigneusement sélectionnés.
-            Apprenez à coder dans différents langages de programmation avec des experts.
+            Enhance your skills with our carefully curated library of video tutorials.
+            Learn to code in different programming languages with industry experts.
           </p>
           
           <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -127,7 +134,7 @@ const YTDevTutorialsPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
               <Input 
                 className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary w-full"
-                placeholder="Rechercher un langage..." 
+                placeholder="Search for a language..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -140,7 +147,7 @@ const YTDevTutorialsPage = () => {
                 className="flex items-center"
               >
                 <PlayCircle className="mr-1 h-4 w-4" />
-                Cours
+                Courses
               </Button>
               <Button 
                 size="sm"
@@ -149,7 +156,16 @@ const YTDevTutorialsPage = () => {
                 className="flex items-center"
               >
                 <Terminal className="mr-1 h-4 w-4" />
-                Exercices
+                Exercises
+              </Button>
+              <Button 
+                size="sm"
+                variant={videoType === 'advanced' ? 'default' : 'outline'}
+                onClick={() => setVideoType('advanced')}
+                className="flex items-center"
+              >
+                <Cpu className="mr-1 h-4 w-4" />
+                Advanced
               </Button>
             </div>
           </div>
@@ -160,15 +176,15 @@ const YTDevTutorialsPage = () => {
             <TabsList className="bg-slate-100 dark:bg-slate-800">
               <TabsTrigger value="allLanguages" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">
                 <Tag className="mr-2 h-4 w-4" />
-                Tous les langages
+                All Languages
               </TabsTrigger>
               <TabsTrigger value="beginner" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">
                 <BookOpen className="mr-2 h-4 w-4" />
-                Débutant
+                Beginner
               </TabsTrigger>
               <TabsTrigger value="advanced" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">
                 <Code className="mr-2 h-4 w-4" />
-                Avancé
+                Advanced
               </TabsTrigger>
             </TabsList>
           </div>
@@ -198,18 +214,20 @@ const YTDevTutorialsPage = () => {
                               <CardTitle className="flex items-center text-xl font-bold">
                                 {languageName.charAt(0).toUpperCase() + languageName.slice(1)}
                                 {languageId === 'python' && (
-                                  <Badge className="bg-green-100 text-green-800 ml-2">Populaire</Badge>
+                                  <Badge className="bg-green-100 text-green-800 ml-2">Popular</Badge>
                                 )}
                                 {languageId === 'javascript' && (
-                                  <Badge className="bg-yellow-100 text-yellow-800 ml-2">Tendance</Badge>
+                                  <Badge className="bg-yellow-100 text-yellow-800 ml-2">Trending</Badge>
                                 )}
                               </CardTitle>
                               <div className="text-xs text-slate-500 mt-1 flex gap-1 flex-wrap">
                                 {getLanguageIcon(languageId)}
                                 {videoType === 'course' ? (
-                                  <Badge variant="outline" className="font-normal">Cours complet</Badge>
+                                  <Badge variant="outline" className="font-normal">Complete Course</Badge>
+                                ) : videoType === 'exercises' ? (
+                                  <Badge variant="outline" className="font-normal">Practical Exercises</Badge>
                                 ) : (
-                                  <Badge variant="outline" className="font-normal">Exercices pratiques</Badge>
+                                  <Badge variant="outline" className="font-normal">Advanced Topics</Badge>
                                 )}
                               </div>
                             </div>
@@ -220,20 +238,29 @@ const YTDevTutorialsPage = () => {
                         <div className="mb-4 text-sm text-gray-600">
                           {videoType === 'course' ? (
                             <>
-                              <p className="mb-2 font-medium">Ce que vous apprendrez:</p>
+                              <p className="mb-2 font-medium">What you'll learn:</p>
                               <ul className="list-disc pl-5 space-y-1">
-                                <li>Les fondamentaux de {languageName}</li>
-                                <li>La syntaxe et les structures de données</li>
-                                <li>Bonnes pratiques et techniques de débogage</li>
+                                <li>Fundamentals of {languageName}</li>
+                                <li>Syntax and data structures</li>
+                                <li>Best practices and debugging techniques</li>
+                              </ul>
+                            </>
+                          ) : videoType === 'exercises' ? (
+                            <>
+                              <p className="mb-2 font-medium">Practical skills:</p>
+                              <ul className="list-disc pl-5 space-y-1">
+                                <li>Problem solving with {languageName}</li>
+                                <li>Exercises with progressive difficulty</li>
+                                <li>Application of theoretical concepts</li>
                               </ul>
                             </>
                           ) : (
                             <>
-                              <p className="mb-2 font-medium">Compétences pratiques:</p>
+                              <p className="mb-2 font-medium">Advanced topics:</p>
                               <ul className="list-disc pl-5 space-y-1">
-                                <li>Résolution de problèmes en {languageName}</li>
-                                <li>Exercices de difficulté progressive</li>
-                                <li>Application des concepts théoriques</li>
+                                <li>Performance optimization in {languageName}</li>
+                                <li>Design patterns and architecture</li>
+                                <li>Professional development workflows</li>
                               </ul>
                             </>
                           )}
@@ -245,7 +272,7 @@ const YTDevTutorialsPage = () => {
                           onClick={() => handleOpenVideo(languageId)}
                         >
                           <Youtube className="mr-2 h-4 w-4" />
-                          Voir le {videoType === 'course' ? 'Cours' : 'Exercices'} sur YouTube
+                          Watch {videoType === 'course' ? 'Course' : videoType === 'exercises' ? 'Exercises' : 'Advanced Topics'} on YouTube
                         </Button>
                         <Button 
                           variant="outline"
@@ -253,7 +280,7 @@ const YTDevTutorialsPage = () => {
                           onClick={() => handleViewSummary(languageId)}
                         >
                           <Book className="mr-2 h-4 w-4" />
-                          Voir le Résumé Détaillé
+                          View Detailed Summary
                         </Button>
                       </CardFooter>
                     </Card>
@@ -265,8 +292,8 @@ const YTDevTutorialsPage = () => {
             {filteredLanguages.length === 0 && !loading && (
               <div className="text-center py-10">
                 <FileCode className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-lg font-medium text-gray-900">Aucun langage trouvé</h3>
-                <p className="mt-1 text-gray-500">Essayez un autre terme de recherche.</p>
+                <h3 className="mt-2 text-lg font-medium text-gray-900">No languages found</h3>
+                <p className="mt-1 text-gray-500">Try a different search term.</p>
               </div>
             )}
           </TabsContent>
@@ -274,10 +301,10 @@ const YTDevTutorialsPage = () => {
           <TabsContent value="beginner" className="mt-0">
             <div className="text-center py-8">
               <BookOpen className="mx-auto h-10 w-10 text-primary" />
-              <h3 className="mt-2 text-xl font-medium">Tutoriels pour débutants</h3>
+              <h3 className="mt-2 text-xl font-medium">Beginner Tutorials</h3>
               <p className="mt-2 text-gray-500 max-w-lg mx-auto">
-                Cette section présentera des tutoriels spécialement conçus pour les développeurs débutants.
-                (Contenu à venir prochainement)
+                This section will feature tutorials specifically designed for beginner developers.
+                (Content coming soon)
               </p>
             </div>
           </TabsContent>
@@ -285,10 +312,10 @@ const YTDevTutorialsPage = () => {
           <TabsContent value="advanced" className="mt-0">
             <div className="text-center py-8">
               <Code className="mx-auto h-10 w-10 text-primary" />
-              <h3 className="mt-2 text-xl font-medium">Tutoriels avancés</h3>
+              <h3 className="mt-2 text-xl font-medium">Advanced Tutorials</h3>
               <p className="mt-2 text-gray-500 max-w-lg mx-auto">
-                Cette section présentera des tutoriels de niveau avancé pour les développeurs expérimentés.
-                (Contenu à venir prochainement)
+                This section will feature advanced tutorials for experienced developers.
+                (Content coming soon)
               </p>
             </div>
           </TabsContent>
