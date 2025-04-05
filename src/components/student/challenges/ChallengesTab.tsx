@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChallengeCard } from "./ChallengeCard";
 import { Target, Calendar, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Challenge {
   id: string;
@@ -24,8 +24,71 @@ interface ChallengesTabProps {
   onRefresh: () => void;
 }
 
-export const ChallengesTab = ({ challenges, loading, onRefresh }: ChallengesTabProps) => {
+export const ChallengesTab = ({ challenges: initialChallenges, loading, onRefresh }: ChallengesTabProps) => {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
+  
+  // Add some example challenges if none exist
+  useEffect(() => {
+    if (initialChallenges.length === 0 && !loading) {
+      const exampleChallenges: Challenge[] = [
+        {
+          id: '1',
+          description: 'Compléter 3 leçons aujourd\'hui',
+          target: 3,
+          current_progress: 1,
+          challenge_type: 'daily',
+          reward_xp: 30,
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          completed: false
+        },
+        {
+          id: '2',
+          description: 'Gagner 50 points XP',
+          target: 50,
+          current_progress: 20,
+          challenge_type: 'daily',
+          reward_xp: 25,
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          completed: false
+        },
+        {
+          id: '3',
+          description: 'Se connecter 5 jours de suite',
+          target: 5,
+          current_progress: 2,
+          challenge_type: 'weekly',
+          reward_xp: 70,
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          completed: false
+        },
+        {
+          id: '4',
+          description: 'Résoudre 10 exercices cette semaine',
+          target: 10,
+          current_progress: 3,
+          challenge_type: 'weekly',
+          reward_xp: 100,
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          completed: false
+        },
+        {
+          id: '5',
+          description: 'Terminer un module de cours',
+          target: 1,
+          current_progress: 1,
+          challenge_type: 'daily',
+          reward_xp: 40,
+          expires_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          completed: true,
+          completed_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      setChallenges(exampleChallenges);
+    } else {
+      setChallenges(initialChallenges);
+    }
+  }, [initialChallenges, loading]);
   
   const dailyChallenges = challenges.filter(
     challenge => challenge.challenge_type === 'daily'
