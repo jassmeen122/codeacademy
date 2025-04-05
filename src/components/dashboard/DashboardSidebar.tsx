@@ -19,17 +19,13 @@ import { adminMenuItems } from "./sidebar/AdminMenuItems";
 import { teacherMenuItems } from "./sidebar/TeacherMenuItems";
 import { StudentMenuItems } from "./sidebar/StudentMenuItems";
 import { SidebarMenu } from "./sidebar/SidebarMenu";
-import { MenuItem, SidebarItem } from "@/types/sidebar";
-import { useLocation } from "react-router-dom";
+import { MenuItem } from "@/types/sidebar";
 
 interface DashboardSidebarProps {
   userRole: 'admin' | 'teacher' | 'student' | null;
 }
 
 export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
-  const location = useLocation();
-  const pathname = location.pathname;
-
   const getMenuItems = () => {
     switch (userRole) {
       case 'admin':
