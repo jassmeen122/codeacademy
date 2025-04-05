@@ -3,20 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { BadgeCard } from "./BadgeCard";
 import { Medal } from "lucide-react";
+import { Badge as BadgeType } from '@/hooks/useGamification';
 
 // Import icons that might be used for badges
 import * as LucideIcons from "lucide-react";
 
 interface BadgesTabProps {
-  badges: Array<{
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    points: number;
-    earned: boolean;
-    earned_at?: string;
-  }>;
+  badges: BadgeType[];
   loading: boolean;
   onRefresh: () => void;
 }

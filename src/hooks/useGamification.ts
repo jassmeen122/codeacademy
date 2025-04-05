@@ -23,13 +23,13 @@ interface Certificate {
   issued_at: string;
 }
 
-interface Badge {
+export interface Badge {
   id: string;
   name: string;
   description: string;
   icon: string;
   points: number;
-  earned?: boolean;
+  earned: boolean;
   earned_at?: string;
 }
 
@@ -213,23 +213,82 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      // Use the RPC function to get all badges with earned status
-      const { data, error } = await supabase.rpc('get_user_badges', {
-        user_uuid: user.id
-      });
+      // Use a direct query since the RPC function is not in the type definition
+      const { data, error } = await supabase
+        .from('badges')
+        .select(`
+          id, 
+          name, 
+          description, 
+          icon, 
+          points,
+          user_badges!inner(earned_at, user_id)
+        `)
+        .eq('user_badges.user_id', user.id);
         
-      if (error) throw error;
+      if (error) {
+        // If no badges found, try getting all badges to show unearned ones
+        const { data: allBadgesData, error: allBadgesError } = await supabase
+          .from('badges')
+          .select('*');
+          
+        if (allBadgesError) throw allBadgesError;
+        
+        if (allBadgesData) {
+          // Convert to Badge interface with earned = false
+          const badgesWithEarnedStatus: Badge[] = allBadgesData.map(badge => ({
+            ...badge,
+            earned: false
+          }));
+          
+          setAllBadges(badgesWithEarnedStatus);
+          setBadges([]);
+        }
+        
+        return { success: true, data: [] };
+      }
       
       if (data) {
-        // Split badges into earned and not earned
-        const earned = data.filter(badge => badge.earned);
-        const notEarned = data.filter(badge => !badge.earned);
+        // Get all badges to show both earned and unearned
+        const { data: allBadgesData, error: allBadgesError } = await supabase
+          .from('badges')
+          .select('*');
+          
+        if (allBadgesError) throw allBadgesError;
         
-        // Set all badges for display on the achievements page
-        setAllBadges(data);
+        // Format earned badges
+        const earnedBadges: Badge[] = data.map(badge => ({
+          id: badge.id,
+          name: badge.name,
+          description: badge.description,
+          icon: badge.icon,
+          points: badge.points,
+          earned: true,
+          earned_at: badge.user_badges[0]?.earned_at
+        }));
         
-        // Set earned badges for other components that might need them
-        setBadges(earned);
+        setBadges(earnedBadges);
+        
+        // Format all badges with earned status
+        if (allBadgesData) {
+          const earnedBadgeIds = new Set(earnedBadges.map(b => b.id));
+          const badgesWithEarnedStatus: Badge[] = allBadgesData.map(badge => {
+            const isEarned = earnedBadgeIds.has(badge.id);
+            const earnedBadge = earnedBadges.find(b => b.id === badge.id);
+            
+            return {
+              id: badge.id,
+              name: badge.name,
+              description: badge.description,
+              icon: badge.icon,
+              points: badge.points,
+              earned: isEarned,
+              earned_at: isEarned ? earnedBadge?.earned_at : undefined
+            };
+          });
+          
+          setAllBadges(badgesWithEarnedStatus);
+        }
       }
       
       return { success: true, data };
