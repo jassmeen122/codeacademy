@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-// Define interface for jsPDF with correct typing
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF;
@@ -31,6 +29,11 @@ declare module 'jspdf' {
       getEncryptor(objectId: number): (data: string) => string;
       getNumberOfPages: () => number;
     };
+    setFontSize(size: number): jsPDF;
+    setPage(pageNumber: number): jsPDF;
+    text(text: string, x: number, y: number, options?: any): jsPDF;
+    splitTextToSize(text: string, maxWidth: number, options?: any): string[];
+    save(filename: string): jsPDF;
   }
 }
 
