@@ -15,7 +15,7 @@ interface PubSub {
   [key: string]: any;
 }
 
-// Complete type declaration for jsPDF
+// Complete type declaration for jsPDF with corrected internal type
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF;
