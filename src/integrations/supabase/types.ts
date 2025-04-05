@@ -1705,6 +1705,12 @@ export type Database = {
         }
         Returns: string[]
       }
+      count_completed_challenges: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: number
+      }
       generate_daily_challenge: {
         Args: {
           user_uuid: string
