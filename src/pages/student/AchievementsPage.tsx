@@ -120,8 +120,10 @@ const AchievementsPage = () => {
       // Group activities by day
       const activityDays = new Set();
       data.forEach(activity => {
-        const date = new Date(activity.created_at);
-        activityDays.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);
+        if (activity.created_at) {
+          const date = new Date(activity.created_at);
+          activityDays.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);
+        }
       });
 
       // Convert to array and sort
@@ -148,16 +150,27 @@ const AchievementsPage = () => {
 
       // Count consecutive days
       for (let i = 1; i < sortedDays.length; i++) {
-        const currentDate = new Date(sortedDays[i-1].split('-'));
-        const prevDate = new Date(sortedDays[i].split('-'));
+        const currentDateStr = sortedDays[i-1];
+        const prevDateStr = sortedDays[i];
         
-        const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays === 1) {
-          currentStreak++;
-        } else {
-          break;
+        // Safety check: make sure we're working with strings that can be parsed
+        if (typeof currentDateStr === 'string' && typeof prevDateStr === 'string') {
+          const currentParts = currentDateStr.split('-').map(Number);
+          const prevParts = prevDateStr.split('-').map(Number);
+          
+          if (currentParts.length === 3 && prevParts.length === 3) {
+            const currentDate = new Date(currentParts[0], currentParts[1], currentParts[2]);
+            const prevDate = new Date(prevParts[0], prevParts[1], prevParts[2]);
+            
+            const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+              currentStreak++;
+            } else {
+              break;
+            }
+          }
         }
       }
 
