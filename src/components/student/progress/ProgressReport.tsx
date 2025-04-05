@@ -33,7 +33,7 @@ declare module 'jspdf' {
       };
       pages: number[];
       getEncryptor(objectId: number): (data: string) => string;
-      getNumberOfPages: () => number;  // Added this method
+      getNumberOfPages(): number;
     };
     setFontSize(size: number): jsPDF;
     setPage(pageNumber: number): jsPDF;
