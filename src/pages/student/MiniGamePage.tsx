@@ -15,17 +15,27 @@ const MiniGamePage = () => {
   const navigate = useNavigate();
   const [selectedDifficulty, setSelectedDifficulty] = useState<GameDifficulty>("Beginner");
   const [isLoading, setIsLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Simulate loading state to ensure components have time to render
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
     // Show welcome toast to confirm page is rendering
     toast.info("Bienvenue au mini-jeu de code!");
     
-    return () => clearTimeout(timer);
+    // First set loading state to ensure components start loading
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+      
+      // After loading is complete, make components visible with a slight delay
+      // to ensure all data has been fetched
+      const visibilityTimer = setTimeout(() => {
+        setIsVisible(true);
+        console.log("Setting visibility to true");
+      }, 500);
+      
+      return () => clearTimeout(visibilityTimer);
+    }, 1000);
+    
+    return () => clearTimeout(loadingTimer);
   }, []);
 
   const handleDifficultyChange = (difficulty: GameDifficulty) => {
@@ -56,24 +66,35 @@ const MiniGamePage = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <GameInstructions />
-                <CodingMiniGame />
+          // Only render when isVisible is true to ensure all data is ready
+          isVisible && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                  <GameInstructions />
+                  <CodingMiniGame />
+                </div>
+                
+                {/* Ajout du composant GamificationStats en dessous du jeu */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-xl font-semibold mb-4">Votre progression</h2>
+                  <GamificationStats key="gamification-stats" />
+                </div>
               </div>
-              
-              {/* Ajout du composant GamificationStats en dessous du jeu */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold mb-4">Votre progression</h2>
-                <GamificationStats />
+              <div className="lg:col-span-1">
+                <GameLeaderboard 
+                  selectedDifficulty={selectedDifficulty}
+                  onDifficultyChange={handleDifficultyChange}
+                />
               </div>
             </div>
-            <div className="lg:col-span-1">
-              <GameLeaderboard 
-                selectedDifficulty={selectedDifficulty}
-                onDifficultyChange={handleDifficultyChange}
-              />
+          )
+        )}
+
+        {!isLoading && !isVisible && (
+          <div className="flex justify-center py-20">
+            <div className="text-center">
+              <p className="text-lg">Préparation des données du jeu...</p>
             </div>
           </div>
         )}
