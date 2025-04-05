@@ -11,7 +11,7 @@ import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-// Define the jsPDF interface with all needed properties in a single declaration
+// Define interface for jsPDF with correct typing
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF;
