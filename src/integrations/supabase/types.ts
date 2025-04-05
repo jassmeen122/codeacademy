@@ -1231,6 +1231,36 @@ export type Database = {
           },
         ]
       }
+      user_certificates: {
+        Row: {
+          certificate_url: string | null
+          course_id: string
+          description: string | null
+          id: string
+          issued_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          course_id: string
+          description?: string | null
+          id?: string
+          issued_at?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          certificate_url?: string | null
+          course_id?: string
+          description?: string | null
+          id?: string
+          issued_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_challenges: {
         Row: {
           challenge_id: string
@@ -1269,6 +1299,59 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_daily_challenges: {
+        Row: {
+          challenge_type: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_progress: number
+          description: string
+          expires_at: string
+          id: string
+          reward_badge_id: string | null
+          reward_xp: number
+          target: number
+          user_id: string
+        }
+        Insert: {
+          challenge_type: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          description: string
+          expires_at: string
+          id?: string
+          reward_badge_id?: string | null
+          reward_xp?: number
+          target: number
+          user_id: string
+        }
+        Update: {
+          challenge_type?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          description?: string
+          expires_at?: string
+          id?: string
+          reward_badge_id?: string | null
+          reward_xp?: number
+          target?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_daily_challenges_reward_badge_id_fkey"
+            columns: ["reward_badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
             referencedColumns: ["id"]
           },
         ]
@@ -1448,6 +1531,33 @@ export type Database = {
           },
         ]
       }
+      user_points: {
+        Row: {
+          daily_points: number
+          id: string
+          last_updated: string
+          total_points: number
+          user_id: string
+          weekly_points: number
+        }
+        Insert: {
+          daily_points?: number
+          id?: string
+          last_updated?: string
+          total_points?: number
+          user_id: string
+          weekly_points?: number
+        }
+        Update: {
+          daily_points?: number
+          id?: string
+          last_updated?: string
+          total_points?: number
+          user_id?: string
+          weekly_points?: number
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           completed: boolean | null
@@ -1589,6 +1699,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_award_badges: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: string[]
+      }
+      generate_daily_challenge: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: string
+      }
+      generate_weekly_challenge: {
+        Args: {
+          user_uuid: string
+        }
+        Returns: string
+      }
       get_custom_resources: {
         Args: {
           lang_id: string
@@ -1606,6 +1734,13 @@ export type Database = {
           user_uuid: string
         }
         Returns: Json
+      }
+      update_user_points: {
+        Args: {
+          user_uuid: string
+          points_to_add: number
+        }
+        Returns: boolean
       }
       upsert_custom_resource: {
         Args: {
