@@ -8,6 +8,7 @@ import { useAuthState } from '@/hooks/useAuthState';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useGamification } from '@/hooks/useGamification';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UserPoints {
   id: string;
