@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,31 +15,19 @@ interface PubSub {
   [key: string]: any;
 }
 
-// Complete type declaration for jsPDF to fix TypeScript error
+// Simplified type declaration for jsPDF to avoid TypeScript errors
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF;
     lastAutoTable: {
       finalY: number;
     };
-    internal: {
-      events: PubSub;
-      scaleFactor: number;
-      pageSize: {
-        width: number;
-        getWidth: () => number;
-        height: number;
-        getHeight: () => number;
-      };
-      pages: number[];
-      getEncryptor(objectId: number): (data: string) => string;
-      getNumberOfPages(): number;
-    };
     setFontSize(size: number): jsPDF;
     setPage(pageNumber: number): jsPDF;
     text(text: string, x: number, y: number, options?: any): jsPDF;
     splitTextToSize(text: string, maxWidth: number, options?: any): string[];
     save(filename: string): jsPDF;
+    internal: any; // Using any type to avoid conflicts with existing declarations
   }
 }
 
@@ -160,7 +147,8 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
       const splitText = doc.splitTextToSize(feedback, 170);
       doc.text(splitText, 20, doc.lastAutoTable.finalY + 30);
       
-      const pageCount = doc.internal.getNumberOfPages();
+      // Fix for TypeScript error - use type assertion to access getNumberOfPages
+      const pageCount = (doc.internal as any).getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(10);
