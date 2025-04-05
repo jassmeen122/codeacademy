@@ -1,14 +1,13 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Award, Star, Target, Trophy, Clock, Flame, ArrowRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from '@/hooks/useAuthState';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { useGamification } from '@/hooks/useGamification';
 
 interface UserPoints {
   id: string;
@@ -31,142 +30,41 @@ interface UserChallenge {
 
 export const GamificationStats = () => {
   const { user } = useAuthState();
-  const [loading, setLoading] = useState(true);
-  const [points, setPoints] = useState<UserPoints | null>(null);
-  const [dailyChallenge, setDailyChallenge] = useState<UserChallenge | null>(null);
-  const [weeklyChallenge, setWeeklyChallenge] = useState<UserChallenge | null>(null);
+  const { 
+    addPoints, 
+    getUserPoints, 
+    getUserChallenges,
+    points, 
+    challenges,
+    loading,
+  } = useGamification();
+  
   const [streak, setStreak] = useState(0);
   const [badgeCount, setBadgeCount] = useState(0);
+  const [dailyChallenge, setDailyChallenge] = useState<UserChallenge | null>(null);
+  const [weeklyChallenge, setWeeklyChallenge] = useState<UserChallenge | null>(null);
 
   useEffect(() => {
     if (user) {
-      fetchUserPoints();
+      getUserPoints();
       fetchUserChallenges();
       fetchStreakAndBadges();
     }
   }, [user]);
 
-  // Fetch user points from DB
-  const fetchUserPoints = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_points')
-        .select('*')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user points:', error);
-        return;
-      }
-
-      // If no points record exists yet, create one
-      if (!data) {
-        await initializeUserPoints();
-      } else {
-        setPoints(data as UserPoints);
-      }
-    } catch (error) {
-      console.error('Error in fetchUserPoints:', error);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (challenges && challenges.length > 0) {
+      setDailyChallenge(challenges.find(c => c.challenge_type === 'daily') || null);
+      setWeeklyChallenge(challenges.find(c => c.challenge_type === 'weekly') || null);
     }
-  };
-
-  // Initialize user points if they don't exist
-  const initializeUserPoints = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('user_points')
-        .insert([
-          { 
-            user_id: user.id,
-            daily_points: 0,
-            weekly_points: 0,
-            total_points: 0
-          }
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error initializing user points:', error);
-        return;
-      }
-
-      setPoints(data as UserPoints);
-    } catch (error) {
-      console.error('Error in initializeUserPoints:', error);
-    }
-  };
+  }, [challenges]);
 
   // Fetch or generate user challenges
   const fetchUserChallenges = async () => {
     if (!user) return;
     
     try {
-      // First try to get existing daily challenge
-      const { data: dailyData, error: dailyError } = await supabase
-        .from('user_daily_challenges')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('challenge_type', 'daily')
-        .gte('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      // If no daily challenge or error (not found)
-      if (dailyError && dailyError.code === 'PGRST116') {
-        // Generate a daily challenge using our function
-        const { data: newDaily } = await supabase
-          .rpc('generate_daily_challenge', { user_uuid: user.id })
-          .single();
-          
-        if (newDaily) {
-          // Fetch the newly created challenge
-          const { data: freshDaily } = await supabase
-            .from('user_daily_challenges')
-            .select('*')
-            .eq('id', newDaily)
-            .single();
-            
-          setDailyChallenge(freshDaily as UserChallenge);
-        }
-      } else if (dailyData) {
-        setDailyChallenge(dailyData as UserChallenge);
-      }
-
-      // Now do the same for weekly challenge
-      const { data: weeklyData, error: weeklyError } = await supabase
-        .from('user_daily_challenges')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('challenge_type', 'weekly')
-        .gte('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (weeklyError && weeklyError.code === 'PGRST116') {
-        const { data: newWeekly } = await supabase
-          .rpc('generate_weekly_challenge', { user_uuid: user.id })
-          .single();
-          
-        if (newWeekly) {
-          const { data: freshWeekly } = await supabase
-            .from('user_daily_challenges')
-            .select('*')
-            .eq('id', newWeekly)
-            .single();
-            
-          setWeeklyChallenge(freshWeekly as UserChallenge);
-        }
-      } else if (weeklyData) {
-        setWeeklyChallenge(weeklyData as UserChallenge);
-      }
+      await getUserChallenges();
     } catch (error) {
       console.error('Error fetching/generating challenges:', error);
     }
@@ -247,40 +145,10 @@ export const GamificationStats = () => {
   };
 
   // Function to test adding points (in development mode)
-  const addTestPoints = async (amount: number) => {
+  const handleAddTestPoints = async (amount: number) => {
     if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .rpc('update_user_points', { 
-          user_uuid: user.id, 
-          points_to_add: amount 
-        });
-
-      if (error) {
-        console.error('Error adding points:', error);
-        toast.error("Impossible d'ajouter des points");
-      } else {
-        // Refresh user points
-        fetchUserPoints();
-        toast.success(`+${amount} XP ajoutés`);
-        
-        // Check for new badges
-        const { data: newBadges, error: badgeError } = await supabase
-          .rpc('check_and_award_badges', { user_uuid: user.id });
-        
-        if (badgeError) {
-          console.error('Error checking badges:', badgeError);
-        } else if (newBadges && newBadges.length > 0) {
-          toast.success("Nouveau badge débloqué !", {
-            description: "Consultez votre profil pour voir vos badges"
-          });
-          setBadgeCount(prevCount => prevCount + newBadges.length);
-        }
-      }
-    } catch (error) {
-      console.error('Error in addTestPoints:', error);
-    }
+    await addPoints(amount, `Test points`);
+    getUserPoints(); // Refresh points data
   };
 
   const formatTimeLeft = (expiresAt: string): string => {
@@ -417,7 +285,7 @@ export const GamificationStats = () => {
               <div className="pt-2 border-t flex gap-2">
                 <Button 
                   size="sm" 
-                  onClick={() => addTestPoints(10)}
+                  onClick={() => handleAddTestPoints(10)}
                   variant="outline"
                   className="text-xs border-green-200 text-green-700"
                 >
@@ -425,7 +293,7 @@ export const GamificationStats = () => {
                 </Button>
                 <Button 
                   size="sm" 
-                  onClick={() => addTestPoints(50)}
+                  onClick={() => handleAddTestPoints(50)}
                   variant="outline"
                   className="text-xs border-blue-200 text-blue-700"
                 >

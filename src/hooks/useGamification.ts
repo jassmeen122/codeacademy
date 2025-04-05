@@ -47,16 +47,18 @@ export const useGamification = () => {
       setLoading(true);
       
       // Call our edge function to add points
-      const response = await supabase.functions.invoke('gamification', {
+      const { data, error } = await supabase.functions.invoke('gamification', {
         body: { 
           points: amount 
         },
         method: 'POST',
-        path: '/add-points'
+        headers: {
+          'endpoint': 'add-points'
+        }
       });
       
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to add points');
+      if (error) {
+        throw new Error(error.message || 'Failed to add points');
       }
       
       // Show toast notification
@@ -67,13 +69,13 @@ export const useGamification = () => {
       }
       
       // Check if user earned any new badges
-      if (response.data.newBadges && response.data.newBadges.length > 0) {
+      if (data.newBadges && data.newBadges.length > 0) {
         toast.success("Nouveau badge débloqué !", {
           description: "Consultez votre profil pour voir vos badges"
         });
       }
       
-      return { success: true, data: response.data };
+      return { success: true, data: data };
     } catch (error) {
       console.error('Error adding points:', error);
       toast.error("Impossible d'ajouter des points");
@@ -89,7 +91,7 @@ export const useGamification = () => {
     
     try {
       // Call our edge function to update challenge
-      const response = await supabase.functions.invoke('gamification', {
+      const { data, error } = await supabase.functions.invoke('gamification', {
         body: { 
           challenge_id: challengeId,
           progress,
@@ -97,21 +99,23 @@ export const useGamification = () => {
           completed: progress >= target
         },
         method: 'POST',
-        path: '/update-challenge'
+        headers: {
+          'endpoint': 'update-challenge'
+        }
       });
       
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to update challenge');
+      if (error) {
+        throw new Error(error.message || 'Failed to update challenge');
       }
       
       // Show toast if challenge completed
-      if (response.data.pointsAwarded) {
+      if (data.pointsAwarded) {
         toast.success("Défi terminé !", {
-          description: `+${response.data.pointsAwarded} XP`
+          description: `+${data.pointsAwarded} XP`
         });
       }
       
-      return { success: true, data: response.data };
+      return { success: true, data: data };
     } catch (error) {
       console.error('Error updating challenge:', error);
       return { success: false, error };
@@ -125,27 +129,29 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      const response = await supabase.functions.invoke('gamification', {
+      const { data, error } = await supabase.functions.invoke('gamification', {
         body: { 
           course_id: courseId,
           course_title: courseTitle
         },
         method: 'POST',
-        path: '/generate-certificate'
+        headers: {
+          'endpoint': 'generate-certificate'
+        }
       });
       
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to generate certificate');
+      if (error) {
+        throw new Error(error.message || 'Failed to generate certificate');
       }
       
       // Show toast
-      if (!response.data.alreadyExists) {
+      if (!data.alreadyExists) {
         toast.success("Cours terminé !", {
           description: "Certificat disponible dans votre profil"
         });
       }
       
-      return { success: true, data: response.data };
+      return { success: true, data: data };
     } catch (error) {
       console.error('Error generating certificate:', error);
       toast.error("Impossible de générer le certificat");
@@ -191,8 +197,8 @@ export const useGamification = () => {
     if (!user) return;
     
     try {
-      // Get active challenges
-      const { data: activeDaily } = await supabase
+      // Get user's daily challenges
+      const { data: activeDaily, error: dailyError } = await supabase
         .from('user_daily_challenges')
         .select('*')
         .eq('user_id', user.id)
@@ -200,8 +206,14 @@ export const useGamification = () => {
         .eq('completed', false)
         .gte('expires_at', new Date().toISOString())
         .maybeSingle();
-        
-      const { data: activeWeekly } = await supabase
+      
+      if (dailyError && dailyError.code !== 'PGRST116') {
+        console.error('Error fetching daily challenge:', dailyError);
+        return;
+      }
+      
+      // Get user's weekly challenges
+      const { data: activeWeekly, error: weeklyError } = await supabase
         .from('user_daily_challenges')
         .select('*')
         .eq('user_id', user.id)
@@ -209,6 +221,11 @@ export const useGamification = () => {
         .eq('completed', false)
         .gte('expires_at', new Date().toISOString())
         .maybeSingle();
+      
+      if (weeklyError && weeklyError.code !== 'PGRST116') {
+        console.error('Error fetching weekly challenge:', weeklyError);
+        return;
+      }
       
       // Update lesson challenge if applicable
       if (activityType === 'lesson_viewed' && activeDaily) {
@@ -383,21 +400,23 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      const response = await supabase.functions.invoke('gamification', {
-        queryParams: { period },
+      const { data, error } = await supabase.functions.invoke('gamification', {
         method: 'GET',
-        path: '/get-leaderboard'
+        headers: {
+          'endpoint': 'get-leaderboard',
+          'period': period
+        }
       });
       
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to fetch leaderboard');
+      if (error) {
+        throw new Error(error.message || 'Failed to fetch leaderboard');
       }
       
-      if (response.data?.leaderboard) {
-        setLeaderboard(response.data.leaderboard);
+      if (data?.leaderboard) {
+        setLeaderboard(data.leaderboard);
       }
       
-      return { success: true, data: response.data?.leaderboard };
+      return { success: true, data: data?.leaderboard };
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       return { success: false, error };
