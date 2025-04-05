@@ -165,15 +165,22 @@ const updateUserPoints = async (userId: string, pointsToAdd: number): Promise<vo
     
     // Update profile points (used for leaderboard)
     try {
-      const { data: pointsTotal, error: rpcError } = await supabase
-        .rpc('get_points_total', { user_uuid: userId });
+      // Fix: Instead of using rpc, use a direct query with the SQL function
+      // Retrieve the points total first using a direct select
+      const { data: userMetrics, error: metricsError } = await supabase
+        .from('user_metrics')
+        .select('total_time_spent')
+        .eq('user_id', userId)
+        .single();
       
-      if (rpcError) throw rpcError;
+      if (metricsError) throw metricsError;
       
-      // Update the profile with the points total
+      const pointsTotal = userMetrics?.total_time_spent || 0;
+      
+      // Now update the profile with the points total
       const { error: updateProfileError } = await supabase
         .from('profiles')
-        .update({ points: pointsTotal || 0 })
+        .update({ points: pointsTotal })
         .eq('id', userId);
       
       if (updateProfileError) throw updateProfileError;
@@ -191,6 +198,7 @@ const updateUserPoints = async (userId: string, pointsToAdd: number): Promise<vo
  */
 export const getUserPoints = async (userId: string): Promise<number> => {
   try {
+    // Fix: Use a direct query instead of rpc
     const { data, error } = await supabase
       .from('user_metrics')
       .select('total_time_spent')
@@ -199,6 +207,7 @@ export const getUserPoints = async (userId: string): Promise<number> => {
       
     if (error) throw error;
     
+    // Ensure we return a number
     return data?.total_time_spent || 0;
   } catch (error) {
     console.error('Error getting user points:', error);
