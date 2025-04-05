@@ -13,6 +13,7 @@ interface UserChallenge {
   reward_xp: number;
   expires_at: string;
   completed: boolean;
+  completed_at?: string;
 }
 
 interface Certificate {

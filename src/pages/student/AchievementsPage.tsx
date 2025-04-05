@@ -1,47 +1,22 @@
+
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useGamification } from "@/hooks/useGamification";
 import { BadgesTab } from "@/components/student/badges/BadgesTab";
+import { ChallengesTab } from "@/components/student/challenges/ChallengesTab";
 import {
   Trophy,
   Medal,
-  Award,
-  Clock,
-  CheckCircle2,
-  Star,
-  Calendar,
   Scroll,
-  Target,
   Users,
-  Flame,
-  Zap
+  Target,
+  Star
 } from "lucide-react";
 import { toast } from "sonner";
-
-interface UserChallenge {
-  id: string;
-  description: string;
-  target: number;
-  current_progress: number;
-  challenge_type: string;
-  reward_xp: number;
-  expires_at: string;
-  completed: boolean;
-}
-
-interface UserCertificate {
-  id: string;
-  title: string;
-  description: string;
-  certificate_url: string | null;
-  issued_at: string;
-}
 
 const AchievementsPage = () => {
   const { user } = useAuthState();
@@ -86,35 +61,6 @@ const AchievementsPage = () => {
   const handleLeaderboardPeriodChange = async (period: 'global' | 'weekly') => {
     setLeaderboardPeriod(period);
     await getLeaderboard(period);
-  };
-
-  const formatTimeLeft = (expiresAt: string): string => {
-    const now = new Date();
-    const expiry = new Date(expiresAt);
-    const diffMs = expiry.getTime() - now.getTime();
-    
-    if (diffMs <= 0) return "Expiré";
-    
-    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (diffHrs > 0) {
-      return `${diffHrs}h ${diffMins}m`;
-    } else {
-      return `${diffMins} minutes`;
-    }
-  };
-
-  const getIconComponent = (iconName: string) => {
-    switch (iconName) {
-      case 'award': return <Award className="h-5 w-5" />;
-      case 'zap': return <Zap className="h-5 w-5" />;
-      case 'target': return <Target className="h-5 w-5" />;
-      case 'users': return <Users className="h-5 w-5" />;
-      case 'flame': return <Flame className="h-5 w-5" />;
-      case 'star': return <Star className="h-5 w-5" />;
-      default: return <Trophy className="h-5 w-5" />;
-    }
   };
 
   const formatDate = (dateString: string) => {
@@ -175,145 +121,11 @@ const AchievementsPage = () => {
             </TabsContent>
 
             <TabsContent value="challenges" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Défis Quotidiens</CardTitle>
-                    <CardDescription>
-                      Complétez ces défis pour gagner des points supplémentaires chaque jour
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {challenges && challenges.filter(c => c.challenge_type === 'daily').length > 0 ? (
-                      <div className="space-y-4">
-                        {challenges
-                          .filter(challenge => challenge.challenge_type === 'daily')
-                          .map((challenge) => (
-                            <div 
-                              key={challenge.id} 
-                              className={`border rounded-lg overflow-hidden ${challenge.completed ? 'bg-green-50 border-green-200' : 'border-blue-100'}`}
-                            >
-                              <div className={`p-3 flex justify-between items-center ${challenge.completed ? 'bg-green-100' : 'bg-blue-50'}`}>
-                                <div className="flex items-center gap-2">
-                                  {challenge.completed ? (
-                                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                                  ) : (
-                                    <Target className="h-5 w-5 text-blue-600" />
-                                  )}
-                                  <span className={`font-medium ${challenge.completed ? 'text-green-700' : 'text-blue-700'}`}>
-                                    Défi quotidien
-                                  </span>
-                                </div>
-                                <div className="text-xs">
-                                  <Clock className="h-3 w-3 inline mr-1" />
-                                  {challenge.completed ? 'Terminé' : formatTimeLeft(challenge.expires_at)}
-                                </div>
-                              </div>
-                              <div className="p-3">
-                                <p className="text-sm mb-2">{challenge.description}</p>
-                                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                  <span>Progression</span>
-                                  <span>{challenge.current_progress} / {challenge.target}</span>
-                                </div>
-                                <Progress 
-                                  value={Math.min((challenge.current_progress / challenge.target) * 100, 100)} 
-                                  className={`h-2 ${challenge.completed ? 'bg-green-100' : ''}`}
-                                />
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className={`text-xs font-medium ${challenge.completed ? 'text-green-600' : 'text-blue-600'}`}>
-                                    +{challenge.reward_xp} XP
-                                  </span>
-                                  {challenge.completed && (
-                                    <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-                                      Complété
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-10">
-                        <Calendar className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
-                        <h3 className="text-lg font-medium">Pas de défis quotidiens actifs</h3>
-                        <p className="text-muted-foreground mb-6">
-                          Connectez-vous chaque jour pour recevoir de nouveaux défis
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Défis Hebdomadaires</CardTitle>
-                    <CardDescription>
-                      Des défis plus importants pour des récompenses plus grandes
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {challenges && challenges.filter(c => c.challenge_type === 'weekly').length > 0 ? (
-                      <div className="space-y-4">
-                        {challenges
-                          .filter(challenge => challenge.challenge_type === 'weekly')
-                          .map((challenge) => (
-                            <div 
-                              key={challenge.id} 
-                              className={`border rounded-lg overflow-hidden ${challenge.completed ? 'bg-green-50 border-green-200' : 'border-purple-100'}`}
-                            >
-                              <div className={`p-3 flex justify-between items-center ${challenge.completed ? 'bg-green-100' : 'bg-purple-50'}`}>
-                                <div className="flex items-center gap-2">
-                                  {challenge.completed ? (
-                                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                                  ) : (
-                                    <Star className="h-5 w-5 text-purple-600" />
-                                  )}
-                                  <span className={`font-medium ${challenge.completed ? 'text-green-700' : 'text-purple-700'}`}>
-                                    Défi hebdomadaire
-                                  </span>
-                                </div>
-                                <div className="text-xs">
-                                  <Clock className="h-3 w-3 inline mr-1" />
-                                  {challenge.completed ? 'Terminé' : formatTimeLeft(challenge.expires_at)}
-                                </div>
-                              </div>
-                              <div className="p-3">
-                                <p className="text-sm mb-2">{challenge.description}</p>
-                                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                  <span>Progression</span>
-                                  <span>{challenge.current_progress} / {challenge.target}</span>
-                                </div>
-                                <Progress 
-                                  value={Math.min((challenge.current_progress / challenge.target) * 100, 100)} 
-                                  className={`h-2 ${challenge.completed ? 'bg-green-100' : ''}`}
-                                />
-                                <div className="flex justify-between items-center mt-2">
-                                  <span className={`text-xs font-medium ${challenge.completed ? 'text-green-600' : 'text-purple-600'}`}>
-                                    +{challenge.reward_xp} XP
-                                  </span>
-                                  {challenge.completed && (
-                                    <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-                                      Complété
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-10">
-                        <Star className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
-                        <h3 className="text-lg font-medium">Pas de défis hebdomadaires actifs</h3>
-                        <p className="text-muted-foreground mb-6">
-                          Revenez régulièrement pour découvrir de nouveaux défis
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+              <ChallengesTab
+                challenges={challenges || []}
+                loading={loading}
+                onRefresh={loadGamificationData}
+              />
             </TabsContent>
 
             <TabsContent value="certificates" className="space-y-6">
