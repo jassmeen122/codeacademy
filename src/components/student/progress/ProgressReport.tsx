@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,19 +10,12 @@ import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
-// Add this to properly handle jsPDF with autotable
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: any) => any;
+    autoTable: (options: any) => jsPDF;
     lastAutoTable: {
       finalY: number;
     };
-  }
-}
-
-// Extend the internal type separately to avoid conflicts
-declare module 'jspdf' {
-  interface jsPDF {
     internal: {
       events: any;
       scaleFactor: number;
@@ -64,7 +56,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
     try {
       const doc = new jsPDF();
       
-      // Add header
       doc.setFontSize(20);
       doc.text('Learning Progress Report', 20, 20);
       
@@ -72,7 +63,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
       doc.text(`Generated on: ${format(new Date(), 'PPP')}`, 20, 30);
       doc.text(`User: ${user.email}`, 20, 37);
       
-      // Add metrics summary
       doc.setFontSize(16);
       doc.text('Learning Metrics', 20, 50);
       
@@ -82,7 +72,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         ['Total Learning Time', `${metrics?.total_time_spent || 0} minutes`],
       ];
       
-      // Use autoTable with proper typing
       doc.autoTable({
         startY: 55,
         head: [['Metric', 'Value']],
@@ -91,7 +80,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         headStyles: { fillColor: [79, 70, 229] }
       });
       
-      // Add skills section
       doc.setFontSize(16);
       doc.text('Top Skills', 20, doc.lastAutoTable.finalY + 20);
       
@@ -108,7 +96,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         skillsData.push(['No skills data available yet', '']);
       }
       
-      // Use autoTable with proper typing
       doc.autoTable({
         startY: doc.lastAutoTable.finalY + 25,
         head: [['Skill', 'Progress']],
@@ -117,7 +104,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         headStyles: { fillColor: [79, 70, 229] }
       });
       
-      // Add recent activity section
       doc.setFontSize(16);
       doc.text('Recent Activity', 20, doc.lastAutoTable.finalY + 20);
       
@@ -135,7 +121,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         activityData.push(['No recent activity', '', '']);
       }
       
-      // Use autoTable with proper typing
       doc.autoTable({
         startY: doc.lastAutoTable.finalY + 25,
         head: [['Date', 'Type', 'Count']],
@@ -144,11 +129,9 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         headStyles: { fillColor: [79, 70, 229] }
       });
       
-      // Add personalized feedback
       doc.setFontSize(16);
       doc.text('Personalized Feedback', 20, doc.lastAutoTable.finalY + 20);
       
-      // Generate personalized feedback
       let feedback = 'Keep up the good work!';
       
       if (metrics?.exercises_completed && metrics.exercises_completed > 10) {
@@ -165,7 +148,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
       const splitText = doc.splitTextToSize(feedback, 170);
       doc.text(splitText, 20, doc.lastAutoTable.finalY + 30);
       
-      // Add footer
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -173,7 +155,6 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
         doc.text('© 2025 Learning Platform - All Rights Reserved', 20, doc.internal.pageSize.height - 10);
       }
       
-      // Save the PDF
       doc.save('Learning_Progress_Report.pdf');
       toast.success('Report generated successfully!');
     } catch (error) {
@@ -202,12 +183,10 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
     );
   }
 
-  // Calculate stats for the report
   const coursesCompleted = metrics?.course_completions || 0;
   const exercisesCompleted = metrics?.exercises_completed || 0;
   const learningTime = metrics?.total_time_spent || 0;
   
-  // Calculate improvement from activity logs
   const thisWeekLogs = activityLogs.filter(log => {
     const logDate = new Date(log.date);
     const weekAgo = new Date();
