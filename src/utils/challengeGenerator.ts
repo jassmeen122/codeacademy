@@ -22,8 +22,8 @@ export const generateUserChallenges = async (userId: string): Promise<boolean> =
     
     // If we got new challenges, notify the user
     if (dailyChallenge || weeklyChallenge) {
-      toast.success("Nouveaux défis disponibles !", {
-        description: "Consultez la page d'achievements pour voir vos défis"
+      toast.success("New challenges available!", {
+        description: "Check the achievements page to see your challenges"
       });
       return true;
     }
@@ -146,7 +146,7 @@ export const updateChallengeProgress = async (
               console.log('Points awarded successfully:', data);
             }
             
-            toast.success("Défi terminé !", {
+            toast.success("Challenge completed!", {
               description: `+${challenge.reward_xp} XP`
             });
           } catch (e) {
