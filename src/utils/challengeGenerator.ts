@@ -157,3 +157,83 @@ export const updateChallengeProgress = async (
     console.error('Error updating challenge progress:', error);
   }
 };
+
+// Add a list of developer-oriented challenge templates that can be used for generating challenges
+export const challengeTemplates = {
+  daily: [
+    {
+      description: "Complete 3 coding exercises",
+      target: 3,
+      reward_xp: 50,
+      type: "exercise_completed"
+    },
+    {
+      description: "Read documentation for 15 minutes",
+      target: 1,
+      reward_xp: 25,
+      type: "documentation_read"
+    },
+    {
+      description: "Write 5 unit tests",
+      target: 5,
+      reward_xp: 60,
+      type: "test_written"
+    },
+    {
+      description: "Refactor a code block for better performance",
+      target: 1,
+      reward_xp: 40,
+      type: "code_refactored"
+    },
+    {
+      description: "Debug and fix 2 errors in your code",
+      target: 2,
+      reward_xp: 35,
+      type: "bug_fixed"
+    },
+    {
+      description: "Comment your code properly",
+      target: 1,
+      reward_xp: 20,
+      type: "code_documented"
+    }
+  ],
+  weekly: [
+    {
+      description: "Complete a small project using a new library",
+      target: 1,
+      reward_xp: 150,
+      type: "project_completed"
+    },
+    {
+      description: "Contribute to an open source repository",
+      target: 1,
+      reward_xp: 200,
+      type: "contribution_made"
+    },
+    {
+      description: "Learn and implement a design pattern",
+      target: 1,
+      reward_xp: 125,
+      type: "pattern_learned"
+    },
+    {
+      description: "Optimize your database queries",
+      target: 3,
+      reward_xp: 175,
+      type: "query_optimized"
+    },
+    {
+      description: "Set up a CI/CD pipeline for your project",
+      target: 1,
+      reward_xp: 200,
+      type: "pipeline_setup"
+    },
+    {
+      description: "Complete 10 coding exercises",
+      target: 10,
+      reward_xp: 150,
+      type: "exercise_completed"
+    }
+  ]
+};
