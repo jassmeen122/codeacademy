@@ -11,11 +11,12 @@ import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+// Define PubSub interface used in jsPDF types
 interface PubSub {
   [key: string]: any;
 }
 
-// Complete type declaration for jsPDF
+// Complete type declaration for jsPDF - fixed to match correct structure
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF;
