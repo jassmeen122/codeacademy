@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +8,7 @@ import { MonacoEditorWrapper } from "@/components/CodeEditor/MonacoEditorWrapper
 import { LanguageSelector } from "@/components/CodeEditor/LanguageSelector";
 import { ExerciseUI } from "@/types/exerciseUI";
 import { ProgrammingLanguage } from "@/components/CodeEditor/types";
+import { NoteEditor } from './NoteEditor';
 
 interface ExerciseDetailProps {
   exercise: ExerciseUI;
@@ -175,6 +175,8 @@ def solution(s):
             />
           </div>
         </div>
+        
+        <NoteEditor exerciseId={exercise.id} title="Vos notes pour cet exercice" />
         
         <Tabs 
           defaultValue="output" 
