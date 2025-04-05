@@ -51,11 +51,11 @@ const LanguageCoursePage = () => {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-4">Language not found</h1>
-          <p>The requested language does not exist. Please return to the language selection.</p>
+          <h1 className="text-2xl font-bold mb-4">Langage non trouvé</h1>
+          <p>Le langage demandé n'existe pas. Veuillez retourner à la sélection des langages.</p>
           <Button onClick={() => navigate('/student/language-selection')} className="mt-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Return to selection
+            Retour à la sélection
           </Button>
         </div>
       </DashboardLayout>
@@ -66,10 +66,10 @@ const LanguageCoursePage = () => {
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">{languageName} - Courses and Exercises</h1>
+          <h1 className="text-3xl font-bold">{languageName} - Cours et Exercices</h1>
           <Button variant="outline" onClick={() => navigate('/student/language-selection')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to languages
+            Retour aux langages
           </Button>
         </div>
 
@@ -78,17 +78,17 @@ const LanguageCoursePage = () => {
             <CardHeader className="bg-primary/10">
               <CardTitle className="flex items-center">
                 <YoutubeIcon className="mr-2 h-5 w-5 text-red-600" />
-                YouTube Tutorials
+                Tutoriels YouTube
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <p className="mb-6">Access our YouTube tutorials for {languageName} and other programming languages.</p>
+              <p className="mb-6">Accédez à nos tutoriels YouTube pour {languageName} et d'autres langages de programmation.</p>
               <Button 
                 className="w-full bg-red-600 hover:bg-red-700"
                 onClick={() => navigate('/student/yt-dev-tutorials')}
               >
                 <YoutubeIcon className="mr-2 h-4 w-4" />
-                View All Tutorials
+                Voir tous les Tutoriels
               </Button>
             </CardContent>
           </Card>
@@ -97,17 +97,17 @@ const LanguageCoursePage = () => {
             <CardHeader className="bg-primary/10">
               <CardTitle className="flex items-center">
                 <FileText className="mr-2 h-5 w-5 text-primary" />
-                Practice Exercises
+                Exercices Pratiques
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <p className="mb-6">Enhance your skills with these practical exercises on {languageName}.</p>
+              <p className="mb-6">Renforcez vos compétences avec ces exercices pratiques sur {languageName}.</p>
               <Button 
                 className="w-full"
                 onClick={() => navigate('/student/exercises')}
               >
                 <FileText className="mr-2 h-4 w-4" />
-                View Exercises
+                Voir les Exercices
               </Button>
             </CardContent>
           </Card>
@@ -117,19 +117,19 @@ const LanguageCoursePage = () => {
             <CardHeader className="bg-primary/10">
               <CardTitle className="flex items-center">
                 <Book className="mr-2 h-5 w-5 text-primary" />
-                Detailed Summary
+                Résumé Détaillé
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               <p className="mb-6">
-                Check out our detailed summary to learn the key concepts of {languageName}.
+                Consultez notre résumé détaillé pour apprendre les concepts clés de {languageName}.
               </p>
               <Button 
                 className="w-full"
                 onClick={() => navigate(`/student/language-summary/${languageId}`)}
               >
                 <Book className="mr-2 h-4 w-4" />
-                View Summary
+                Voir le Résumé
               </Button>
             </CardContent>
           </Card>

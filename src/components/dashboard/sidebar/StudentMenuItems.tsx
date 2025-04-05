@@ -13,123 +13,107 @@ import {
   MessagesSquare,
   Briefcase,
   Users,
-  Brain,
-  GitBranch,
-  Cpu,
-  GraduationCap,
-  Database
+  Brain
 } from "lucide-react";
 import { SidebarItem } from "@/types/sidebar";
 
 export const StudentMenuItems: SidebarItem[] = [
   {
-    title: "Learning",
+    title: "Apprentissage",
     items: [
       {
-        title: "Dashboard",
+        title: "Tableau de Bord",
         icon: Terminal,
         href: "/student",
-        description: "Overview of your learning journey"
+        description: "Vue d'ensemble de votre parcours"
       },
       {
-        title: "Courses",
+        title: "Cours",
         icon: Book,
         href: "/student/courses",
-        description: "Browse and follow courses"
+        description: "Parcourir et suivre des cours"
       },
       {
-        title: "Free Courses",
+        title: "Cours Gratuits",
         icon: BookOpen,
         href: "/student/free-courses",
-        description: "Popular free courses"
+        description: "Cours gratuits populaires"
       },
       {
-        title: "Exercises",
+        title: "Exercices",
         icon: Code,
         href: "/student/exercises",
-        description: "Programming exercises"
+        description: "Exercices de programmation"
       },
       {
-        title: "Code Editor",
+        title: "Éditeur de Code",
         icon: FileCode,
         href: "/student/code-editor",
-        description: "Development environment"
+        description: "Environnement de développement"
       },
       {
-        title: "Star Progress",
+        title: "Parcours Étoilé",
         icon: Star,
         href: "/student/progress",
-        description: "Visual progress tracking"
+        description: "Suivi visuel de vos progrès"
       },
       {
         title: "Badges & Achievements",
         icon: Trophy,
         href: "/student/achievements",
-        description: "Your rewards and goals"
+        description: "Vos récompenses et objectifs"
       }
     ]
   },
   {
-    title: "Developer Resources",
+    title: "Ressources",
     items: [
       {
-        title: "Video Tutorials",
+        title: "Tutoriels Vidéo",
         icon: Youtube,
         href: "/student/yt-dev-tutorials",
-        description: "Developer tutorials"
+        description: "Tutoriels de développement"
       },
       {
-        title: "AI Assistant",
+        title: "IA Assistant",
         icon: Brain,
         href: "/student/ai-assistant",
-        description: "AI-powered learning support"
+        description: "Aide à l'apprentissage par IA"
       },
       {
-        title: "Code Sandbox",
+        title: "Mini-Jeux",
         icon: Globe,
         href: "/student/mini-game",
-        description: "Learn through practice"
-      },
-      {
-        title: "Version Control",
-        icon: GitBranch,
-        href: "/student/version-control",
-        description: "Git and GitHub basics"
-      },
-      {
-        title: "Data Structures",
-        icon: Database,
-        href: "/student/data-structures",
-        description: "Learn essential patterns"
+        description: "Apprendre en s'amusant"
       }
     ]
   },
   {
-    title: "Community",
+    title: "Communauté",
     items: [
       {
         title: "Forum",
         icon: MessageSquare,
         href: "/student/discussion",
-        description: "Ask your questions"
+        description: "Poser vos questions"
       },
       {
-        title: "Messages",
+        title: "Messagerie",
         icon: MessagesSquare,
         href: "/student/messages",
-        description: "Private messaging"
+        description: "Messagerie privée"
       },
       {
-        title: "Network",
+        title: "Social",
         icon: Users,
         href: "/student/social",
-        description: "Developer community"
+        description: "Fil d'actualité social"
       },
       {
-        title: "Internships",
+        title: "Stages",
         icon: Briefcase,
         href: "/student/internships",
-        description: "Internship opportunities"
+        description: "Opportunités de stages"
       }
     ]
   }

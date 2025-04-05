@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 /**
  * Generates daily and weekly challenges for the user
  */
-export const generateUserChallenge = async (userId: string): Promise<boolean> => {
+export const generateUserChallenges = async (userId: string): Promise<boolean> => {
   try {
     // Generate daily challenge
     const { data: dailyChallenge, error: dailyError } = await supabase.rpc('generate_daily_challenge', {
@@ -22,8 +22,8 @@ export const generateUserChallenge = async (userId: string): Promise<boolean> =>
     
     // If we got new challenges, notify the user
     if (dailyChallenge || weeklyChallenge) {
-      toast.success("New challenges available!", {
-        description: "Check the achievements page to see your challenges"
+      toast.success("Nouveaux défis disponibles !", {
+        description: "Consultez la page d'achievements pour voir vos défis"
       });
       return true;
     }
@@ -72,7 +72,8 @@ export const updateChallengeProgress = async (
       
       switch (challengeType) {
         case 'lesson_completed':
-          if (challenge.description.toLowerCase().includes('lesson')) {
+          if (challenge.description.toLowerCase().includes('leçon') || 
+              challenge.description.toLowerCase().includes('lesson')) {
             shouldUpdate = true;
             increment = 1;
             console.log('Updating lesson challenge');
@@ -86,14 +87,15 @@ export const updateChallengeProgress = async (
           }
           break;
         case 'login':
-          if (challenge.description.toLowerCase().includes('login')) {
+          if (challenge.description.toLowerCase().includes('connecte')) {
             shouldUpdate = true;
             increment = 1;
             console.log('Updating login challenge');
           }
           break;
         case 'exercise_completed':
-          if (challenge.description.toLowerCase().includes('exercise')) {
+          if (challenge.description.toLowerCase().includes('exercice') || 
+              challenge.description.toLowerCase().includes('exercise')) {
             shouldUpdate = true;
             increment = 1;
             console.log('Updating exercise challenge');
@@ -144,7 +146,7 @@ export const updateChallengeProgress = async (
               console.log('Points awarded successfully:', data);
             }
             
-            toast.success("Challenge completed!", {
+            toast.success("Défi terminé !", {
               description: `+${challenge.reward_xp} XP`
             });
           } catch (e) {
