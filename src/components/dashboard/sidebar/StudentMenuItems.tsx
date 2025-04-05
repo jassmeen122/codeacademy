@@ -4,7 +4,6 @@ import {
   Code,
   BookOpen,
   MessageSquare,
-  Globe,
   FileCode,
   Terminal,
   Trophy,
@@ -14,14 +13,7 @@ import {
   Briefcase,
   Users,
   Brain,
-  Github,
-  Database,
-  Coffee,
-  Cpu,
-  Boxes,
-  FileJson,
-  Folder,
-  FolderArchive
+  Coffee
 } from "lucide-react";
 import { SidebarItem } from "@/types/sidebar";
 
@@ -90,21 +82,9 @@ export const StudentMenuItems: SidebarItem[] = [
       },
       {
         title: "Developer Games",
-        icon: Globe,
+        icon: Terminal,
         href: "/student/mini-game",
         description: "Learn while having fun"
-      },
-      {
-        title: "GitHub Projects",
-        icon: Github,
-        href: "/student/github-projects",
-        description: "Open source contributions"
-      },
-      {
-        title: "API Playground",
-        icon: Database,
-        href: "/student/api-playground",
-        description: "Test and explore APIs"
       }
     ]
   },
@@ -140,41 +120,6 @@ export const StudentMenuItems: SidebarItem[] = [
         icon: Coffee,
         href: "/student/open-source",
         description: "Contribute to projects"
-      }
-    ]
-  },
-  {
-    title: "Tools & Resources",
-    items: [
-      {
-        title: "Technical Documentation",
-        icon: FileJson,
-        href: "/student/documentation",
-        description: "Reference materials"
-      },
-      {
-        title: "System Architecture",
-        icon: Cpu,
-        href: "/student/architecture",
-        description: "Architecture diagrams"
-      },
-      {
-        title: "Package Manager",
-        icon: Boxes,
-        href: "/student/packages",
-        description: "Find and install packages"
-      },
-      {
-        title: "Project Templates",
-        icon: Folder,
-        href: "/student/templates",
-        description: "Starter project templates"
-      },
-      {
-        title: "Code Snippets",
-        icon: FolderArchive,
-        href: "/student/snippets",
-        description: "Reusable code snippets"
       }
     ]
   }

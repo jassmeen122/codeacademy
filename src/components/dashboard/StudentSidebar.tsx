@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -12,8 +11,6 @@ import {
   TrendingUp,
   Settings,
   FileCode,
-  Laptop,
-  Command,
   GraduationCap,
   Languages,
   UserSquare2,
@@ -24,15 +21,8 @@ import {
   Book,
   Briefcase,
   Youtube,
-  Github,
-  Database,
-  Server,
   Terminal,
   Coffee,
-  Boxes,
-  FileJson,
-  BadgeCheck,
-  Cpu,
   LogOut,
   Home
 } from 'lucide-react';
@@ -73,11 +63,6 @@ const links = [
     icon: Youtube,
   },
   {
-    title: 'GitHub Projects',
-    href: '/student/github-projects',
-    icon: Github,
-  },
-  {
     title: 'Code Editor',
     href: '/student/code-editor',
     icon: Code,
@@ -86,16 +71,6 @@ const links = [
     title: 'AI Coding Assistant',
     href: '/student/ai-assistant',
     icon: Brain,
-  },
-  {
-    title: 'API Playground',
-    href: '/student/api-playground',
-    icon: Database,
-  },
-  {
-    title: 'System Architecture',
-    href: '/student/architecture',
-    icon: Cpu,
   },
   {
     title: 'Technical Forums',
