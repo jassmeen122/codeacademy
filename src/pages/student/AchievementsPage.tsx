@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +13,6 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
-// Types for badges and challenges
 interface UserBadge {
   id: string;
   name: string;
@@ -71,24 +69,18 @@ const AchievementsPage = () => {
     }
   }, [user]);
   
-  // Calculate user level based on XP
   useEffect(() => {
     if (metrics) {
-      // Calculate level based on total XP
-      // Using a formula similar to Duolingo where each level requires more XP
       const totalXp = (metrics.exercises_completed * 10) + (metrics.course_completions * 50);
       const calculatedLevel = Math.floor(Math.sqrt(totalXp / 25)) + 1;
       setLevel(calculatedLevel);
       
-      // Calculate XP needed for next level
       const nextLevelRequiredXp = Math.pow(calculatedLevel, 2) * 25;
       const prevLevelXp = Math.pow(calculatedLevel - 1, 2) * 25;
       setNextLevelXp(nextLevelRequiredXp);
       
-      // Current XP in this level
       setCurrentXp(totalXp - prevLevelXp);
       
-      // Progress to next level (percentage)
       const levelXpRange = nextLevelRequiredXp - prevLevelXp;
       const progressPercentage = ((totalXp - prevLevelXp) / levelXpRange) * 100;
       setXpProgress(Math.min(progressPercentage, 100));
@@ -99,7 +91,6 @@ const AchievementsPage = () => {
     try {
       if (!user) return;
 
-      // Get user's activities from the last 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -117,7 +108,6 @@ const AchievementsPage = () => {
         return;
       }
 
-      // Group activities by day
       const activityDays = new Set();
       data.forEach(activity => {
         if (activity.created_at) {
@@ -126,15 +116,12 @@ const AchievementsPage = () => {
         }
       });
 
-      // Convert to array and sort
       const sortedDays = Array.from(activityDays).sort().reverse();
 
-      // Calculate streak
       let currentStreak = 1;
       const today = new Date();
       const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
       
-      // Check if user was active today
       const hasActivityToday = sortedDays[0] === todayStr;
       
       if (!hasActivityToday) {
@@ -142,18 +129,15 @@ const AchievementsPage = () => {
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
         if (sortedDays[0] !== yesterdayStr) {
-          // If no activity yesterday or today, streak is 0
           setStreak(0);
           return;
         }
       }
 
-      // Count consecutive days
       for (let i = 1; i < sortedDays.length; i++) {
         const currentDateStr = sortedDays[i-1];
         const prevDateStr = sortedDays[i];
         
-        // Safety check: make sure we're working with strings that can be parsed
         if (typeof currentDateStr === 'string' && typeof prevDateStr === 'string') {
           const currentParts = currentDateStr.split('-').map(Number);
           const prevParts = prevDateStr.split('-').map(Number);
@@ -202,7 +186,6 @@ const AchievementsPage = () => {
 
       if (error) throw error;
 
-      // Transform the data to match our expected format
       const formattedBadges = data.map(item => ({
         id: item.id,
         name: item.badges.name,
@@ -225,14 +208,12 @@ const AchievementsPage = () => {
     try {
       if (!user) return;
 
-      // Get all badges
       const { data: allBadges, error: badgesError } = await supabase
         .from('badges')
         .select('*');
 
       if (badgesError) throw badgesError;
 
-      // Get user's earned badge IDs
       const { data: userBadges, error: userBadgesError } = await supabase
         .from('user_badges')
         .select('badge_id')
@@ -240,7 +221,6 @@ const AchievementsPage = () => {
 
       if (userBadgesError) throw userBadgesError;
 
-      // Filter out badges the user already has
       const userBadgeIds = userBadges.map(ub => ub.badge_id);
       const availableBadges = allBadges.filter(badge => !userBadgeIds.includes(badge.id));
 
@@ -254,7 +234,6 @@ const AchievementsPage = () => {
     try {
       if (!user) return;
 
-      // Get user's challenges with their completion status
       const { data, error } = await supabase
         .from('user_challenges')
         .select(`
@@ -275,7 +254,6 @@ const AchievementsPage = () => {
 
       if (error) throw error;
 
-      // Transform to match our expected format
       const formattedChallenges = data.map(item => ({
         id: item.challenges.id,
         title: item.challenges.title,
@@ -286,7 +264,6 @@ const AchievementsPage = () => {
         end_date: item.challenges.end_date,
         status: item.status,
         completed_at: item.completed_at,
-        // Add random progress for in-progress challenges for demo purposes
         progress: item.status === 'in_progress' ? Math.floor(Math.random() * 80) + 10 : 100
       }));
 
@@ -301,7 +278,6 @@ const AchievementsPage = () => {
     try {
       if (!user) return;
 
-      // Get top users by points
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url, points')
@@ -310,7 +286,6 @@ const AchievementsPage = () => {
 
       if (error) throw error;
 
-      // Add ranking
       const rankedData = data.map((user, index) => ({
         ...user,
         rank: index + 1,
@@ -319,7 +294,6 @@ const AchievementsPage = () => {
 
       setLeaderboard(rankedData);
 
-      // Get current user's rank
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url, points')
@@ -328,7 +302,6 @@ const AchievementsPage = () => {
 
       if (userError) throw userError;
 
-      // Count users with more points to determine rank
       const { count, error: rankError } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true })
@@ -794,40 +767,390 @@ const AchievementsPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto p-4">
-        <div className="flex flex-col gap-6">
-          <h1 className="text-2xl font-bold">Achievements & Progress</h1>
-          
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              {renderStatsSection()}
-            </div>
-            <div>
-              {renderXPCard()}
-            </div>
+      <div className="container mx-auto p-4 max-w-7xl">
+        <h1 className="text-3xl font-bold mb-6 text-center sm:text-left">Vos Achievements & Progression</h1>
+        
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 mb-8">
+          <div className="lg:col-span-2">
+            <Card className="border-2 border-blue-100 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-4">
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-6 w-6 text-blue-600" />
+                  Statistiques d'Apprentissage
+                </CardTitle>
+                <CardDescription>Suivez votre progression et vos réalisations</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-orange-50 p-4 rounded-lg text-center border border-orange-100 shadow-sm">
+                    <h3 className="text-sm font-medium text-orange-700 mb-1">Cours Terminés</h3>
+                    <p className="text-3xl font-bold text-orange-900">{metrics?.course_completions || 0}</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100 shadow-sm">
+                    <h3 className="text-sm font-medium text-green-700 mb-1">Exercices Terminés</h3>
+                    <p className="text-3xl font-bold text-green-900">{metrics?.exercises_completed || 0}</p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg text-center border border-purple-100 shadow-sm">
+                    <h3 className="text-sm font-medium text-purple-700 mb-1">Temps d'Apprentissage</h3>
+                    <p className="text-3xl font-bold text-purple-900">{metrics?.total_time_spent || 0} min</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <h3 className="text-md font-medium">Total des badges obtenus: <span className="font-bold text-blue-600">{badges.length}</span></h3>
+                    {streak > 0 && (
+                      <div className="flex items-center bg-orange-100 px-3 py-1 rounded-full">
+                        <Flame className="h-5 w-5 text-orange-500 mr-1" />
+                        <span className="font-medium text-orange-600">{streak} jour{streak > 1 ? 's' : ''} de série!</span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-md font-medium mt-2">Défis terminés: <span className="font-bold text-green-600">{challenges.filter(c => c.status === 'completed').length}</span></h3>
+                </div>
+              </CardContent>
+            </Card>
           </div>
           
-          <Tabs defaultValue="badges" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="badges">My Badges</TabsTrigger>
-              <TabsTrigger value="available">Available Badges</TabsTrigger>
-              <TabsTrigger value="challenges">Challenges</TabsTrigger>
-              <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-            </TabsList>
-            <TabsContent value="badges" className="mt-4">
-              {renderBadgesSection()}
-            </TabsContent>
-            <TabsContent value="available" className="mt-4">
-              {renderAvailableBadgesSection()}
-            </TabsContent>
-            <TabsContent value="challenges" className="mt-4">
-              {renderChallengesSection()}
-            </TabsContent>
-            <TabsContent value="leaderboard" className="mt-4">
-              {renderLeaderboardSection()}
-            </TabsContent>
-          </Tabs>
+          <div>
+            <Card className="bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 shadow-md h-full">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-lg flex items-center">
+                    <Zap className="h-5 w-5 mr-2 text-yellow-500" />
+                    XP & Niveau
+                  </CardTitle>
+                  <Badge className="bg-violet-600">
+                    {(metrics?.exercises_completed || 0) * 10 + (metrics?.course_completions || 0) * 50} XP
+                  </Badge>
+                </div>
+                <CardDescription>Niveau {level}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm font-medium">
+                    <span className="text-violet-700">{currentXp} XP</span>
+                    <span className="text-violet-700">{nextLevelXp} XP</span>
+                  </div>
+                  <Progress value={xpProgress} className="h-3 bg-violet-100" />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{(nextLevelXp - currentXp)} XP pour niveau {level+1}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+        
+        <Tabs defaultValue="badges" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
+            <TabsTrigger value="badges" className="text-base">Mes Badges</TabsTrigger>
+            <TabsTrigger value="available" className="text-base">Badges Disponibles</TabsTrigger>
+            <TabsTrigger value="challenges" className="text-base">Défis</TabsTrigger>
+            <TabsTrigger value="leaderboard" className="text-base">Classement</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="badges" className="mt-6 animate-fadeIn">
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-40 w-full" />
+                ))}
+              </div>
+            ) : badges.length === 0 ? (
+              <div className="bg-yellow-50 border-2 border-yellow-100 rounded-xl p-8 text-center shadow-sm">
+                <Award className="h-16 w-16 text-yellow-500 mx-auto mb-3" />
+                <h3 className="text-xl font-medium text-yellow-800">Aucun badge obtenu</h3>
+                <p className="text-yellow-600 mt-2">
+                  Complétez des leçons, exercices et défis pour obtenir votre premier badge !
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {badges.map((badge) => (
+                  <Card key={badge.id} className="overflow-hidden border-2 border-green-100 bg-white hover:shadow-md transition-shadow">
+                    <CardHeader className="bg-green-50 pb-3">
+                      <div className="flex justify-between items-center">
+                        <CardTitle className="text-lg">{badge.name}</CardTitle>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          {badge.points} XP
+                        </Badge>
+                      </div>
+                      <CardDescription>
+                        Obtenu le {format(new Date(badge.earned_at), 'PP')}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-white p-3 rounded-full border-2 border-green-100 shadow-sm">
+                          {getIconComponent(badge.icon)}
+                        </div>
+                        <p className="text-gray-600">{badge.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="available" className="mt-6 animate-fadeIn">
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-40 w-full" />
+                ))}
+              </div>
+            ) : availableBadges.length === 0 ? (
+              <div className="bg-blue-50 border-2 border-blue-100 rounded-xl p-8 text-center shadow-sm">
+                <Trophy className="h-16 w-16 text-blue-500 mx-auto mb-3" />
+                <h3 className="text-xl font-medium text-blue-800">Tous les badges sont obtenus!</h3>
+                <p className="text-blue-600 mt-2">
+                  Félicitations! Vous avez obtenu tous les badges disponibles.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {availableBadges.map((badge) => (
+                  <Card key={badge.id} className="overflow-hidden border border-gray-200 bg-gray-50">
+                    <CardHeader className="bg-gray-100 pb-3">
+                      <div className="flex justify-between items-center">
+                        <CardTitle className="text-md text-gray-600">{badge.name}</CardTitle>
+                        <Badge variant="secondary" className="bg-gray-200 text-gray-600">
+                          {badge.points} XP
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-gray-500">
+                        Pas encore obtenu
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-gray-200 p-3 rounded-full">
+                          {getIconComponent(badge.icon)}
+                        </div>
+                        <p className="text-gray-500">{badge.description}</p>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="bg-gray-50 pt-0 pb-4">
+                      <div className="text-xs text-gray-500 w-full">
+                        <div className="flex items-center justify-between">
+                          <span>Prérequis:</span>
+                          <span className="font-medium">
+                            {badge.name.includes('Débutant') ? '1 exercice' : 
+                             badge.name.includes('Intermédiaire') ? '5 exercices' : 
+                             badge.name.includes('Expert') ? '1 cours terminé' :
+                             badge.name.includes('Motivé') ? '3 jours de série' :
+                             badge.name.includes('Challenger') ? 'Compléter un défi' : 
+                             'Accomplissement spécial'}
+                          </span>
+                        </div>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="challenges" className="mt-6 animate-fadeIn">
+            {loading ? (
+              <div className="grid grid-cols-1 gap-4">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-24 w-full" />
+                ))}
+              </div>
+            ) : challenges.length === 0 ? (
+              <div className="bg-purple-50 border-2 border-purple-100 rounded-xl p-8 text-center shadow-sm">
+                <Star className="h-16 w-16 text-purple-500 mx-auto mb-3" />
+                <h3 className="text-xl font-medium text-purple-800">Aucun défi actif</h3>
+                <p className="text-purple-600 mt-2">
+                  Revenez bientôt pour voir de nouveaux défis ou complétez des leçons pour les débloquer!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {challenges.filter(c => c.status !== 'completed').length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-medium mb-4">Défis Actifs</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {challenges.filter(c => c.status !== 'completed').map((challenge) => (
+                        <Card key={challenge.id} className="overflow-hidden border-2 border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex flex-col md:flex-row md:items-center p-4 gap-4">
+                            <div className="bg-blue-100 p-3 rounded-full self-start">
+                              {challenge.type === 'daily' ? (
+                                <Star className="h-6 w-6 text-blue-500" />
+                              ) : (
+                                <Calendar className="h-6 w-6 text-blue-500" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+                                <div>
+                                  <h4 className="font-medium text-lg">{challenge.title}</h4>
+                                  <p className="text-gray-600">{challenge.description}</p>
+                                </div>
+                                <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 self-start">
+                                  {challenge.type === 'daily' ? 'Quotidien' : 'Hebdomadaire'} · {challenge.points} XP
+                                </Badge>
+                              </div>
+                              <div className="mt-3">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex justify-between items-center text-xs text-gray-500">
+                                    <span>Progression</span>
+                                    <span>{challenge.progress}%</span>
+                                  </div>
+                                  <Progress value={challenge.progress} className="h-2" />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  Expire: {format(new Date(challenge.end_date), 'PPp')}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {challenges.filter(c => c.status === 'completed').length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-medium mb-4">Défis Complétés</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {challenges.filter(c => c.status === 'completed').map((challenge) => (
+                        <Card key={challenge.id} className="overflow-hidden bg-green-50 border border-green-100 shadow-sm">
+                          <div className="flex flex-col md:flex-row md:items-center p-4 gap-4">
+                            <div className="bg-green-100 p-3 rounded-full self-start">
+                              <Check className="h-6 w-6 text-green-500" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+                                <div>
+                                  <h4 className="font-medium text-lg">{challenge.title}</h4>
+                                  <p className="text-gray-600">{challenge.description}</p>
+                                </div>
+                                <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 self-start">
+                                  {challenge.points} XP gagnés
+                                </Badge>
+                              </div>
+                              <div className="mt-2">
+                                <p className="text-xs text-gray-500">
+                                  Complété: {challenge.completed_at ? format(new Date(challenge.completed_at), 'PPp') : 'Date inconnue'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="leaderboard" className="mt-6 animate-fadeIn">
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : leaderboard.length === 0 ? (
+              <div className="bg-orange-50 border-2 border-orange-100 rounded-xl p-8 text-center shadow-sm">
+                <Trophy className="h-16 w-16 text-orange-500 mx-auto mb-3" />
+                <h3 className="text-xl font-medium text-orange-800">Classement indisponible</h3>
+                <p className="text-orange-600 mt-2">
+                  Commencez à apprendre pour apparaître dans le classement!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {userRank && (
+                  <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 border-2 border-blue-200 mb-6 shadow-md">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-blue-100 h-12 w-12 rounded-full flex items-center justify-center text-blue-700 font-bold text-lg">
+                            {userRank.rank}
+                          </div>
+                          <div>
+                            <p className="font-medium text-lg">{userRank.full_name || 'Vous'}</p>
+                            <p className="text-blue-600">{userRank.points} XP</p>
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                          Votre rang
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                <div className="flex gap-4 mb-4">
+                  <Button variant="outline" className="flex-1 bg-white" disabled>
+                    <Target className="h-4 w-4 mr-2" />
+                    Global
+                  </Button>
+                  <Button variant="outline" className="flex-1 bg-blue-50 border-blue-200 text-blue-700">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Hebdomadaire
+                  </Button>
+                  <Button variant="outline" className="flex-1 bg-white" disabled>
+                    <Users className="h-4 w-4 mr-2" />
+                    Amis
+                  </Button>
+                </div>
+                
+                <Card className="shadow-md border-gray-200">
+                  <CardHeader className="p-4 bg-gray-50 border-b">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg">Top Apprenants</CardTitle>
+                      <Badge variant="outline" className="bg-white">Cette Semaine</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {leaderboard.map((entry, index) => (
+                      <div 
+                        key={entry.id} 
+                        className={`flex items-center p-4 ${index < leaderboard.length - 1 ? 'border-b' : ''} ${entry.user_id === user?.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                      >
+                        <div className="flex items-center w-12 justify-center">
+                          {index === 0 ? (
+                            <div className="bg-yellow-100 p-2 rounded-full">
+                              <Trophy className="h-5 w-5 text-yellow-500" />
+                            </div>
+                          ) : index === 1 ? (
+                            <div className="bg-gray-100 p-2 rounded-full">
+                              <Medal className="h-5 w-5 text-gray-400" />
+                            </div>
+                          ) : index === 2 ? (
+                            <div className="bg-amber-100 p-2 rounded-full">
+                              <Medal className="h-5 w-5 text-amber-700" />
+                            </div>
+                          ) : (
+                            <span className="text-gray-500 text-lg font-medium">{entry.rank}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 ml-4">
+                          <p className={`font-medium ${entry.user_id === user?.id ? 'text-blue-700' : ''}`}>
+                            {entry.full_name || 'Utilisateur Anonyme'}
+                            {entry.user_id === user?.id && " (Vous)"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-gray-700">{entry.points}</span>
+                          <span className="text-gray-500 text-sm"> XP</span>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
