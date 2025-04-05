@@ -3,6 +3,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { updateChallengeProgress } from './challengeGenerator';
 
+// Define the type for exercise notes
+interface ExerciseNote {
+  id: string;
+  user_id: string;
+  exercise_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  exercises?: {
+    title: string;
+    description: string;
+    difficulty: string;
+  }
+}
+
 /**
  * Saves a note for a specific exercise
  */
@@ -86,7 +101,7 @@ export const saveExerciseNote = async (
 export const getExerciseNote = async (
   userId: string,
   exerciseId: string
-): Promise<{ success: boolean, data?: any, error?: any }> => {
+): Promise<{ success: boolean, data?: ExerciseNote | null, error?: any }> => {
   try {
     const { data, error } = await supabase
       .from('exercise_notes')
@@ -109,7 +124,7 @@ export const getExerciseNote = async (
  */
 export const getUserNotes = async (
   userId: string
-): Promise<{ success: boolean, data?: any, error?: any }> => {
+): Promise<{ success: boolean, data?: ExerciseNote[], error?: any }> => {
   try {
     const { data, error } = await supabase
       .from('exercise_notes')
