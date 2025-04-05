@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from './useAuthState';
@@ -58,7 +57,6 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      // Call our edge function to add points
       const { data, error } = await supabase.functions.invoke('gamification', {
         body: { 
           points: amount 
@@ -73,16 +71,13 @@ export const useGamification = () => {
         throw new Error(error.message || 'Failed to add points');
       }
       
-      // Show toast notification
       if (reason) {
         toast.success(`+${amount} XP: ${reason}`);
       } else {
         toast.success(`+${amount} XP`);
       }
       
-      // Check if user earned any new badges
       if (data?.newBadges && data.newBadges.length > 0) {
-        // Refresh badges to get the newly earned ones
         await getUserBadges();
         
         toast.success("Nouveau badge débloqué !", {
@@ -105,7 +100,6 @@ export const useGamification = () => {
     if (!user) return { success: false, error: 'User not authenticated' };
     
     try {
-      // Call our edge function to update challenge
       const { data, error } = await supabase.functions.invoke('gamification', {
         body: { 
           challenge_id: challengeId,
@@ -123,13 +117,11 @@ export const useGamification = () => {
         throw new Error(error.message || 'Failed to update challenge');
       }
       
-      // Show toast if challenge completed
       if (data.pointsAwarded) {
         toast.success("Défi terminé !", {
           description: `+${data.pointsAwarded} XP`
         });
         
-        // Check for new badges
         await checkForBadges();
       }
       
@@ -151,11 +143,9 @@ export const useGamification = () => {
       
       if (error) throw error;
       
-      // If new badges were earned, refresh the badges
       if (data && data.length > 0) {
         await getUserBadges();
         
-        // Display notification
         toast.success("Nouveau badge débloqué !", {
           description: "Consultez votre page d'achievements pour voir vos badges"
         });
@@ -190,7 +180,6 @@ export const useGamification = () => {
         throw new Error(error.message || 'Failed to generate certificate');
       }
       
-      // Show toast
       if (!data.alreadyExists) {
         toast.success("Cours terminé !", {
           description: "Certificat disponible dans votre profil"
@@ -214,7 +203,6 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      // Get the badges that the user has earned
       const { data: userBadgesData, error: userBadgesError } = await supabase
         .from('user_badges')
         .select('badge_id, earned_at')
@@ -222,7 +210,6 @@ export const useGamification = () => {
       
       if (userBadgesError) throw userBadgesError;
       
-      // Get all badges from the badges table
       const { data: allBadgesData, error: allBadgesError } = await supabase
         .from('badges')
         .select('*');
@@ -230,16 +217,14 @@ export const useGamification = () => {
       if (allBadgesError) throw allBadgesError;
       
       if (allBadgesData) {
-        // Create a map of earned badges with their earned_at date
-        const earnedBadgesMap = new Map();
+        const earnedBadgesMap = new Map<string, string>();
         if (userBadgesData) {
-          userBadgesData.forEach(userBadge => {
+          userBadgesData.forEach((userBadge: any) => {
             earnedBadgesMap.set(userBadge.badge_id, userBadge.earned_at);
           });
         }
         
-        // Format all badges with earned status
-        const badgesWithEarnedStatus: Badge[] = allBadgesData.map(badge => {
+        const badgesWithEarnedStatus: Badge[] = allBadgesData.map((badge: any) => {
           const isEarned = earnedBadgesMap.has(badge.id);
           
           return {
@@ -253,7 +238,6 @@ export const useGamification = () => {
           };
         });
         
-        // Set both earned badges and all badges
         const earnedBadges = badgesWithEarnedStatus.filter(badge => badge.earned);
         setBadges(earnedBadges);
         setAllBadges(badgesWithEarnedStatus);
@@ -361,7 +345,6 @@ export const useGamification = () => {
       let query;
       
       if (period === 'weekly') {
-        // For weekly leaderboard, join with profiles to filter by role
         query = supabase
           .from('user_points')
           .select(`
@@ -374,10 +357,10 @@ export const useGamification = () => {
               role
             )
           `)
+          .eq('profiles.role', 'student')
           .order('weekly_points', { ascending: false })
           .limit(20);
       } else {
-        // For global leaderboard, filter profiles by role
         query = supabase
           .from('profiles')
           .select('id, full_name, avatar_url, points, role')
@@ -391,13 +374,7 @@ export const useGamification = () => {
       if (error) throw error;
       
       if (data) {
-        if (period === 'weekly') {
-          // Filter to only include students from the weekly leaderboard result
-          const studentData = data.filter(item => item.profiles?.role === 'student');
-          setLeaderboard(studentData);
-        } else {
-          setLeaderboard(data);
-        }
+        setLeaderboard(data);
       }
       
       return { success: true, data };

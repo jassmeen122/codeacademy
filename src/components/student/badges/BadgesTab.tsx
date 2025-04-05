@@ -49,7 +49,7 @@ export const BadgesTab = ({ badges, loading, onRefresh }: BadgesTabProps) => {
 
   return (
     <Card className="border-none shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-background pb-6">
+      <CardHeader className="bg-gradient-to-r from-primary/20 to-background pb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <CardTitle className="flex items-center text-2xl">
@@ -60,7 +60,12 @@ export const BadgesTab = ({ badges, loading, onRefresh }: BadgesTabProps) => {
               Gagnez des badges en complétant des défis et en progressant dans vos cours
             </CardDescription>
           </div>
-          <Button variant="outline" onClick={onRefresh} size="sm">
+          <Button 
+            variant="outline" 
+            onClick={onRefresh} 
+            size="sm"
+            className="hover:bg-primary/10 transition-colors"
+          >
             Actualiser
           </Button>
         </div>
@@ -103,7 +108,8 @@ export const BadgesTab = ({ badges, loading, onRefresh }: BadgesTabProps) => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-gradient-to-br from-amber-50/50 to-transparent p-6 rounded-lg"
                 >
                   <div className="mb-3 flex items-center">
                     <Medal className="h-5 w-5 mr-2 text-yellow-500" />
@@ -131,13 +137,14 @@ export const BadgesTab = ({ badges, loading, onRefresh }: BadgesTabProps) => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="bg-gradient-to-br from-slate-50/50 to-transparent p-6 rounded-lg"
                 >
                   <div className="mb-3 flex items-center">
                     <Filter className="h-5 w-5 mr-2 text-gray-500" />
                     <h3 className="font-medium text-lg">À débloquer ({unearnedBadges.length})</h3>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     {unearnedBadges.map((badge) => (
                       <BadgeCard
                         key={badge.id}
@@ -154,6 +161,19 @@ export const BadgesTab = ({ badges, loading, onRefresh }: BadgesTabProps) => {
                 </motion.div>
               )}
             </AnimatePresence>
+            
+            {filteredBadges.length === 0 && (
+              <div className="text-center py-10">
+                <Medal className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-3" />
+                <h3 className="text-lg font-medium">Aucun badge trouvé</h3>
+                <p className="text-muted-foreground mb-3">
+                  Essayez de modifier vos critères de recherche
+                </p>
+                <Button variant="outline" onClick={() => setSearchTerm("")}>
+                  Effacer la recherche
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-10">
