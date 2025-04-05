@@ -6,6 +6,7 @@ import { useSummaryProgress } from './progress/useSummaryProgress';
 import { useAuthState } from './useAuthState';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { updateChallengeProgress } from '@/utils/challengeGenerator';
 
 export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
@@ -30,6 +31,11 @@ export const useProgressTracking = () => {
       // Update the overall metrics if completed
       if (completed && progress > 0.8) {
         await updateUserMetrics('time', Math.round(progress * 30)); // Estimate time spent in minutes
+        
+        if (user) {
+          // Update challenge progress for lesson completed
+          await updateChallengeProgress(user.id, 'lesson_completed');
+        }
       }
       
       setUpdating(false);
@@ -57,6 +63,11 @@ export const useProgressTracking = () => {
       // Update the overall metrics if passed
       if (passed) {
         await updateUserMetrics('exercise', 1);
+        
+        if (user) {
+          // Award XP for quiz completion
+          await updateChallengeProgress(user.id, 'xp_earned');
+        }
       }
       
       setUpdating(false);
@@ -81,6 +92,11 @@ export const useProgressTracking = () => {
       
       // Update time spent metrics
       await updateUserMetrics('time', 10); // Assume reading takes about 10 minutes
+      
+      if (user) {
+        // Update challenge progress for XP earned (reading gives XP)
+        await updateChallengeProgress(user.id, 'xp_earned');
+      }
       
       setUpdating(false);
       return result;
@@ -134,6 +150,9 @@ export const useProgressTracking = () => {
         await updateUserMetrics('time', timeSpent);
       }
       
+      // Update challenge progress for exercises
+      await updateChallengeProgress(user.id, 'exercise_completed');
+      
       setUpdating(false);
       return true;
     } catch (error) {
@@ -173,6 +192,10 @@ export const useProgressTracking = () => {
       
       // Update the course completion metrics
       await updateUserMetrics('course', 1);
+      
+      // Award XP for course completion
+      await updateChallengeProgress(user.id, 'lesson_completed');
+      await updateChallengeProgress(user.id, 'xp_earned');
       
       setUpdating(false);
       return true;
@@ -277,6 +300,15 @@ export const useProgressTracking = () => {
       const result = await updateUserMetrics(type, value);
       if (result) {
         toast.success(`Successfully updated ${type} metrics (+${value})`);
+        
+        // Also update challenge progress for XP earned if testing gives points
+        if (type === 'xp_earned' || type === 'time') {
+          await updateChallengeProgress(user.id, 'xp_earned');
+        } else if (type === 'exercise') {
+          await updateChallengeProgress(user.id, 'exercise_completed');
+        } else if (type === 'course') {
+          await updateChallengeProgress(user.id, 'lesson_completed');
+        }
       }
       return result;
     } catch (error) {

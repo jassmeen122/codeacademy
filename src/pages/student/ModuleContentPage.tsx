@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -12,6 +11,9 @@ import { QuizComponent } from '@/components/courses/QuizComponent';
 import { CodingExerciseComponent } from '@/components/courses/CodingExerciseComponent';
 import { toast } from 'sonner';
 import type { CourseModule } from '@/types/course';
+import { useProgressTracking } from '@/hooks/useProgressTracking';
+import { updateChallengeProgress } from '@/utils/challengeGenerator';
+import { useAuthState } from '@/hooks/useAuthState';
 
 const ModuleContentPage = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
@@ -21,6 +23,8 @@ const ModuleContentPage = () => {
   const [quizScores, setQuizScores] = useState<Record<string, number>>({});
   const [exerciseCompletions, setExerciseCompletions] = useState<Record<string, boolean>>({});
   const [completionStatus, setCompletionStatus] = useState<boolean>(false);
+  const { user } = useAuthState();
+  const { trackExerciseCompletion } = useProgressTracking();
 
   useEffect(() => {
     const fetchLanguageName = async () => {
@@ -68,31 +72,37 @@ const ModuleContentPage = () => {
     fetchUserProgress();
   }, [module, moduleId]);
 
-  const handleQuizCompletion = (quizId: string, score: number) => {
+  const handleQuizCompletion = async (quizId: string, score: number) => {
     setQuizScores(prev => ({
       ...prev,
       [quizId]: score
     }));
     
+    if (user && score > 0) {
+      await updateChallengeProgress(user.id, 'xp_earned');
+      if (score >= 0.8) {
+        await updateChallengeProgress(user.id, 'exercise_completed');
+      }
+    }
+    
     checkModuleCompletion();
   };
 
-  const handleExerciseCompletion = (exerciseId: string, completed: boolean) => {
+  const handleExerciseCompletion = async (exerciseId: string, completed: boolean) => {
     setExerciseCompletions(prev => ({
       ...prev,
       [exerciseId]: completed
     }));
     
+    if (user && completed) {
+      await trackExerciseCompletion(exerciseId, module?.language_id || 'unknown', 1, 20);
+    }
+    
     checkModuleCompletion();
   };
 
   const checkModuleCompletion = () => {
-    // Consider the module complete if:
-    // 1. All quizzes have been attempted
-    // 2. At least 70% of quiz answers are correct
-    // 3. All exercises are completed
-
-    const allQuizzesAttempted = quizzes.every(quiz => quiz.id in quizScores); // Fixed: was quizId
+    const allQuizzesAttempted = quizzes.every(quiz => quiz.id in quizScores);
     
     if (!allQuizzesAttempted) return;
     
@@ -114,7 +124,6 @@ const ModuleContentPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !moduleId) return;
       
-      // Check if a record already exists
       const { data: existingProgress, error: fetchError } = await supabase
         .from('user_progress')
         .select('id')
@@ -125,7 +134,6 @@ const ModuleContentPage = () => {
       if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
       
       if (existingProgress) {
-        // Update existing record
         const { error } = await supabase
           .from('user_progress')
           .update({
@@ -138,7 +146,6 @@ const ModuleContentPage = () => {
           
         if (error) throw error;
       } else {
-        // Insert new record
         const { error } = await supabase
           .from('user_progress')
           .insert({
@@ -153,6 +160,12 @@ const ModuleContentPage = () => {
       }
       
       setCompletionStatus(completed);
+      
+      if (completed) {
+        await updateChallengeProgress(user.id, 'lesson_completed');
+        await updateChallengeProgress(user.id, 'xp_earned');
+      }
+      
       toast.success('Module completed! Great job!');
     } catch (err) {
       console.error('Error updating user progress:', err);
@@ -163,7 +176,6 @@ const ModuleContentPage = () => {
   const renderModuleContent = (content: string | null) => {
     if (!content) return <p>No content available for this module.</p>;
     
-    // Basic markdown-like rendering
     const sections = content.split('\n\n').map((section, index) => {
       if (section.startsWith('# ')) {
         return <h2 key={index} className="text-2xl font-bold my-4">{section.substring(2)}</h2>;
