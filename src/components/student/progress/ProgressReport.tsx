@@ -10,8 +10,20 @@ import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDFWithAutoTable;
+  lastAutoTable: {
+    finalY: number;
+  };
+  setFontSize(size: number): jsPDFWithAutoTable;
+  setPage(pageNumber: number): jsPDFWithAutoTable;
+  text(text: string, x: number, y: number, options?: any): jsPDFWithAutoTable;
+  splitTextToSize(text: string, maxWidth: number, options?: any): string[];
+  save(filename: string): jsPDFWithAutoTable;
+}
+
 declare module 'jspdf' {
-  interface jsPDF {
+  export interface jsPDF {
     autoTable: (options: any) => jsPDF;
     lastAutoTable: {
       finalY: number;
@@ -59,7 +71,7 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
     setGenerating(true);
     
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF() as jsPDFWithAutoTable;
       
       doc.setFontSize(20);
       doc.text('Learning Progress Report', 20, 20);
