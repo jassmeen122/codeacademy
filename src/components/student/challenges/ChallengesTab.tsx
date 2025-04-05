@@ -139,7 +139,18 @@ export const ChallengesTab: React.FC<ChallengesTabProps> = ({
                   {dailyChallenges
                     .filter(challenge => filter === 'all' || (filter === 'active' && !challenge.completed))
                     .map(challenge => (
-                      <ChallengeCard key={challenge.id} challenge={challenge} />
+                      <ChallengeCard 
+                        key={challenge.id} 
+                        id={challenge.id}
+                        description={challenge.description}
+                        target={challenge.target}
+                        currentProgress={challenge.current_progress}
+                        type={challenge.challenge_type}
+                        rewardXp={challenge.reward_xp}
+                        expiresAt={challenge.expires_at}
+                        completed={challenge.completed}
+                        completedAt={challenge.completed_at}
+                      />
                     ))}
                 </div>
               </div>
@@ -152,7 +163,18 @@ export const ChallengesTab: React.FC<ChallengesTabProps> = ({
                   {weeklyChallenges
                     .filter(challenge => filter === 'all' || (filter === 'active' && !challenge.completed))
                     .map(challenge => (
-                      <ChallengeCard key={challenge.id} challenge={challenge} />
+                      <ChallengeCard 
+                        key={challenge.id} 
+                        id={challenge.id}
+                        description={challenge.description}
+                        target={challenge.target}
+                        currentProgress={challenge.current_progress}
+                        type={challenge.challenge_type}
+                        rewardXp={challenge.reward_xp}
+                        expiresAt={challenge.expires_at}
+                        completed={challenge.completed}
+                        completedAt={challenge.completed_at}
+                      />
                     ))}
                 </div>
               </div>
@@ -165,7 +187,18 @@ export const ChallengesTab: React.FC<ChallengesTabProps> = ({
                   {completedChallenges
                     .filter(challenge => filter === 'all' || filter === 'completed')
                     .map(challenge => (
-                      <ChallengeCard key={challenge.id} challenge={challenge} />
+                      <ChallengeCard 
+                        key={challenge.id} 
+                        id={challenge.id}
+                        description={challenge.description}
+                        target={challenge.target}
+                        currentProgress={challenge.current_progress}
+                        type={challenge.challenge_type}
+                        rewardXp={challenge.reward_xp}
+                        expiresAt={challenge.expires_at}
+                        completed={challenge.completed}
+                        completedAt={challenge.completed_at}
+                      />
                     ))}
                 </div>
               </div>
