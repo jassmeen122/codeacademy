@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from './useAuthState';
 import { toast } from 'sonner';
+import { checkForNewBadges } from '@/utils/badgeChecker';
 
 interface UserChallenge {
   id: string;
@@ -124,6 +125,7 @@ export const useGamification = () => {
         });
         
         await checkForBadges();
+        await getUserChallenges(); // Refresh challenges after update
       }
       
       return { success: true, data: data };
@@ -138,13 +140,9 @@ export const useGamification = () => {
     if (!user) return { success: false, error: 'User not authenticated' };
     
     try {
-      const { data, error } = await supabase.rpc('check_and_award_badges', {
-        user_uuid: user.id
-      });
+      const newBadges = await checkForNewBadges(user.id);
       
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
+      if (newBadges && newBadges.length > 0) {
         await getUserBadges();
         
         toast.success("Nouveau badge débloqué !", {
@@ -152,7 +150,7 @@ export const useGamification = () => {
         });
       }
       
-      return { success: true, data: data };
+      return { success: true, data: newBadges };
     } catch (error) {
       console.error('Error checking badges:', error);
       return { success: false, error };
@@ -260,20 +258,41 @@ export const useGamification = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      // Check if user has active challenges, if not, generate them
+      const { data: existingChallenges, error: existingError } = await supabase
         .from('user_daily_challenges')
         .select('*')
         .eq('user_id', user.id)
         .gte('expires_at', new Date().toISOString())
         .order('challenge_type');
         
-      if (error) throw error;
+      if (existingError) throw existingError;
       
-      if (data) {
-        setChallenges(data as UserChallenge[]);
+      if (!existingChallenges || existingChallenges.length === 0) {
+        // Generate daily challenge
+        await supabase.rpc('generate_daily_challenge', { user_uuid: user.id });
+        
+        // Generate weekly challenge if needed
+        await supabase.rpc('generate_weekly_challenge', { user_uuid: user.id });
+        
+        // Fetch newly generated challenges
+        const { data: newChallenges, error: newError } = await supabase
+          .from('user_daily_challenges')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('expires_at', new Date().toISOString())
+          .order('challenge_type');
+          
+        if (newError) throw newError;
+        
+        if (newChallenges) {
+          setChallenges(newChallenges as UserChallenge[]);
+        }
+      } else {
+        setChallenges(existingChallenges as UserChallenge[]);
       }
       
-      return { success: true, data };
+      return { success: true };
     } catch (error) {
       console.error('Error fetching challenges:', error);
       return { success: false, error };

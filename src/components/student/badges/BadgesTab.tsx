@@ -28,7 +28,7 @@ export const BadgesTab = ({ badges, loading, onRefresh }: BadgesTabProps) => {
   const filteredBadges = useMemo(() => {
     return badges.filter(badge => {
       const matchesSearch = badge.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           badge.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         badge.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = (showEarned && badge.earned) || (showUnearned && !badge.earned);
       return matchesSearch && matchesFilter;
     });
@@ -36,6 +36,13 @@ export const BadgesTab = ({ badges, loading, onRefresh }: BadgesTabProps) => {
 
   const earnedBadges = filteredBadges.filter(badge => badge.earned);
   const unearnedBadges = filteredBadges.filter(badge => !badge.earned);
+  
+  console.log("BadgesTab rendered with:", { 
+    totalBadges: badges.length, 
+    filteredCount: filteredBadges.length,
+    earnedCount: earnedBadges.length,
+    unearnedCount: unearnedBadges.length
+  });
 
   if (loading) {
     return (

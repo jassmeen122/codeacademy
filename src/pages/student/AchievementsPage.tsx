@@ -37,15 +37,17 @@ const AchievementsPage = () => {
 
   const [activeTab, setActiveTab] = useState("badges");
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'global' | 'weekly'>('global');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      loadGamificationData();
+      loadGamificationData().then(() => setIsLoading(false));
     }
   }, [user]);
 
   const loadGamificationData = async () => {
     try {
+      console.log("Loading gamification data...");
       await Promise.all([
         getUserBadges(),
         getUserChallenges(),
@@ -53,6 +55,7 @@ const AchievementsPage = () => {
         getUserPoints(),
         getLeaderboard(leaderboardPeriod)
       ]);
+      console.log("Data loaded successfully");
     } catch (error) {
       console.error("Erreur lors du chargement des données de gamification:", error);
       toast.error("Impossible de charger les données de gamification");
@@ -72,6 +75,13 @@ const AchievementsPage = () => {
       year: 'numeric'
     }).format(date);
   };
+
+  console.log("Rendering AchievementsPage with:", {
+    loading: isLoading,
+    badgesCount: allBadges?.length || 0,
+    challengesCount: challenges?.length || 0,
+    certificatesCount: certificates?.length || 0
+  });
 
   return (
     <DashboardLayout>
@@ -98,7 +108,7 @@ const AchievementsPage = () => {
           </div>
         </motion.div>
         
-        {loading && activeTab !== "badges" ? (
+        {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="animate-pulse text-center">
               <p className="text-lg">Chargement des données de gamification...</p>
@@ -278,6 +288,9 @@ const AchievementsPage = () => {
                       <p className="text-muted-foreground mb-6">
                         Accumulez des points pour apparaître dans le classement
                       </p>
+                      <Button onClick={() => loadGamificationData()}>
+                        Actualiser
+                      </Button>
                     </div>
                   )}
                 </CardContent>
