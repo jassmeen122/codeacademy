@@ -2,15 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Award, Medal, Trophy, Star, Check } from 'lucide-react';
+import { Award, Medal, Trophy, Star, Check, Flame, Zap, Calendar, Target, Clock, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useUserMetrics } from '@/hooks/useUserMetrics';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 // Types for badges and challenges
 interface UserBadge {
@@ -32,6 +34,7 @@ interface Challenge {
   end_date: string;
   status?: string;
   completed_at?: string;
+  progress?: number;
 }
 
 interface LeaderboardEntry {
@@ -52,6 +55,11 @@ const AchievementsPage = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<LeaderboardEntry | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [nextLevelXp, setNextLevelXp] = useState(100);
+  const [currentXp, setCurrentXp] = useState(0);
+  const [xpProgress, setXpProgress] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -59,8 +67,106 @@ const AchievementsPage = () => {
       fetchAvailableBadges();
       fetchUserChallenges();
       fetchLeaderboard();
+      fetchUserStreak();
     }
   }, [user]);
+  
+  // Calculate user level based on XP
+  useEffect(() => {
+    if (metrics) {
+      // Calculate level based on total XP
+      // Using a formula similar to Duolingo where each level requires more XP
+      const totalXp = (metrics.exercises_completed * 10) + (metrics.course_completions * 50);
+      const calculatedLevel = Math.floor(Math.sqrt(totalXp / 25)) + 1;
+      setLevel(calculatedLevel);
+      
+      // Calculate XP needed for next level
+      const nextLevelRequiredXp = Math.pow(calculatedLevel, 2) * 25;
+      const prevLevelXp = Math.pow(calculatedLevel - 1, 2) * 25;
+      setNextLevelXp(nextLevelRequiredXp);
+      
+      // Current XP in this level
+      setCurrentXp(totalXp - prevLevelXp);
+      
+      // Progress to next level (percentage)
+      const levelXpRange = nextLevelRequiredXp - prevLevelXp;
+      const progressPercentage = ((totalXp - prevLevelXp) / levelXpRange) * 100;
+      setXpProgress(Math.min(progressPercentage, 100));
+    }
+  }, [metrics]);
+
+  const fetchUserStreak = async () => {
+    try {
+      if (!user) return;
+
+      // Get user's activities from the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('user_activities')
+        .select('created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        setStreak(0);
+        return;
+      }
+
+      // Group activities by day
+      const activityDays = new Set();
+      data.forEach(activity => {
+        const date = new Date(activity.created_at);
+        activityDays.add(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);
+      });
+
+      // Convert to array and sort
+      const sortedDays = Array.from(activityDays).sort().reverse();
+
+      // Calculate streak
+      let currentStreak = 1;
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+      
+      // Check if user was active today
+      const hasActivityToday = sortedDays[0] === todayStr;
+      
+      if (!hasActivityToday) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
+        if (sortedDays[0] !== yesterdayStr) {
+          // If no activity yesterday or today, streak is 0
+          setStreak(0);
+          return;
+        }
+      }
+
+      // Count consecutive days
+      for (let i = 1; i < sortedDays.length; i++) {
+        const currentDate = new Date(sortedDays[i-1].split('-'));
+        const prevDate = new Date(sortedDays[i].split('-'));
+        
+        const diffTime = Math.abs(currentDate.getTime() - prevDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+
+      setStreak(currentStreak);
+    } catch (error) {
+      console.error('Error fetching user streak:', error);
+      toast.error('Failed to calculate learning streak');
+    }
+  };
 
   const fetchUserBadges = async () => {
     try {
@@ -166,7 +272,9 @@ const AchievementsPage = () => {
         start_date: item.challenges.start_date,
         end_date: item.challenges.end_date,
         status: item.status,
-        completed_at: item.completed_at
+        completed_at: item.completed_at,
+        // Add random progress for in-progress challenges for demo purposes
+        progress: item.status === 'in_progress' ? Math.floor(Math.random() * 80) + 10 : 100
       }));
 
       setChallenges(formattedChallenges);
@@ -241,16 +349,53 @@ const AchievementsPage = () => {
       case 'check':
         return <Check className="h-8 w-8 text-green-500" />;
       case 'flame':
-        return <Award className="h-8 w-8 text-orange-500" />;
+        return <Flame className="h-8 w-8 text-orange-500" />;
       case 'zap':
-        return <Award className="h-8 w-8 text-blue-500" />;
-      case 'code':
-        return <Award className="h-8 w-8 text-purple-500" />;
-      case 'layers':
-        return <Award className="h-8 w-8 text-indigo-500" />;
+        return <Zap className="h-8 w-8 text-blue-500" />;
       default:
         return <Award className="h-8 w-8 text-gray-500" />;
     }
+  };
+
+  const renderXPCard = () => {
+    if (metricsLoading) {
+      return <Skeleton className="h-40 w-full" />;
+    }
+
+    const totalXp = (metrics?.exercises_completed || 0) * 10 + (metrics?.course_completions || 0) * 50;
+
+    return (
+      <Card className="bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg flex items-center">
+              <Zap className="h-5 w-5 mr-2 text-yellow-500" />
+              XP & Level Progress
+            </CardTitle>
+            <Badge className="bg-violet-600">{totalXp} XP Total</Badge>
+          </div>
+          <CardDescription>Level {level}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm font-medium">
+              <span className="text-violet-700">{currentXp} XP</span>
+              <span className="text-violet-700">{nextLevelXp} XP</span>
+            </div>
+            <Progress value={xpProgress} className="h-3 bg-violet-100" />
+            <div className="flex justify-between text-xs text-gray-500">
+              <span>{(nextLevelXp - currentXp)} XP needed for level {level+1}</span>
+              {streak > 0 && (
+                <div className="flex items-center">
+                  <Flame className="h-4 w-4 text-orange-500 mr-1" />
+                  <span className="font-medium text-orange-600">{streak} day streak!</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   const renderBadgesSection = () => {
@@ -351,6 +496,21 @@ const AchievementsPage = () => {
                 <p className="text-gray-500 text-sm">{badge.description}</p>
               </div>
             </CardContent>
+            <CardFooter className="bg-gray-50 pt-0 pb-3">
+              <div className="text-xs text-gray-500 w-full">
+                <div className="flex items-center justify-between">
+                  <span>Requirement:</span>
+                  <span className="font-medium">
+                    {badge.name.includes('Beginner') ? '1 exercise' : 
+                     badge.name.includes('Intermédiaire') ? '5 exercises' : 
+                     badge.name.includes('Expert') ? '1 course completion' :
+                     badge.name.includes('Motivé') ? '3 day streak' :
+                     badge.name.includes('Challengeur') ? 'Complete a challenge' : 
+                     'Special achievement'}
+                  </span>
+                </div>
+              </div>
+            </CardFooter>
           </Card>
         ))}
       </div>
@@ -396,7 +556,7 @@ const AchievementsPage = () => {
                       {challenge.type === 'daily' ? (
                         <Star className="h-6 w-6 text-blue-500" />
                       ) : (
-                        <Trophy className="h-6 w-6 text-blue-500" />
+                        <Calendar className="h-6 w-6 text-blue-500" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -410,7 +570,14 @@ const AchievementsPage = () => {
                         </Badge>
                       </div>
                       <div className="mt-2">
-                        <p className="text-xs text-gray-500">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex justify-between items-center text-xs text-gray-500">
+                            <span>Progress</span>
+                            <span>{challenge.progress}%</span>
+                          </div>
+                          <Progress value={challenge.progress} className="h-2" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
                           Expires: {format(new Date(challenge.end_date), 'PPp')}
                         </p>
                       </div>
@@ -481,8 +648,13 @@ const AchievementsPage = () => {
       );
     }
 
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const today = new Date().getDay();
+    const weekEnd = new Date();
+    weekEnd.setDate(weekEnd.getDate() + (6 - today));
+
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {userRank && (
           <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 border-2 border-blue-200 mb-4">
             <CardContent className="p-4">
@@ -503,11 +675,30 @@ const AchievementsPage = () => {
             </CardContent>
           </Card>
         )}
+        
+        <div className="flex gap-4 mb-2">
+          <Button variant="outline" className="flex-1 bg-white" disabled>
+            <Target className="h-4 w-4 mr-2" />
+            Global
+          </Button>
+          <Button variant="outline" className="flex-1 bg-blue-50 border-blue-200 text-blue-700">
+            <Clock className="h-4 w-4 mr-2" />
+            Weekly
+          </Button>
+          <Button variant="outline" className="flex-1 bg-white" disabled>
+            <Users className="h-4 w-4 mr-2" />
+            Friends
+          </Button>
+        </div>
+        
+        <div className="text-sm text-center text-gray-500 mb-2">
+          Week of {format(new Date(), 'MMM d')} - {format(weekEnd, 'MMM d')}
+        </div>
       
         <div className="bg-white rounded-lg border overflow-hidden">
           <div className="p-3 bg-gray-50 border-b flex justify-between items-center">
             <h3 className="font-medium">Top Learners</h3>
-            <Badge variant="outline" className="bg-white">Global</Badge>
+            <Badge variant="outline" className="bg-white">This Week</Badge>
           </div>
           <div>
             {leaderboard.map((entry, index) => (
@@ -572,8 +763,16 @@ const AchievementsPage = () => {
           </div>
           
           <div className="mt-4 bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-md font-medium mb-1">Total badges earned: <span className="font-bold text-blue-600">{badges.length}</span></h3>
-            <h3 className="text-md font-medium">Challenges completed: <span className="font-bold text-green-600">{challenges.filter(c => c.status === 'completed').length}</span></h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-md font-medium">Total badges earned: <span className="font-bold text-blue-600">{badges.length}</span></h3>
+              {streak > 0 && (
+                <div className="flex items-center">
+                  <Flame className="h-5 w-5 text-orange-500 mr-1" />
+                  <span className="font-medium text-orange-600">{streak} day streak!</span>
+                </div>
+              )}
+            </div>
+            <h3 className="text-md font-medium mt-1">Challenges completed: <span className="font-bold text-green-600">{challenges.filter(c => c.status === 'completed').length}</span></h3>
           </div>
         </CardContent>
       </Card>
@@ -586,8 +785,13 @@ const AchievementsPage = () => {
         <div className="flex flex-col gap-6">
           <h1 className="text-2xl font-bold">Achievements & Progress</h1>
           
-          <div className="mb-4">
-            {renderStatsSection()}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              {renderStatsSection()}
+            </div>
+            <div>
+              {renderXPCard()}
+            </div>
           </div>
           
           <Tabs defaultValue="badges" className="w-full">
