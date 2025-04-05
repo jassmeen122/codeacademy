@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -10,9 +11,8 @@ import { ArrowLeft, FileText, CheckCircle, BookOpen, FileQuestion, Code } from "
 import { QuizComponent } from '@/components/courses/QuizComponent';
 import { CodingExerciseComponent } from '@/components/courses/CodingExerciseComponent';
 import { toast } from 'sonner';
-import type { CourseModule } from '@/types/course';
 import { useProgressTracking } from '@/hooks/useProgressTracking';
-import { updateChallengeProgress } from '@/utils/challengeGenerator';
+import { generateUserChallenges, updateChallengeProgress } from '@/utils/challengeGenerator';
 import { useAuthState } from '@/hooks/useAuthState';
 
 const ModuleContentPage = () => {
@@ -48,7 +48,6 @@ const ModuleContentPage = () => {
       if (!moduleId) return;
       
       try {
-        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
         const { data, error } = await supabase
@@ -63,6 +62,11 @@ const ModuleContentPage = () => {
         if (data) {
           setCompletionStatus(data.completed);
         }
+        
+        // Ensure user has challenges generated
+        if (user) {
+          await generateUserChallenges(user.id);
+        }
       } catch (err) {
         console.error('Error fetching user progress:', err);
       }
@@ -70,7 +74,7 @@ const ModuleContentPage = () => {
     
     fetchLanguageName();
     fetchUserProgress();
-  }, [module, moduleId]);
+  }, [module, moduleId, user]);
 
   const handleQuizCompletion = async (quizId: string, score: number) => {
     setQuizScores(prev => ({
@@ -79,8 +83,10 @@ const ModuleContentPage = () => {
     }));
     
     if (user && score > 0) {
+      console.log('Quiz completed with score:', score);
       await updateChallengeProgress(user.id, 'xp_earned');
       if (score >= 0.8) {
+        console.log('Quiz passed with high score, counting as exercise');
         await updateChallengeProgress(user.id, 'exercise_completed');
       }
     }
@@ -95,6 +101,7 @@ const ModuleContentPage = () => {
     }));
     
     if (user && completed) {
+      console.log('Exercise completed:', exerciseId);
       await trackExerciseCompletion(exerciseId, module?.language_id || 'unknown', 1, 20);
     }
     
@@ -121,7 +128,6 @@ const ModuleContentPage = () => {
 
   const updateUserProgress = async (completed: boolean) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user || !moduleId) return;
       
       const { data: existingProgress, error: fetchError } = await supabase
@@ -129,7 +135,7 @@ const ModuleContentPage = () => {
         .select('id')
         .eq('user_id', user.id)
         .eq('module_id', moduleId)
-        .single();
+        .maybeSingle();
       
       if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
       
@@ -162,11 +168,14 @@ const ModuleContentPage = () => {
       setCompletionStatus(completed);
       
       if (completed) {
+        console.log('Module completed, updating challenges');
         await updateChallengeProgress(user.id, 'lesson_completed');
         await updateChallengeProgress(user.id, 'xp_earned');
+        
+        toast.success('Module completed! Great job!', {
+          description: "You've earned XP and progress towards your challenges"
+        });
       }
-      
-      toast.success('Module completed! Great job!');
     } catch (err) {
       console.error('Error updating user progress:', err);
       toast.error('Failed to update progress');

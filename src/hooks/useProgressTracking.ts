@@ -6,7 +6,7 @@ import { useSummaryProgress } from './progress/useSummaryProgress';
 import { useAuthState } from './useAuthState';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateChallengeProgress } from '@/utils/challengeGenerator';
+import { updateChallengeProgress, generateUserChallenges } from '@/utils/challengeGenerator';
 
 export const useProgressTracking = () => {
   const [updating, setUpdating] = useState(false);
@@ -14,6 +14,34 @@ export const useProgressTracking = () => {
   const videoProgress = useVideoProgress();
   const quizProgress = useQuizProgress();
   const summaryProgress = useSummaryProgress();
+
+  // Ensure user has daily challenges
+  const ensureUserHasChallenges = async () => {
+    if (!user) return;
+    
+    try {
+      // Check if user has active challenges
+      const { data: existingChallenges, error } = await supabase
+        .from('user_daily_challenges')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('expires_at', new Date().toISOString())
+        .limit(1);
+        
+      if (error) {
+        console.error('Error checking for challenges:', error);
+        return;
+      }
+      
+      // If no challenges exist, generate them
+      if (!existingChallenges || existingChallenges.length === 0) {
+        console.log('No active challenges found, generating new ones');
+        await generateUserChallenges(user.id);
+      }
+    } catch (err) {
+      console.error('Error ensuring user has challenges:', err);
+    }
+  };
 
   const trackVideoProgress = async (
     courseId: string, 
@@ -25,6 +53,9 @@ export const useProgressTracking = () => {
     setUpdating(true);
     
     try {
+      // Ensure user has challenges
+      await ensureUserHasChallenges();
+      
       // Use the video progress hook implementation
       const result = await videoProgress.trackVideoProgress(courseId, language, progress, completed);
       
@@ -34,7 +65,9 @@ export const useProgressTracking = () => {
         
         if (user) {
           // Update challenge progress for lesson completed
+          console.log('Video completed, updating lesson challenge');
           await updateChallengeProgress(user.id, 'lesson_completed');
+          await updateChallengeProgress(user.id, 'xp_earned');
         }
       }
       
@@ -57,6 +90,9 @@ export const useProgressTracking = () => {
     setUpdating(true);
     
     try {
+      // Ensure user has challenges
+      await ensureUserHasChallenges();
+      
       // Use the quiz progress hook implementation
       const result = await quizProgress.trackQuizCompletion(languageId, language, passed, score);
       
@@ -66,7 +102,9 @@ export const useProgressTracking = () => {
         
         if (user) {
           // Award XP for quiz completion
+          console.log('Quiz passed, updating XP and exercise challenges');
           await updateChallengeProgress(user.id, 'xp_earned');
+          await updateChallengeProgress(user.id, 'exercise_completed');
         }
       }
       
@@ -87,6 +125,9 @@ export const useProgressTracking = () => {
     setUpdating(true);
     
     try {
+      // Ensure user has challenges
+      await ensureUserHasChallenges();
+      
       // Use the summary progress hook implementation
       const result = await summaryProgress.trackSummaryRead(languageId, title);
       
@@ -95,6 +136,7 @@ export const useProgressTracking = () => {
       
       if (user) {
         // Update challenge progress for XP earned (reading gives XP)
+        console.log('Summary read, updating XP challenge');
         await updateChallengeProgress(user.id, 'xp_earned');
       }
       
@@ -122,6 +164,9 @@ export const useProgressTracking = () => {
         setUpdating(false);
         return false;
       }
+      
+      // Ensure user has challenges
+      await ensureUserHasChallenges();
       
       // Record the exercise completion
       const { error } = await supabase
@@ -151,7 +196,9 @@ export const useProgressTracking = () => {
       }
       
       // Update challenge progress for exercises
+      console.log('Exercise completed, updating exercise and XP challenges');
       await updateChallengeProgress(user.id, 'exercise_completed');
+      await updateChallengeProgress(user.id, 'xp_earned');
       
       setUpdating(false);
       return true;
@@ -172,6 +219,9 @@ export const useProgressTracking = () => {
         setUpdating(false);
         return false;
       }
+      
+      // Ensure user has challenges
+      await ensureUserHasChallenges();
       
       // Record the course completion
       const { error } = await supabase
@@ -194,6 +244,7 @@ export const useProgressTracking = () => {
       await updateUserMetrics('course', 1);
       
       // Award XP for course completion
+      console.log('Course completed, updating lesson and XP challenges');
       await updateChallengeProgress(user.id, 'lesson_completed');
       await updateChallengeProgress(user.id, 'xp_earned');
       

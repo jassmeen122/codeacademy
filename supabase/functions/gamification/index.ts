@@ -24,6 +24,7 @@ serve(async (req) => {
     }
 
     const endpoint = req.headers.get('endpoint') || '';
+    console.log(`Processing ${endpoint} request`);
     
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
@@ -40,10 +41,19 @@ serve(async (req) => {
       throw new Error('Invalid token or user not found');
     }
     
+    console.log(`User authenticated: ${user.id}`);
+    
     // Process based on the endpoint
     if (endpoint === 'add-points') {
+      console.log('Adding points...');
       // Handle adding points
       const { points } = await req.json();
+      
+      if (!points || typeof points !== 'number') {
+        throw new Error('Points value is required and must be a number');
+      }
+      
+      console.log(`Adding ${points} points to user ${user.id}`);
       
       // Call the function to update user points
       const { data, error } = await supabase.rpc('update_user_points', {
@@ -51,14 +61,24 @@ serve(async (req) => {
         points_to_add: points
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating points:', error);
+        throw error;
+      }
+      
+      console.log('Points added successfully');
       
       // Check if any new badges were earned
       const { data: newBadges, error: badgeError } = await supabase.rpc('check_and_award_badges', {
         user_uuid: user.id
       });
       
-      if (badgeError) throw badgeError;
+      if (badgeError) {
+        console.error('Error checking badges:', badgeError);
+        throw badgeError;
+      }
+      
+      console.log(`Checked for badges. New badges: ${newBadges?.length || 0}`);
       
       return new Response(
         JSON.stringify({ 
@@ -70,8 +90,15 @@ serve(async (req) => {
       );
     } 
     else if (endpoint === 'update-challenge') {
+      console.log('Updating challenge...');
       // Handle updating challenge progress
       const { challenge_id, progress, target, completed } = await req.json();
+      
+      if (!challenge_id) {
+        throw new Error('Challenge ID is required');
+      }
+      
+      console.log(`Updating challenge ${challenge_id} for user ${user.id}: progress=${progress}, completed=${completed}`);
       
       // Update the challenge progress
       const { data, error } = await supabase
@@ -85,7 +112,12 @@ serve(async (req) => {
         .eq('user_id', user.id)
         .select();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating challenge:', error);
+        throw error;
+      }
+      
+      console.log('Challenge updated successfully');
       
       let pointsAwarded = 0;
       
@@ -94,13 +126,19 @@ serve(async (req) => {
         pointsAwarded = data[0].reward_xp || 0;
         
         if (pointsAwarded > 0) {
+          console.log(`Awarding ${pointsAwarded} points for completing challenge`);
           // Update user points
           const { error: pointsError } = await supabase.rpc('update_user_points', {
             user_uuid: user.id,
             points_to_add: pointsAwarded
           });
           
-          if (pointsError) throw pointsError;
+          if (pointsError) {
+            console.error('Error updating points:', pointsError);
+            throw pointsError;
+          }
+          
+          console.log('Points awarded successfully');
         }
       }
       

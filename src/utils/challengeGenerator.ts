@@ -43,6 +43,8 @@ export const updateChallengeProgress = async (
   challengeType: 'lesson_completed' | 'xp_earned' | 'login' | 'exercise_completed'
 ): Promise<void> => {
   try {
+    console.log(`Updating challenge progress for ${userId}, type: ${challengeType}`);
+    
     // Get relevant challenges
     const { data: challenges, error } = await supabase
       .from('user_daily_challenges')
@@ -51,9 +53,17 @@ export const updateChallengeProgress = async (
       .gte('expires_at', new Date().toISOString())
       .eq('completed', false);
       
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching challenges:', error);
+      return;
+    }
     
-    if (!challenges || challenges.length === 0) return;
+    if (!challenges || challenges.length === 0) {
+      console.log('No active challenges found');
+      return;
+    }
+    
+    console.log(`Found ${challenges.length} active challenges`);
     
     // Update matching challenges
     for (const challenge of challenges) {
@@ -62,27 +72,33 @@ export const updateChallengeProgress = async (
       
       switch (challengeType) {
         case 'lesson_completed':
-          if (challenge.description.toLowerCase().includes('leçon')) {
+          if (challenge.description.toLowerCase().includes('leçon') || 
+              challenge.description.toLowerCase().includes('lesson')) {
             shouldUpdate = true;
             increment = 1;
+            console.log('Updating lesson challenge');
           }
           break;
         case 'xp_earned':
           if (challenge.description.toLowerCase().includes('xp')) {
             shouldUpdate = true;
             increment = 10; // Assume 10 XP per action
+            console.log('Updating XP challenge');
           }
           break;
         case 'login':
           if (challenge.description.toLowerCase().includes('connecte')) {
             shouldUpdate = true;
             increment = 1;
+            console.log('Updating login challenge');
           }
           break;
         case 'exercise_completed':
-          if (challenge.description.toLowerCase().includes('exercice')) {
+          if (challenge.description.toLowerCase().includes('exercice') || 
+              challenge.description.toLowerCase().includes('exercise')) {
             shouldUpdate = true;
             increment = 1;
+            console.log('Updating exercise challenge');
           }
           break;
       }
@@ -90,6 +106,8 @@ export const updateChallengeProgress = async (
       if (shouldUpdate && increment > 0) {
         const newProgress = Math.min(challenge.current_progress + increment, challenge.target);
         const completed = newProgress >= challenge.target;
+        
+        console.log(`Updating challenge ${challenge.id}: ${challenge.current_progress} -> ${newProgress}, completed: ${completed}`);
         
         // Update the challenge
         const { error: updateError } = await supabase
@@ -101,24 +119,39 @@ export const updateChallengeProgress = async (
           })
           .eq('id', challenge.id);
           
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Error updating challenge:', updateError);
+          continue;
+        }
         
         // If completed, award points
         if (completed) {
-          // Award XP for completing the challenge
-          await supabase.functions.invoke('gamification', {
-            body: { 
-              points: challenge.reward_xp 
-            },
-            method: 'POST',
-            headers: {
-              'endpoint': 'add-points'
-            }
-          });
+          console.log(`Challenge ${challenge.id} completed! Awarding ${challenge.reward_xp} XP`);
           
-          toast.success("Défi terminé !", {
-            description: `+${challenge.reward_xp} XP`
-          });
+          // Award XP for completing the challenge
+          try {
+            const { data, error: pointsError } = await supabase.functions.invoke('gamification', {
+              body: { 
+                points: challenge.reward_xp 
+              },
+              method: 'POST',
+              headers: {
+                'endpoint': 'add-points'
+              }
+            });
+            
+            if (pointsError) {
+              console.error('Error awarding points:', pointsError);
+            } else {
+              console.log('Points awarded successfully:', data);
+            }
+            
+            toast.success("Défi terminé !", {
+              description: `+${challenge.reward_xp} XP`
+            });
+          } catch (e) {
+            console.error('Error calling gamification function:', e);
+          }
         }
       }
     }
