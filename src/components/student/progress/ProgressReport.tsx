@@ -18,11 +18,23 @@ declare module 'jspdf' {
     lastAutoTable: {
       finalY: number;
     };
+  }
+}
+
+// Extend the internal type separately to avoid conflicts
+declare module 'jspdf' {
+  interface jsPDF {
     internal: {
+      events: any;
+      scaleFactor: number;
       pageSize: {
         width: number;
+        getWidth: () => number;
         height: number;
+        getHeight: () => number;
       };
+      pages: number[];
+      getEncryptor(objectId: number): (data: string) => string;
       getNumberOfPages: () => number;
     };
   }
