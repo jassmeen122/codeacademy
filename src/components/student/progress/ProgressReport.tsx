@@ -15,19 +15,16 @@ interface PubSub {
   [key: string]: any;
 }
 
-// Rather than trying to extend the jsPDF interface directly, we'll create our own interface
-// that extends the base jsPDF type and use a type assertion when needed
-interface ExtendedJsPDF extends jsPDF {
+// Define a type for our jsPDF instance with the methods we need
+type ExtendedJsPDF = jsPDF & {
   autoTable: (options: any) => jsPDF;
   lastAutoTable: {
     finalY: number;
   };
-  setFontSize(size: number): jsPDF;
-  setPage(pageNumber: number): jsPDF;
-  text(text: string, x: number, y: number, options?: any): jsPDF;
-  splitTextToSize(text: string, maxWidth: number, options?: any): string[];
-  save(filename: string): jsPDF;
-  internal: any; // We'll use type assertions when accessing properties
+  internal: {
+    getNumberOfPages: () => number;
+    [key: string]: any;
+  };
 }
 
 interface ProgressReportProps {
@@ -52,8 +49,8 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
     setGenerating(true);
     
     try {
-      // Use our ExtendedJsPDF interface with a type assertion
-      const doc = new jsPDF() as ExtendedJsPDF;
+      // Create a new jsPDF instance and cast it to our extended type
+      const doc = new jsPDF() as unknown as ExtendedJsPDF;
       
       doc.setFontSize(20);
       doc.text('Learning Progress Report', 20, 20);
@@ -147,7 +144,7 @@ export const ProgressReport: React.FC<ProgressReportProps> = ({
       const splitText = doc.splitTextToSize(feedback, 170);
       doc.text(splitText, 20, doc.lastAutoTable.finalY + 30);
       
-      // Using a type assertion to access getNumberOfPages
+      // Get page count using getNumberOfPages method
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
