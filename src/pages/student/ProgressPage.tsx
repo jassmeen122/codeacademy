@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useAuthState } from '@/hooks/useAuthState';
 import { ActivityLog } from '@/types/progress';
@@ -173,7 +172,7 @@ export default function ProgressPage() {
         {/* Nouveau système de suivi visuel */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <PointsDisplay 
-            points={totalPoints} 
+            totalPoints={totalPoints} 
             loading={metricsLoading} 
           />
           

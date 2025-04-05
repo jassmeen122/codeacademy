@@ -119,34 +119,70 @@ const updateUserPoints = async (userId: string, pointsToAdd: number): Promise<vo
     }
     
     if (existingMetrics) {
-      // Update existing metrics
-      await supabase
+      console.log("Existing metrics found, updating...");
+      
+      // Prepare update data
+      let updateData: any = { 
+        updated_at: new Date().toISOString() 
+      };
+      
+      if (pointsToAdd) {
+        updateData.total_time_spent = (existingMetrics.total_time_spent || 0) + pointsToAdd;
+      }
+      
+      // Directly update the record
+      const { error: updateError } = await supabase
         .from('user_metrics')
-        .update({
-          total_time_spent: (existingMetrics.total_time_spent || 0) + pointsToAdd,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
+        .update(updateData)
+        .eq('id', existingMetrics.id);
+          
+      if (updateError) {
+        console.error('Error updating metrics:', updateError);
+        throw updateError;
+      }
     } else {
+      console.log("No existing metrics found, creating new entry...");
+      
       // Create new metrics entry
-      await supabase
+      const newMetrics: any = {
+        user_id: userId,
+        course_completions: 0,
+        exercises_completed: 0,
+        total_time_spent: pointsToAdd,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error: insertError } = await supabase
         .from('user_metrics')
-        .insert({
-          user_id: userId,
-          total_time_spent: pointsToAdd,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+        .insert([newMetrics]);
+          
+      if (insertError) {
+        console.error('Error inserting metrics:', insertError);
+        throw insertError;
+      }
     }
     
     // Update profile points (used for leaderboard)
-    await supabase
-      .from('profiles')
-      .update({ points: supabase.rpc('get_points_total', { user_uuid: userId }) })
-      .eq('id', userId);
-  } catch (error) {
-    console.error('Error updating user points:', error);
-    throw error;
+    try {
+      const { data: pointsTotal, error: rpcError } = await supabase
+        .rpc('get_points_total', { user_uuid: userId });
+      
+      if (rpcError) throw rpcError;
+      
+      // Update the profile with the points total
+      const { error: updateProfileError } = await supabase
+        .from('profiles')
+        .update({ points: pointsTotal || 0 })
+        .eq('id', userId);
+      
+      if (updateProfileError) throw updateProfileError;
+    } catch (error) {
+      console.error('Error updating profile points:', error);
+    }
+  } catch (err) {
+    console.error('Error updating user points:', err);
+    throw err;
   }
 };
 

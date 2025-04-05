@@ -9,16 +9,28 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
-interface PointsDisplayProps {
+export interface PointsDisplayProps {
   showDetails?: boolean;
+  totalPoints?: number;
+  loading?: boolean;
 }
 
-export const PointsDisplay: React.FC<PointsDisplayProps> = ({ showDetails = true }) => {
-  const { loading, totalPoints, fetchPoints } = usePoints();
+export const PointsDisplay: React.FC<PointsDisplayProps> = ({ 
+  showDetails = true,
+  totalPoints: externalPoints,
+  loading: externalLoading
+}) => {
+  const { loading: internalLoading, totalPoints: internalPoints, fetchPoints } = usePoints();
+  
+  // Use external props if provided, otherwise use internal state
+  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
+  const totalPoints = externalPoints !== undefined ? externalPoints : internalPoints;
   
   useEffect(() => {
-    fetchPoints();
-  }, []);
+    if (externalPoints === undefined) {
+      fetchPoints();
+    }
+  }, [externalPoints, fetchPoints]);
   
   // Define levels based on points
   const getUserLevel = (points: number): { level: number, title: string, nextLevelPoints: number } => {

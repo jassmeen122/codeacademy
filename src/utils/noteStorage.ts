@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { updateChallengeProgress } from './challengeGenerator';
-import { Database } from '@/integrations/supabase/types';
 
 // Define the type for exercise notes
 export interface ExerciseNote {
@@ -13,10 +12,10 @@ export interface ExerciseNote {
   created_at: string;
   updated_at: string;
   exercises?: {
-    title: string;
-    description: string;
-    difficulty: string;
-  }
+    title?: string;
+    description?: string;
+    difficulty?: string;
+  } | null;
 }
 
 /**
@@ -130,20 +129,14 @@ export const getUserNotes = async (
   try {
     const { data, error } = await supabase
       .from('exercise_notes')
-      .select(`
-        *,
-        exercises (
-          title,
-          description,
-          difficulty
-        )
-      `)
+      .select('*')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false });
     
     if (error) throw error;
     
-    return { success: true, data: data as ExerciseNote[] };
+    // Cast the data to the correct type
+    return { success: true, data: data as unknown as ExerciseNote[] };
   } catch (error) {
     console.error('Error getting user notes:', error);
     return { success: false, error };

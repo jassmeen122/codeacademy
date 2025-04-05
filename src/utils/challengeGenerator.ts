@@ -79,3 +79,28 @@ export const generateUserChallenge = async (userId: string): Promise<boolean> =>
     return false;
   }
 };
+
+/**
+ * Generate multiple challenges for the user (daily and weekly)
+ * @param userId User ID
+ * @returns Success indicator
+ */
+export const generateUserChallenges = async (userId: string): Promise<boolean> => {
+  try {
+    // Generate a daily challenge
+    await generateUserChallenge(userId);
+    
+    // Generate a weekly challenge
+    const { data, error } = await supabase
+      .rpc('generate_weekly_challenge', {
+        user_uuid: userId
+      });
+      
+    if (error) throw error;
+    
+    return true;
+  } catch (error) {
+    console.error('Error generating user challenges:', error);
+    return false;
+  }
+};
