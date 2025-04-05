@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,7 @@ interface PubSub {
   [key: string]: any;
 }
 
-// Modified jsPDF type declaration to resolve conflicts
+// Complete type declaration for jsPDF
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: any) => jsPDF;
