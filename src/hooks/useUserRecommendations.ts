@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
@@ -10,17 +10,12 @@ export function useUserRecommendations() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuthState();
 
-  useEffect(() => {
-    if (user) {
-      fetchRecommendations();
-    } else {
+  const fetchRecommendations = useCallback(async () => {
+    if (!user) {
       setRecommendations([]);
       setLoading(false);
+      return [];
     }
-  }, [user]);
-
-  const fetchRecommendations = async () => {
-    if (!user) return;
     
     try {
       setLoading(true);
@@ -39,12 +34,18 @@ export function useUserRecommendations() {
         `)
         .eq('user_id', user.id)
         .order('relevance_score', { ascending: false })
-        .limit(5);
+        .limit(10);
       
       if (error) throw error;
       
+      if (!data || data.length === 0) {
+        // If no recommendations exist, generate some based on user activity
+        await generateRecommendations(user.id);
+        return fetchRecommendations(); // Recursive call to fetch the newly generated recommendations
+      }
+      
       // Fetch additional information for each recommendation
-      const enhancedRecommendations: UserRecommendation[] = await Promise.all((data || []).map(async recommendation => {
+      const enhancedRecommendations = await Promise.all((data || []).map(async recommendation => {
         // Depending on the type, fetch the relevant title/description
         let itemTitle = '';
         let itemDescription = '';
@@ -122,11 +123,86 @@ export function useUserRecommendations() {
       }));
       
       setRecommendations(enhancedRecommendations);
+      return enhancedRecommendations;
     } catch (error: any) {
       console.error('Error fetching recommendations:', error);
       toast.error("Failed to load recommendations");
+      return [];
     } finally {
       setLoading(false);
+    }
+  }, [user]);
+  
+  const generateRecommendations = async (userId: string) => {
+    try {
+      // First, fetch user's skills to recommend related content
+      const { data: skills } = await supabase
+        .from('user_skills_progress')
+        .select('skill_name, progress')
+        .eq('user_id', userId)
+        .order('progress', { ascending: true })
+        .limit(3);
+      
+      // Fetch low-progress skills for recommendation
+      if (skills && skills.length > 0) {
+        for (const skill of skills) {
+          // Find modules and exercises related to this skill
+          const { data: modules } = await supabase
+            .from('course_modules')
+            .select('id, title')
+            .ilike('title', `%${skill.skill_name}%`)
+            .limit(1);
+            
+          if (modules && modules.length > 0) {
+            // Create a recommendation for this module
+            await supabase
+              .from('user_recommendations')
+              .insert({
+                user_id: userId,
+                recommendation_type: 'module',
+                item_id: modules[0].id,
+                relevance_score: 0.8,
+                is_viewed: false
+              });
+          }
+          
+          // Also recommend directly improving the skill
+          await supabase
+            .from('user_recommendations')
+            .insert({
+              user_id: userId,
+              recommendation_type: 'skill',
+              item_id: skill.skill_name,
+              relevance_score: 0.9,
+              is_viewed: false
+            });
+        }
+      }
+      
+      // Recommend a few new courses based on popular ones
+      const { data: popularCourses } = await supabase
+        .from('courses')
+        .select('id')
+        .limit(2);
+        
+      if (popularCourses) {
+        for (const course of popularCourses) {
+          await supabase
+            .from('user_recommendations')
+            .insert({
+              user_id: userId,
+              recommendation_type: 'course',
+              item_id: course.id,
+              relevance_score: 0.7,
+              is_viewed: false
+            });
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      return false;
     }
   };
 
@@ -147,10 +223,22 @@ export function useUserRecommendations() {
             : rec
         )
       );
+      
+      return true;
     } catch (error: any) {
       console.error('Error marking recommendation as viewed:', error);
+      return false;
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchRecommendations();
+    } else {
+      setRecommendations([]);
+      setLoading(false);
+    }
+  }, [user, fetchRecommendations]);
 
   return {
     recommendations,

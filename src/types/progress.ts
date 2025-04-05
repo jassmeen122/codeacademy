@@ -37,3 +37,52 @@ export interface ActivityLog {
   count: number;
   type: string;
 }
+
+// Interfaces for progress tracking
+export interface CourseProgress {
+  id: string;
+  course_id: string;
+  user_id: string;
+  completion_percentage: number;
+  last_accessed: string;
+  modules_completed: string[];
+}
+
+export interface ExerciseResult {
+  id: string;
+  exercise_id: string;
+  user_id: string;
+  score: number;
+  time_taken: number;
+  completed_at: string;
+}
+
+export interface ProgressSummary {
+  total_courses: number;
+  completed_courses: number;
+  total_exercises: number;
+  completed_exercises: number;
+  average_score: number;
+  total_time_spent: number;
+}
+
+export interface SkillProgress {
+  name: string;
+  progress: number;
+  recent_change: number;
+  last_activity: string;
+}
+
+export interface ImprovementMetric {
+  period: string;
+  previous_value: number;
+  current_value: number;
+  percentage_change: number;
+}
+
+export interface RecommendationFeedback {
+  recommendation_id: string;
+  helpful: boolean;
+  followed: boolean;
+  comments?: string;
+}
