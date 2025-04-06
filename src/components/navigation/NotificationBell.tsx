@@ -13,59 +13,65 @@ interface NotificationBellProps {
 }
 
 export const NotificationBell = ({ userId }: NotificationBellProps) => {
-  const [notificationCount, setNotificationCount] = useState(0);
   const navigate = useNavigate();
   const { unreadCount: unreadNotifications, fetchNotifications } = useNotifications();
   const { getUnreadCount } = usePrivateMessages();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [totalUnread, setTotalUnread] = useState(0);
 
+  // Fetch initial counts
   useEffect(() => {
     if (userId) {
       fetchUnreadCounts();
-
-      // Set up subscription for real-time updates
-      const notificationsSubscription = supabase
-        .channel('public:notifications')
-        .on('postgres_changes', 
-          { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'notifications',
-            filter: `user_id=eq.${userId}`
-          }, 
-          () => {
-            fetchUnreadCounts();
-          }
-        )
-        .subscribe();
-
-      const messagesSubscription = supabase
-        .channel('public:private_messages')
-        .on('postgres_changes', 
-          { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'private_messages',
-            filter: `receiver_id=eq.${userId}`
-          }, 
-          () => {
-            fetchUnreadCounts();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(notificationsSubscription);
-        supabase.removeChannel(messagesSubscription);
-      };
     }
   }, [userId]);
 
+  // Update total when either count changes
   useEffect(() => {
-    // Update total unread count when either messages or notifications change
     setTotalUnread(unreadNotifications + unreadMessages);
   }, [unreadNotifications, unreadMessages]);
+
+  // Set up real-time listeners
+  useEffect(() => {
+    if (!userId) return;
+    
+    // Subscribe to notifications
+    const notificationsSubscription = supabase
+      .channel('notifications-channel')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
+        }, 
+        () => {
+          fetchUnreadCounts();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to messages
+    const messagesSubscription = supabase
+      .channel('messages-channel')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'private_messages',
+          filter: `receiver_id=eq.${userId}`
+        }, 
+        () => {
+          fetchUnreadCounts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationsSubscription);
+      supabase.removeChannel(messagesSubscription);
+    };
+  }, [userId]);
 
   const fetchUnreadCounts = async () => {
     try {
@@ -74,6 +80,7 @@ export const NotificationBell = ({ userId }: NotificationBellProps) => {
       setUnreadMessages(messageCount);
       
       // Notifications are fetched by the hook automatically
+      fetchNotifications();
     } catch (error) {
       console.error('Error fetching unread counts:', error);
     }

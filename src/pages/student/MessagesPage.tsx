@@ -43,18 +43,20 @@ const MessagesPage = () => {
   // Load messages when conversation changes
   useEffect(() => {
     const loadMessages = async () => {
-      if (selectedConversation) {
-        setLoadingMessages(true);
-        const msgs = await fetchMessages(selectedConversation.user_id);
-        if (msgs) {
-          setMessages(msgs);
-        }
-        setLoadingMessages(false);
-        if (window.innerWidth < 768) {
-          setMobileView('conversation');
-        }
-      } else {
+      if (!selectedConversation) {
         setMessages([]);
+        return;
+      }
+      
+      setLoadingMessages(true);
+      const msgs = await fetchMessages(selectedConversation.user_id);
+      if (msgs) {
+        setMessages(msgs);
+      }
+      setLoadingMessages(false);
+      
+      if (window.innerWidth < 768) {
+        setMobileView('conversation');
       }
     };
     

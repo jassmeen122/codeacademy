@@ -113,13 +113,15 @@ export const useNotifications = () => {
     }
   };
 
-  // Subscribe to real-time updates for notifications
+  // Initialize notifications and set up subscription
   useEffect(() => {
     if (!user) return;
     
+    fetchNotifications();
+    
     // Set up subscription for real-time updates
     const subscription = supabase
-      .channel('public:notifications')
+      .channel('notifications-updates')
       .on('postgres_changes', 
         { 
           event: '*', 
@@ -137,13 +139,6 @@ export const useNotifications = () => {
       supabase.removeChannel(subscription);
     };
   }, [user?.id]);
-
-  // Initialize notifications
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user]);
 
   return {
     notifications,
