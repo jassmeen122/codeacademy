@@ -19,6 +19,8 @@ import { ExerciseDetail } from "@/components/student/exercises/ExerciseDetail";
 import { EmptyExerciseState } from "@/components/student/exercises/EmptyExerciseState";
 import { LoadingState } from "@/components/student/exercises/LoadingState";
 import { ExerciseUI } from "@/types/exerciseUI";
+import { useProgressTracking } from "@/hooks/useProgressTracking";
+import { useStudentActivity } from "@/hooks/useStudentActivity";
 
 const difficulties = {
   "Beginner": { stars: 1, className: "bg-green-100 text-green-800" },
@@ -56,6 +58,9 @@ const ExercisesPage = () => {
     runCode, 
     getAIHelp 
   } = useCodeExecution();
+
+  const { updateUserMetrics } = useProgressTracking();
+  const { trackExerciseCompleted } = useStudentActivity();
 
   useEffect(() => {
     fetchExercises();
@@ -107,6 +112,32 @@ const ExercisesPage = () => {
 
   const handleGetAIFeedback = () => {
     getAIHelp(code, selectedLanguageToPractice, "Analyse ce code et donne des suggestions d'amélioration.");
+  };
+
+  const handleExerciseComplete = async (exercise: ExerciseUI) => {
+    try {
+      console.log(`Marking exercise ${exercise.id} as completed`);
+      
+      setExercises(prevExercises => 
+        prevExercises.map(ex => 
+          ex.id === exercise.id ? { ...ex, status: 'completed' as const } : ex
+        )
+      );
+      
+      const tracked = await trackExerciseCompleted(
+        exercise.id,
+        exercise.language
+      );
+      
+      const updated = await updateUserMetrics('exercise', 1);
+      
+      if (tracked && updated) {
+        console.log('Exercise completion recorded successfully');
+      }
+    } catch (error) {
+      console.error("Error completing exercise:", error);
+      toast.error("Erreur lors de l'enregistrement de votre progrès");
+    }
   };
 
   const filteredExercises = exercises.filter(exercise => {

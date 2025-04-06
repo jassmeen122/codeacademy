@@ -42,7 +42,7 @@ export const useStudentActivity = () => {
         { language, topic }
       );
       
-      // Update user metrics if needed - force direct update to fix the bug
+      // Update user metrics if needed
       if (updateMetrics) {
         // First check if metrics exist for user
         const { data: existingMetrics, error: fetchError } = await supabase

@@ -33,12 +33,6 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
     return Array(count).fill(0).map((_, i) => <Star key={i} className="h-4 w-4 inline-block text-yellow-500 fill-yellow-500" />);
   };
 
-  const difficultyClasses = {
-    "easy": "bg-green-100 text-green-800",
-    "medium": "bg-yellow-100 text-yellow-800",
-    "hard": "bg-red-100 text-red-800"
-  };
-
   return (
     <Card 
       className={`cursor-pointer hover:shadow-md transition-shadow ${isActive ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'}`}
@@ -56,7 +50,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         </p>
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-2">
-            <span className={`text-xs font-medium px-2 py-1 rounded-full ${difficultyClasses[exercise.difficulty as keyof typeof difficultyClasses] || difficulties[exercise.difficulty].className}`}>
+            <span className={`text-xs font-medium px-2 py-1 rounded-full ${difficulties[exercise.difficulty].className}`}>
               {renderStars(difficulties[exercise.difficulty].stars)}
             </span>
             {exercise.language && (
