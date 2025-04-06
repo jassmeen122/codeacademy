@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +100,9 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
     }
   };
 
+  // Default hint to display when none is provided with the exercise
+  const defaultHint = "Pensez à utiliser une boucle pour parcourir la chaîne de caractères et une approche pour inverser l'ordre des éléments.";
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
       <div className="flex justify-between items-start">
@@ -160,7 +162,7 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
         {showHint && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
             <p className="text-sm text-yellow-800">
-              <strong>Indice:</strong> {exercise.tests && exercise.tests[0]?.hint || "Pensez à utiliser une boucle pour parcourir la chaîne de caractères et une approche pour inverser l'ordre des éléments."}
+              <strong>Indice:</strong> {defaultHint}
             </p>
           </div>
         )}
