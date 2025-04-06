@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from '@/hooks/useAuthState';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export type PrivateMessage = {
   id: string;
@@ -35,6 +36,7 @@ export const usePrivateMessages = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthState();
+  const { createNotification } = useNotifications();
 
   // Fetch all conversations for the current user
   const fetchConversations = async () => {
@@ -196,6 +198,17 @@ export const usePrivateMessages = () => {
 
       if (error) throw error;
 
+      // Create notification for the receiver
+      if (data) {
+        const senderName = user.full_name || 'Someone';
+        await createNotification(
+          receiverId,
+          'New message',
+          `${senderName} sent you a message`,
+          'message'
+        );
+      }
+      
       // Update conversations list
       fetchConversations();
 
@@ -245,6 +258,50 @@ export const usePrivateMessages = () => {
       return 0;
     }
   };
+
+  // Subscribe to real-time updates for private messages
+  useEffect(() => {
+    if (!user) return;
+    
+    const subscription = supabase
+      .channel('public:private_messages')
+      .on('postgres_changes', 
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'private_messages',
+          filter: `receiver_id=eq.${user.id}`
+        },
+        (payload) => {
+          fetchConversations();
+          
+          // Show a toast notification when receiving a new message
+          if (payload.new && payload.new.sender_id) {
+            // Get sender info
+            supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', payload.new.sender_id)
+              .single()
+              .then(({ data }) => {
+                const senderName = data?.full_name || 'Someone';
+                toast(`New message from ${senderName}`, {
+                  description: 'Click to view',
+                  action: {
+                    label: 'View',
+                    onClick: () => window.location.href = '/student/messages',
+                  },
+                });
+              });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [user?.id]);
 
   // Initialize by fetching conversations
   useEffect(() => {

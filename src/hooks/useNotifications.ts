@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from '@/hooks/useAuthState';
+import { toast } from 'sonner';
 
 export type Notification = {
   id: string;
@@ -87,6 +88,56 @@ export const useNotifications = () => {
     }
   };
 
+  const createNotification = async (
+    userId: string,
+    title: string,
+    content: string,
+    type: string = 'info'
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: userId,
+          title,
+          content,
+          type,
+          read: false
+        });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      return false;
+    }
+  };
+
+  // Subscribe to real-time updates for notifications
+  useEffect(() => {
+    if (!user) return;
+    
+    // Set up subscription for real-time updates
+    const subscription = supabase
+      .channel('public:notifications')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => {
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [user?.id]);
+
   // Initialize notifications
   useEffect(() => {
     if (user) {
@@ -100,6 +151,7 @@ export const useNotifications = () => {
     unreadCount,
     fetchNotifications,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    createNotification
   };
 };

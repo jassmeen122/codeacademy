@@ -1,71 +1,24 @@
 
+import React, { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Bell, Mail, Trophy, Megaphone } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Bell, Mail, Trophy, Megaphone, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Notification {
-  id: string;
-  title: string;
-  content: string;
-  type: 'announcement' | 'reminder' | 'achievement' | 'message';
-  created_at: string;
-  read: boolean;
-}
+import { useNotifications } from "@/hooks/useNotifications";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Type assertion to ensure the data matches the Notification interface
-      setNotifications((data?.filter(notification => 
-        ['announcement', 'reminder', 'achievement', 'message'].includes(notification.type)
-      ) || []) as Notification[]);
-
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-      
-      setNotifications(notifications.map(notification =>
-        notification.id === notificationId
-          ? { ...notification, read: true }
-          : notification
-      ));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
+  const [activeTab, setActiveTab] = useState<string>("notifications");
+  const { 
+    notifications, 
+    loading, 
+    markAsRead, 
+    markAllAsRead 
+  } = useNotifications();
+  const navigate = useNavigate();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -80,49 +33,102 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleNotificationClick = async (notificationId: string, type: string) => {
+    // Mark notification as read
+    await markAsRead(notificationId);
+    
+    // If it's a message notification, navigate to messages page
+    if (type === 'message') {
+      navigate("/student/messages");
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
+    toast.success("Toutes les notifications ont été marquées comme lues");
+  };
+
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-8">Notifications</h1>
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Notifications</h1>
-
-        <div className="space-y-4">
-          {notifications.map((notification) => (
-            <Card
-              key={notification.id}
-              className={cn(
-                "cursor-pointer hover:shadow-md transition-shadow",
-                !notification.read && "border-l-4 border-l-primary"
-              )}
-              onClick={() => !notification.read && markAsRead(notification.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-full bg-muted">
-                    {getIcon(notification.type)}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium">{notification.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {notification.content}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {new Date(notification.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          {notifications.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">
-              No notifications yet
-            </p>
-          )}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Centre de notifications</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+            onClick={handleMarkAllAsRead}
+          >
+            <Check className="h-4 w-4" />
+            Tout marquer comme lu
+          </Button>
         </div>
+
+        <Tabs 
+          defaultValue="notifications" 
+          className="space-y-4"
+          value={activeTab}
+          onValueChange={setActiveTab}
+        >
+          <TabsList className="grid grid-cols-2 w-[400px]">
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="messages" onClick={() => navigate("/student/messages")}>Messages</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="notifications" className="space-y-4">
+            {notifications.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+                  <Bell className="h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Vous n'avez pas de notifications</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {notifications.map((notification) => (
+                  <Card
+                    key={notification.id}
+                    className={cn(
+                      "cursor-pointer hover:shadow-md transition-shadow",
+                      !notification.read && "border-l-4 border-l-primary"
+                    )}
+                    onClick={() => handleNotificationClick(notification.id, notification.type)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 rounded-full bg-muted">
+                          {getIcon(notification.type)}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium">{notification.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {notification.content}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {new Date(notification.created_at).toLocaleDateString()} à {new Date(notification.created_at).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

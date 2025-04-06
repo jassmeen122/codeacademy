@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "@/hooks/useNotifications";
+import { usePrivateMessages } from "@/hooks/usePrivateMessages";
 
 interface NotificationBellProps {
   userId: string;
@@ -13,24 +15,67 @@ interface NotificationBellProps {
 export const NotificationBell = ({ userId }: NotificationBellProps) => {
   const [notificationCount, setNotificationCount] = useState(0);
   const navigate = useNavigate();
+  const { unreadCount: unreadNotifications, fetchNotifications } = useNotifications();
+  const { getUnreadCount } = usePrivateMessages();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [totalUnread, setTotalUnread] = useState(0);
 
   useEffect(() => {
     if (userId) {
-      fetchNotificationCount(userId);
+      fetchUnreadCounts();
+
+      // Set up subscription for real-time updates
+      const notificationsSubscription = supabase
+        .channel('public:notifications')
+        .on('postgres_changes', 
+          { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          }, 
+          () => {
+            fetchUnreadCounts();
+          }
+        )
+        .subscribe();
+
+      const messagesSubscription = supabase
+        .channel('public:private_messages')
+        .on('postgres_changes', 
+          { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'private_messages',
+            filter: `receiver_id=eq.${userId}`
+          }, 
+          () => {
+            fetchUnreadCounts();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(notificationsSubscription);
+        supabase.removeChannel(messagesSubscription);
+      };
     }
   }, [userId]);
 
-  const fetchNotificationCount = async (userId: string) => {
+  useEffect(() => {
+    // Update total unread count when either messages or notifications change
+    setTotalUnread(unreadNotifications + unreadMessages);
+  }, [unreadNotifications, unreadMessages]);
+
+  const fetchUnreadCounts = async () => {
     try {
-      const { count } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('read', false);
+      // Get unread messages count
+      const messageCount = await getUnreadCount();
+      setUnreadMessages(messageCount);
       
-      setNotificationCount(count || 0);
+      // Notifications are fetched by the hook automatically
     } catch (error) {
-      console.error('Error fetching notification count:', error);
+      console.error('Error fetching unread counts:', error);
     }
   };
 
@@ -46,12 +91,12 @@ export const NotificationBell = ({ userId }: NotificationBellProps) => {
       className="relative"
     >
       <Bell className="h-5 w-5" />
-      {notificationCount > 0 && (
+      {totalUnread > 0 && (
         <Badge 
           variant="destructive" 
           className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
         >
-          {notificationCount}
+          {totalUnread}
         </Badge>
       )}
     </Button>
