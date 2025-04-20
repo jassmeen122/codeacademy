@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuthState } from '@/hooks/useAuthState';
 import { 
@@ -19,65 +19,65 @@ export const useLanguageSummary = (languageId: string | undefined) => {
   const [error, setError] = useState<Error | null>(null);
   const { user } = useAuthState();
 
-  const loadSummaryAndProgress = useCallback(async () => {
+  useEffect(() => {
     if (!languageId) {
       setLoading(false);
       return;
     }
 
-    try {
-      setLoading(true);
-      
-      // Fetch language summary from database
-      const summaryData = await fetchLanguageSummary(languageId);
-      
-      if (summaryData) {
-        setSummary(summaryData);
-      } else {
-        // Try to create a default summary if none exists
-        const defaultSummary = await createDefaultSummary(languageId);
+    const loadSummaryAndProgress = async () => {
+      try {
+        setLoading(true);
         
-        if (defaultSummary) {
-          setSummary(defaultSummary);
-        } else {
-          // If creation failed, use in-memory default
-          const fallbackSummary = getDefaultSummaryContent(languageId);
-          setSummary(fallbackSummary);
-        }
-      }
-      
-      // Fetch user progress if logged in
-      if (user) {
-        const progressData = await fetchUserProgress(user.id, languageId);
+        // Fetch language summary from database
+        const summaryData = await fetchLanguageSummary(languageId);
         
-        if (progressData) {
-          setProgress(progressData);
+        if (summaryData) {
+          setSummary(summaryData);
         } else {
-          // Set default progress
-          setProgress({
-            user_id: user.id,
-            language_id: languageId,
-            summary_read: false,
-            quiz_completed: false,
-            badge_earned: false
-          });
+          // Try to create a default summary if none exists
+          const defaultSummary = await createDefaultSummary(languageId);
+          
+          if (defaultSummary) {
+            setSummary(defaultSummary);
+          } else {
+            // If creation failed, use in-memory default
+            const fallbackSummary = getDefaultSummaryContent(languageId);
+            setSummary(fallbackSummary);
+          }
         }
+        
+        // Fetch user progress if logged in
+        if (user) {
+          const progressData = await fetchUserProgress(user.id, languageId);
+          
+          if (progressData) {
+            setProgress(progressData);
+          } else {
+            // Set default progress
+            setProgress({
+              user_id: user.id,
+              language_id: languageId,
+              summary_read: false,
+              quiz_completed: false,
+              badge_earned: false
+            });
+          }
+        }
+      } catch (err: any) {
+        console.error('Error loading summary and progress:', err);
+        setError(err);
+        toast.error('Erreur lors du chargement du résumé');
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      console.error('Error loading summary and progress:', err);
-      setError(err);
-      toast.error('Erreur lors du chargement du résumé');
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    loadSummaryAndProgress();
   }, [languageId, user]);
 
-  useEffect(() => {
-    loadSummaryAndProgress();
-  }, [loadSummaryAndProgress]);
-
   const markAsRead = async () => {
-    if (!user || !languageId) return false;
+    if (!user || !languageId) return;
     
     try {
       let progressData = progress;
@@ -100,36 +100,12 @@ export const useLanguageSummary = (languageId: string | undefined) => {
       if (updatedProgress) {
         setProgress(updatedProgress);
         toast.success('Résumé marqué comme lu !');
-        return true;
       }
-      
-      return false;
     } catch (err: any) {
       console.error('Error marking summary as read:', err);
       toast.error('Erreur lors de la mise à jour');
-      return false;
     }
   };
 
-  const refreshProgress = async () => {
-    if (!user || !languageId) return;
-    
-    try {
-      const progressData = await fetchUserProgress(user.id, languageId);
-      if (progressData) {
-        setProgress(progressData);
-      }
-    } catch (err: any) {
-      console.error('Error refreshing progress:', err);
-    }
-  };
-
-  return { 
-    summary, 
-    progress, 
-    loading, 
-    error, 
-    markAsRead,
-    refreshProgress
-  };
+  return { summary, progress, loading, error, markAsRead };
 };

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -11,7 +12,6 @@ import { useAuthState } from '@/hooks/useAuthState';
 import { useProgrammingLanguages } from '@/hooks/useProgrammingCourses';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useProgressTracking } from '@/hooks/useProgressTracking';
 
 interface Quiz {
   id: string;
@@ -32,7 +32,6 @@ const LanguageQuizPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthState();
   const { languages } = useProgrammingLanguages();
-  const { trackQuizCompletion } = useProgressTracking();
   
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +42,7 @@ const LanguageQuizPage = () => {
   const [score, setScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
   
+  // Trouver le langage correspondant
   const currentLanguage = languages.find(lang => lang.id === languageId);
 
   useEffect(() => {
@@ -52,6 +52,7 @@ const LanguageQuizPage = () => {
       try {
         setLoading(true);
         
+        // Récupérer les quiz pour ce langage
         const { data, error } = await supabase
           .from('coding_quiz')
           .select('*')
@@ -63,6 +64,7 @@ const LanguageQuizPage = () => {
         if (data && data.length > 0) {
           setQuizzes(data as Quiz[]);
         } else {
+          // Utiliser les quiz génériques si aucun n'est spécifique au langage
           const { data: genericData, error: genericError } = await supabase
             .from('coding_quiz')
             .select('*')
@@ -104,40 +106,65 @@ const LanguageQuizPage = () => {
     }
   };
 
-  const handleNextQuestion = async () => {
+  const handleNextQuestion = () => {
     if (currentQuizIndex < quizzes.length - 1) {
       setCurrentQuizIndex(currentQuizIndex + 1);
       setSelectedAnswer(null);
       setIsAnswered(false);
     } else {
+      // Quiz terminé
       setQuizCompleted(true);
       
-      if (user && languageId && currentLanguage) {
-        await trackQuizCompletion(
-          languageId,
-          currentLanguage.name,
-          score >= Math.ceil(quizzes.length * 0.7),
-          score
-        );
+      // Mettre à jour la progression de l'utilisateur
+      if (user && languageId) {
+        updateUserProgress();
       }
     }
   };
 
   const updateUserProgress = async () => {
     try {
-      const passScore = Math.ceil(quizzes.length * 0.7);
-      const isPassed = score >= passScore;
+      // Vérifier si l'utilisateur a déjà une entrée de progression
+      const { data: existingProgress, error: progressError } = await supabase
+        .from('user_language_progress')
+        .select('*')
+        .eq('user_id', user!.id)
+        .eq('language_id', languageId)
+        .maybeSingle();
+        
+      if (progressError) throw progressError;
       
-      if (user && languageId && currentLanguage) {
-        await trackQuizCompletion(
-          languageId,
-          currentLanguage.name,
-          isPassed,
-          score
-        );
+      const quizPassed = score >= Math.ceil(quizzes.length * 0.7); // 70% pour réussir
+      
+      if (existingProgress) {
+        // Mettre à jour la progression existante
+        await supabase
+          .from('user_language_progress')
+          .update({
+            quiz_completed: quizPassed,
+            last_updated: new Date().toISOString()
+          })
+          .eq('id', existingProgress.id);
+      } else {
+        // Créer une nouvelle entrée de progression
+        await supabase
+          .from('user_language_progress')
+          .insert([{
+            user_id: user!.id,
+            language_id: languageId,
+            summary_read: false, // Par défaut
+            quiz_completed: quizPassed,
+            badge_earned: false // Par défaut
+          }]);
+      }
+      
+      if (quizPassed) {
+        toast.success('Félicitations! Vous avez réussi le quiz!');
+      } else {
+        toast.info('Vous pouvez réessayer le quiz pour améliorer votre score.');
       }
     } catch (err) {
-      console.error('Error updating user progress:', err);
+      console.error('Erreur lors de la mise à jour de la progression:', err);
     }
   };
 
@@ -160,10 +187,12 @@ const LanguageQuizPage = () => {
       options.push({ value: quiz.option3, label: quiz.option3 });
     }
     
+    // Ajouter l'option correcte si elle n'est pas déjà incluse
     if (!options.some(opt => opt.value === quiz.correct_answer)) {
       options.push({ value: quiz.correct_answer, label: quiz.correct_answer });
     }
     
+    // Mélanger les options
     return options.sort(() => Math.random() - 0.5);
   };
 

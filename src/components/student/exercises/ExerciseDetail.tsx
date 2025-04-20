@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +9,6 @@ import { MonacoEditorWrapper } from "@/components/CodeEditor/MonacoEditorWrapper
 import { LanguageSelector } from "@/components/CodeEditor/LanguageSelector";
 import { ExerciseUI } from "@/types/exerciseUI";
 import { ProgrammingLanguage } from "@/components/CodeEditor/types";
-import { useExerciseTracker } from "@/hooks/useExerciseTracker";
-import { toast } from "sonner";
 
 interface ExerciseDetailProps {
   exercise: ExerciseUI;
@@ -54,54 +53,9 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
   setShowSolution,
   difficulties
 }) => {
-  const { completeExercise, submitting } = useExerciseTracker();
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(exercise.status === "completed");
-
   const renderStars = (count: number) => {
     return Array(count).fill(0).map((_, i) => <Star key={i} className="h-4 w-4 inline-block text-yellow-500 fill-yellow-500" />);
   };
-
-  const handleRunCode = () => {
-    runCode();
-    
-    // Check if the output matches the expected output (if provided)
-    setTimeout(() => {
-      if (exercise.tests && exercise.tests.length > 0) {
-        // Here we would usually compare the output with exercise.tests
-        // For now, we'll just check if there's output
-        const outputHasNoErrors = output && !output.toLowerCase().includes("error");
-        if (outputHasNoErrors) {
-          setIsCorrect(true);
-          toast.info("Votre solution semble correcte! Soumettez-la pour valider.", {
-            duration: 3000
-          });
-        } else {
-          setIsCorrect(false);
-        }
-      }
-    }, 1000);
-  };
-
-  const handleSubmit = async () => {
-    if (submitting) return;
-    
-    if (isCorrect && !isCompleted) {
-      const { success } = await completeExercise(exercise, selectedLanguage, 100);
-      
-      if (success) {
-        setIsCompleted(true);
-        exercise.status = "completed"; // Update local status
-      }
-    } else if (isCorrect && isCompleted) {
-      toast.info('Vous avez déjà complété cet exercice! 👍');
-    } else {
-      toast.error('Votre solution n\'est pas encore correcte. Réessayez! 🔄');
-    }
-  };
-
-  // Default hint to display when none is provided with the exercise
-  const defaultHint = "Pensez à utiliser une boucle pour parcourir la chaîne de caractères et une approche pour inverser l'ordre des éléments.";
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
@@ -162,7 +116,7 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
         {showHint && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
             <p className="text-sm text-yellow-800">
-              <strong>Indice:</strong> {defaultHint}
+              <strong>Indice:</strong> Pensez à utiliser une boucle pour parcourir la chaîne de caractères et une approche pour inverser l'ordre des éléments.
             </p>
           </div>
         )}
@@ -193,7 +147,7 @@ def solution(s):
               onChange={setSelectedLanguage} 
             />
             <Button 
-              onClick={handleRunCode} 
+              onClick={runCode} 
               disabled={isRunning}
               className="flex items-center gap-2"
             >
@@ -263,16 +217,6 @@ def solution(s):
             </div>
           </TabsContent>
         </Tabs>
-        
-        <div className="flex justify-end mt-4">
-          <Button 
-            onClick={handleSubmit} 
-            disabled={!output || isCompleted || submitting}
-            className={isCompleted ? "bg-green-600 hover:bg-green-700" : ""}
-          >
-            {submitting ? "Soumission..." : isCompleted ? "Complété! ✅" : "Soumettre la solution"}
-          </Button>
-        </div>
       </div>
       
       <div className="bg-blue-50 p-4 rounded-md border border-blue-100">

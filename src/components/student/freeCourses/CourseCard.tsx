@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,6 @@ import {
   MessageSquare
 } from "lucide-react";
 import { toast } from "sonner";
-import { useProgressTracking } from '@/hooks/useProgressTracking';
 
 export interface CourseResource {
   pdf: boolean;
@@ -42,21 +42,17 @@ interface CourseCardProps {
 
 export const CourseCard = ({ course, progress, onProgressUpdate }: CourseCardProps) => {
   const navigate = useNavigate();
-  const { trackVideoProgress } = useProgressTracking();
   
   const downloadResource = (courseId: string, resourceType: 'pdf' | 'presentation') => {
     // In a real app, this would download actual files
     toast.success(`Downloading ${resourceType} for ${courseId} course`);
   };
 
-  const handleWatchCourse = async () => {
+  const handleWatchCourse = () => {
     // Update progress if not started
     if (!progress) {
       onProgressUpdate(course.id, 5);
     }
-    
-    // Track video progress (simulating full completion since we're opening in a new tab)
-    await trackVideoProgress(course.id, course.language, 100, false);
     
     // Open YouTube in new tab
     window.open(course.youtubeUrl, '_blank');

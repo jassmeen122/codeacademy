@@ -2,25 +2,14 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 
 interface SummaryContentProps {
   title: string;
   content: string;
   isRead?: boolean;
-  isUpdating?: boolean;
 }
 
-export const SummaryContent = ({ 
-  title, 
-  content, 
-  isRead = false, 
-  onMarkAsRead,
-  isUpdating = false 
-}: SummaryContentProps & {
-  onMarkAsRead?: () => void;
-}) => {
+export const SummaryContent = ({ title, content, isRead = false }: SummaryContentProps) => {
   // La fonction pour formater le contenu avec des sections
   const formatContent = (text: string) => {
     // Diviser le contenu en sections
@@ -72,34 +61,13 @@ export const SummaryContent = ({
 
   return (
     <Card className="w-full bg-white shadow-md mb-6">
-      <CardHeader className="pb-2 border-b">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            {title}
-            {isRead && <CheckCircle className="h-5 w-5 text-green-500" />}
-          </CardTitle>
-          {!isRead && onMarkAsRead && (
-            <Button 
-              onClick={onMarkAsRead}
-              disabled={isUpdating}
-              className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
-            >
-              {isUpdating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-4 w-4" />
-                  Mark as Read
-                </>
-              )}
-            </Button>
-          )}
-        </div>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-3 text-2xl">
+          {title}
+          {isRead && <CheckCircle className="h-5 w-5 text-green-500" />}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent className="pt-0">
         <div className="prose max-w-none">
           {formatContent(content)}
         </div>

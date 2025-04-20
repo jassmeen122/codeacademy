@@ -7,8 +7,3 @@ export interface MenuItem {
   href: string;
   description?: string;
 }
-
-export interface SidebarItem {
-  title: string;
-  items: MenuItem[];
-}

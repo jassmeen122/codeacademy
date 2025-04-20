@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -18,7 +17,7 @@ import StudentDiscussionPage from '@/pages/student/DiscussionPage';
 import StudentProjectsPage from '@/pages/student/ProjectsPage';
 import StudentCodeEditorPage from '@/pages/student/CodeEditorPage';
 import StudentAIAssistantPage from '@/pages/student/AIAssistantPage';
-import ProgressPage from '@/pages/student/ProgressPage';
+import StudentProgressPage from '@/pages/student/ProgressPage';
 import StudentAchievementsPage from '@/pages/student/AchievementsPage';
 import StudentProfilePage from '@/pages/student/ProfilePage';
 import StudentNotificationsPage from '@/pages/student/NotificationsPage';
@@ -84,7 +83,7 @@ function App() {
           <Route path="/student/editor" element={<StudentCodeEditorPage />} />
           <Route path="/student/code-editor" element={<StudentCodeEditorPage />} /> {/* Add this route as an alias */}
           <Route path="/student/ai-assistant" element={<StudentAIAssistantPage />} />
-          <Route path="/student/progress" element={<ProgressPage />} />
+          <Route path="/student/progress" element={<StudentProgressPage />} />
           <Route path="/student/achievements" element={<StudentAchievementsPage />} />
           <Route path="/student/mini-game" element={<MiniGamePage />} />
           <Route path="/student/profile" element={<StudentProfilePage />} />

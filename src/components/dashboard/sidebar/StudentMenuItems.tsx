@@ -1,126 +1,97 @@
 
 import {
+  Activity,
   Book,
-  Code,
   BookOpen,
-  MessageSquare,
-  FileCode,
-  Terminal,
-  Trophy,
-  Star,
-  Youtube,
-  MessagesSquare,
-  Briefcase,
-  Users,
   Brain,
-  Coffee
+  Briefcase,
+  Code,
+  FileCode,
+  Gamepad2,
+  Layout,
+  MessageSquare,
+  School,
+  Settings,
+  Trophy,
+  UserRound,
+  Youtube,
 } from "lucide-react";
-import { SidebarItem } from "@/types/sidebar";
+import { MenuItem } from "@/types/sidebar";
 
-export const StudentMenuItems: SidebarItem[] = [
+export const studentMenuItems: MenuItem[] = [
   {
-    title: "Learning",
-    items: [
-      {
-        title: "Dashboard",
-        icon: Terminal,
-        href: "/student",
-        description: "Overview of your learning path"
-      },
-      {
-        title: "Courses",
-        icon: Book,
-        href: "/student/courses",
-        description: "Browse and follow courses"
-      },
-      {
-        title: "Free Courses",
-        icon: BookOpen,
-        href: "/student/free-courses",
-        description: "Popular free courses"
-      },
-      {
-        title: "Exercises",
-        icon: Code,
-        href: "/student/exercises",
-        description: "Programming exercises"
-      },
-      {
-        title: "Code Editor",
-        icon: FileCode,
-        href: "/student/code-editor",
-        description: "Development environment"
-      },
-      {
-        title: "Progress Path",
-        icon: Star,
-        href: "/student/progress",
-        description: "Visual tracking of your progress"
-      },
-      {
-        title: "Badges & Achievements",
-        icon: Trophy,
-        href: "/student/achievements",
-        description: "Your rewards and goals"
-      }
-    ]
+    title: "Dashboard",
+    icon: School,
+    href: "/student",
   },
   {
-    title: "Developer Resources",
-    items: [
-      {
-        title: "Dev Tutorials",
-        icon: Youtube,
-        href: "/student/yt-dev-tutorials",
-        description: "Video tutorials for developers"
-      },
-      {
-        title: "AI Coding Assistant",
-        icon: Brain,
-        href: "/student/ai-assistant",
-        description: "AI-powered learning support"
-      },
-      {
-        title: "Developer Games",
-        icon: Terminal,
-        href: "/student/mini-game",
-        description: "Learn while having fun"
-      }
-    ]
+    title: "Profile",
+    icon: UserRound,
+    href: "/student/profile",
   },
   {
-    title: "Dev Community",
-    items: [
-      {
-        title: "Forum",
-        icon: MessageSquare,
-        href: "/student/discussion",
-        description: "Ask your questions"
-      },
-      {
-        title: "Messages",
-        icon: MessagesSquare,
-        href: "/student/messages",
-        description: "Private messaging"
-      },
-      {
-        title: "Developer Network",
-        icon: Users,
-        href: "/student/social",
-        description: "Social feed for developers"
-      },
-      {
-        title: "Internships",
-        icon: Briefcase,
-        href: "/student/internships",
-        description: "Internship opportunities"
-      },
-      {
-        title: "Open Source",
-        icon: Coffee,
-        href: "/student/open-source",
-        description: "Contribute to projects"
-      }
-    ]
-  }
+    title: "My Courses",
+    icon: Book,
+    href: "/student/courses",
+  },
+  {
+    title: "Code Editor",
+    icon: Code,
+    href: "/student/editor",
+  },
+  {
+    title: "AI Assistant",
+    icon: Brain,
+    href: "/student/ai-assistant",
+  },
+  {
+    title: "Exercises",
+    icon: FileCode,
+    href: "/student/exercises",
+  },
+  {
+    title: "YT Dev Tutorials",
+    icon: Youtube,
+    href: "/student/yt-dev-tutorials",
+  },
+  {
+    title: "Projects",
+    icon: Layout,
+    href: "/student/projects",
+  },
+  {
+    title: "Internship Opportunities",
+    icon: Briefcase,
+    href: "/student/internships",
+  },
+  {
+    title: "Knowledge Share",
+    icon: BookOpen,
+    href: "/student/knowledge",
+  },
+  {
+    title: "Progress",
+    icon: Activity,
+    href: "/student/progress",
+  },
+  {
+    title: "Achievements",
+    icon: Trophy,
+    href: "/student/achievements",
+  },
+  {
+    title: "Mini-Jeu",
+    icon: Gamepad2,
+    href: "/student/mini-game",
+  },
+  {
+    title: "Discussion",
+    icon: MessageSquare,
+    href: "/student/discussion",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/student/settings",
+  },
 ];
