@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "./useAuthState";
 import { updateUserSkillsForActivity } from "@/utils/skillProgressUpdater";
-import { DatabaseTables } from "@/types/progress";
 
 export const useStudentActivity = () => {
   const { user } = useAuthState();
@@ -14,7 +13,7 @@ export const useStudentActivity = () => {
     try {
       // Record the activity in the database with proper typing
       const { error } = await supabase
-        .from<DatabaseTables['user_activities']>('user_activities')
+        .from('user_activities')
         .insert({
           user_id: user.id,
           activity_type: 'lesson_viewed',
@@ -45,7 +44,7 @@ export const useStudentActivity = () => {
     try {
       // Record the activity with proper typing
       const { error } = await supabase
-        .from<DatabaseTables['user_activities']>('user_activities')
+        .from('user_activities')
         .insert({
           user_id: user.id,
           activity_type: 'exercise_completed',
@@ -58,26 +57,26 @@ export const useStudentActivity = () => {
         
       if (error) throw error;
       
-      // Since RPC functions aren't properly typed, we'll use a direct update query instead
+      // Get current metrics
       const { data: metrics, error: metricsError } = await supabase
-        .from<DatabaseTables['user_metrics']>('user_metrics')
+        .from('user_metrics')
         .select('*')
         .eq('user_id', user.id)
         .single();
       
-      if (!metricsError) {
+      if (!metricsError && metrics) {
         // If metrics exist, update them
         await supabase
-          .from<DatabaseTables['user_metrics']>('user_metrics')
+          .from('user_metrics')
           .update({ 
-            exercises_completed: (metrics?.exercises_completed || 0) + 1,
+            exercises_completed: (metrics.exercises_completed || 0) + 1,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id);
       } else if (metricsError.code === 'PGRST116') {
         // If no metrics record exists, create one
         await supabase
-          .from<DatabaseTables['user_metrics']>('user_metrics')
+          .from('user_metrics')
           .insert({
             user_id: user.id,
             exercises_completed: 1,
@@ -110,7 +109,7 @@ export const useStudentActivity = () => {
     try {
       // Record the activity with proper typing
       const { error } = await supabase
-        .from<DatabaseTables['user_activities']>('user_activities')
+        .from('user_activities')
         .insert({
           user_id: user.id,
           activity_type: 'course_completed',
@@ -123,26 +122,26 @@ export const useStudentActivity = () => {
         
       if (error) throw error;
       
-      // Since RPC functions aren't properly typed, we'll use a direct update query instead
+      // Get current metrics
       const { data: metrics, error: metricsError } = await supabase
-        .from<DatabaseTables['user_metrics']>('user_metrics')
+        .from('user_metrics')
         .select('*')
         .eq('user_id', user.id)
         .single();
       
-      if (!metricsError) {
+      if (!metricsError && metrics) {
         // If metrics exist, update them
         await supabase
-          .from<DatabaseTables['user_metrics']>('user_metrics')
+          .from('user_metrics')
           .update({ 
-            course_completions: (metrics?.course_completions || 0) + 1,
+            course_completions: (metrics.course_completions || 0) + 1,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id);
-      } else if (metricsError.code === 'PGRST116') {
+      } else if (metricsError?.code === 'PGRST116') {
         // If no metrics record exists, create one
         await supabase
-          .from<DatabaseTables['user_metrics']>('user_metrics')
+          .from('user_metrics')
           .insert({
             user_id: user.id,
             course_completions: 1,
