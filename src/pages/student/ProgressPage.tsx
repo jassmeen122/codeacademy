@@ -19,7 +19,7 @@ import { useUserSkills } from "@/hooks/useUserSkills";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
-import { UserMetric, DatabaseTables } from "@/types/progress";
+import { UserMetric } from "@/types/progress";
 
 const ProgressPage = () => {
   const { skills, loading: skillsLoading } = useUserSkills();
@@ -97,36 +97,39 @@ const ProgressPage = () => {
       setLoading(true);
       // Fetch user metrics from the database with proper typing
       const { data, error } = await supabase
-        .from<DatabaseTables['user_metrics']>('user_metrics')
+        .from('user_metrics')
         .select('*')
         .eq('user_id', user.id)
         .single();
       
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+      if (error) {
+        if (error.code !== 'PGRST116') {
+          throw error;
+        }
       }
       
       if (data) {
-        // Use proper typing when setting the metrics
-        setMetrics(data as UserMetric);
+        // Cast data to UserMetric type safely
+        const userMetric = data as UserMetric;
+        setMetrics(userMetric);
         
         // Update stats with actual values
         setStats([
           {
             title: "Total Learning Hours",
-            value: `${data.total_time_spent || 0}h`,
+            value: `${userMetric.total_time_spent || 0}h`,
             icon: Clock,
             description: "Time spent learning",
           },
           {
             title: "Courses Completed",
-            value: `${data.course_completions || 0}`,
+            value: `${userMetric.course_completions || 0}`,
             icon: BookOpen,
             description: "Completed courses",
           },
           {
             title: "Coding Exercises",
-            value: `${data.exercises_completed || 0}`,
+            value: `${userMetric.exercises_completed || 0}`,
             icon: Code,
             description: "Exercises completed",
           },
