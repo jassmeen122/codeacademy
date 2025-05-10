@@ -3,9 +3,9 @@ export interface UserProgressReport {
   id: string;
   user_id: string;
   completion_percentage: number;
-  completed_steps: any[]; // Changed from Json to any[]
-  in_progress_steps: any[]; // Changed from Json to any[]
-  pending_steps: any[]; // Changed from Json to any[]
+  completed_steps: any[]; 
+  in_progress_steps: any[]; 
+  pending_steps: any[]; 
   estimated_completion_time: number;
   updated_at: string;
 }
@@ -43,11 +43,4 @@ export interface UserSkillRecord {
   skill_name: string;
   progress: number;
   last_updated: string;
-}
-
-// Add interface for database tables that we're using
-export interface DatabaseTables {
-  user_skills_progress: UserSkillRecord;
-  user_activities: UserActivity;
-  user_metrics: UserMetric;
 }

@@ -116,6 +116,17 @@ serve(async (req) => {
             errorMessage = 'Le service est temporairement indisponible. Veuillez réessayer plus tard.';
           } else if (errorData.error?.type === 'insufficient_quota') {
             errorMessage = 'Le service est temporairement indisponible. Veuillez réessayer plus tard.';
+            
+            // Return a more user-friendly message for quota errors
+            return new Response(
+              JSON.stringify({ 
+                reply: { 
+                  role: "assistant", 
+                  content: "Je suis désolé, notre service d'intelligence artificielle est actuellement surchargé. Nous travaillons à résoudre ce problème. En attendant, essayez d'utiliser le modèle alternatif Hugging Face en cliquant sur 'Changer de modèle' ci-dessous."
+                }
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
           }
           
           throw new Error(errorMessage);

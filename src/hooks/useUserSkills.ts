@@ -3,10 +3,21 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
-import { UserSkill, UserSkillRecord, DatabaseTables } from "@/types/progress";
 
-// Use the recommended TypeScript export syntax
-export type { UserSkill };
+export interface UserSkill {
+  id: string;
+  skill_name: string;
+  progress: number;
+  last_updated: string;
+}
+
+export interface UserSkillRecord {
+  id: string;
+  user_id: string;
+  skill_name: string;
+  progress: number;
+  last_updated: string;
+}
 
 export const useUserSkills = () => {
   const [skills, setSkills] = useState<UserSkill[]>([]);
@@ -28,15 +39,15 @@ export const useUserSkills = () => {
     try {
       setLoading(true);
       
-      // Properly type the response
+      // Use regular typing without generic parameters
       const { data, error } = await supabase
-        .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
+        .from('user_skills_progress')
         .select('*')
         .eq('user_id', user.id);
       
       if (error) throw error;
       
-      // Transform the data to match our UserSkill interface
+      // Transform and cast the data to match our UserSkill interface
       const typedSkills: UserSkill[] = (data as UserSkillRecord[] || []).map(item => ({
         id: item.id,
         skill_name: item.skill_name,
@@ -57,9 +68,9 @@ export const useUserSkills = () => {
     if (!user) return;
     
     try {
-      // Use proper typing for the Supabase client
+      // Use regular typing without generic parameters
       const { error } = await supabase
-        .from<DatabaseTables['user_skills_progress']>('user_skills_progress')
+        .from('user_skills_progress')
         .upsert({
           user_id: user.id,
           skill_name: skillName,
