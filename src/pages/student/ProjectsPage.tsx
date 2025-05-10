@@ -1,487 +1,174 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { Loader2, Lightbulb, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
-import {
-  Download,
-  FileCode,
-  FilePlus,
-  FileText,
-  Loader2,
-  UploadCloud,
-  FileIcon,
-} from "lucide-react";
-
-interface Project {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-}
-
-interface ProjectFile {
-  id: string;
-  project_id: string;
-  file_name: string;
-  file_url: string;
-  file_type: string;
-  uploaded_at: string;
-}
-
-const formSchema = z.object({
-  title: z.string().min(5, {
-    message: "Le titre doit contenir au moins 5 caractères",
-  }),
-  description: z.string().min(10, {
-    message: "La description doit contenir au moins 10 caractères",
-  }),
-});
-
-const FileIconComponent = ({ fileName }: { fileName: string }) => {
-  if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {
-    return <FileIcon className="h-4 w-4 mr-2" />;
-  } else if (
-    fileName.endsWith(".js") ||
-    fileName.endsWith(".ts") ||
-    fileName.endsWith(".py") ||
-    fileName.endsWith(".java") ||
-    fileName.endsWith(".cpp") ||
-    fileName.endsWith(".c")
-  ) {
-    return <FileCode className="h-4 w-4 mr-2" />;
-  } else {
-    return <FileText className="h-4 w-4 mr-2" />;
-  }
-};
 
 const ProjectsPage = () => {
-  const navigate = useNavigate();
   const { user } = useAuthState();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [files, setFiles] = useState<FileList | null>(null);
-  const [open, setOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([]);
+  const [projectIdea, setProjectIdea] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-    },
-  });
-
-  useEffect(() => {
-    if (user) {
-      fetchProjects();
-    }
-  }, [user]);
-
-  // For now, we'll mock the data since the tables don't exist yet
-  const fetchProjects = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      
-      // Mock the projects for now
-      // When the tables are created in the database, you'll need to update this
-      setProjects([
-        {
-          id: "1",
-          user_id: user.id,
-          title: "Sample Project",
-          description: "This is a sample project",
-          status: "pending",
-          created_at: new Date().toISOString()
-        }
-      ]);
-      
-      /* Uncomment when projects table exists
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setProjects(data || []);
-      */
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      toast.error("Erreur lors du chargement des projets");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!user || !files || files.length === 0) {
-      toast.error("Veuillez sélectionner au moins un fichier");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!projectIdea.trim()) {
+      toast.error("Veuillez décrire votre idée de projet");
       return;
     }
 
+    setIsSubmitting(true);
+    setIsLoading(true);
+    
     try {
-      setUploading(true);
-      
-      // Mock project creation
-      // When the tables are created, you'll need to update this with real implementations
-      toast.success("Projet créé avec succès");
-      form.reset();
-      setFiles(null);
-      setOpen(false);
-      fetchProjects();
-      
-      /* Uncomment when projects and project_files tables exist
-      // Create new project
-      const { data: projectData, error: projectError } = await supabase
-        .from("projects")
-        .insert({
-          user_id: user.id,
-          title: values.title,
-          description: values.description,
-          status: "pending",
-        })
-        .select("*")
-        .single();
-
-      if (projectError) throw projectError;
-
-      const project = projectData as Project;
-
-      // Upload files
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${user.id}/${project.id}/${Date.now()}.${fileExt}`;
-
-        // Upload file to storage
-        const { error: uploadError } = await supabase.storage
-          .from("project_files")
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        // Get the public URL
-        const { data: urlData } = supabase.storage
-          .from("project_files")
-          .getPublicUrl(fileName);
-
-        // Store file metadata in the database
-        const { error: fileError } = await supabase
-          .from("project_files")
-          .insert({
-            project_id: project.id,
-            file_name: file.name,
-            file_url: urlData.publicUrl,
-            file_type: fileExt || "unknown",
-          });
-
-        if (fileError) throw fileError;
-      }
-      */
-      
-    } catch (error) {
-      console.error("Error creating project:", error);
-      toast.error("Erreur lors de la création du projet");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const viewProjectFiles = async (project: Project) => {
-    setSelectedProject(project);
-
-    try {
-      // Mock project files for now
-      setProjectFiles([
-        {
-          id: "1",
-          project_id: project.id,
-          file_name: "example.js",
-          file_url: "#",
-          file_type: "js",
-          uploaded_at: new Date().toISOString()
+      // Call the AI assistant edge function
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: { 
+          prompt: `Je suis un développeur et j'ai besoin d'aide pour conceptualiser un projet. Voici mon cahier des charges: ${projectIdea}. 
+          Crée un concept simple de page web qui répond à ce besoin. 
+          Fournis une description détaillée de l'interface utilisateur et des fonctionnalités principales.
+          Structuré en HTML sémantique basique avec des classes Tailwind CSS pour le style.`,
+          messageHistory: [],
         }
-      ]);
+      });
+
+      if (error) throw new Error(error.message);
       
-      /* Uncomment when project_files table exists
-      const { data, error } = await supabase
-        .from("project_files")
-        .select("*")
-        .eq("project_id", project.id)
-        .order("uploaded_at", { ascending: false });
-
-      if (error) throw error;
-      setProjectFiles(data || []);
-      */
+      // Process the AI response
+      if (data?.reply?.content) {
+        setAiResponse(data.reply.content);
+      } else {
+        throw new Error("Le service d'IA n'a pas pu générer de réponse");
+      }
+      
+      // Success message
+      toast.success("Votre projet a été conceptualisé avec succès!");
+      
     } catch (error) {
-      console.error("Error fetching project files:", error);
-      toast.error("Erreur lors du chargement des fichiers");
+      console.error("Error generating project concept:", error);
+      toast.error("Une erreur s'est produite lors de la génération du concept");
+    } finally {
+      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-yellow-100 text-yellow-800";
+  // Function to extract HTML from AI response if it contains code blocks
+  const getHtmlPreview = (response: string) => {
+    // Check if the response contains code blocks
+    const htmlMatch = response.match(/```html([\s\S]*?)```/);
+    if (htmlMatch && htmlMatch[1]) {
+      return htmlMatch[1].trim();
     }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "Approuvé";
-      case "rejected":
-        return "Rejeté";
-      default:
-        return "En attente";
-    }
+    return null;
   };
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Mes Projets</h1>
-
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <FilePlus className="h-4 w-4 mr-2" />
-                Nouveau Projet
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Créer un nouveau projet</DialogTitle>
-                <DialogDescription>
-                  Donnez un titre à votre projet et joignez les fichiers
-                  nécessaires.
-                </DialogDescription>
-              </DialogHeader>
-
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(handleSubmit)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Titre du projet</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Mon super projet" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Projets</h1>
+          
+          <div className="mb-8">
+            <p className="text-muted-foreground mb-4">
+              Décrivez votre idée de projet ou votre besoin, et notre assistant IA vous aidera à le conceptualiser.
+            </p>
+            
+            <Card className={aiResponse ? "mb-8" : ""}>
+              <CardContent className="pt-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <Textarea 
+                    placeholder="Décrivez votre projet, ses fonctionnalités, son public cible, et tout autre détail pertinent..."
+                    value={projectIdea}
+                    onChange={(e) => setProjectIdea(e.target.value)}
+                    className="min-h-[200px] resize-none"
+                    disabled={isSubmitting}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Décrivez votre projet..."
-                            {...field}
-                            rows={3}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="space-y-2">
-                    <Label htmlFor="files">Fichiers du projet</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="files"
-                        type="file"
-                        multiple
-                        onChange={(e) => setFiles(e.target.files)}
-                        className="flex-1"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Formats acceptés: .zip, .rar, .py, .js, .java, .cpp, etc.
-                    </p>
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      type="submit"
-                      disabled={uploading}
-                      className="w-full"
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting || !projectIdea.trim()}
                     >
-                      {uploading ? (
+                      {isSubmitting ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Envoi en cours...
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Génération en cours...
                         </>
                       ) : (
                         <>
-                          <UploadCloud className="h-4 w-4 mr-2" />
-                          Envoyer le projet
+                          <Lightbulb className="mr-2 h-4 w-4" />
+                          Générer un concept
                         </>
                       )}
                     </Button>
-                  </DialogFooter>
+                  </div>
                 </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : projects.length === 0 ? (
-          <div className="text-center py-12 border rounded-lg bg-gray-50">
-            <FileCode className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium mb-2">Aucun projet</h3>
-            <p className="text-muted-foreground mb-4">
-              Vous n'avez pas encore créé de projet.
-            </p>
-            <Button onClick={() => setOpen(true)}>
-              <FilePlus className="h-4 w-4 mr-2" />
-              Créer un projet
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <Card key={project.id} className="overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{project.title}</CardTitle>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeColor(
-                          project.status
-                        )}`}
-                      >
-                        {getStatusText(project.status)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(project.created_at).toLocaleDateString()}
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm mb-4">{project.description}</p>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => viewProjectFiles(project)}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Voir les fichiers
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* View Project Files Dialog */}
-            {selectedProject && (
-              <Dialog
-                open={!!selectedProject}
-                onOpenChange={(open) => !open && setSelectedProject(null)}
-              >
-                <DialogContent className="sm:max-w-[600px]">
-                  <DialogHeader>
-                    <DialogTitle>
-                      Fichiers du projet: {selectedProject.title}
-                    </DialogTitle>
-                    <DialogDescription>
-                      Status: {getStatusText(selectedProject.status)}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-4">
-                    {projectFiles.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-4">
-                        Aucun fichier trouvé pour ce projet
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {projectFiles.map((file) => (
-                          <div
-                            key={file.id}
-                            className="flex items-center justify-between p-3 rounded-md border"
-                          >
-                            <div className="flex items-center">
-                              <FileIconComponent fileName={file.file_name} />
-                              <span>{file.file_name}</span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              asChild
-                              title="Télécharger"
-                            >
-                              <a
-                                href={file.file_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <Download className="h-4 w-4" />
-                              </a>
-                            </Button>
+              </CardContent>
+            </Card>
+            
+            {isLoading && !aiResponse && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <p className="text-lg font-medium">Conceptualisation en cours...</p>
+                <p className="text-sm text-muted-foreground mt-2">Notre assistant IA transforme votre idée en concept</p>
+              </div>
+            )}
+            
+            {aiResponse && (
+              <Card className="bg-gray-50 border-t-4 border-primary">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-4 text-lg font-medium text-primary">
+                    <Lightbulb className="h-5 w-5" />
+                    <h2>Concept de projet</h2>
+                  </div>
+                  
+                  <div className="prose max-w-none">
+                    {/* Display formatted HTML if code blocks exist */}
+                    {getHtmlPreview(aiResponse) ? (
+                      <div className="mb-4">
+                        <div className="bg-white rounded-md p-4 border mb-4">
+                          <div dangerouslySetInnerHTML={{ 
+                            __html: getHtmlPreview(aiResponse) || "" 
+                          }} />
+                        </div>
+                        <div className="border-t pt-4 mt-4">
+                          <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
+                            <FileText className="h-4 w-4" />
+                            Description complète
+                          </h3>
+                          <div className="whitespace-pre-wrap text-sm">
+                            {aiResponse.replace(/```html[\s\S]*?```/g, '')}
                           </div>
-                        ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="whitespace-pre-wrap">
+                        {aiResponse}
                       </div>
                     )}
                   </div>
-                </DialogContent>
-              </Dialog>
+                  
+                  <div className="flex justify-end mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setProjectIdea("")}
+                    >
+                      Nouveau projet
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
