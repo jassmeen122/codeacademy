@@ -1,6 +1,8 @@
+
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { FloatingAIAssistant } from '@/components/ai-assistant/FloatingAIAssistant';
 
 // Import des pages correctement
 import AuthPage from '@/pages/Auth';
@@ -133,6 +135,8 @@ function App() {
 
           <Route path="*" element={<Navigate to="/not-found" replace />} />
         </Routes>
+        {/* Add the floating AI Assistant to all pages */}
+        <FloatingAIAssistant />
       </Suspense>
       <Toaster />
     </Router>

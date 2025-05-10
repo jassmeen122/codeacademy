@@ -11,7 +11,7 @@ export const GameInstructions = () => {
         Répondez aux questions pour gagner des points et débloquer des
         badges. Les questions sont classées par niveau de difficulté:
       </p>
-      <ul className="list-disc list-inside mt-2 mb-4 text-gray-600">
+      <ul className="list-disc list-inside mt-2 mb-6 text-gray-600">
         <li>
           <span className="font-medium text-green-600">Débutant</span>
           : 10 questions fondamentales
@@ -25,6 +25,9 @@ export const GameInstructions = () => {
           : 70 questions expertes
         </li>
       </ul>
+      <p className="text-sm text-gray-500 italic">
+        Besoin d'aide? Utilisez l'assistant IA en bas à droite de votre écran!
+      </p>
     </div>
   );
 };

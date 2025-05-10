@@ -6,4 +6,6 @@ export interface MenuItem {
   icon: LucideIcon;
   href: string;
   description?: string;
+  isNew?: boolean;
+  isExternal?: boolean;
 }
