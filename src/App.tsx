@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -34,7 +33,7 @@ import LanguageCoursePage from '@/pages/student/LanguageCoursePage';
 import LanguageSummaryPage from '@/pages/student/LanguageSummaryPage';
 import LanguageQuizPage from '@/pages/student/LanguageQuizPage';
 import SocialFeedPage from '@/pages/student/SocialFeedPage';
-import MessagesPage from '@/pages/student/MessagesPage';
+import EnhancedMessagesPage from './pages/student/EnhancedMessagesPage';
 import KnowledgeSharePage from '@/pages/KnowledgeSharePage';
 import InternshipOpportunitiesPage from '@/pages/student/InternshipOpportunitiesPage';
 import YTDevTutorialsPage from '@/pages/student/YTDevTutorialsPage';
@@ -97,9 +96,11 @@ function App() {
           
           {/* Social features routes */}
           <Route path="/student/social" element={<SocialFeedPage />} />
-          <Route path="/student/messages" element={<MessagesPage />} />
+          {
+            path: "/student/messages",
+            element: <EnhancedMessagesPage />
+          }
           <Route path="/student/knowledge" element={<KnowledgeSharePage />} />
-          <Route path="/student/internships" element={<InternshipOpportunitiesPage />} />
           
           {/* Nouvelles routes pour le système de cours simplifiés */}
           <Route path="/student/language-selection" element={<LanguageSelectionPage />} />
