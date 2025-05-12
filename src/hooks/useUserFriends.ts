@@ -58,18 +58,21 @@ export const useUserFriends = () => {
       if (receivedRequestsError) throw receivedRequestsError;
       
       // Récupérer les statuts des amis
-      const friendIds = [...(friendsData || []), ...(receivedRequestsData || [])].map(
-        f => f.friend.id
-      );
+      const friendIds = [
+        ...(friendsData?.map(f => f.friend?.id) || []).filter(Boolean),
+        ...(receivedRequestsData?.map(r => r.friend?.id) || []).filter(Boolean)
+      ];
       
       const { data: statusData } = await supabase
         .from('user_status')
         .select('*')
-        .in('user_id', friendIds);
+        .in('user_id', friendIds.length > 0 ? friendIds : ['no-results']);
       
       // Transformer les données d'amis avec leur statut en ligne
       const friendsWithStatus: UserWithStatus[] = (friendsData || []).map(f => {
+        if (!f.friend) return null;
         const status = statusData?.find(s => s.user_id === f.friend.id);
+        
         return {
           id: f.friend.id,
           full_name: f.friend.full_name,
@@ -78,13 +81,15 @@ export const useUserFriends = () => {
           status: status?.status as 'online' | 'offline' || 'offline',
           last_active: status?.last_active || new Date().toISOString(),
           is_friend: true,
-          friendship_status: 'accepted'
+          friendship_status: 'accepted' as 'pending' | 'accepted' | 'rejected'
         };
-      });
+      }).filter(Boolean) as UserWithStatus[];
       
       // Transformer les données des demandes reçues
       const requestsWithStatus: UserWithStatus[] = (receivedRequestsData || []).map(r => {
+        if (!r.friend) return null;
         const status = statusData?.find(s => s.user_id === r.friend.id);
+        
         return {
           id: r.friend.id,
           full_name: r.friend.full_name,
@@ -93,9 +98,9 @@ export const useUserFriends = () => {
           status: status?.status as 'online' | 'offline' || 'offline',
           last_active: status?.last_active || new Date().toISOString(),
           is_friend: false,
-          friendship_status: 'pending'
+          friendship_status: 'pending' as 'pending' | 'accepted' | 'rejected'
         };
-      });
+      }).filter(Boolean) as UserWithStatus[];
       
       setFriends(friendsWithStatus);
       setPendingRequests(requestsWithStatus);
@@ -254,13 +259,15 @@ export const useUserFriends = () => {
       const { data: statusData } = await supabase
         .from('user_status')
         .select('*')
-        .in('user_id', data?.map(u => u.id) || []);
+        .in('user_id', data?.map(u => u.id) || ['no-results']);
       
       // Transformer les résultats avec le statut d'amitié et le statut en ligne
       const usersWithStatus: UserWithStatus[] = (data || []).map(u => {
         const friendship = friendships?.find(f => f.friend_id === u.id);
         const inverseFriendship = inverseFriendships?.find(f => f.user_id === u.id);
         const status = statusData?.find(s => s.user_id === u.id);
+        
+        const friendshipStatus = friendship?.status || inverseFriendship?.status;
         
         return {
           id: u.id,
@@ -270,7 +277,7 @@ export const useUserFriends = () => {
           status: status?.status as 'online' | 'offline' || 'offline',
           last_active: status?.last_active || new Date().toISOString(),
           is_friend: !!(friendship?.status === 'accepted' || inverseFriendship?.status === 'accepted'),
-          friendship_status: friendship?.status || inverseFriendship?.status
+          friendship_status: friendshipStatus as 'pending' | 'accepted' | 'rejected' | undefined
         };
       });
       

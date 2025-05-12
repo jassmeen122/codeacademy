@@ -1,56 +1,88 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Send,
-  ArrowLeft,
-  Phone,
-  Video,
-  Mic,
-  MicOff,
-  User,
-  UserPlus,
-  Clock,
-  Search,
-  X,
-  Check,
-  MoreHorizontal,
-  MessageSquare,
-  ChevronDown,
-  Reply
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from '@/components/ui/dialog';
+import { formatDistanceToNow, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useAuthState } from '@/hooks/useAuthState';
+import { useEnhancedPrivateMessages } from '@/hooks/useEnhancedPrivateMessages';
 import { useUserStatus } from '@/hooks/useUserStatus';
 import { useUserFriends } from '@/hooks/useUserFriends';
-import { useEnhancedPrivateMessages } from '@/hooks/useEnhancedPrivateMessages';
 import { useUserCalls } from '@/hooks/useUserCalls';
-import { EnhancedPrivateMessage, UserWithStatus } from '@/types/messaging';
+import { EnhancedPrivateMessage, UserWithStatus, EnhancedConversation } from '@/types/messaging';
+import {
+  Search,
+  Send,
+  ArrowLeft,
+  Mic,
+  MicOff,
+  Phone,
+  Video,
+  MoreVertical,
+  Paperclip,
+  Smile,
+  Trash2,
+  Check,
+  Clock,
+  User,
+  UserPlus,
+  Users,
+  Image
+} from 'lucide-react';
+import { toast } from 'sonner';
 
 const EnhancedMessagesPage = () => {
+  // États généraux
   const { user } = useAuthState();
-  const { updateStatus, formatOnlineStatus, getUserStatus } = useUserStatus();
+  const [mobileView, setMobileView] = useState<'list' | 'conversation'>('list');
+  const [activeTab, setActiveTab] = useState<'chats' | 'friends' | 'groups'>('chats');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<UserWithStatus[]>([]);
+  const [typing, setTyping] = useState(false);
+  const [replyTo, setReplyTo] = useState<EnhancedPrivateMessage | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [scrollToBottom, setScrollToBottom] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showUserSearch, setShowUserSearch] = useState(false);
+  
+  // Messages et contacts
   const {
     conversations,
     loading: messagesLoading,
+    error: messagesError,
     fetchMessages,
     sendMessage,
-    isRecording,
-    recordingTime,
     startRecording,
     stopRecording,
     sendVoiceMessage,
-    playVoiceMessage
+    playVoiceMessage,
+    isRecording,
+    recordingTime
   } = useEnhancedPrivateMessages();
+  const [messages, setMessages] = useState<EnhancedPrivateMessage[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<EnhancedConversation | null>(null);
+  const [newMessage, setNewMessage] = useState('');
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  
+  // Amis et statut
   const {
     friends,
     pendingRequests,
@@ -60,27 +92,32 @@ const EnhancedMessagesPage = () => {
     rejectFriendRequest,
     searchUsers
   } = useUserFriends();
-  const { initiateCall, endCall, currentCall } = useUserCalls();
-
-  const [selectedConversation, setSelectedConversation] = useState<any | null>(null);
-  const [messages, setMessages] = useState<EnhancedPrivateMessage[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loadingMessages, setLoadingMessages] = useState(false);
-  const [mobileView, setMobileView] = useState<'list' | 'conversation'>('list');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<UserWithStatus[]>([]);
-  const [loadingSearch, setLoadingSearch] = useState(false);
-  const [showUserDialog, setShowUserDialog] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserWithStatus | null>(null);
-  const [activeTab, setActiveTab] = useState('conversations');
-  const [replyingTo, setReplyingTo] = useState<EnhancedPrivateMessage | null>(null);
-  const [showCallDialog, setShowCallDialog] = useState(false);
-  const [callType, setCallType] = useState<'audio' | 'video'>('audio');
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { formatOnlineStatus } = useUserStatus();
   
-  // Handle window resize for mobile view
+  // Appels
+  const {
+    initiateCall,
+    endCall,
+    currentCall,
+    loading: callLoading
+  } = useUserCalls();
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
+  
+  // Filtrage des conversations et amis
+  const filteredConversations = conversations.filter(conv => 
+    conv.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    searchQuery === ''
+  );
+  
+  const filteredFriends = friends.filter(friend => 
+    friend.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    searchQuery === ''
+  );
+  
+  // Gérer le redimensionnement de la fenêtre pour la vue mobile
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -92,14 +129,7 @@ const EnhancedMessagesPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Set user as online when the component mounts
-  useEffect(() => {
-    if (user) {
-      updateStatus('online');
-    }
-  }, [user]);
-  
-  // Load messages when conversation changes
+  // Charger les messages quand la conversation sélectionnée change
   useEffect(() => {
     const loadMessages = async () => {
       if (selectedConversation) {
@@ -107,10 +137,16 @@ const EnhancedMessagesPage = () => {
         const msgs = await fetchMessages(selectedConversation.user_id);
         if (msgs) {
           setMessages(msgs);
+          setScrollToBottom(true);
         }
         setLoadingMessages(false);
+        
         if (window.innerWidth < 768) {
           setMobileView('conversation');
+        }
+        
+        if (inputRef.current) {
+          inputRef.current.focus();
         }
       } else {
         setMessages([]);
@@ -118,63 +154,107 @@ const EnhancedMessagesPage = () => {
     };
     
     loadMessages();
-  }, [selectedConversation]);
+  }, [selectedConversation, fetchMessages]);
   
-  // Scroll to bottom when messages change
+  // Faire défiler vers le bas lorsque les messages changent
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-  
-  // Handle search query
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
+    if (scrollToBottom && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      setScrollToBottom(false);
     }
-    
-    if (searchQuery.length >= 3) {
-      setLoadingSearch(true);
-      searchTimeoutRef.current = setTimeout(async () => {
+  }, [messages, scrollToBottom]);
+  
+  // Effectuer une recherche lorsque la requête change
+  useEffect(() => {
+    // Pour la recherche d'utilisateurs externes
+    const performSearch = async () => {
+      if (searchQuery.length >= 3 && showUserSearch) {
         const results = await searchUsers(searchQuery);
         setSearchResults(results);
-        setLoadingSearch(false);
-      }, 500);
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
+      } else {
+        setSearchResults([]);
+      }
+    };
+    
+    const delaySearch = setTimeout(performSearch, 500);
+    return () => clearTimeout(delaySearch);
+  }, [searchQuery, searchUsers, showUserSearch]);
   
+  // Gérer le mode sombre
+  useEffect(() => {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(darkModeQuery.matches);
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+    
+    darkModeQuery.addEventListener('change', handleChange);
+    return () => darkModeQuery.removeEventListener('change', handleChange);
+  }, []);
+  
+  // Envoyer un message
   const handleSendMessage = async () => {
     if (!selectedConversation || !newMessage.trim()) return;
     
     const message = await sendMessage(
-      selectedConversation.user_id,
+      selectedConversation.user_id, 
       newMessage,
-      replyingTo?.id
+      replyTo?.id || undefined
     );
     
     if (message) {
       setMessages(prev => [...prev, message]);
       setNewMessage('');
-      setReplyingTo(null);
+      setReplyTo(null);
+      setScrollToBottom(true);
     }
   };
   
-  const handleRecordVoiceMessage = async () => {
+  // Envoyer un message vocal
+  const handleVoiceMessage = async () => {
+    if (!selectedConversation) return;
+    
     if (isRecording) {
-      const audioBlob = await stopRecording();
-      if (selectedConversation) {
+      try {
+        const audioBlob = await stopRecording();
         await sendVoiceMessage(selectedConversation.user_id, audioBlob);
-        // Refresh messages
+        
+        // Recharger les messages pour voir le nouveau message vocal
         const msgs = await fetchMessages(selectedConversation.user_id);
         if (msgs) {
           setMessages(msgs);
+          setScrollToBottom(true);
         }
+      } catch (error) {
+        console.error('Error sending voice message:', error);
+        toast.error('Impossible d\'envoyer le message vocal');
       }
     } else {
-      startRecording();
+      await startRecording();
     }
   };
   
+  // Gérer les appels
+  const handleCall = async (type: 'audio' | 'video') => {
+    if (!selectedConversation) return;
+    
+    const call = await initiateCall(selectedConversation.user_id, type);
+    if (call) {
+      toast.success(
+        `Appel ${type === 'audio' ? 'audio' : 'vidéo'} en cours`,
+        { description: `Appel vers ${selectedConversation.full_name}` }
+      );
+      
+      // Simuler un appel pour la démonstration (30 secondes)
+      setTimeout(() => {
+        endCall(call.id, 'completed');
+        toast.info('Appel terminé', { description: `Durée: 30 secondes` });
+      }, 30000);
+    }
+  };
+  
+  // Gérer l'appui sur les touches
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -182,47 +262,37 @@ const EnhancedMessagesPage = () => {
     }
   };
   
-  const formatTime = (seconds: number) => {
+  // Formater le temps d'enregistrement
+  const formatRecordingTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
   
-  const handleUserClick = (user: UserWithStatus) => {
-    setSelectedUser(user);
-    setShowUserDialog(true);
-  };
-  
-  const handleStartCall = async (userId: string, type: 'audio' | 'video') => {
-    const call = await initiateCall(userId, type);
-    if (call) {
-      setCallType(type);
-      setShowCallDialog(true);
+  // Simuler un indicateur de frappe
+  const handleTyping = () => {
+    setTyping(true);
+    
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      setTyping(false);
+    }, 2000);
   };
   
-  const handleEndCall = async () => {
-    if (currentCall) {
-      await endCall(currentCall.id);
-    }
-    setShowCallDialog(false);
+  // Changement d'onglet
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as 'chats' | 'friends' | 'groups');
+    setSearchQuery('');
   };
   
-  const renderTypingIndicator = () => {
-    // Simulation d'un utilisateur qui tape
-    // Dans une implémentation réelle, cela serait basé sur des websockets/realtime
-    return Math.random() > 0.7 ? (
-      <div className="text-xs text-gray-500 italic ml-12 mb-2">
-        En train d'écrire...
-      </div>
-    ) : null;
-  };
-
   if (!user) {
     return (
       <DashboardLayout>
         <div className="container mx-auto py-6 px-4">
-          <Card>
+          <Card className="max-w-4xl mx-auto">
             <CardContent className="p-6">
               <p className="text-center py-8">Veuillez vous connecter pour utiliser la messagerie</p>
             </CardContent>
@@ -234,695 +304,634 @@ const EnhancedMessagesPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-6 px-4">
-        <h1 className="text-2xl font-bold mb-6">Messagerie</h1>
+      <div className="container mx-auto py-4 px-2 md:py-6 md:px-4">
+        <h1 className="text-2xl font-bold mb-4 md:mb-6">Messages</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-220px)]">
-          {/* Liste des conversations et contacts */}
-          <div className={`md:block ${mobileView === 'list' ? 'block' : 'hidden'}`}>
-            <Card className="h-full flex flex-col">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle>Messages</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={() => setShowUserDialog(true)}>
+        <Card className={`h-[calc(100vh-220px)] ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+          <div className="h-full flex flex-col md:flex-row overflow-hidden">
+            {/* Sidebar: liste des conversations */}
+            <div className={`${mobileView === 'list' ? 'block' : 'hidden'} md:block md:w-1/3 border-r flex flex-col h-full`}>
+              <CardHeader className="p-3 md:p-4">
+                <div className="flex items-center gap-2">
+                  <Tabs defaultValue="chats" value={activeTab} onValueChange={handleTabChange} className="w-full">
+                    <TabsList className="w-full">
+                      <TabsTrigger value="chats" className="flex-1">Discussions</TabsTrigger>
+                      <TabsTrigger value="friends" className="flex-1">Contacts</TabsTrigger>
+                      <TabsTrigger value="groups" className="flex-1">Groupes</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  <Button variant="ghost" size="icon" onClick={() => setShowUserSearch(!showUserSearch)}>
                     <UserPlus className="h-5 w-5" />
                   </Button>
                 </div>
                 
                 {/* Barre de recherche */}
-                <div className="mt-2">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Rechercher des contacts..."
-                      className="pl-8"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
+                <div className="relative mt-3">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                  <Input
+                    type="text"
+                    placeholder={activeTab === 'chats' ? "Rechercher une conversation..." : "Rechercher un contact..."}
+                    className="pl-9 pr-4 py-2"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
               </CardHeader>
               
-              <Tabs 
-                defaultValue="conversations" 
-                className="flex-1 flex flex-col"
-                onValueChange={setActiveTab}
-                value={activeTab}
-              >
-                <TabsList className="grid grid-cols-2 mx-4">
-                  <TabsTrigger value="conversations">Conversations</TabsTrigger>
-                  <TabsTrigger value="contacts">Contacts</TabsTrigger>
-                </TabsList>
-                
-                <Separator className="my-2" />
-                
-                <TabsContent value="conversations" className="flex-1 overflow-y-auto">
-                  {messagesLoading ? (
-                    <div className="p-4 text-center">Chargement des conversations...</div>
-                  ) : searchQuery && searchQuery.length >= 3 ? (
-                    <div className="space-y-1">
-                      {loadingSearch ? (
-                        <div className="p-4 text-center">Recherche en cours...</div>
-                      ) : searchResults.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">Aucun résultat trouvé</div>
-                      ) : (
-                        searchResults.map((user) => (
-                          <div
-                            key={user.id}
-                            className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-md mx-1"
-                            onClick={() => handleUserClick(user)}
-                          >
-                            <Avatar className="h-10 w-10 mr-3">
-                              <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'User'} />
+              {/* Recherche d'utilisateurs pour ajouter des amis */}
+              {showUserSearch && (
+                <div className="p-3 bg-gray-100 dark:bg-gray-800">
+                  <h3 className="text-sm font-medium mb-2">Ajouter des contacts</h3>
+                  {searchResults.length > 0 ? (
+                    <div className="space-y-2">
+                      {searchResults.map(user => (
+                        <div key={user.id} className="flex items-center justify-between p-2 rounded-md bg-white dark:bg-gray-700">
+                          <div className="flex items-center">
+                            <Avatar className="h-8 w-8 mr-2">
+                              <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Utilisateur'} />
                               <AvatarFallback>{(user.full_name || 'U').charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-center">
-                                <h3 className="font-medium truncate">{user.full_name || 'Utilisateur'}</h3>
-                              </div>
-                              <div className="flex items-center">
-                                <p className="text-xs text-gray-500">
-                                  {user.status === 'online' ? 'En ligne' : 'Hors ligne'}
-                                </p>
-                                {user.is_friend && (
-                                  <Badge variant="outline" className="ml-2 text-xs">
-                                    Contact
-                                  </Badge>
-                                )}
-                              </div>
+                            <div>
+                              <p className="text-sm font-medium">{user.full_name}</p>
+                              <p className="text-xs text-gray-500">{user.email}</p>
                             </div>
                           </div>
-                        ))
-                      )}
+                          {!user.is_friend && user.friendship_status !== 'pending' ? (
+                            <Button 
+                              size="sm" 
+                              onClick={() => sendFriendRequest(user.id)}
+                            >
+                              Ajouter
+                            </Button>
+                          ) : (
+                            <Badge variant={user.is_friend ? "secondary" : "outline"}>
+                              {user.is_friend ? "Contact" : "Demande envoyée"}
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ) : conversations.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">Aucune conversation</div>
+                  ) : searchQuery.length >= 3 ? (
+                    <p className="text-sm text-gray-500 py-2">Aucun utilisateur trouvé</p>
                   ) : (
-                    <div>
-                      {conversations.map((conversation) => (
-                        <div key={conversation.user_id}>
-                          <div 
-                            className={`flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-md mx-1 ${
-                              selectedConversation?.user_id === conversation.user_id ? 'bg-gray-100 dark:bg-gray-800' : ''
-                            }`}
-                            onClick={() => setSelectedConversation(conversation)}
-                          >
-                            <div className="relative">
-                              <Avatar className="h-10 w-10 mr-3">
-                                <AvatarImage src={conversation.avatar_url || ''} alt={conversation.full_name || 'User'} />
-                                <AvatarFallback>{(conversation.full_name || 'U').charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <span 
-                                className={`absolute bottom-0 right-2 h-3 w-3 rounded-full border-2 border-white ${
-                                  conversation.status === 'online' ? 'bg-green-500' : 'bg-gray-300'
-                                }`} 
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-center">
-                                <h3 className="font-medium truncate">{conversation.full_name || 'Utilisateur'}</h3>
-                                <div className="flex items-center">
+                    <p className="text-sm text-gray-500 py-2">Saisissez au moins 3 caractères...</p>
+                  )}
+                </div>
+              )}
+              
+              <CardContent className="p-0 overflow-hidden flex-grow">
+                <ScrollArea className="h-full">
+                  <TabsContent value="chats" className="m-0">
+                    {messagesLoading ? (
+                      <div className="p-4 text-center">Chargement des conversations...</div>
+                    ) : messagesError ? (
+                      <div className="p-4 text-center text-red-500">Erreur: {messagesError}</div>
+                    ) : filteredConversations.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">Aucune conversation</div>
+                    ) : (
+                      <div>
+                        {filteredConversations.map((conversation) => (
+                          <div key={conversation.user_id}>
+                            <div 
+                              className={`flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer ${
+                                selectedConversation?.user_id === conversation.user_id ? 
+                                'bg-gray-100 dark:bg-gray-800' : ''
+                              }`}
+                              onClick={() => setSelectedConversation(conversation)}
+                            >
+                              <div className="relative">
+                                <Avatar className="h-12 w-12 mr-3">
+                                  <AvatarImage src={conversation.avatar_url || ''} alt={conversation.full_name || 'Utilisateur'} />
+                                  <AvatarFallback>{(conversation.full_name || 'U').charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span 
+                                  className={`absolute bottom-0 right-1 h-3 w-3 rounded-full border-2 border-white 
+                                  ${conversation.status === 'online' ? 'bg-green-500' : 'bg-gray-400'}`}
+                                ></span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-center">
+                                  <h3 className="font-semibold truncate">
+                                    {conversation.full_name || 'Utilisateur'}
+                                  </h3>
+                                  <span className="text-xs text-gray-500">
+                                    {format(new Date(conversation.last_message_date), 'HH:mm')}
+                                  </span>
+                                </div>
+                                <div className="flex items-center text-sm">
+                                  <p className="text-gray-600 dark:text-gray-400 truncate flex-1">
+                                    {conversation.last_message}
+                                  </p>
                                   {conversation.unread_count > 0 && (
-                                    <Badge variant="destructive" className="mr-1">
+                                    <Badge 
+                                      className="ml-2 bg-green-500 hover:bg-green-600"
+                                    >
                                       {conversation.unread_count}
                                     </Badge>
                                   )}
-                                  <span className="text-xs text-gray-500">
-                                    {formatDistanceToNow(new Date(conversation.last_message_date), { 
-                                      addSuffix: true,
-                                      locale: fr
-                                    })}
-                                  </span>
                                 </div>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <p className="text-sm text-gray-500 truncate flex-1">
-                                  {conversation.last_message}
+                                <p className="text-xs text-gray-500 truncate">
+                                  {conversation.status === 'online' 
+                                    ? 'En ligne' 
+                                    : `Vu ${formatDistanceToNow(new Date(conversation.last_active), { 
+                                        addSuffix: true, 
+                                        locale: fr 
+                                      })}`
+                                  }
                                 </p>
-                                <div className="flex space-x-1 ml-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-6 w-6" 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStartCall(conversation.user_id, 'audio');
-                                    }}
-                                  >
-                                    <Phone className="h-3 w-3" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-6 w-6"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStartCall(conversation.user_id, 'video');
-                                    }}
-                                  >
-                                    <Video className="h-3 w-3" />
-                                  </Button>
-                                </div>
                               </div>
                             </div>
+                            <Separator />
                           </div>
-                          <Separator className="my-1 mx-4" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="contacts" className="flex-1 overflow-y-auto">
-                  {friendsLoading ? (
-                    <div className="p-4 text-center">Chargement des contacts...</div>
-                  ) : friends.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
-                      Aucun contact pour l'instant
-                      <Button 
-                        variant="link" 
-                        onClick={() => setShowUserDialog(true)}
-                        className="block mx-auto mt-2"
-                      >
-                        Ajouter des contacts
-                      </Button>
-                    </div>
-                  ) : (
-                    <div>
-                      {pendingRequests.length > 0 && (
-                        <div className="px-4 py-2">
-                          <h3 className="text-sm font-medium flex items-center">
-                            Demandes d'ami
-                            <Badge variant="secondary" className="ml-2">
-                              {pendingRequests.length}
-                            </Badge>
-                          </h3>
-                          <div className="mt-2 space-y-2">
-                            {pendingRequests.map((request) => (
-                              <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
-                                <div className="flex items-center">
-                                  <Avatar className="h-8 w-8 mr-2">
-                                    <AvatarImage src={request.avatar_url || ''} alt={request.full_name || 'User'} />
-                                    <AvatarFallback>{(request.full_name || 'U').charAt(0)}</AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="text-sm font-medium">{request.full_name || 'Utilisateur'}</p>
-                                  </div>
-                                </div>
-                                <div className="flex space-x-1">
-                                  <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-7 w-7" 
-                                    onClick={() => acceptFriendRequest(request.id)}
-                                  >
-                                    <Check className="h-4 w-4 text-green-500" />
-                                  </Button>
-                                  <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-7 w-7"
-                                    onClick={() => rejectFriendRequest(request.id)}
-                                  >
-                                    <X className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="friends" className="m-0">
+                    {friendsLoading ? (
+                      <div className="p-4 text-center">Chargement des contacts...</div>
+                    ) : filteredFriends.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">
+                        {searchQuery ? "Aucun contact trouvé" : "Aucun contact"}
+                      </div>
+                    ) : (
+                      <div>
+                        {filteredFriends.map((friend) => (
+                          <div key={friend.id}>
+                            <div className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+                              <div className="relative">
+                                <Avatar className="h-12 w-12 mr-3">
+                                  <AvatarImage src={friend.avatar_url || ''} alt={friend.full_name || 'Contact'} />
+                                  <AvatarFallback>{(friend.full_name || 'U').charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span 
+                                  className={`absolute bottom-0 right-1 h-3 w-3 rounded-full border-2 border-white 
+                                  ${friend.status === 'online' ? 'bg-green-500' : 'bg-gray-400'}`}
+                                ></span>
                               </div>
-                            ))}
+                              <div className="flex-1">
+                                <h3 className="font-semibold">{friend.full_name || 'Contact'}</h3>
+                                <p className="text-sm text-gray-500">
+                                  {friend.status === 'online' 
+                                    ? 'En ligne'
+                                    : `Vu ${formatDistanceToNow(new Date(friend.last_active), { 
+                                        addSuffix: true, 
+                                        locale: fr 
+                                      })}`
+                                  }
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Trouve ou crée une conversation avec cet ami
+                                    const conversation = conversations.find(c => c.user_id === friend.id);
+                                    if (conversation) {
+                                      setSelectedConversation(conversation);
+                                      setActiveTab('chats');
+                                    } else {
+                                      setSelectedConversation({
+                                        user_id: friend.id,
+                                        full_name: friend.full_name,
+                                        avatar_url: friend.avatar_url,
+                                        status: friend.status,
+                                        last_active: friend.last_active,
+                                        last_message: "",
+                                        last_message_date: new Date().toISOString(),
+                                        unread_count: 0
+                                      });
+                                      setActiveTab('chats');
+                                    }
+                                  }}
+                                >
+                                  <MessageCircle className="h-5 w-5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCall('audio');
+                                  }}
+                                >
+                                  <Phone className="h-5 w-5" />
+                                </Button>
+                              </div>
+                            </div>
+                            <Separator />
                           </div>
-                          <Separator className="my-2" />
-                        </div>
-                      )}
-                      
-                      <h3 className="px-4 py-2 text-sm font-medium">Tous les contacts</h3>
-                      {friends.map((friend) => (
-                        <div key={friend.id}>
-                          <div 
-                            className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-md mx-1"
-                            onClick={() => {
-                              // Trouver ou créer une conversation avec cet ami
-                              const existingConversation = conversations.find(c => c.user_id === friend.id);
-                              if (existingConversation) {
-                                setSelectedConversation(existingConversation);
-                              } else {
-                                setSelectedConversation({
-                                  user_id: friend.id,
-                                  full_name: friend.full_name,
-                                  avatar_url: friend.avatar_url,
-                                  status: friend.status,
-                                  last_active: friend.last_active,
-                                  last_message: '',
-                                  last_message_date: new Date().toISOString(),
-                                  unread_count: 0
-                                });
-                              }
-                              setActiveTab('conversations');
-                            }}
-                          >
-                            <div className="relative">
-                              <Avatar className="h-10 w-10 mr-3">
-                                <AvatarImage src={friend.avatar_url || ''} alt={friend.full_name || 'User'} />
-                                <AvatarFallback>{(friend.full_name || 'U').charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <span 
-                                className={`absolute bottom-0 right-2 h-3 w-3 rounded-full border-2 border-white ${
-                                  friend.status === 'online' ? 'bg-green-500' : 'bg-gray-300'
-                                }`} 
-                              />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {pendingRequests.length > 0 && (
+                      <>
+                        <h3 className="font-medium text-sm p-3 bg-gray-50 dark:bg-gray-800">
+                          Demandes d'amitié ({pendingRequests.length})
+                        </h3>
+                        {pendingRequests.map(request => (
+                          <div key={request.id} className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <Avatar className="h-10 w-10 mr-3">
+                              <AvatarImage src={request.avatar_url || ''} alt={request.full_name || 'Utilisateur'} />
+                              <AvatarFallback>{(request.full_name || 'U').charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <h3 className="font-semibold">{request.full_name || 'Utilisateur'}</h3>
+                              <p className="text-xs text-gray-500">Souhaite vous ajouter comme contact</p>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium truncate">{friend.full_name || 'Utilisateur'}</h3>
-                              <p className="text-xs text-gray-500">
-                                {friend.status === 'online' 
-                                  ? 'En ligne' 
-                                  : `Vu ${formatDistanceToNow(new Date(friend.last_active), { 
-                                      addSuffix: true, 
-                                      locale: fr
-                                    })}`}
-                              </p>
-                            </div>
-                            <div className="flex space-x-1">
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStartCall(friend.id, 'audio');
-                                }}
-                              >
-                                <Phone className="h-4 w-4" />
+                            <div className="flex items-center space-x-2">
+                              <Button size="sm" className="bg-green-500 hover:bg-green-600" onClick={() => acceptFriendRequest(request.id)}>
+                                Accepter
                               </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStartCall(friend.id, 'video');
-                                }}
-                              >
-                                <Video className="h-4 w-4" />
+                              <Button size="sm" variant="outline" onClick={() => rejectFriendRequest(request.id)}>
+                                Refuser
                               </Button>
                             </div>
                           </div>
-                          <Separator className="my-1 mx-4" />
-                        </div>
-                      ))}
+                        ))}
+                      </>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="groups" className="m-0">
+                    <div className="p-4 text-center">
+                      <Users className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                      <h3 className="font-medium">Groupes</h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Les discussions de groupe seront disponibles prochainement
+                      </p>
                     </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </Card>
-          </div>
-          
-          {/* Messages */}
-          <div className={`md:col-span-2 md:block ${mobileView === 'conversation' ? 'block' : 'hidden'}`}>
-            <Card className="h-full flex flex-col">
+                  </TabsContent>
+                </ScrollArea>
+              </CardContent>
+            </div>
+            
+            {/* Zone de conversation */}
+            <div className={`${mobileView === 'conversation' ? 'block' : 'hidden'} md:block md:w-2/3 flex flex-col h-full overflow-hidden`}>
               {selectedConversation ? (
                 <>
-                  <CardHeader className="pb-3 flex-shrink-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        {window.innerWidth < 768 && (
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="mr-2" 
-                            onClick={() => setMobileView('list')}
-                          >
-                            <ArrowLeft className="h-5 w-5" />
-                          </Button>
-                        )}
-                        <div className="relative">
-                          <Avatar className="h-10 w-10 mr-3">
-                            <AvatarImage 
-                              src={selectedConversation.avatar_url || ''} 
-                              alt={selectedConversation.full_name || 'User'} 
-                            />
-                            <AvatarFallback>
-                              {(selectedConversation.full_name || 'U').charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span 
-                            className={`absolute bottom-0 right-2 h-3 w-3 rounded-full border-2 border-white ${
-                              selectedConversation.status === 'online' ? 'bg-green-500' : 'bg-gray-300'
-                            }`} 
+                  <CardHeader className="p-3 md:p-4 flex-shrink-0 border-b">
+                    <div className="flex items-center">
+                      {/* Bouton retour sur mobile */}
+                      {window.innerWidth < 768 && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="mr-2" 
+                          onClick={() => setMobileView('list')}
+                        >
+                          <ArrowLeft className="h-5 w-5" />
+                        </Button>
+                      )}
+                      
+                      <div className="relative">
+                        <Avatar className="h-10 w-10 mr-3">
+                          <AvatarImage 
+                            src={selectedConversation.avatar_url || ''} 
+                            alt={selectedConversation.full_name || 'Utilisateur'} 
                           />
-                        </div>
-                        <div>
-                          <CardTitle>{selectedConversation.full_name || 'Utilisateur'}</CardTitle>
-                          <p className="text-xs text-gray-500">
-                            {selectedConversation.status === 'online' 
-                              ? 'En ligne' 
-                              : `Vu ${formatDistanceToNow(new Date(selectedConversation.last_active), { 
-                                  addSuffix: true,
-                                  locale: fr
-                                })}`}
-                          </p>
-                        </div>
+                          <AvatarFallback>
+                            {(selectedConversation.full_name || 'U').charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span 
+                          className={`absolute bottom-0 right-1 h-2.5 w-2.5 rounded-full border-2 border-white 
+                          ${selectedConversation.status === 'online' ? 'bg-green-500' : 'bg-gray-400'}`}
+                        ></span>
                       </div>
-                      <div className="flex space-x-1">
+                      
+                      <div className="flex-1">
+                        <CardTitle className="text-base">
+                          {selectedConversation.full_name || 'Utilisateur'}
+                        </CardTitle>
+                        <p className="text-xs text-gray-500">
+                          {typing ? 'En train d\'écrire...' : (
+                            selectedConversation.status === 'online' 
+                              ? 'En ligne'
+                              : `Vu ${formatDistanceToNow(new Date(selectedConversation.last_active), { 
+                                  addSuffix: true, 
+                                  locale: fr 
+                                })}`
+                          )}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center space-x-1">
                         <Button 
                           variant="ghost" 
                           size="icon"
-                          onClick={() => handleStartCall(selectedConversation.user_id, 'audio')}
+                          onClick={() => handleCall('audio')}
+                          disabled={callLoading}
                         >
                           <Phone className="h-5 w-5" />
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="icon"
-                          onClick={() => handleStartCall(selectedConversation.user_id, 'video')}
+                          onClick={() => handleCall('video')}
+                          disabled={callLoading}
                         >
                           <Video className="h-5 w-5" />
                         </Button>
                         <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-5 w-5" />
+                          <MoreVertical className="h-5 w-5" />
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
                   
-                  <Separator />
-                  
-                  <CardContent className="flex-1 overflow-y-auto p-4">
+                  {/* Zone des messages */}
+                  <div 
+                    className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900"
+                    ref={messageListRef}
+                  >
                     {loadingMessages ? (
                       <div className="h-full flex items-center justify-center">
-                        <p>Chargement des messages...</p>
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto"></div>
+                          <p className="mt-2">Chargement des messages...</p>
+                        </div>
                       </div>
                     ) : messages.length === 0 ? (
-                      <div className="h-full flex items-center justify-center text-gray-500">
-                        <p>Aucun message. Commencez à discuter !</p>
+                      <div className="h-full flex flex-col items-center justify-center text-gray-500">
+                        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-3">
+                          <MessageCircle className="h-12 w-12" />
+                        </div>
+                        <p>Aucun message. Commencez la conversation!</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {messages.map((message, index) => {
                           const isFromMe = message.sender_id === user.id;
-                          const showAvatar = index === 0 || 
-                            messages[index - 1].sender_id !== message.sender_id ||
-                            new Date(message.created_at).getTime() - new Date(messages[index - 1].created_at).getTime() > 5 * 60 * 1000;
+                          const showAvatar = !isFromMe && (
+                            index === 0 || 
+                            messages[index - 1].sender_id !== message.sender_id
+                          );
                           
                           return (
                             <div 
                               key={message.id} 
                               className={`flex ${isFromMe ? 'justify-end' : 'justify-start'}`}
                             >
-                              {!isFromMe && showAvatar ? (
+                              {!isFromMe && showAvatar && (
                                 <Avatar className="h-8 w-8 mr-2 mt-1">
                                   <AvatarImage 
                                     src={message.sender?.avatar_url || ''} 
-                                    alt={message.sender?.full_name || 'User'} 
+                                    alt={message.sender?.full_name || 'Utilisateur'} 
                                   />
                                   <AvatarFallback>
                                     {(message.sender?.full_name || 'U').charAt(0)}
                                   </AvatarFallback>
                                 </Avatar>
-                              ) : !isFromMe ? (
-                                <div className="w-8 mr-2" />
-                              ) : null}
-                              
-                              <div className={`max-w-[70%] group`}>
-                                {/* Message répondu */}
+                              )}
+                              {!isFromMe && !showAvatar && (
+                                <div className="w-8 mr-2"></div>
+                              )}
+                              <div className={`max-w-[75%]`}>
                                 {message.reply_to_message && (
                                   <div 
-                                    className={`text-xs p-2 mb-1 rounded-lg ${
-                                      isFromMe 
-                                        ? 'bg-blue-100 text-blue-800 mr-2' 
-                                        : 'bg-gray-100 dark:bg-gray-600 ml-2'
-                                    }`}
+                                    className={`text-xs border-l-2 p-1 mb-1 bg-gray-100 dark:bg-gray-800 
+                                    ${isFromMe ? 'border-blue-300' : 'border-gray-300'}`}
                                   >
-                                    <p className="font-medium">
-                                      {message.reply_to_message.sender_id === user.id 
-                                        ? 'Vous' 
-                                        : message.reply_to_message.sender?.full_name || 'Utilisateur'}
-                                    </p>
-                                    <p className="truncate">
-                                      {message.reply_to_message.content}
-                                    </p>
+                                    <span className="font-medium text-blue-500">
+                                      {message.reply_to_message.sender_id === user.id ? 'Vous' : message.reply_to_message.sender?.full_name}
+                                    </span>
+                                    <p className="truncate">{message.reply_to_message.content}</p>
                                   </div>
                                 )}
-                                
-                                {/* Contenu du message */}
                                 <div 
-                                  className={`p-3 rounded-lg relative ${
+                                  className={`p-3 rounded-lg ${
                                     isFromMe 
                                       ? 'bg-blue-500 text-white rounded-br-none' 
-                                      : 'bg-gray-200 dark:bg-gray-700 rounded-bl-none'
-                                  } group-hover:bg-opacity-90 transition-colors`}
+                                      : 'bg-white dark:bg-gray-800 rounded-bl-none'
+                                  }`}
                                 >
-                                  {message.message_type === 'text' ? (
-                                    <p>{message.content}</p>
-                                  ) : message.voice_message ? (
-                                    <div className="flex items-center space-x-2">
+                                  {message.message_type === 'voice' ? (
+                                    <div className="flex items-center">
                                       <Button 
-                                        variant={isFromMe ? "secondary" : "outline"} 
-                                        size="icon" 
-                                        className="h-8 w-8" 
-                                        onClick={() => playVoiceMessage(message.voice_message!)}
+                                        variant="ghost" 
+                                        size="sm"
+                                        className={`p-1 ${isFromMe ? 'text-white hover:text-white hover:bg-blue-600' : ''}`}
+                                        onClick={() => {
+                                          if (message.voice_message) {
+                                            playVoiceMessage(message.voice_message);
+                                          }
+                                        }}
                                       >
-                                        <Play className="h-4 w-4" />
+                                        <Play className="h-5 w-5 mr-2" />
+                                        {message.voice_message?.duration 
+                                          ? formatRecordingTime(message.voice_message.duration) 
+                                          : "0:00"}
                                       </Button>
-                                      <div className="flex-1">
-                                        <div className="h-1 bg-gray-300 dark:bg-gray-600 rounded-full">
-                                          <div 
-                                            className={`h-1 ${isFromMe ? 'bg-white' : 'bg-blue-500'} rounded-full`} 
-                                            style={{ width: '50%' }} 
-                                          />
-                                        </div>
-                                      </div>
-                                      <span className="text-xs">
-                                        {message.voice_message.duration}s
-                                      </span>
                                     </div>
                                   ) : (
-                                    <p>Message audio</p>
+                                    message.content
                                   )}
-                                  
-                                  {/* Boutons d'action sur survol */}
-                                  <div 
-                                    className={`absolute -bottom-3 ${isFromMe ? 'left-0' : 'right-0'} 
-                                      opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1`}
-                                  >
-                                    <Button 
-                                      variant="secondary" 
-                                      size="icon" 
-                                      className="h-6 w-6 rounded-full"
-                                      onClick={() => setReplyingTo(message)}
-                                    >
-                                      <Reply className="h-3 w-3" />
-                                    </Button>
-                                  </div>
                                 </div>
-                                
-                                <div className="text-xs text-gray-500 mt-1">
-                                  {formatDistanceToNow(new Date(message.created_at), { 
-                                    addSuffix: true,
-                                    locale: fr
-                                  })}
+                                <div className="flex items-center justify-end space-x-1 text-xs text-gray-500 mt-1">
+                                  <span>
+                                    {format(new Date(message.created_at), 'HH:mm')}
+                                  </span>
+                                  {isFromMe && (
+                                    <span>
+                                      {message.read ? (
+                                        <Check className="h-3 w-3 text-blue-500" />
+                                      ) : (
+                                        <Check className="h-3 w-3" />
+                                      )}
+                                    </span>
+                                  )}
                                 </div>
+                              </div>
+                              <div className="group relative">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => setReplyTo(message)}
+                                >
+                                  <ArrowLeft className="h-3 w-3" />
+                                </Button>
                               </div>
                             </div>
                           );
                         })}
-                        
-                        {/* Indicateur "en train d'écrire" */}
-                        {renderTypingIndicator()}
-                        
                         <div ref={messagesEndRef} />
                       </div>
                     )}
-                  </CardContent>
+                  </div>
                   
-                  {/* Zone de réponse */}
-                  {replyingTo && (
-                    <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Reply className="h-4 w-4 mr-2 text-gray-500" />
-                        <div>
-                          <p className="text-xs font-medium">
-                            En réponse à {replyingTo.sender_id === user.id 
-                              ? 'vous-même' 
-                              : replyingTo.sender?.full_name || 'Utilisateur'}
-                          </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                            {replyingTo.content}
-                          </p>
-                        </div>
+                  {/* Zone de réponse à un message */}
+                  {replyTo && (
+                    <div className="p-2 border-t bg-gray-100 dark:bg-gray-800 flex items-center">
+                      <div className="flex-1 border-l-2 border-blue-500 pl-2">
+                        <p className="text-xs font-medium">
+                          Réponse à {replyTo.sender_id === user.id ? 'vous-même' : replyTo.sender?.full_name}
+                        </p>
+                        <p className="text-sm truncate">{replyTo.content}</p>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6" 
-                        onClick={() => setReplyingTo(null)}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => setReplyTo(null)}
                       >
-                        <X className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
                   
-                  <div className="p-4 flex-shrink-0">
-                    <div className="flex items-center space-x-2">
+                  {/* Zone de saisie */}
+                  <CardFooter className="p-2 border-t flex items-center">
+                    <Button variant="ghost" size="icon">
+                      <Smile 
+                        className="h-5 w-5 text-gray-500"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      />
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                      <Paperclip className="h-5 w-5 text-gray-500" />
+                    </Button>
+                    <div className="flex-1 mx-2">
+                      <Input 
+                        ref={inputRef}
+                        placeholder="Message..."
+                        className="w-full"
+                        value={newMessage} 
+                        onChange={(e) => {
+                          setNewMessage(e.target.value);
+                          handleTyping();
+                        }}
+                        onKeyDown={handleKeyPress}
+                      />
+                    </div>
+                    {newMessage.trim() ? (
+                      <Button size="icon" className="bg-green-500 hover:bg-green-600" onClick={handleSendMessage}>
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    ) : (
                       <Button 
-                        variant="ghost" 
                         size="icon" 
-                        className={`${isRecording ? 'text-red-500 animate-pulse' : ''}`}
-                        onClick={handleRecordVoiceMessage}
+                        className={isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} 
+                        onClick={handleVoiceMessage}
                       >
                         {isRecording ? (
                           <div className="flex items-center">
-                            <MicOff className="h-5 w-5 mr-2" />
-                            <span>{formatTime(recordingTime)}</span>
+                            <MicOff className="h-4 w-4" />
+                            <span className="ml-1 text-xs">{formatRecordingTime(recordingTime)}</span>
                           </div>
                         ) : (
-                          <Mic className="h-5 w-5" />
+                          <Mic className="h-4 w-4" />
                         )}
                       </Button>
-                      <Input 
-                        placeholder="Tapez un message..." 
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={handleKeyPress}
-                        className="flex-1"
-                        disabled={isRecording}
-                      />
-                      <Button 
-                        size="icon" 
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || isRecording}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+                    )}
+                  </CardFooter>
                 </>
               ) : (
-                <div className="h-full flex items-center justify-center text-gray-500 flex-col p-6">
-                  <MessageSquare className="h-16 w-16 text-gray-300 mb-4" />
-                  <p className="text-lg font-medium mb-2">Aucune conversation sélectionnée</p>
-                  <p className="text-sm text-center">
-                    Sélectionnez une conversation ou commencez à discuter avec un contact
+                <div className="h-full flex flex-col items-center justify-center text-gray-500 p-4">
+                  <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-full mb-4">
+                    <MessageCircle className="h-16 w-16" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Vos messages</h3>
+                  <p className="text-center max-w-md">
+                    Sélectionnez une conversation pour commencer à discuter ou envoyez un message à un contact.
                   </p>
-                  <Button 
-                    variant="outline" 
-                    className="mt-4"
-                    onClick={() => setShowUserDialog(true)}
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Ajouter des contacts
-                  </Button>
+                  
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="mt-4 bg-green-500 hover:bg-green-600">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Nouveau message
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Nouveau message</DialogTitle>
+                        <DialogDescription>
+                          Sélectionnez un contact pour commencer une nouvelle discussion
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="relative my-2">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                        <Input 
+                          placeholder="Rechercher un contact..." 
+                          className="pl-9"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <ScrollArea className="h-72">
+                        {filteredFriends.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            Aucun contact trouvé
+                          </div>
+                        ) : (
+                          filteredFriends.map(friend => (
+                            <div 
+                              key={friend.id}
+                              className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer"
+                              onClick={() => {
+                                // Trouve ou crée une conversation
+                                const conversation = conversations.find(c => c.user_id === friend.id);
+                                if (conversation) {
+                                  setSelectedConversation(conversation);
+                                } else {
+                                  setSelectedConversation({
+                                    user_id: friend.id,
+                                    full_name: friend.full_name,
+                                    avatar_url: friend.avatar_url,
+                                    status: friend.status,
+                                    last_active: friend.last_active,
+                                    last_message: "",
+                                    last_message_date: new Date().toISOString(),
+                                    unread_count: 0
+                                  });
+                                }
+                              }}
+                            >
+                              <div className="relative">
+                                <Avatar className="h-10 w-10 mr-3">
+                                  <AvatarImage src={friend.avatar_url || ''} alt={friend.full_name || 'Contact'} />
+                                  <AvatarFallback>{(friend.full_name || 'U').charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span 
+                                  className={`absolute bottom-0 right-1 h-2.5 w-2.5 rounded-full border-2 border-white 
+                                  ${friend.status === 'online' ? 'bg-green-500' : 'bg-gray-400'}`}
+                                ></span>
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold">{friend.full_name || 'Contact'}</h3>
+                                <p className="text-xs text-gray-500">
+                                  {friend.status === 'online' 
+                                    ? 'En ligne'
+                                    : `Vu ${formatDistanceToNow(new Date(friend.last_active), { 
+                                        addSuffix: true, 
+                                        locale: fr 
+                                      })}`
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </ScrollArea>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">Annuler</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               )}
-            </Card>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
-      
-      {/* Dialog pour gérer les contacts */}
-      <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Gérer les contacts</DialogTitle>
-          </DialogHeader>
-          
-          <div className="mt-4 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher des utilisateurs..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <div className="max-h-96 overflow-y-auto space-y-2">
-              {loadingSearch ? (
-                <div className="p-4 text-center">Recherche en cours...</div>
-              ) : searchQuery.length < 3 ? (
-                <p className="text-sm text-center text-gray-500">
-                  Saisissez au moins 3 caractères pour rechercher
-                </p>
-              ) : searchResults.length === 0 ? (
-                <p className="text-sm text-center text-gray-500">
-                  Aucun utilisateur trouvé
-                </p>
-              ) : (
-                searchResults.map((searchResult) => (
-                  <div
-                    key={searchResult.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md"
-                  >
-                    <div className="flex items-center">
-                      <Avatar className="h-10 w-10 mr-3">
-                        <AvatarImage src={searchResult.avatar_url || ''} />
-                        <AvatarFallback>{(searchResult.full_name || 'U').charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{searchResult.full_name || 'Utilisateur'}</p>
-                        <p className="text-xs text-gray-500">{searchResult.email}</p>
-                      </div>
-                    </div>
-                    {searchResult.is_friend ? (
-                      <Badge>Contact</Badge>
-                    ) : searchResult.friendship_status === 'pending' ? (
-                      <Badge variant="outline">En attente</Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => sendFriendRequest(searchResult.id)}
-                      >
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Ajouter
-                      </Button>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialog pour les appels */}
-      <Dialog open={showCallDialog} onOpenChange={(open) => {
-        if (!open) {
-          handleEndCall();
-        }
-        setShowCallDialog(open);
-      }}>
-        <DialogContent className="max-w-sm">
-          <div className="flex flex-col items-center py-6">
-            <Avatar className="h-24 w-24 mb-4">
-              <AvatarImage 
-                src={selectedUser?.avatar_url || selectedConversation?.avatar_url || ''} 
-                alt={selectedUser?.full_name || selectedConversation?.full_name || 'User'} 
-              />
-              <AvatarFallback className="text-3xl">
-                {(selectedUser?.full_name || selectedConversation?.full_name || 'U').charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <h2 className="text-xl font-bold mb-1">
-              {selectedUser?.full_name || selectedConversation?.full_name || 'Utilisateur'}
-            </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              {callType === 'audio' ? 'Appel audio' : 'Appel vidéo'} en cours...
-            </p>
-            
-            <div className="flex space-x-4">
-              <Button 
-                size="icon" 
-                variant="destructive" 
-                className="h-14 w-14 rounded-full"
-                onClick={handleEndCall}
-              >
-                <Phone className="h-6 w-6" />
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 };

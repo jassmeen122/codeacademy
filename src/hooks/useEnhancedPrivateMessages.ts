@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuthState } from '@/hooks/useAuthState';
+import { useAuthState } from './useAuthState';
 import { EnhancedPrivateMessage, EnhancedConversation, VoiceMessage } from '@/types/messaging';
 
 export const useEnhancedPrivateMessages = () => {
@@ -154,7 +154,7 @@ export const useEnhancedPrivateMessages = () => {
           read: message.read,
           created_at: message.created_at,
           reply_to_id: message.reply_to_id,
-          message_type: message.message_type,
+          message_type: (message.message_type as 'text' | 'voice') || 'text',
           sender: senderProfile,
           receiver: receiverProfile,
           voice_message: voiceMessage || null
@@ -231,7 +231,7 @@ export const useEnhancedPrivateMessages = () => {
         read: data.read,
         created_at: data.created_at,
         reply_to_id: data.reply_to_id,
-        message_type: data.message_type,
+        message_type: data.message_type as 'text' | 'voice',
         sender: senderProfile,
         receiver: receiverProfile
       } as EnhancedPrivateMessage;
@@ -366,13 +366,11 @@ export const useEnhancedPrivateMessages = () => {
   // Get audio URL from path
   const getVoiceMessageUrl = async (path: string) => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .storage
         .from('voice_messages')
         .getPublicUrl(path);
         
-      if (error) throw error;
-      
       return data.publicUrl;
     } catch (error) {
       console.error('Error getting voice message URL:', error);
