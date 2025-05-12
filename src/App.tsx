@@ -96,10 +96,7 @@ function App() {
           
           {/* Social features routes */}
           <Route path="/student/social" element={<SocialFeedPage />} />
-          {
-            path: "/student/messages",
-            element: <EnhancedMessagesPage />
-          }
+          <Route path="/student/messages" element={<EnhancedMessagesPage />} />
           <Route path="/student/knowledge" element={<KnowledgeSharePage />} />
           
           {/* Nouvelles routes pour le système de cours simplifiés */}
