@@ -25,7 +25,8 @@ export const useUserFriends = () => {
           status, 
           created_at, 
           updated_at,
-          friend:friend_id (
+          friend_id,
+          friend:profiles!user_friends_friend_id_fkey (
             id,
             full_name,
             avatar_url,
@@ -45,7 +46,8 @@ export const useUserFriends = () => {
           status, 
           created_at, 
           updated_at,
-          friend:user_id (
+          user_id,
+          friend:profiles!user_friends_user_id_fkey (
             id,
             full_name,
             avatar_url,

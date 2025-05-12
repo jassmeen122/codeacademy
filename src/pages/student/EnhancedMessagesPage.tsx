@@ -44,7 +44,9 @@ import {
   User,
   UserPlus,
   Users,
-  Image
+  Image,
+  MessageCircle,
+  Play
 } from 'lucide-react';
 import { toast } from 'sonner';
 
