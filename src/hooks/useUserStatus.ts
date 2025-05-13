@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from './useAuthState';
@@ -120,8 +119,20 @@ export const useUserStatus = () => {
         try {
           // This needs to be synchronous for beforeunload
           // Using fetch directly to ensure it runs before page unload
-          const { currentSession } = supabase.auth.getSession();
-          const token = currentSession ? currentSession.access_token : '';
+          
+          // Get current access token from localStorage
+          let token = '';
+          try {
+            // Try to get session from localStorage directly since we can't await in beforeunload
+            const supabaseSession = localStorage.getItem('supabase.auth.token');
+            if (supabaseSession) {
+              const parsedSession = JSON.parse(supabaseSession);
+              token = parsedSession?.currentSession?.access_token || '';
+            }
+          } catch (e) {
+            // Fallback if localStorage access fails
+            console.error("Failed to get token:", e);
+          }
           
           const options = {
             method: 'POST',
@@ -136,11 +147,12 @@ export const useUserStatus = () => {
             })
           };
           
-          // Use the public URL from env or the default one
+          // Use the current origin for the API URL
           const url = `${window.location.origin}/rest/v1/user_status?on_conflict=user_id`;
           fetch(url, options);
         } catch (e) {
           // Can't do much in beforeunload
+          console.error("Error in beforeunload:", e);
         }
       };
       
