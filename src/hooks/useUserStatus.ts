@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthState } from './useAuthState';
@@ -29,10 +30,8 @@ export const useUserStatus = () => {
 
       if (error) {
         console.error("Failed to update user status:", error);
-        if (status === 'online') {
-          // Don't show error toasts for routine status updates
-          // Only log them for debugging
-        }
+        // Don't show error toasts for routine status updates
+        // Only log them for debugging
         return null;
       }
       
@@ -105,10 +104,14 @@ export const useUserStatus = () => {
     if (user) {
       const updateUserStatus = async () => {
         try {
-          await updateStatus('online');
+          // Instead of failing when user_status table has permission issues,
+          // we'll try to update but won't break the app if it fails
+          await updateStatus('online').catch(err => {
+            console.warn("Couldn't update status to online, but continuing anyway:", err);
+          });
         } catch (error) {
           // Just log the error, don't break the app flow
-          console.error("Error updating online status:", error);
+          console.warn("Error updating online status but continuing:", error);
         }
       };
       
@@ -117,8 +120,12 @@ export const useUserStatus = () => {
       // Mettre à jour le statut lors de la fermeture de la page
       const handleBeforeUnload = () => {
         try {
-          // This needs to be synchronous for beforeunload
-          // Using fetch directly to ensure it runs before page unload
+          // Don't try to update user status on page close if we couldn't do it on load
+          // This avoids unnecessary console errors
+          if (!userStatus) {
+            console.log("Skipping offline status update as online status update failed earlier");
+            return;
+          }
           
           // Get current access token from localStorage
           let token = '';
@@ -160,10 +167,11 @@ export const useUserStatus = () => {
       
       return () => {
         window.removeEventListener('beforeunload', handleBeforeUnload);
-        updateStatus('offline').catch(console.error);
+        // Again, don't break the app if this fails
+        updateStatus('offline').catch(console.warn);
       };
     }
-  }, [user]);
+  }, [user, userStatus]);
 
   return {
     userStatus,
