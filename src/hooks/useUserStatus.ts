@@ -5,7 +5,7 @@ import { useAuthState } from './useAuthState';
 import { UserStatus } from '@/types/messaging';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 export const useUserStatus = () => {
   const { user } = useAuthState();
@@ -120,11 +120,14 @@ export const useUserStatus = () => {
         try {
           // This needs to be synchronous for beforeunload
           // Using fetch directly to ensure it runs before page unload
+          const { currentSession } = supabase.auth.getSession();
+          const token = currentSession ? currentSession.access_token : '';
+          
           const options = {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabase.auth.session()?.access_token}`
+              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
               user_id: user.id,
@@ -133,7 +136,9 @@ export const useUserStatus = () => {
             })
           };
           
-          fetch(`${supabase.supabaseUrl}/rest/v1/user_status?on_conflict=user_id`, options);
+          // Use the public URL from env or the default one
+          const url = `${window.location.origin}/rest/v1/user_status?on_conflict=user_id`;
+          fetch(url, options);
         } catch (e) {
           // Can't do much in beforeunload
         }
