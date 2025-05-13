@@ -7,6 +7,8 @@ export { toast };
 
 export function useToast() {
   return {
-    toast
+    toast,
+    // Add empty toasts array to match the expected interface
+    toasts: []
   };
 }
