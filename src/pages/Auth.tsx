@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,9 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -32,6 +28,15 @@ const Auth = () => {
   const welcomeText = isSignUp 
     ? "> Preparing new user registration..." 
     : "> Authenticating user...";
+
+  // Clean up any stale auth tokens before logging in
+  const cleanupAuthState = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
 
   // Animation effect for terminal-style text
   useEffect(() => {
@@ -91,6 +96,17 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
+      // Clean up any stale auth state
+      cleanupAuthState();
+      
+      // Try global sign out first to clear any existing sessions
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutError) {
+        // Continue even if this fails
+        console.warn("Pre-auth signout failed:", signOutError);
+      }
+
       if (isSignUp) {
         // Validate form data
         if (!formData.email || !formData.password || !formData.fullName) {
@@ -138,19 +154,8 @@ const Auth = () => {
             .single();
 
           if (profile) {
-            switch (profile.role) {
-              case 'admin':
-                navigate('/admin');
-                break;
-              case 'teacher':
-                navigate('/teacher');
-                break;
-              case 'student':
-                navigate('/student');
-                break;
-              default:
-                navigate('/');
-            }
+            // Force page reload to ensure clean state
+            window.location.href = `/${profile.role.toLowerCase()}`;
           }
         } else {
           // Email verification is required
@@ -159,41 +164,41 @@ const Auth = () => {
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-        
-        if (signInError) throw signInError;
+        try {
+          const { data, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+          
+          if (signInError) throw signInError;
 
-        if (!user) {
-          throw new Error("Invalid email or password");
-        }
+          if (!data.user) {
+            throw new Error("Invalid email or password");
+          }
 
-        toast.success("Successfully signed in!");
-        
-        // Fetch user role and redirect accordingly
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+          toast.success("Successfully signed in!");
+          
+          // Fetch user role and redirect accordingly
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', data.user.id)
+            .single();
 
-        if (profileError) throw profileError;
+          if (profileError) throw profileError;
 
-        if (profile) {
-          switch (profile.role) {
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'teacher':
-              navigate('/teacher');
-              break;
-            case 'student':
-              navigate('/student');
-              break;
-            default:
-              navigate('/');
+          if (profile) {
+            // Force page reload to ensure clean state
+            window.location.href = `/${profile.role.toLowerCase()}`;
+          }
+        } catch (error: any) {
+          if (error.message === "Database error granting user") {
+            // Special handling for the database error
+            toast.error("Authentication system temporarily unavailable. Please try again in a moment.");
+            console.error("Database permission error:", error);
+          } else {
+            // Handle other errors
+            throw error;
           }
         }
       }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export interface UserProfile {
   id: string;
@@ -22,6 +23,16 @@ export const useAuthState = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
 
+  // Helper function to clean up auth state from localStorage
+  const cleanupAuthState = () => {
+    // Remove all Supabase auth keys from localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -29,23 +40,26 @@ export const useAuthState = () => {
       setSession(session);
       
       if (session?.user) {
-        try {
-          // Fetch user profile on auth state change
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error) {
-            console.error("Error fetching user profile:", error);
-          } else if (profile) {
-            console.log("Profile fetched:", profile);
-            setUser(profile as UserProfile);
+        // Defer profile fetching to prevent potential deadlocks
+        setTimeout(async () => {
+          try {
+            // Fetch user profile on auth state change
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (error) {
+              console.error("Error fetching user profile:", error);
+            } else if (profile) {
+              console.log("Profile fetched:", profile);
+              setUser(profile as UserProfile);
+            }
+          } catch (error) {
+            console.error("Error in profile fetch:", error);
           }
-        } catch (error) {
-          console.error("Error in profile fetch:", error);
-        }
+        }, 0);
       } else {
         setUser(null);
       }
@@ -59,23 +73,26 @@ export const useAuthState = () => {
       setSession(session);
       
       if (session?.user) {
-        try {
-          // Fetch user profile
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error) {
-            console.error("Error fetching user profile:", error);
-          } else if (profile) {
-            console.log("Initial profile fetch:", profile);
-            setUser(profile as UserProfile);
+        // Defer profile fetching to prevent potential deadlocks
+        setTimeout(async () => {
+          try {
+            // Fetch user profile
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (error) {
+              console.error("Error fetching user profile:", error);
+            } else if (profile) {
+              console.log("Initial profile fetch:", profile);
+              setUser(profile as UserProfile);
+            }
+          } catch (error) {
+            console.error("Error in profile fetch:", error);
           }
-        } catch (error) {
-          console.error("Error in profile fetch:", error);
-        }
+        }, 0);
       }
       
       setLoading(false);
@@ -86,15 +103,44 @@ export const useAuthState = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      setLoading(true);
+      // Clean up auth state
+      cleanupAuthState();
+      
+      // Attempt to update user status to offline before logging out
+      try {
+        if (session?.user?.id) {
+          await supabase
+            .from('user_status')
+            .upsert({
+              user_id: session.user.id,
+              status: 'offline',
+              last_active: new Date().toISOString()
+            }, {
+              onConflict: 'user_id'
+            });
+        }
+      } catch (statusError) {
+        // Continue even if this fails
+        console.warn("Failed to update status on sign out:", statusError);
+      }
+      
+      // Perform global sign out
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) throw error;
+      
       setUser(null);
       setSession(null);
       navigate('/auth');
+      toast.success('Logged out successfully');
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      toast.error("Sign out error: " + (error.message || 'Unknown error'));
       console.error("Sign out error:", error);
+      setLoading(false);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 

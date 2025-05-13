@@ -5,6 +5,7 @@ import { useAuthState } from './useAuthState';
 import { UserStatus } from '@/types/messaging';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 export const useUserStatus = () => {
   const { user } = useAuthState();
@@ -27,7 +28,15 @@ export const useUserStatus = () => {
         .select('*')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Failed to update user status:", error);
+        if (status === 'online') {
+          // Don't show error toasts for routine status updates
+          // Only log them for debugging
+        }
+        return null;
+      }
+      
       setUserStatus(data as UserStatus);
       return data;
     } catch (error) {
@@ -93,19 +102,48 @@ export const useUserStatus = () => {
 
   // Marquer l'utilisateur comme en ligne au chargement
   useEffect(() => {
+    // Only update status if we have a user
     if (user) {
-      updateStatus('online');
+      const updateUserStatus = async () => {
+        try {
+          await updateStatus('online');
+        } catch (error) {
+          // Just log the error, don't break the app flow
+          console.error("Error updating online status:", error);
+        }
+      };
+      
+      updateUserStatus();
       
       // Mettre à jour le statut lors de la fermeture de la page
       const handleBeforeUnload = () => {
-        updateStatus('offline');
+        try {
+          // This needs to be synchronous for beforeunload
+          // Using fetch directly to ensure it runs before page unload
+          const options = {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabase.auth.session()?.access_token}`
+            },
+            body: JSON.stringify({
+              user_id: user.id,
+              status: 'offline',
+              last_active: new Date().toISOString()
+            })
+          };
+          
+          fetch(`${supabase.supabaseUrl}/rest/v1/user_status?on_conflict=user_id`, options);
+        } catch (e) {
+          // Can't do much in beforeunload
+        }
       };
       
       window.addEventListener('beforeunload', handleBeforeUnload);
       
       return () => {
         window.removeEventListener('beforeunload', handleBeforeUnload);
-        updateStatus('offline');
+        updateStatus('offline').catch(console.error);
       };
     }
   }, [user]);
