@@ -1,6 +1,5 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { useAuthState } from './useAuthState';
 import { UserStatus } from '@/types/messaging';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -11,42 +10,31 @@ export const useUserStatus = () => {
   const { user } = useAuthState();
   const [userStatus, setUserStatus] = useState<UserStatus | null>(null);
 
-  // Mettre à jour son propre statut
+  // Mettre à jour son propre statut - version simulée sans accès à la table
   const updateStatus = async (status: 'online' | 'offline') => {
     if (!user) return null;
 
-    try {
-      // Don't actually attempt the update if we're having permission issues
-      // This is temporary until the permission issues are fixed
-      console.log(`Status would be updated to: ${status} (skipped due to permission issues)`);
-      return { user_id: user.id, status, last_active: new Date().toISOString() };
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour du statut:', error);
-      return null;
-    }
+    // Simplement simuler la mise à jour sans accès à la base de données
+    const simulatedStatus = { 
+      user_id: user.id, 
+      status, 
+      last_active: new Date().toISOString() 
+    };
+    
+    // Mise à jour locale uniquement
+    setUserStatus(simulatedStatus as UserStatus);
+    return simulatedStatus;
   };
 
-  // Obtenir le statut d'un utilisateur
+  // Simulation d'obtention du statut d'un utilisateur
   const getUserStatus = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_status')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      if (error) {
-        if (error.code !== 'PGRST116') { // No data found
-          console.error('Erreur lors de la récupération du statut:', error);
-        }
-        return null;
-      }
-
-      return data as UserStatus;
-    } catch (error) {
-      console.error('Erreur lors de la récupération du statut:', error);
-      return null;
-    }
+    // Pour l'instant, renvoie simplement un statut par défaut
+    return { 
+      user_id: userId,
+      status: 'offline',
+      last_active: new Date().toISOString(),
+      id: 'simulated-id'
+    } as UserStatus;
   };
 
   // Formater le statut en ligne pour l'affichage
@@ -63,17 +51,14 @@ export const useUserStatus = () => {
     })}`;
   };
 
-  // S'inscrire aux changements de statut en temps réel
+  // Simulation d'abonnement aux changements de statut
   const subscribeToStatusChanges = () => {
-    // Simply log but don't actually subscribe due to permission issues
-    console.log("Would subscribe to status changes (skipped due to permission issues)");
+    console.log("Simulation d'abonnement aux changements de statut");
+    
     return () => {
-      console.log("Would unsubscribe from status changes");
+      console.log("Désabonnement simulé");
     };
   };
-
-  // No need to try updating status on load/unload since we know it fails
-  // Just provide the API for future use when permissions are fixed
 
   return {
     userStatus,
