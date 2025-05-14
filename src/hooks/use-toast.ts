@@ -1,14 +1,11 @@
 
-// Re-exporting toast hooks and functions from sonner
+// Re-exporting toast from Sonner directly
 import { toast } from "sonner";
 
-// Create a wrapper to provide consistent API
 export { toast };
 
-export function useToast() {
+export const useToast = () => {
   return {
-    toast,
-    // Add empty toasts array to match the expected interface
-    toasts: []
+    toast
   };
-}
+};
