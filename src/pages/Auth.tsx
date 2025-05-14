@@ -177,40 +177,46 @@ const Auth = () => {
 
           toast.success("Signed in successfully!");
           
-          // Force page reload to ensure clean state
+          // Force redirect even if we had database permission errors
           setTimeout(() => {
             try {
-              // Si l'authentification a fonctionné mais qu'on a une erreur de permission pour la table user_status,
-              // nous pouvons quand même rediriger l'utilisateur vers la page d'accueil
-              window.location.href = "/student";
+              // Check if the user has a role, otherwise default to student
+              if (data.user?.user_metadata?.role) {
+                const role = data.user.user_metadata.role;
+                window.location.href = `/${role.toLowerCase()}`;
+              } else {
+                // Default to student role
+                window.location.href = "/student";
+              }
             } catch (error) {
               console.error("Navigation error:", error);
+              // Default redirect
               window.location.href = "/student";
             }
           }, 500);
         } catch (error: any) {
-          // Gérer les erreurs spécifiques d'autorisation de base de données
+          // Handle specific database permission errors but still login
           if (error.message && (
             error.message.includes("Database error granting user") || 
             error.message.includes("permission denied for table user_status") ||
             error.message.includes("current transaction is aborted")
           )) {
-            toast.success("Connexion réussie! Redirection...");
-            console.warn("Erreur non critique, poursuite de la connexion:", error);
+            toast.success("Login successful! Redirecting...");
+            console.warn("Non-critical error, continuing with login:", error);
             
-            // On redirige quand même vers le tableau de bord étudiant
+            // Still redirect to student dashboard
             setTimeout(() => {
               window.location.href = "/student";
             }, 500);
           } else {
-            // Gérer les autres erreurs
+            // Handle other errors
             throw error;
           }
         }
       }
     } catch (error: any) {
       console.error("Auth error:", error);
-      toast.error(error.message || "Une erreur s'est produite pendant l'authentification");
+      toast.error(error.message || "An error occurred during authentication");
     } finally {
       setIsLoading(false);
     }

@@ -33,6 +33,21 @@ export const useAuthState = () => {
     });
   };
 
+  // Helper function for error handling
+  const handleDbError = (error: any) => {
+    // Check for specific database permission errors we want to ignore
+    if (error.message && (
+      error.message.includes("permission denied for table user_status") ||
+      error.message.includes("Database error granting user") ||
+      error.message.includes("current transaction is aborted")
+    )) {
+      // Log but continue the auth flow despite this error
+      console.warn("Non-critical database error:", error.message);
+      return true; // Return true to indicate we handled this non-critical error
+    }
+    return false; // Unhandled error
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -55,7 +70,9 @@ export const useAuthState = () => {
                 .single();
               
               if (error) {
-                console.error("Error fetching user profile:", error);
+                if (!handleDbError(error)) {
+                  console.error("Error fetching user profile:", error);
+                }
               } else if (profile && mounted) {
                 console.log("Profile fetched:", profile);
                 setUser(profile as UserProfile);
@@ -92,7 +109,9 @@ export const useAuthState = () => {
                 .single();
               
               if (error) {
-                console.error("Error fetching user profile:", error);
+                if (!handleDbError(error)) {
+                  console.error("Error fetching user profile:", error);
+                }
               } else if (profile && mounted) {
                 console.log("Initial profile fetch:", profile);
                 setUser(profile as UserProfile);
