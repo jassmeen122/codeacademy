@@ -1,105 +1,70 @@
 
-// Create a new hook to manage user status locally instead of using the database
+import { useState } from 'react';
+import { useAuthState } from './useAuthState';
+import { UserStatus } from '@/types/messaging';
+import { format, formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { toast } from '@/components/ui/use-toast';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+export const useUserStatus = () => {
+  const { user } = useAuthState();
+  const [userStatus, setUserStatus] = useState<UserStatus | null>(null);
 
-export const useUserStatus = (userId: string | undefined) => {
-  const [status, setStatus] = useState<'online' | 'offline' | 'away'>('offline');
-  const [lastActive, setLastActive] = useState<Date>(new Date());
+  // Mettre à jour son propre statut - version simulée sans accès à la table
+  const updateStatus = async (status: 'online' | 'offline') => {
+    if (!user) return null;
 
-  // Update status to online when component mounts
-  useEffect(() => {
-    if (!userId) return;
-    
-    const updateStatus = async () => {
-      try {
-        setStatus('online');
-        setLastActive(new Date());
-        
-        // Store in localStorage instead of database to avoid permission issues
-        localStorage.setItem(`user_status_${userId}`, JSON.stringify({
-          status: 'online',
-          lastActive: new Date().toISOString()
-        }));
-      } catch (error) {
-        console.error('Error updating status:', error);
-      }
+    // Simplement simuler la mise à jour sans accès à la base de données
+    const simulatedStatus = { 
+      user_id: user.id, 
+      status, 
+      last_active: new Date().toISOString() 
     };
     
-    // Load from localStorage if exists
-    const savedStatus = localStorage.getItem(`user_status_${userId}`);
-    if (savedStatus) {
-      try {
-        const parsed = JSON.parse(savedStatus);
-        setStatus(parsed.status);
-        setLastActive(new Date(parsed.lastActive));
-      } catch (e) {
-        // If parsing fails, update with new status
-        updateStatus();
-      }
-    } else {
-      updateStatus();
-    }
-    
-    // Set up activity tracking
-    const activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll'];
-    
-    const handleActivity = () => {
-      if (status !== 'online') {
-        setStatus('online');
-        setLastActive(new Date());
-        
-        localStorage.setItem(`user_status_${userId}`, JSON.stringify({
-          status: 'online',
-          lastActive: new Date().toISOString()
-        }));
-      }
-    };
-    
-    activityEvents.forEach(event => {
-      window.addEventListener(event, handleActivity);
-    });
-    
-    // Set up inactivity detection
-    const inactivityTimeout = setTimeout(() => {
-      setStatus('away');
-      localStorage.setItem(`user_status_${userId}`, JSON.stringify({
-        status: 'away',
-        lastActive: lastActive.toISOString()
-      }));
-    }, 5 * 60 * 1000); // 5 minutes
-    
-    // Clean up
-    return () => {
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, handleActivity);
-      });
-      clearTimeout(inactivityTimeout);
-      
-      // Set offline on unmount
-      localStorage.setItem(`user_status_${userId}`, JSON.stringify({
-        status: 'offline',
-        lastActive: new Date().toISOString()
-      }));
-    };
-  }, [userId]);
-
-  const updateStatus = (newStatus: 'online' | 'offline' | 'away') => {
-    if (!userId) return;
-    
-    setStatus(newStatus);
-    setLastActive(new Date());
-    
-    localStorage.setItem(`user_status_${userId}`, JSON.stringify({
-      status: newStatus,
-      lastActive: new Date().toISOString()
-    }));
+    // Mise à jour locale uniquement
+    setUserStatus(simulatedStatus as UserStatus);
+    return simulatedStatus;
   };
-  
+
+  // Simulation d'obtention du statut d'un utilisateur
+  const getUserStatus = async (userId: string) => {
+    // Pour l'instant, renvoie simplement un statut par défaut
+    return { 
+      user_id: userId,
+      status: 'offline',
+      last_active: new Date().toISOString(),
+      id: 'simulated-id'
+    } as UserStatus;
+  };
+
+  // Formater le statut en ligne pour l'affichage
+  const formatOnlineStatus = (status: UserStatus | null) => {
+    if (!status) return 'Hors ligne';
+
+    if (status.status === 'online') {
+      return 'En ligne';
+    }
+
+    return `Vu ${formatDistanceToNow(new Date(status.last_active), { 
+      addSuffix: true,
+      locale: fr
+    })}`;
+  };
+
+  // Simulation d'abonnement aux changements de statut
+  const subscribeToStatusChanges = () => {
+    console.log("Simulation d'abonnement aux changements de statut");
+    
+    return () => {
+      console.log("Désabonnement simulé");
+    };
+  };
+
   return {
-    status,
-    lastActive,
-    updateStatus
+    userStatus,
+    updateStatus,
+    getUserStatus,
+    formatOnlineStatus,
+    subscribeToStatusChanges
   };
 };

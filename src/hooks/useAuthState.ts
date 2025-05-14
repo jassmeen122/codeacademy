@@ -44,27 +44,28 @@ export const useAuthState = () => {
         setSession(currentSession);
         
         if (currentSession?.user) {
-          // Instead of fetching profile, create a minimal user object to bypass DB permissions issue
-          const minimalUserProfile: UserProfile = {
-            id: currentSession.user.id,
-            email: currentSession.user.email || '',
-            full_name: currentSession.user.user_metadata?.full_name || null,
-            avatar_url: currentSession.user.user_metadata?.avatar_url || null,
-            points: 0,
-            role: 'student', // Default role
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          
-          if (mounted) {
-            setUser(minimalUserProfile);
-            setLoading(false);
-            
-            // If on auth page, redirect to dashboard
-            if (window.location.pathname === '/auth') {
-              navigate('/student');
+          // Defer profile fetching to prevent potential deadlocks
+          setTimeout(async () => {
+            try {
+              // Fetch user profile on auth state change
+              const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', currentSession.user.id)
+                .single();
+              
+              if (error) {
+                console.error("Error fetching user profile:", error);
+              } else if (profile && mounted) {
+                console.log("Profile fetched:", profile);
+                setUser(profile as UserProfile);
+              }
+            } catch (error) {
+              console.error("Error in profile fetch:", error);
+            } finally {
+              if (mounted) setLoading(false);
             }
-          }
+          }, 0);
         } else {
           setUser(null);
           if (mounted) setLoading(false);
@@ -80,27 +81,28 @@ export const useAuthState = () => {
         setSession(session);
         
         if (session?.user) {
-          // Create minimal user object
-          const minimalUserProfile: UserProfile = {
-            id: session.user.id,
-            email: session.user.email || '',
-            full_name: session.user.user_metadata?.full_name || null,
-            avatar_url: session.user.user_metadata?.avatar_url || null,
-            points: 0,
-            role: 'student', // Default role
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
-          
-          if (mounted) {
-            setUser(minimalUserProfile);
-            setLoading(false);
-            
-            // If on auth page, redirect to dashboard
-            if (window.location.pathname === '/auth') {
-              navigate('/student');
+          // Defer profile fetching to prevent potential deadlocks
+          setTimeout(async () => {
+            try {
+              // Fetch user profile
+              const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (error) {
+                console.error("Error fetching user profile:", error);
+              } else if (profile && mounted) {
+                console.log("Initial profile fetch:", profile);
+                setUser(profile as UserProfile);
+              }
+            } catch (error) {
+              console.error("Error in profile fetch:", error);
+            } finally {
+              if (mounted) setLoading(false);
             }
-          }
+          }, 0);
         } else {
           if (mounted) setLoading(false);
         }
@@ -111,7 +113,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -120,7 +122,8 @@ export const useAuthState = () => {
       cleanupAuthState();
       
       // Sign out
-      await supabase.auth.signOut({ scope: 'global' });
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) throw error;
       
       setUser(null);
       setSession(null);
@@ -130,6 +133,7 @@ export const useAuthState = () => {
       toast.success('Logged out successfully');
       return true;
     } catch (error: any) {
+      toast.error("Sign out error: " + (error.message || 'Unknown error'));
       console.error("Sign out error:", error);
       setLoading(false);
       throw error;
