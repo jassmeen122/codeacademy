@@ -153,16 +153,9 @@ const Auth = () => {
         if (authConfig.session) {
           // User is automatically signed in - email verification is disabled
           toast.success("Account created successfully!");
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', authConfig.session.user.id)
-            .single();
-
-          if (profile) {
-            // Force page reload to ensure clean state
-            window.location.href = `/${profile.role.toLowerCase()}`;
-          }
+          
+          // Force page reload to ensure clean state
+          window.location.href = `/${formData.role.toLowerCase()}`;
         } else {
           // Email verification is required
           toast.success("Please check your email to confirm your account!");
@@ -182,41 +175,32 @@ const Auth = () => {
             throw new Error("Invalid email or password");
           }
 
-          toast.success("Successfully signed in!");
+          toast.success("Signed in successfully!");
           
-          // SIMPLIFIED LOGIN FLOW: Just redirect to student dashboard by default
-          // This ensures users can log in even if there are permission issues
-          console.log("Redirecting to dashboard after successful login");
-          
-          // Try to get role if possible, otherwise default to student
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', data.user.id)
-              .single();
-
-            if (!profileError && profile) {
-              window.location.href = `/${profile.role.toLowerCase()}`;
-            } else {
-              // Default to student if profile fetch fails
+          // Force page reload to ensure clean state
+          setTimeout(() => {
+            try {
+              const defaultRedirect = '/student';
+              window.location.href = defaultRedirect;
+            } catch (error) {
+              console.error("Navigation error:", error);
+              // Fallback direct navigation
               window.location.href = "/student";
             }
-          } catch (profileError) {
-            // Default to student if any error occurs
-            console.warn("Error fetching profile, defaulting to student:", profileError);
-            window.location.href = "/student";
-          }
+          }, 500);
         } catch (error: any) {
           // Special handling for database errors - we'll log in anyway
-          if (error.message === "Database error granting user" || 
-              error.message.includes("permission denied for table user_status")) {
-            
+          if (error.message && (
+              error.message.includes("Database error granting user") || 
+              error.message.includes("permission denied for table user_status"))
+          ) {
             toast.success("Successfully signed in! Redirecting...");
             console.warn("Non-critical database error, proceeding with login:", error);
             
-            // Default to student dashboard
-            window.location.href = "/student";
+            // Default to student dashboard after a short delay
+            setTimeout(() => {
+              window.location.href = "/student";
+            }, 500);
           } else {
             // Handle other errors
             throw error;

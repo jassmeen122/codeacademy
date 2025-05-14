@@ -37,13 +37,13 @@ export const useAuthState = () => {
     let mounted = true;
 
     // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed", _event, session?.user?.id);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log("Auth state changed", event, currentSession?.user?.id);
       
       if (mounted) {
-        setSession(session);
+        setSession(currentSession);
         
-        if (session?.user) {
+        if (currentSession?.user) {
           // Defer profile fetching to prevent potential deadlocks
           setTimeout(async () => {
             try {
@@ -51,7 +51,7 @@ export const useAuthState = () => {
               const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', session.user.id)
+                .eq('id', currentSession.user.id)
                 .single();
               
               if (error) {
@@ -62,13 +62,14 @@ export const useAuthState = () => {
               }
             } catch (error) {
               console.error("Error in profile fetch:", error);
+            } finally {
+              if (mounted) setLoading(false);
             }
           }, 0);
         } else {
           setUser(null);
+          if (mounted) setLoading(false);
         }
-        
-        setLoading(false);
       }
     });
 
@@ -98,11 +99,13 @@ export const useAuthState = () => {
               }
             } catch (error) {
               console.error("Error in profile fetch:", error);
+            } finally {
+              if (mounted) setLoading(false);
             }
           }, 0);
+        } else {
+          if (mounted) setLoading(false);
         }
-        
-        setLoading(false);
       }
     });
 
@@ -118,14 +121,15 @@ export const useAuthState = () => {
       // Clean up auth state
       cleanupAuthState();
       
-      // Don't try to update user status - it's failing due to permissions
-      // Just sign out directly
+      // Sign out
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) throw error;
       
       setUser(null);
       setSession(null);
-      navigate('/auth');
+      
+      // Force page reload to ensure clean state
+      window.location.href = '/auth';
       toast.success('Logged out successfully');
       return true;
     } catch (error: any) {
