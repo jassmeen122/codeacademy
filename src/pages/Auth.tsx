@@ -67,33 +67,38 @@ const Auth = () => {
         if (session) {
           console.log("Found existing session:", session.user.id);
           // Fetch user role and redirect accordingly
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single();
 
-          if (profile) {
-            switch (profile.role) {
-              case 'admin':
-                navigate('/admin');
-                break;
-              case 'teacher':
-                navigate('/teacher');
-                break;
-              case 'student':
-              default:
-                navigate('/student');
-                break;
+            if (profile) {
+              switch (profile.role) {
+                case 'admin':
+                  navigate('/admin');
+                  break;
+                case 'teacher':
+                  navigate('/teacher');
+                  break;
+                case 'student':
+                default:
+                  navigate('/student');
+                  break;
+              }
+            } else {
+              // Default to student if no profile found
+              navigate('/student');
             }
-          } else {
-            // Default to student if no profile found
+          } catch (profileError) {
+            console.error("Error fetching profile:", profileError);
+            // Still redirect even if profile fetch fails
             navigate('/student');
           }
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
-        toast.error("Error checking authentication. Please try again.");
       }
     };
 
@@ -150,7 +155,9 @@ const Auth = () => {
           throw new Error("This email is already registered. Please sign in instead.");
         }
 
-        toast.success("Account created successfully! Please check your email for verification.");
+        toast.success("Account created successfully! Please check your email for verification.", {
+          duration: 5000,
+        });
         setIsSignUp(false); // Switch to sign in view after successful signup
       } else {
         console.log("Attempting signin with email:", formData.email);
@@ -173,27 +180,31 @@ const Auth = () => {
 
         toast.success("Signed in successfully! Redirecting...");
         
-        // Get user profile and role for redirection
+        // Direct navigation without fetching profile to prevent potential errors
+        const defaultPath = '/student';
+        
+        // Try to get user profile for proper redirection
         try {
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', data.user.id)
             .single();
           
-          const targetPath = profile ? `/${profile.role.toLowerCase()}` : '/student';
-          console.log("Redirecting to:", targetPath);
-          
-          // Use a timeout to ensure the toast is seen before redirect
-          setTimeout(() => {
-            navigate(targetPath);
-          }, 1000);
+          if (profileError) {
+            // If profile fetch fails, just use default path
+            console.warn("Error fetching profile, using default redirect:", profileError);
+            setTimeout(() => navigate(defaultPath), 1000);
+          } else {
+            // Use role-based path if profile available
+            const targetPath = profile ? `/${profile.role.toLowerCase()}` : defaultPath;
+            console.log("Redirecting to:", targetPath);
+            setTimeout(() => navigate(targetPath), 1000);
+          }
         } catch (profileError) {
-          console.warn("Error fetching profile, using default redirect:", profileError);
-          // Default redirect if profile fetch fails
-          setTimeout(() => {
-            navigate('/student');
-          }, 1000);
+          // Profile fetch error, just use default path
+          console.warn("Error in profile fetch flow, using default redirect:", profileError);
+          setTimeout(() => navigate(defaultPath), 1000);
         }
       }
     } catch (error: any) {
@@ -203,9 +214,12 @@ const Auth = () => {
       if (error.message?.includes("Invalid login credentials")) {
         toast.error("Invalid email or password. Please try again.");
       } else if (error.message?.includes("captcha")) {
-        toast.error("Captcha verification failed. Please contact the administrator.");
+        toast.error("Captcha verification failed. Please contact the administrator or check Supabase settings.");
       } else if (error.message?.includes("rate limited")) {
         toast.error("Too many login attempts. Please try again later.");
+      } else if (error.message?.includes("Database error granting user")) {
+        toast.error("Authentication database error. Please try again or contact the administrator.");
+        console.error("This is a Supabase database permission issue. Check your Supabase configuration.");
       } else {
         toast.error(error.message || "An error occurred during authentication");
       }

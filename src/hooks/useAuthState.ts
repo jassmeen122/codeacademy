@@ -33,20 +33,25 @@ export const useAuthState = () => {
     });
   };
 
-  // Helper function for error handling
-  const handleDbError = (error: any) => {
-    // Check for specific database permission errors we want to ignore
-    if (error.message && (
-      error.message.includes("permission denied for table user_status") ||
-      error.message.includes("Database error granting user") ||
-      error.message.includes("current transaction is aborted") ||
-      error.message.includes("captcha verification process failed")
-    )) {
-      // Log but continue the auth flow despite this error
-      console.warn("Non-critical database error:", error.message);
-      return true; // Return true to indicate we handled this non-critical error
+  // Helper function for safe profile fetching with silent error handling
+  const safelyFetchProfile = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        // Just log the error but don't throw - we'll handle missing profiles gracefully
+        console.warn("Non-critical error fetching profile:", error.message);
+        return null;
+      }
+      return profile;
+    } catch (err) {
+      console.warn("Error in profile fetch:", err);
+      return null;
     }
-    return false; // Unhandled error
   };
 
   useEffect(() => {
@@ -62,27 +67,30 @@ export const useAuthState = () => {
         if (currentSession?.user) {
           // Defer profile fetching to prevent potential deadlocks
           setTimeout(async () => {
-            try {
-              // Fetch user profile on auth state change
-              const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentSession.user.id)
-                .single();
-              
-              if (error) {
-                if (!handleDbError(error)) {
-                  console.error("Error fetching user profile:", error);
-                }
-              } else if (profile && mounted) {
-                console.log("Profile fetched:", profile);
-                setUser(profile as UserProfile);
-              }
-            } catch (error) {
-              console.error("Error in profile fetch:", error);
-            } finally {
-              if (mounted) setLoading(false);
+            if (!mounted) return;
+            
+            const profile = await safelyFetchProfile(currentSession.user.id);
+            
+            if (profile && mounted) {
+              console.log("Profile fetched:", profile);
+              setUser(profile as UserProfile);
+            } else if (mounted) {
+              // Create a minimal user object from auth data if profile fetch fails
+              const minimalUser = {
+                id: currentSession.user.id,
+                email: currentSession.user.email || '',
+                full_name: currentSession.user.user_metadata?.full_name || null,
+                avatar_url: null,
+                points: 0,
+                role: (currentSession.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+              setUser(minimalUser);
+              console.log("Using minimal user profile:", minimalUser);
             }
+            
+            if (mounted) setLoading(false);
           }, 0);
         } else {
           setUser(null);
@@ -101,33 +109,38 @@ export const useAuthState = () => {
         if (session?.user) {
           // Defer profile fetching to prevent potential deadlocks
           setTimeout(async () => {
-            try {
-              // Fetch user profile
-              const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-              
-              if (error) {
-                if (!handleDbError(error)) {
-                  console.error("Error fetching user profile:", error);
-                  toast.error("Error fetching profile. Please try logging in again.");
-                }
-              } else if (profile && mounted) {
-                console.log("Initial profile fetch:", profile);
-                setUser(profile as UserProfile);
-              }
-            } catch (error) {
-              console.error("Error in profile fetch:", error);
-            } finally {
-              if (mounted) setLoading(false);
+            if (!mounted) return;
+            
+            const profile = await safelyFetchProfile(session.user.id);
+            
+            if (profile && mounted) {
+              console.log("Initial profile fetch:", profile);
+              setUser(profile as UserProfile);
+            } else if (mounted) {
+              // Create a minimal user object from auth data if profile fetch fails
+              const minimalUser = {
+                id: session.user.id,
+                email: session.user.email || '',
+                full_name: session.user.user_metadata?.full_name || null,
+                avatar_url: null,
+                points: 0,
+                role: (session.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+              setUser(minimalUser);
+              console.log("Using minimal user profile for initial session:", minimalUser);
             }
+            
+            if (mounted) setLoading(false);
           }, 0);
         } else {
           if (mounted) setLoading(false);
         }
       }
+    }).catch(error => {
+      console.error("Error in initial session check:", error);
+      if (mounted) setLoading(false);
     });
 
     return () => {
