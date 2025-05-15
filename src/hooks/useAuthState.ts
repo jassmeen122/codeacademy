@@ -57,7 +57,7 @@ export const useAuthState = () => {
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener FIRST
+    // Set up auth state listener FIRST - but don't try to access user_status table
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed", event, currentSession?.user?.id);
       
