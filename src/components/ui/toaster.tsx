@@ -8,7 +8,7 @@ export function Toaster() {
       closeButton
       richColors
       expand={false}
-      duration={4000}
+      duration={5000}
     />
   );
 }

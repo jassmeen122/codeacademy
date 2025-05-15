@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,12 +59,13 @@ const Auth = () => {
     typeWriter();
   }, [isSignUp, welcomeText]);
 
+  // Check for existing session and redirect if logged in
   useEffect(() => {
-    // Check if user is already logged in
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
+          console.log("Found existing session:", session.user.id);
           // Fetch user role and redirect accordingly
           const { data: profile } = await supabase
             .from('profiles')
@@ -91,6 +93,7 @@ const Auth = () => {
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
+        toast.error("Error checking authentication. Please try again.");
       }
     };
 
@@ -137,8 +140,7 @@ const Auth = () => {
             data: {
               full_name: formData.fullName,
               role: formData.role,
-            },
-            emailRedirectTo: window.location.origin + '/auth'
+            }
           },
         });
 
@@ -148,75 +150,65 @@ const Auth = () => {
           throw new Error("This email is already registered. Please sign in instead.");
         }
 
-        // Check if email verification is required
-        const { data: authConfig } = await supabase.auth.getSession();
-        if (authConfig.session) {
-          // User is automatically signed in - email verification is disabled
-          toast.success("Account created successfully!");
-          
-          // Force page reload to ensure clean state
-          window.location.href = `/${formData.role.toLowerCase()}`;
-        } else {
-          // Email verification is required
-          toast.success("Please check your email to confirm your account!");
-        }
+        toast.success("Account created successfully! Please check your email for verification.");
+        setIsSignUp(false); // Switch to sign in view after successful signup
       } else {
         console.log("Attempting signin with email:", formData.email);
         
+        // Sign in with error handling for different scenarios
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+          
+        if (signInError) {
+          // Log details of the error for debugging
+          console.error("Sign-in error details:", signInError);
+          throw signInError;
+        }
+
+        if (!data.user) {
+          throw new Error("Invalid email or password");
+        }
+
+        toast.success("Signed in successfully! Redirecting...");
+        
+        // Get user profile and role for redirection
         try {
-          const { data, error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', data.user.id)
+            .single();
           
-          if (signInError) throw signInError;
-
-          if (!data.user) {
-            throw new Error("Invalid email or password");
-          }
-
-          toast.success("Signed in successfully!");
+          const targetPath = profile ? `/${profile.role.toLowerCase()}` : '/student';
+          console.log("Redirecting to:", targetPath);
           
-          // Force redirect even if we had database permission errors
+          // Use a timeout to ensure the toast is seen before redirect
           setTimeout(() => {
-            try {
-              // Check if the user has a role, otherwise default to student
-              if (data.user?.user_metadata?.role) {
-                const role = data.user.user_metadata.role;
-                window.location.href = `/${role.toLowerCase()}`;
-              } else {
-                // Default to student role
-                window.location.href = "/student";
-              }
-            } catch (error) {
-              console.error("Navigation error:", error);
-              // Default redirect
-              window.location.href = "/student";
-            }
-          }, 500);
-        } catch (error: any) {
-          // Handle specific database permission errors but still login
-          if (error.message && (
-            error.message.includes("Database error granting user") || 
-            error.message.includes("permission denied for table user_status") ||
-            error.message.includes("current transaction is aborted")
-          )) {
-            toast.success("Login successful! Redirecting...");
-            console.warn("Non-critical error, continuing with login:", error);
-            
-            // Still redirect to student dashboard
-            setTimeout(() => {
-              window.location.href = "/student";
-            }, 500);
-          } else {
-            // Handle other errors
-            throw error;
-          }
+            navigate(targetPath);
+          }, 1000);
+        } catch (profileError) {
+          console.warn("Error fetching profile, using default redirect:", profileError);
+          // Default redirect if profile fetch fails
+          setTimeout(() => {
+            navigate('/student');
+          }, 1000);
         }
       }
     } catch (error: any) {
       console.error("Auth error:", error);
-      toast.error(error.message || "An error occurred during authentication");
+      
+      // Display different error messages based on error code/message
+      if (error.message?.includes("Invalid login credentials")) {
+        toast.error("Invalid email or password. Please try again.");
+      } else if (error.message?.includes("captcha")) {
+        toast.error("Captcha verification failed. Please contact the administrator.");
+      } else if (error.message?.includes("rate limited")) {
+        toast.error("Too many login attempts. Please try again later.");
+      } else {
+        toast.error(error.message || "An error occurred during authentication");
+      }
     } finally {
       setIsLoading(false);
     }

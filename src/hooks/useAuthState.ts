@@ -39,7 +39,8 @@ export const useAuthState = () => {
     if (error.message && (
       error.message.includes("permission denied for table user_status") ||
       error.message.includes("Database error granting user") ||
-      error.message.includes("current transaction is aborted")
+      error.message.includes("current transaction is aborted") ||
+      error.message.includes("captcha verification process failed")
     )) {
       // Log but continue the auth flow despite this error
       console.warn("Non-critical database error:", error.message);
@@ -111,6 +112,7 @@ export const useAuthState = () => {
               if (error) {
                 if (!handleDbError(error)) {
                   console.error("Error fetching user profile:", error);
+                  toast.error("Error fetching profile. Please try logging in again.");
                 }
               } else if (profile && mounted) {
                 console.log("Initial profile fetch:", profile);
