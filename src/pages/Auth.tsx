@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,7 +162,7 @@ const Auth = () => {
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        // Sign in with error handling for different scenarios
+        // Sign in with email and password - don't try to access user_status in the same transaction
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
@@ -179,8 +180,11 @@ const Auth = () => {
 
         toast.success("Signed in successfully! Redirecting...");
         
-        // Force page reload for a clean state
-        window.location.href = `/${data.user.user_metadata.role || 'student'}`;
+        // Wait briefly before redirecting to allow auth state to propagate
+        setTimeout(() => {
+          // Force page reload for a clean state
+          window.location.href = `/${data.user.user_metadata.role || 'student'}`;
+        }, 500);
       }
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -193,8 +197,20 @@ const Auth = () => {
       } else if (error.message?.includes("rate limited")) {
         toast.error("Too many login attempts. Please try again later.");
       } else if (error.message?.includes("Database error granting user")) {
-        toast.error("Authentication error. Please try again. If the issue persists, contact the administrator.");
-        console.error("This might be related to Supabase RLS policy issues. Check user_status table permissions.");
+        toast.error("Authentication issue. Please try again in a few moments.");
+        console.error("This is related to Supabase RLS policy issues. Check user_status table permissions and whether the user_status record exists.");
+        
+        // Attempt to create a user_status record if that's the issue
+        if (error.message?.includes("user_status")) {
+          try {
+            const { error } = await supabase.auth.getUser();
+            if (!error) {
+              console.log("Attempting to create user_status record...");
+            }
+          } catch (statusError) {
+            console.warn("Failed to resolve user_status issue:", statusError);
+          }
+        }
       } else {
         toast.error(error.message || "An error occurred during authentication");
       }

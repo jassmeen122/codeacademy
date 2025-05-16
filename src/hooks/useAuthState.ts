@@ -54,6 +54,26 @@ export const useAuthState = () => {
     }
   };
 
+  // Initialize user status on auth - separate from profile fetch to avoid deadlocks
+  const initializeUserStatus = async (userId: string) => {
+    try {
+      // Try to initialize user status immediately after login
+      const { error } = await supabase
+        .from('user_status')
+        .upsert({ 
+          user_id: userId, 
+          status: 'online', 
+          last_active: new Date().toISOString() 
+        }, { onConflict: 'user_id' });
+      
+      if (error) {
+        console.warn("Failed to initialize user status:", error.message);
+      }
+    } catch (err) {
+      console.warn("Error initializing user status:", err);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -65,6 +85,9 @@ export const useAuthState = () => {
         setSession(currentSession);
         
         if (currentSession?.user) {
+          // Initialize user status asynchronously
+          initializeUserStatus(currentSession.user.id);
+          
           // Defer profile fetching to prevent potential deadlocks
           setTimeout(async () => {
             if (!mounted) return;
@@ -107,6 +130,9 @@ export const useAuthState = () => {
         setSession(session);
         
         if (session?.user) {
+          // Initialize user status asynchronously
+          initializeUserStatus(session.user.id);
+          
           // Defer profile fetching to prevent potential deadlocks
           setTimeout(async () => {
             if (!mounted) return;

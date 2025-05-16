@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuthState } from './useAuthState';
 import { UserStatus } from '@/types/messaging';
@@ -17,12 +18,25 @@ export const useUserStatus = () => {
       if (!user) return;
       
       try {
-        // Try to access the user_status table
+        // First ensure a row exists for this user
+        const { error: upsertError } = await supabase
+          .from('user_status')
+          .upsert({ 
+            user_id: user.id, 
+            status: 'online', 
+            last_active: new Date().toISOString() 
+          }, { onConflict: 'user_id' });
+        
+        if (upsertError) {
+          console.warn("Failed to upsert user status:", upsertError.message);
+        }
+        
+        // Then try to access the user_status table
         const { data, error } = await supabase
           .from('user_status')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         // If no error, we have access
         if (!error) {
@@ -32,12 +46,20 @@ export const useUserStatus = () => {
           // If we have data, update our local state
           if (data) {
             setUserStatus(data as UserStatus);
+          } else {
+            // Create a default status since record wasn't found
+            setUserStatus({
+              id: 'local-' + user.id,
+              user_id: user.id,
+              status: 'online',
+              last_active: new Date().toISOString()
+            });
           }
         } else {
-          console.warn("Database access granted but no user_status found:", error.message);
-          setDbAccessGranted(true);
+          console.warn("Database access issue for user_status:", error.message);
+          setDbAccessGranted(false);
           
-          // Create a simulated status since we don't have an entry yet
+          // Create a simulated status as fallback
           setUserStatus({
             id: 'local-' + user.id,
             user_id: user.id,
