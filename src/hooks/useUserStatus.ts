@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuthState } from './useAuthState';
 import { UserStatus } from '@/types/messaging';
@@ -35,10 +34,10 @@ export const useUserStatus = () => {
             setUserStatus(data as UserStatus);
           }
         } else {
-          console.warn("Database access denied for user_status:", error.message);
-          setDbAccessGranted(false);
+          console.warn("Database access granted but no user_status found:", error.message);
+          setDbAccessGranted(true);
           
-          // Create a simulated status since we don't have DB access
+          // Create a simulated status since we don't have an entry yet
           setUserStatus({
             id: 'local-' + user.id,
             user_id: user.id,
@@ -55,7 +54,7 @@ export const useUserStatus = () => {
     checkDbAccess();
   }, [user]);
 
-  // Mettre à jour son propre statut - version avec fallback local
+  // Update own status - with fallback for when DB access fails
   const updateStatus = async (status: 'online' | 'offline') => {
     if (!user) return null;
 

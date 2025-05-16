@@ -40,7 +40,7 @@ export const useAuthState = () => {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         // Just log the error but don't throw - we'll handle missing profiles gracefully

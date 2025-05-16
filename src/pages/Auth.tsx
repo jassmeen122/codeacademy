@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,7 +71,7 @@ const Auth = () => {
               .from('profiles')
               .select('role')
               .eq('id', session.user.id)
-              .single();
+              .maybeSingle();
 
             if (profile) {
               switch (profile.role) {
@@ -180,32 +179,8 @@ const Auth = () => {
 
         toast.success("Signed in successfully! Redirecting...");
         
-        // Direct navigation without fetching profile to prevent potential errors
-        const defaultPath = '/student';
-        
-        // Try to get user profile for proper redirection
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', data.user.id)
-            .single();
-          
-          if (profileError) {
-            // If profile fetch fails, just use default path
-            console.warn("Error fetching profile, using default redirect:", profileError);
-            setTimeout(() => navigate(defaultPath), 1000);
-          } else {
-            // Use role-based path if profile available
-            const targetPath = profile ? `/${profile.role.toLowerCase()}` : defaultPath;
-            console.log("Redirecting to:", targetPath);
-            setTimeout(() => navigate(targetPath), 1000);
-          }
-        } catch (profileError) {
-          // Profile fetch error, just use default path
-          console.warn("Error in profile fetch flow, using default redirect:", profileError);
-          setTimeout(() => navigate(defaultPath), 1000);
-        }
+        // Force page reload for a clean state
+        window.location.href = `/${data.user.user_metadata.role || 'student'}`;
       }
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -218,8 +193,8 @@ const Auth = () => {
       } else if (error.message?.includes("rate limited")) {
         toast.error("Too many login attempts. Please try again later.");
       } else if (error.message?.includes("Database error granting user")) {
-        toast.error("Authentication database error. Please try again or contact the administrator.");
-        console.error("This is a Supabase database permission issue. Check your Supabase configuration.");
+        toast.error("Authentication error. Please try again. If the issue persists, contact the administrator.");
+        console.error("This might be related to Supabase RLS policy issues. Check user_status table permissions.");
       } else {
         toast.error(error.message || "An error occurred during authentication");
       }
