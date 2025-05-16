@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -43,8 +42,7 @@ export const useAuthState = () => {
         .maybeSingle();
       
       if (error) {
-        // Just log the error but don't throw - we'll handle missing profiles gracefully
-        console.warn("Non-critical error fetching profile:", error.message);
+        console.warn("Error fetching profile:", error.message);
         return null;
       }
       return profile;
@@ -54,10 +52,10 @@ export const useAuthState = () => {
     }
   };
 
-  // Initialize user status on auth - separate from profile fetch to avoid deadlocks
+  // Safe function to initialize user status
   const initializeUserStatus = async (userId: string) => {
     try {
-      // Try to initialize user status immediately after login
+      // Try to initialize user status
       const { error } = await supabase
         .from('user_status')
         .upsert({ 
@@ -67,102 +65,115 @@ export const useAuthState = () => {
         }, { onConflict: 'user_id' });
       
       if (error) {
-        console.warn("Failed to initialize user status:", error.message);
+        console.warn("Non-critical: Failed to initialize user status:", error.message);
       }
     } catch (err) {
-      console.warn("Error initializing user status:", err);
+      console.warn("Non-critical: Error initializing user status:", err);
     }
   };
 
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener FIRST - but don't try to access user_status table
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log("Auth state changed", event, currentSession?.user?.id);
       
-      if (mounted) {
-        setSession(currentSession);
-        
-        if (currentSession?.user) {
-          // Initialize user status asynchronously
+      if (!mounted) return;
+      
+      setSession(currentSession);
+      
+      if (currentSession?.user) {
+        // Initialize user status asynchronously
+        setTimeout(() => {
           initializeUserStatus(currentSession.user.id);
+        }, 0);
+        
+        // Fetch profile separately to prevent deadlocks
+        setTimeout(async () => {
+          if (!mounted) return;
           
-          // Defer profile fetching to prevent potential deadlocks
-          setTimeout(async () => {
-            if (!mounted) return;
+          const profile = await safelyFetchProfile(currentSession.user.id);
+          
+          if (profile && mounted) {
+            console.log("Profile fetched:", profile);
+            setUser(profile as UserProfile);
+          } else if (mounted) {
+            // Create a minimal user object from auth metadata
+            const minimalUser = {
+              id: currentSession.user.id,
+              email: currentSession.user.email || '',
+              full_name: currentSession.user.user_metadata?.full_name || null,
+              avatar_url: null,
+              points: 0,
+              role: (currentSession.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            setUser(minimalUser);
             
-            const profile = await safelyFetchProfile(currentSession.user.id);
-            
-            if (profile && mounted) {
-              console.log("Profile fetched:", profile);
-              setUser(profile as UserProfile);
-            } else if (mounted) {
-              // Create a minimal user object from auth data if profile fetch fails
-              const minimalUser = {
-                id: currentSession.user.id,
-                email: currentSession.user.email || '',
-                full_name: currentSession.user.user_metadata?.full_name || null,
-                avatar_url: null,
-                points: 0,
-                role: (currentSession.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              };
-              setUser(minimalUser);
-              console.log("Using minimal user profile:", minimalUser);
+            // Try to create profile if it doesn't exist
+            try {
+              await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
+            } catch (profileError) {
+              console.warn("Non-critical: Error creating profile:", profileError);
             }
-            
-            if (mounted) setLoading(false);
-          }, 0);
-        } else {
-          setUser(null);
+          }
+          
           if (mounted) setLoading(false);
-        }
+        }, 0);
+      } else {
+        setUser(null);
+        if (mounted) setLoading(false);
       }
     });
 
-    // THEN check for existing session
+    // After setting up listener, check for existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log("Initial session check:", session?.user?.id);
       
-      if (mounted) {
-        setSession(session);
-        
-        if (session?.user) {
-          // Initialize user status asynchronously
-          initializeUserStatus(session.user.id);
+      if (!mounted) return;
+      
+      setSession(session);
+      
+      if (session?.user) {
+        // Keep operations minimal in this initial check
+        // and perform actual data fetching in separate setTimeout
+        setTimeout(async () => {
+          if (!mounted) return;
           
-          // Defer profile fetching to prevent potential deadlocks
-          setTimeout(async () => {
-            if (!mounted) return;
+          const profile = await safelyFetchProfile(session.user.id);
+          
+          if (profile && mounted) {
+            setUser(profile as UserProfile);
+          } else if (mounted) {
+            const minimalUser = {
+              id: session.user.id,
+              email: session.user.email || '',
+              full_name: session.user.user_metadata?.full_name || null,
+              avatar_url: null,
+              points: 0,
+              role: (session.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            setUser(minimalUser);
             
-            const profile = await safelyFetchProfile(session.user.id);
-            
-            if (profile && mounted) {
-              console.log("Initial profile fetch:", profile);
-              setUser(profile as UserProfile);
-            } else if (mounted) {
-              // Create a minimal user object from auth data if profile fetch fails
-              const minimalUser = {
-                id: session.user.id,
-                email: session.user.email || '',
-                full_name: session.user.user_metadata?.full_name || null,
-                avatar_url: null,
-                points: 0,
-                role: (session.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              };
-              setUser(minimalUser);
-              console.log("Using minimal user profile for initial session:", minimalUser);
+            // Try to create profile if it doesn't exist
+            try {
+              await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
+              
+              // Also try to initialize user status but don't block on it
+              initializeUserStatus(session.user.id);
+            } catch (error) {
+              console.warn("Non-critical initialization error:", error);
             }
-            
-            if (mounted) setLoading(false);
-          }, 0);
-        } else {
+          }
+          
           if (mounted) setLoading(false);
-        }
+        }, 0);
+      } else {
+        if (mounted) setLoading(false);
       }
     }).catch(error => {
       console.error("Error in initial session check:", error);
@@ -178,6 +189,22 @@ export const useAuthState = () => {
   const handleSignOut = async () => {
     try {
       setLoading(true);
+      
+      // First, update user status to offline if possible
+      if (user) {
+        try {
+          await supabase
+            .from('user_status')
+            .upsert({ 
+              user_id: user.id, 
+              status: 'offline', 
+              last_active: new Date().toISOString() 
+            }, { onConflict: 'user_id' });
+        } catch (statusError) {
+          console.warn("Non-critical: Failed to update status on logout:", statusError);
+        }
+      }
+      
       // Clean up auth state
       cleanupAuthState();
       

@@ -66,35 +66,16 @@ const Auth = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           console.log("Found existing session:", session.user.id);
-          // Fetch user role and redirect accordingly
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            if (profile) {
-              switch (profile.role) {
-                case 'admin':
-                  navigate('/admin');
-                  break;
-                case 'teacher':
-                  navigate('/teacher');
-                  break;
-                case 'student':
-                default:
-                  navigate('/student');
-                  break;
-              }
-            } else {
-              // Default to student if no profile found
-              navigate('/student');
-            }
-          } catch (profileError) {
-            console.error("Error fetching profile:", profileError);
-            // Still redirect even if profile fetch fails
-            navigate('/student');
+          
+          // Get user metadata for role-based redirect
+          const role = session.user.user_metadata?.role || 'student';
+          console.log("User role from metadata:", role);
+          
+          // Redirect based on role
+          switch (role) {
+            case 'admin': navigate('/admin'); break;
+            case 'teacher': navigate('/teacher'); break;
+            default: navigate('/student'); break;
           }
         }
       } catch (error) {
@@ -113,14 +94,6 @@ const Auth = () => {
       // Clean up any stale auth state
       cleanupAuthState();
       
-      // Try global sign out first to clear any existing sessions
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (signOutError) {
-        // Continue even if this fails
-        console.warn("Pre-auth signout failed:", signOutError);
-      }
-
       if (isSignUp) {
         // Validate form data
         if (!formData.email || !formData.password || !formData.fullName) {
@@ -137,8 +110,8 @@ const Auth = () => {
           role: formData.role
         });
         
-        // Sign up the user
-        const { data, error: signUpError } = await supabase.auth.signUp({
+        // Sign up the user with a simplified approach
+        const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
@@ -149,42 +122,79 @@ const Auth = () => {
           },
         });
 
-        if (signUpError) throw signUpError;
+        if (error) throw error;
 
         if (data?.user?.identities?.length === 0) {
           throw new Error("This email is already registered. Please sign in instead.");
         }
 
-        toast.success("Account created successfully! Please check your email for verification.", {
-          duration: 5000,
-        });
+        // Create user profile without relying on database triggers
+        try {
+          if (data?.user) {
+            await supabase.from('profiles').upsert({
+              id: data.user.id,
+              email: formData.email,
+              full_name: formData.fullName,
+              role: formData.role,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+            
+            // Initialize user status
+            await supabase.from('user_status').upsert({
+              user_id: data.user.id,
+              status: 'online',
+              last_active: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+          }
+        } catch (profileError) {
+          console.warn("Error creating profile (non-fatal):", profileError);
+          // Continue even if profile creation fails
+        }
+
+        toast.success("Account created successfully! Please check your email for verification.");
         setIsSignUp(false); // Switch to sign in view after successful signup
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        // Sign in with email and password - don't try to access user_status in the same transaction
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        // Before signing in, sign out any existing session
+        await supabase.auth.signOut();
+        
+        // Sign in with email and password
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
           
-        if (signInError) {
-          // Log details of the error for debugging
-          console.error("Sign-in error details:", signInError);
-          throw signInError;
-        }
+        if (error) throw error;
 
         if (!data.user) {
           throw new Error("Invalid email or password");
         }
 
+        // Create or update user status record
+        try {
+          await supabase.from('user_status').upsert({
+            user_id: data.user.id,
+            status: 'online',
+            last_active: new Date().toISOString()
+          }, { onConflict: 'user_id' });
+        } catch (statusError) {
+          console.warn("Error updating user status (non-fatal):", statusError);
+          // Continue even if status update fails
+        }
+
         toast.success("Signed in successfully! Redirecting...");
         
-        // Wait briefly before redirecting to allow auth state to propagate
-        setTimeout(() => {
-          // Force page reload for a clean state
-          window.location.href = `/${data.user.user_metadata.role || 'student'}`;
-        }, 500);
+        // Get role from user metadata and redirect accordingly
+        const role = data.user.user_metadata?.role || 'student';
+        
+        // Force page reload for a clean state
+        switch (role) {
+          case 'admin': window.location.href = '/admin'; break;
+          case 'teacher': window.location.href = '/teacher'; break;
+          default: window.location.href = '/student'; break;
+        }
       }
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -192,25 +202,10 @@ const Auth = () => {
       // Display different error messages based on error code/message
       if (error.message?.includes("Invalid login credentials")) {
         toast.error("Invalid email or password. Please try again.");
-      } else if (error.message?.includes("captcha")) {
-        toast.error("Captcha verification failed. Please contact the administrator or check Supabase settings.");
+      } else if (error.message?.includes("Email not confirmed")) {
+        toast.error("Please verify your email address before signing in.");
       } else if (error.message?.includes("rate limited")) {
         toast.error("Too many login attempts. Please try again later.");
-      } else if (error.message?.includes("Database error granting user")) {
-        toast.error("Authentication issue. Please try again in a few moments.");
-        console.error("This is related to Supabase RLS policy issues. Check user_status table permissions and whether the user_status record exists.");
-        
-        // Attempt to create a user_status record if that's the issue
-        if (error.message?.includes("user_status")) {
-          try {
-            const { error } = await supabase.auth.getUser();
-            if (!error) {
-              console.log("Attempting to create user_status record...");
-            }
-          } catch (statusError) {
-            console.warn("Failed to resolve user_status issue:", statusError);
-          }
-        }
       } else {
         toast.error(error.message || "An error occurred during authentication");
       }

@@ -18,7 +18,7 @@ export const useUserStatus = () => {
       if (!user) return;
       
       try {
-        // First ensure a row exists for this user
+        // First ensure the user exists in the user_status table
         const { error: upsertError } = await supabase
           .from('user_status')
           .upsert({ 
@@ -28,7 +28,17 @@ export const useUserStatus = () => {
           }, { onConflict: 'user_id' });
         
         if (upsertError) {
-          console.warn("Failed to upsert user status:", upsertError.message);
+          console.log("Database access issue when upserting user_status:", upsertError.message);
+          
+          // Create a simulated status as fallback
+          setUserStatus({
+            id: 'local-' + user.id,
+            user_id: user.id,
+            status: 'online',
+            last_active: new Date().toISOString()
+          });
+          setDbAccessGranted(false);
+          return;
         }
         
         // Then try to access the user_status table
@@ -70,55 +80,69 @@ export const useUserStatus = () => {
       } catch (error) {
         console.error("Error checking database access:", error);
         setDbAccessGranted(false);
+        
+        // Fallback to simulated status
+        if (user) {
+          setUserStatus({
+            id: 'local-' + user.id,
+            user_id: user.id,
+            status: 'online',
+            last_active: new Date().toISOString()
+          });
+        }
       }
     };
     
-    checkDbAccess();
+    // Attempt to initialize or update status
+    if (user) {
+      setTimeout(() => {
+        checkDbAccess();
+      }, 1000); // Add some delay to avoid potential auth conflicts
+    } else {
+      setUserStatus(null);
+      setDbAccessGranted(null);
+    }
   }, [user]);
 
   // Update own status - with fallback for when DB access fails
   const updateStatus = async (status: 'online' | 'offline') => {
     if (!user) return null;
 
+    const localStatus = { 
+      id: userStatus?.id || 'local-' + user.id,
+      user_id: user.id, 
+      status, 
+      last_active: new Date().toISOString() 
+    };
+
+    // Always update local state immediately
+    setUserStatus(localStatus as UserStatus);
+    
     // If we have DB access, try to update the record
     if (dbAccessGranted) {
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('user_status')
           .upsert({ 
             user_id: user.id, 
             status, 
             last_active: new Date().toISOString() 
-          }, { onConflict: 'user_id' })
-          .select()
-          .single();
+          }, { onConflict: 'user_id' });
           
         if (error) {
-          throw error;
+          console.warn("Error updating status in database (non-critical):", error.message);
         }
         
-        setUserStatus(data as UserStatus);
-        return data;
+        return localStatus;
       } catch (error: any) {
-        console.warn("Error updating status in database:", error.message);
-        // Fall back to local status
-        setDbAccessGranted(false);
+        console.warn("Error updating status (non-critical):", error.message);
       }
     }
     
-    // Local fallback if no DB access
-    const simulatedStatus = { 
-      id: 'local-' + user.id,
-      user_id: user.id, 
-      status, 
-      last_active: new Date().toISOString() 
-    };
-    
-    setUserStatus(simulatedStatus as UserStatus);
-    return simulatedStatus;
+    return localStatus;
   };
 
-  // Simulation d'obtention du statut d'un utilisateur
+  // Get status of a specific user
   const getUserStatus = async (userId: string) => {
     // If we have DB access, try to get real status
     if (dbAccessGranted) {
@@ -127,13 +151,13 @@ export const useUserStatus = () => {
           .from('user_status')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
           
         if (!error && data) {
           return data as UserStatus;
         }
       } catch (error) {
-        console.warn("Error fetching user status:", error);
+        console.warn("Error fetching user status (non-critical):", error);
       }
     }
     
@@ -146,7 +170,7 @@ export const useUserStatus = () => {
     } as UserStatus;
   };
 
-  // Formater le statut en ligne pour l'affichage
+  // Format status for display
   const formatOnlineStatus = (status: UserStatus | null) => {
     if (!status) return 'Hors ligne';
 
@@ -160,12 +184,12 @@ export const useUserStatus = () => {
     })}`;
   };
 
-  // Simulation d'abonnement aux changements de statut
+  // Subscribe to status changes
   const subscribeToStatusChanges = () => {
     if (dbAccessGranted) {
       try {
         const channel = supabase
-          .channel('public:user_status')
+          .channel('user_status_changes')
           .on('postgres_changes', { 
             event: '*', 
             schema: 'public', 
@@ -180,15 +204,11 @@ export const useUserStatus = () => {
           supabase.removeChannel(channel);
         };
       } catch (error) {
-        console.warn("Error subscribing to status changes:", error);
+        console.warn("Error subscribing to status changes (non-critical):", error);
       }
     }
     
-    // Fallback simulation
-    console.log("Simulation d'abonnement aux changements de statut");
-    return () => {
-      console.log("Désabonnement simulé");
-    };
+    return () => {}; // Empty cleanup function as fallback
   };
 
   return {
