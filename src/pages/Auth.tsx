@@ -94,6 +94,9 @@ const Auth = () => {
       // Clean up any stale auth state
       cleanupAuthState();
       
+      // Force sign out any existing session
+      await supabase.auth.signOut({ scope: 'global' });
+      
       if (isSignUp) {
         // Validate form data
         if (!formData.email || !formData.password || !formData.fullName) {
@@ -128,37 +131,10 @@ const Auth = () => {
           throw new Error("This email is already registered. Please sign in instead.");
         }
 
-        // Create user profile without relying on database triggers
-        try {
-          if (data?.user) {
-            await supabase.from('profiles').upsert({
-              id: data.user.id,
-              email: formData.email,
-              full_name: formData.fullName,
-              role: formData.role,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'id' });
-            
-            // Initialize user status
-            await supabase.from('user_status').upsert({
-              user_id: data.user.id,
-              status: 'online',
-              last_active: new Date().toISOString()
-            }, { onConflict: 'user_id' });
-          }
-        } catch (profileError) {
-          console.warn("Error creating profile (non-fatal):", profileError);
-          // Continue even if profile creation fails
-        }
-
         toast.success("Account created successfully! Please check your email for verification.");
         setIsSignUp(false); // Switch to sign in view after successful signup
       } else {
         console.log("Attempting signin with email:", formData.email);
-        
-        // Before signing in, sign out any existing session
-        await supabase.auth.signOut();
         
         // Sign in with email and password
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -170,18 +146,6 @@ const Auth = () => {
 
         if (!data.user) {
           throw new Error("Invalid email or password");
-        }
-
-        // Create or update user status record
-        try {
-          await supabase.from('user_status').upsert({
-            user_id: data.user.id,
-            status: 'online',
-            last_active: new Date().toISOString()
-          }, { onConflict: 'user_id' });
-        } catch (statusError) {
-          console.warn("Error updating user status (non-fatal):", statusError);
-          // Continue even if status update fails
         }
 
         toast.success("Signed in successfully! Redirecting...");
@@ -206,6 +170,9 @@ const Auth = () => {
         toast.error("Please verify your email address before signing in.");
       } else if (error.message?.includes("rate limited")) {
         toast.error("Too many login attempts. Please try again later.");
+      } else if (error.message?.includes("Database error")) {
+        toast.error("System is temporarily unavailable. Please try again in a few moments.");
+        console.error("Database error detected, likely related to user_status permissions");
       } else {
         toast.error(error.message || "An error occurred during authentication");
       }

@@ -52,26 +52,6 @@ export const useAuthState = () => {
     }
   };
 
-  // Safe function to initialize user status
-  const initializeUserStatus = async (userId: string) => {
-    try {
-      // Try to initialize user status
-      const { error } = await supabase
-        .from('user_status')
-        .upsert({ 
-          user_id: userId, 
-          status: 'online', 
-          last_active: new Date().toISOString() 
-        }, { onConflict: 'user_id' });
-      
-      if (error) {
-        console.warn("Non-critical: Failed to initialize user status:", error.message);
-      }
-    } catch (err) {
-      console.warn("Non-critical: Error initializing user status:", err);
-    }
-  };
-
   useEffect(() => {
     let mounted = true;
 
@@ -84,11 +64,6 @@ export const useAuthState = () => {
       setSession(currentSession);
       
       if (currentSession?.user) {
-        // Initialize user status asynchronously
-        setTimeout(() => {
-          initializeUserStatus(currentSession.user.id);
-        }, 0);
-        
         // Fetch profile separately to prevent deadlocks
         setTimeout(async () => {
           if (!mounted) return;
@@ -162,9 +137,6 @@ export const useAuthState = () => {
             // Try to create profile if it doesn't exist
             try {
               await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
-              
-              // Also try to initialize user status but don't block on it
-              initializeUserStatus(session.user.id);
             } catch (error) {
               console.warn("Non-critical initialization error:", error);
             }
@@ -189,21 +161,6 @@ export const useAuthState = () => {
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      
-      // First, update user status to offline if possible
-      if (user) {
-        try {
-          await supabase
-            .from('user_status')
-            .upsert({ 
-              user_id: user.id, 
-              status: 'offline', 
-              last_active: new Date().toISOString() 
-            }, { onConflict: 'user_id' });
-        } catch (statusError) {
-          console.warn("Non-critical: Failed to update status on logout:", statusError);
-        }
-      }
       
       // Clean up auth state
       cleanupAuthState();

@@ -10,98 +10,55 @@ import { supabase } from '@/integrations/supabase/client';
 export const useUserStatus = () => {
   const { user } = useAuthState();
   const [userStatus, setUserStatus] = useState<UserStatus | null>(null);
-  const [dbAccessGranted, setDbAccessGranted] = useState<boolean | null>(null);
+  const [dbAccessGranted, setDbAccessGranted] = useState<boolean>(false);
 
-  // Check if database access is available
+  // Check if database access is available - with fallback
   useEffect(() => {
-    const checkDbAccess = async () => {
-      if (!user) return;
-      
+    if (!user) {
+      setUserStatus(null);
+      return;
+    }
+    
+    // Always create a local status object immediately
+    const localStatus = {
+      id: 'local-' + user.id,
+      user_id: user.id,
+      status: 'online',
+      last_active: new Date().toISOString()
+    };
+    
+    // Set the local status immediately
+    setUserStatus(localStatus as UserStatus);
+
+    // Then try to update the database in the background
+    const updateStatusInDb = async () => {
       try {
-        // First ensure the user exists in the user_status table
-        const { error: upsertError } = await supabase
+        // Try to access the user_status table
+        const { data, error } = await supabase
           .from('user_status')
           .upsert({ 
             user_id: user.id, 
             status: 'online', 
             last_active: new Date().toISOString() 
           }, { onConflict: 'user_id' });
-        
-        if (upsertError) {
-          console.log("Database access issue when upserting user_status:", upsertError.message);
           
-          // Create a simulated status as fallback
-          setUserStatus({
-            id: 'local-' + user.id,
-            user_id: user.id,
-            status: 'online',
-            last_active: new Date().toISOString()
-          });
-          setDbAccessGranted(false);
-          return;
-        }
-        
-        // Then try to access the user_status table
-        const { data, error } = await supabase
-          .from('user_status')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        // If no error, we have access
+        // If successful, we have db access
         if (!error) {
           console.log("Database access granted for user_status");
           setDbAccessGranted(true);
-          
-          // If we have data, update our local state
-          if (data) {
-            setUserStatus(data as UserStatus);
-          } else {
-            // Create a default status since record wasn't found
-            setUserStatus({
-              id: 'local-' + user.id,
-              user_id: user.id,
-              status: 'online',
-              last_active: new Date().toISOString()
-            });
-          }
         } else {
-          console.warn("Database access issue for user_status:", error.message);
+          console.warn("Cannot access user_status table:", error.message);
           setDbAccessGranted(false);
-          
-          // Create a simulated status as fallback
-          setUserStatus({
-            id: 'local-' + user.id,
-            user_id: user.id,
-            status: 'online',
-            last_active: new Date().toISOString()
-          });
         }
       } catch (error) {
-        console.error("Error checking database access:", error);
+        console.warn("Error checking user_status database access:", error);
         setDbAccessGranted(false);
-        
-        // Fallback to simulated status
-        if (user) {
-          setUserStatus({
-            id: 'local-' + user.id,
-            user_id: user.id,
-            status: 'online',
-            last_active: new Date().toISOString()
-          });
-        }
       }
     };
     
-    // Attempt to initialize or update status
-    if (user) {
-      setTimeout(() => {
-        checkDbAccess();
-      }, 1000); // Add some delay to avoid potential auth conflicts
-    } else {
-      setUserStatus(null);
-      setDbAccessGranted(null);
-    }
+    // Try to update status in background
+    updateStatusInDb();
+    
   }, [user]);
 
   // Update own status - with fallback for when DB access fails
@@ -184,7 +141,7 @@ export const useUserStatus = () => {
     })}`;
   };
 
-  // Subscribe to status changes
+  // Subscribe to status changes - with fallback
   const subscribeToStatusChanges = () => {
     if (dbAccessGranted) {
       try {
