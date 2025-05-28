@@ -1,417 +1,372 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Check, HelpCircle, X } from "lucide-react";
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuthState } from '@/hooks/useAuthState';
-import { useProgrammingLanguages } from '@/hooks/useProgrammingCourses';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthState } from "@/hooks/useAuthState";
+import { toast } from "sonner";
+import { ArrowLeft, CheckCircle, XCircle, Trophy } from "lucide-react";
 
-interface Quiz {
+interface QuizQuestion {
   id: string;
   question: string;
-  correct_answer: string;
   option1: string;
   option2: string;
-  option3: string | null;
-  explanation: string | null;
+  option3: string;
+  correct_answer: string;
+  explanation: string;
+  difficulty: string;
 }
 
-type LanguageParams = {
-  languageId: string;
-};
+interface UserLanguageProgress {
+  id: string;
+  user_id: string;
+  language_id: string;
+  progress_percentage: number;
+  lessons_completed: number;
+  quizzes_completed: number;
+  last_accessed: string;
+}
 
-const LanguageQuizPage = () => {
-  const { languageId } = useParams<LanguageParams>();
+export default function LanguageQuizPage() {
+  const { language } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthState();
-  const { languages } = useProgrammingLanguages();
   
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string>("");
+  const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [answeredQuestions, setAnsweredQuestions] = useState<boolean[]>([]);
+  const [loading, setLoading] = useState(true);
   const [quizCompleted, setQuizCompleted] = useState(false);
-  
-  // Trouver le langage correspondant
-  const currentLanguage = languages.find(lang => lang.id === languageId);
 
   useEffect(() => {
-    const fetchQuizzes = async () => {
-      if (!languageId) return;
-      
-      try {
-        setLoading(true);
-        
-        // Récupérer les quiz pour ce langage
-        const { data, error } = await supabase
-          .from('coding_quiz')
-          .select('*')
-          .eq('language', currentLanguage?.name || '')
-          .limit(5);
-          
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          setQuizzes(data as Quiz[]);
-        } else {
-          // Utiliser les quiz génériques si aucun n'est spécifique au langage
-          const { data: genericData, error: genericError } = await supabase
-            .from('coding_quiz')
-            .select('*')
-            .limit(5);
-            
-          if (genericError) throw genericError;
-          
-          if (genericData && genericData.length > 0) {
-            setQuizzes(genericData as Quiz[]);
-          }
-        }
-      } catch (err) {
-        console.error('Erreur lors de la récupération des quiz:', err);
-        toast.error('Impossible de charger les quiz');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchQuizzes();
-  }, [languageId, currentLanguage]);
-
-  const handleAnswerSelection = (answer: string) => {
-    if (isAnswered) return;
-    
-    setSelectedAnswer(answer);
-  };
-
-  const checkAnswer = () => {
-    if (!selectedAnswer || !quizzes[currentQuizIndex]) return;
-    
-    const isAnswerCorrect = selectedAnswer === quizzes[currentQuizIndex].correct_answer;
-    
-    setIsAnswered(true);
-    setIsCorrect(isAnswerCorrect);
-    
-    if (isAnswerCorrect) {
-      setScore(score + 1);
+    if (language && user) {
+      fetchQuestions();
     }
-  };
+  }, [language, user]);
 
-  const handleNextQuestion = () => {
-    if (currentQuizIndex < quizzes.length - 1) {
-      setCurrentQuizIndex(currentQuizIndex + 1);
-      setSelectedAnswer(null);
-      setIsAnswered(false);
-    } else {
-      // Quiz terminé
-      setQuizCompleted(true);
-      
-      // Mettre à jour la progression de l'utilisateur
-      if (user && languageId) {
-        updateUserProgress();
+  const fetchQuestions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('coding_quiz')
+        .select('*')
+        .eq('language', language)
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching questions:', error);
+        toast.error('Erreur lors du chargement du quiz');
+        return;
       }
+
+      if (data && data.length > 0) {
+        setQuestions(data);
+        setAnsweredQuestions(new Array(data.length).fill(false));
+      } else {
+        toast.error('Aucune question trouvée pour ce langage');
+      }
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      toast.error('Erreur lors du chargement du quiz');
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateUserProgress = async () => {
+    if (!user || !language) return;
+
     try {
-      // Vérifier si l'utilisateur a déjà une entrée de progression
-      const { data: existingProgress, error: progressError } = await supabase
-        .from('user_language_progress')
-        .select('*')
-        .eq('user_id', user!.id)
-        .eq('language_id', languageId)
-        .maybeSingle();
-        
-      if (progressError) throw progressError;
-      
-      const quizPassed = score >= Math.ceil(quizzes.length * 0.7); // 70% pour réussir
-      
-      if (existingProgress) {
-        // Mettre à jour la progression existante
-        await supabase
-          .from('user_language_progress')
-          .update({
-            quiz_completed: quizPassed,
-            last_updated: new Date().toISOString()
-          })
-          .eq('id', existingProgress.id);
-      } else {
-        // Créer une nouvelle entrée de progression
-        await supabase
-          .from('user_language_progress')
-          .insert([{
-            user_id: user!.id,
-            language_id: languageId,
-            summary_read: false, // Par défaut
-            quiz_completed: quizPassed,
-            badge_earned: false // Par défaut
-          }]);
+      // Try to get the language ID first
+      const { data: languageData } = await supabase
+        .from('programming_languages')
+        .select('id')
+        .eq('name', language)
+        .single();
+
+      if (!languageData) {
+        console.warn('Language not found');
+        return;
       }
-      
-      if (quizPassed) {
-        toast.success('Félicitations! Vous avez réussi le quiz!');
-      } else {
-        toast.info('Vous pouvez réessayer le quiz pour améliorer votre score.');
+
+      // Try to update progress, but handle gracefully if table doesn't exist
+      try {
+        const { data: existingProgress } = await supabase
+          .from('user_language_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('language_id', languageData.id)
+          .single();
+
+        if (existingProgress) {
+          // Update existing progress
+          await supabase
+            .from('user_language_progress')
+            .update({
+              quizzes_completed: existingProgress.quizzes_completed + 1,
+              last_accessed: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingProgress.id);
+        } else {
+          // Create new progress record
+          await supabase
+            .from('user_language_progress')
+            .insert({
+              user_id: user.id,
+              language_id: languageData.id,
+              progress_percentage: 10,
+              lessons_completed: 0,
+              quizzes_completed: 1
+            });
+        }
+      } catch (progressError) {
+        console.warn('Could not update language progress (table may not exist):', progressError);
+        // Continue without failing - this is non-critical
       }
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour de la progression:', err);
+    } catch (error) {
+      console.warn('Could not update user progress:', error);
+      // Don't show error to user as this is non-critical
     }
   };
 
-  const resetQuiz = () => {
-    setCurrentQuizIndex(0);
-    setSelectedAnswer(null);
-    setIsAnswered(false);
-    setIsCorrect(false);
+  const handleAnswerSelect = (answer: string) => {
+    setSelectedAnswer(answer);
+  };
+
+  const nextQuestion = () => {
+    if (!selectedAnswer) {
+      toast.error('Veuillez sélectionner une réponse');
+      return;
+    }
+
+    const currentQuestion = questions[currentQuestionIndex];
+    const isCorrect = selectedAnswer === currentQuestion.correct_answer;
+    
+    if (isCorrect) {
+      setScore(score + 1);
+    }
+
+    const newAnsweredQuestions = [...answeredQuestions];
+    newAnsweredQuestions[currentQuestionIndex] = true;
+    setAnsweredQuestions(newAnsweredQuestions);
+
+    setShowResult(true);
+    
+    setTimeout(() => {
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setSelectedAnswer("");
+        setShowResult(false);
+      } else {
+        setQuizCompleted(true);
+        updateUserProgress();
+      }
+    }, 2000);
+  };
+
+  const restartQuiz = () => {
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer("");
+    setShowResult(false);
     setScore(0);
+    setAnsweredQuestions(new Array(questions.length).fill(false));
     setQuizCompleted(false);
-  };
-
-  const renderOptions = (quiz: Quiz) => {
-    const options = [
-      { value: quiz.option1, label: quiz.option1 },
-      { value: quiz.option2, label: quiz.option2 }
-    ];
-    
-    if (quiz.option3) {
-      options.push({ value: quiz.option3, label: quiz.option3 });
-    }
-    
-    // Ajouter l'option correcte si elle n'est pas déjà incluse
-    if (!options.some(opt => opt.value === quiz.correct_answer)) {
-      options.push({ value: quiz.correct_answer, label: quiz.correct_answer });
-    }
-    
-    // Mélanger les options
-    return options.sort(() => Math.random() - 0.5);
   };
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-10 w-32" />
-          </div>
-          <Skeleton className="h-[400px] w-full rounded-lg" />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (quizzes.length === 0) {
-    return (
-      <DashboardLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">
-              Quiz: {currentLanguage?.name || 'Programmation'}
-            </h1>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate(`/student/language-summary/${languageId}`)}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au résumé
-            </Button>
-          </div>
-          
-          <div className="text-center py-16 bg-gray-50 rounded-lg">
-            <HelpCircle className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-medium text-gray-800 mb-2">Quiz non disponible</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Les questions pour ce quiz sont en cours de préparation. Veuillez revenir plus tard.
-            </p>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p>Chargement du quiz...</p>
+            </div>
           </div>
         </div>
       </DashboardLayout>
     );
   }
 
-  if (quizCompleted) {
-    const passScore = Math.ceil(quizzes.length * 0.7);
-    const isPassed = score >= passScore;
-    
+  if (questions.length === 0) {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">
-              Quiz: {currentLanguage?.name || 'Programmation'}
-            </h1>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate(`/student/language-summary/${languageId}`)}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au résumé
-            </Button>
-          </div>
-          
-          <Card className="w-full bg-white shadow-md">
-            <CardHeader className="text-center border-b">
-              <CardTitle className="text-2xl">Résultats du Quiz</CardTitle>
-            </CardHeader>
-            <CardContent className="py-8">
+          <Card>
+            <CardContent className="pt-6">
               <div className="text-center">
-                {isPassed ? (
-                  <div className="flex flex-col items-center">
-                    <div className="bg-green-100 p-3 rounded-full mb-4">
-                      <Check className="h-12 w-12 text-green-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-green-600 mb-2">Félicitations!</h3>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <div className="bg-orange-100 p-3 rounded-full mb-4">
-                      <X className="h-12 w-12 text-orange-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-orange-600 mb-2">Essayez encore!</h3>
-                  </div>
-                )}
-                
-                <p className="text-lg mb-6">
-                  Votre score: <span className="font-bold">{score}/{quizzes.length}</span>
+                <p className="text-lg text-muted-foreground mb-4">
+                  Aucune question disponible pour ce langage.
                 </p>
-                
-                <p className="text-sm text-gray-600 mb-8">
-                  {isPassed 
-                    ? "Vous avez réussi le quiz! Continuez votre apprentissage." 
-                    : `Score minimum pour réussir: ${passScore}/${quizzes.length}. Vous pouvez réessayer!`}
-                </p>
+                <Button onClick={() => navigate(-1)}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Retour
+                </Button>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-center gap-4 border-t pt-4">
-              <Button 
-                onClick={resetQuiz}
-                variant="outline"
-              >
-                Réessayer le quiz
-              </Button>
-              <Button 
-                onClick={() => navigate(`/student/language-courses/${languageId}`)}
-              >
-                Retour au cours
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </DashboardLayout>
     );
   }
 
-  const currentQuiz = quizzes[currentQuizIndex];
-  
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + (showResult ? 1 : 0)) / questions.length) * 100;
+
+  if (quizCompleted) {
+    const percentage = Math.round((score / questions.length) * 100);
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Trophy className="h-6 w-6 text-yellow-500" />
+                Quiz Terminé !
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <div className="mb-6">
+                <div className="text-4xl font-bold mb-2">{score}/{questions.length}</div>
+                <div className="text-2xl text-muted-foreground">{percentage}%</div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="text-lg">
+                  {percentage >= 80 ? (
+                    <Badge variant="default" className="bg-green-500">
+                      Excellent travail !
+                    </Badge>
+                  ) : percentage >= 60 ? (
+                    <Badge variant="secondary">
+                      Bon travail !
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive">
+                      Continuez à vous entraîner !
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="flex gap-4 justify-center">
+                  <Button onClick={restartQuiz} variant="outline">
+                    Recommencer
+                  </Button>
+                  <Button onClick={() => navigate(`/student/languages/${language}`)}>
+                    Continuer l'apprentissage
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">
-            Quiz: {currentLanguage?.name || 'Programmation'}
-          </h1>
+        <div className="mb-6">
           <Button 
-            variant="outline" 
-            onClick={() => navigate(`/student/language-summary/${languageId}`)}
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="mb-4"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour au résumé
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
           </Button>
-        </div>
-        
-        <div className="mb-4 flex justify-between items-center">
-          <div className="text-sm font-medium text-gray-600">
-            Question {currentQuizIndex + 1} sur {quizzes.length}
+          
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold">Quiz {language}</h1>
+            <div className="text-right">
+              <div className="text-sm text-muted-foreground">
+                Question {currentQuestionIndex + 1} sur {questions.length}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Score: {score}/{currentQuestionIndex + (showResult ? 1 : 0)}
+              </div>
+            </div>
           </div>
-          <div className="text-sm font-medium text-gray-600">
-            Score: {score}
-          </div>
+          
+          <Progress value={progress} className="w-full" />
         </div>
-        
-        <Card className="w-full bg-white shadow-md">
-          <CardHeader className="border-b">
-            <CardTitle className="text-xl">{currentQuiz.question}</CardTitle>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Question {currentQuestionIndex + 1}</span>
+              <Badge variant="outline">
+                {currentQuestion?.difficulty || 'Beginner'}
+              </Badge>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="py-6">
-            <RadioGroup 
-              value={selectedAnswer || ''} 
-              className="space-y-4"
-            >
-              {renderOptions(currentQuiz).map((option, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center space-x-2 p-3 rounded-md ${
-                    isAnswered && option.value === currentQuiz.correct_answer 
-                      ? 'bg-green-50 border border-green-200' 
-                      : isAnswered && option.value === selectedAnswer 
-                        ? 'bg-red-50 border border-red-200'
-                        : 'hover:bg-gray-50 border border-gray-200'
-                  }`}
-                  onClick={() => handleAnswerSelection(option.value)}
-                >
-                  <RadioGroupItem 
-                    value={option.value} 
-                    id={`option-${index}`} 
-                    disabled={isAnswered}
-                  />
-                  <Label 
-                    htmlFor={`option-${index}`} 
-                    className={`flex-grow cursor-pointer ${
-                      isAnswered && option.value === currentQuiz.correct_answer 
-                        ? 'text-green-700' 
-                        : isAnswered && option.value === selectedAnswer 
-                          ? 'text-red-700'
-                          : ''
+          <CardContent>
+            <div className="space-y-6">
+              <p className="text-lg">{currentQuestion?.question}</p>
+              
+              <div className="space-y-3">
+                {[currentQuestion?.option1, currentQuestion?.option2, currentQuestion?.option3].map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => !showResult && handleAnswerSelect(option)}
+                    disabled={showResult}
+                    className={`w-full p-4 text-left border rounded-lg transition-colors ${
+                      showResult
+                        ? option === currentQuestion.correct_answer
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : option === selectedAnswer && option !== currentQuestion.correct_answer
+                          ? 'border-red-500 bg-red-50 text-red-700'
+                          : 'border-gray-200 bg-gray-50'
+                        : selectedAnswer === option
+                        ? 'border-primary bg-primary/10'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    {option.label}
-                  </Label>
-                  
-                  {isAnswered && option.value === currentQuiz.correct_answer && (
-                    <Check className="h-5 w-5 text-green-600" />
-                  )}
-                  
-                  {isAnswered && option.value === selectedAnswer && option.value !== currentQuiz.correct_answer && (
-                    <X className="h-5 w-5 text-red-600" />
-                  )}
-                </div>
-              ))}
-            </RadioGroup>
-            
-            {isAnswered && currentQuiz.explanation && (
-              <div className="mt-6 p-4 bg-blue-50 rounded-md">
-                <p className="text-blue-800 text-sm">{currentQuiz.explanation}</p>
+                    <div className="flex items-center justify-between">
+                      <span>{option}</span>
+                      {showResult && (
+                        <>
+                          {option === currentQuestion.correct_answer && (
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          )}
+                          {option === selectedAnswer && option !== currentQuestion.correct_answer && (
+                            <XCircle className="h-5 w-5 text-red-500" />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
+
+              {showResult && currentQuestion?.explanation && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Explication :</h4>
+                  <p className="text-blue-800">{currentQuestion.explanation}</p>
+                </div>
+              )}
+
+              {!showResult && (
+                <Button 
+                  onClick={nextQuestion}
+                  disabled={!selectedAnswer}
+                  className="w-full"
+                >
+                  {currentQuestionIndex < questions.length - 1 ? 'Question suivante' : 'Terminer le quiz'}
+                </Button>
+              )}
+            </div>
           </CardContent>
-          <CardFooter className="flex justify-end border-t pt-4">
-            {!isAnswered ? (
-              <Button 
-                onClick={checkAnswer}
-                disabled={!selectedAnswer}
-              >
-                Vérifier la réponse
-              </Button>
-            ) : (
-              <Button onClick={handleNextQuestion}>
-                {currentQuizIndex < quizzes.length - 1 ? 'Question suivante' : 'Voir les résultats'}
-              </Button>
-            )}
-          </CardFooter>
         </Card>
       </div>
     </DashboardLayout>
   );
-};
-
-export default LanguageQuizPage;
+}

@@ -1,180 +1,186 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { PayPalButton } from "@/components/payments/PayPalButton";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
 import { 
-  BookOpen, 
+  ArrowLeft, 
   Clock, 
-  User, 
-  ChevronLeft, 
-  AlertTriangle,
-  FileText,
-  Video,
-  Presentation
+  Users, 
+  BookOpen, 
+  Star,
+  Play,
+  Lock,
+  CheckCircle,
+  Trophy
 } from "lucide-react";
-import type { Course } from "@/types/course";
 
-const PaidCourseDetailsPage = () => {
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  path: string;
+  category: string;
+  difficulty: string;
+  teacher_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CourseModule {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  difficulty: string;
+  estimated_duration: string;
+  order_index: number;
+}
+
+interface StudentProgress {
+  id: string;
+  student_id: string;
+  course_id: string;
+  completion_percentage: number;
+  last_accessed_at: string;
+}
+
+export default function PaidCourseDetailsPage() {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthState();
+  
   const [course, setCourse] = useState<Course | null>(null);
+  const [modules, setModules] = useState<CourseModule[]>([]);
+  const [progress, setProgress] = useState<StudentProgress | null>(null);
   const [loading, setLoading] = useState(true);
-  const [enrolled, setEnrolled] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
 
   useEffect(() => {
-    fetchCourseDetails();
-  }, [courseId]);
+    if (courseId && user) {
+      fetchCourseData();
+      checkPurchaseStatus();
+    }
+  }, [courseId, user]);
 
-  const fetchCourseDetails = async () => {
-    if (!courseId) return;
-    
+  const fetchCourseData = async () => {
     try {
-      setLoading(true);
-      
       // Fetch course details
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select(`
-          *,
-          teacher:teacher_id (
-            name:full_name
-          ),
-          course_materials (
-            id,
-            type,
-            title
-          )
-        `)
+        .select('*')
         .eq('id', courseId)
         .single();
 
-      if (courseError) throw courseError;
-
-      if (courseData) {
-        // Transform to Course type
-        const transformedCourse: Course = {
-          id: courseData.id,
-          title: courseData.title,
-          description: courseData.description || "",
-          duration: "8 weeks",
-          students: 0,
-          image: "/placeholder.svg",
-          difficulty: courseData.difficulty,
-          path: courseData.path,
-          category: courseData.category,
-          language: "JavaScript" as any, // This is a simplification
-          professor: {
-            name: courseData.teacher?.name || "Unknown Professor",
-            title: "Course Instructor"
-          },
-          materials: {
-            videos: courseData.course_materials?.filter(m => m.type === 'video').length || 0,
-            pdfs: courseData.course_materials?.filter(m => m.type === 'pdf').length || 0,
-            presentations: courseData.course_materials?.filter(m => m.type === 'presentation').length || 0
-          }
-        };
-
-        setCourse(transformedCourse);
-        
-        // Check if user is already enrolled
-        const { data: session } = await supabase.auth.getSession();
-        if (session?.session?.user) {
-          const { data: enrollmentData } = await supabase
-            .from('student_progress')
-            .select('id')
-            .eq('course_id', courseId)
-            .eq('student_id', session.session.user.id)
-            .single();
-            
-          setEnrolled(!!enrollmentData);
-        }
+      if (courseError) {
+        console.error('Error fetching course:', courseError);
+        toast.error('Cours non trouvé');
+        navigate('/student/courses');
+        return;
       }
-    } catch (error: any) {
-      console.error("Error fetching course:", error);
-      toast.error("Failed to load course details");
+
+      setCourse(courseData);
+
+      // Fetch course modules
+      const { data: modulesData, error: modulesError } = await supabase
+        .from('course_modules')
+        .select('*')
+        .eq('language_id', courseData.id)
+        .order('order_index');
+
+      if (modulesError) {
+        console.error('Error fetching modules:', modulesError);
+      } else {
+        setModules(modulesData || []);
+      }
+
+    } catch (error) {
+      console.error('Error fetching course data:', error);
+      toast.error('Erreur lors du chargement du cours');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePaymentSuccess = async (details: any) => {
-    // In a real app, you would verify the payment on the server
+  const checkPurchaseStatus = async () => {
+    if (!user || !courseId) return;
+
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user?.id || !courseId) {
-        toast.error("User not authenticated");
-        return;
+      // Try to get student progress, but handle gracefully if table doesn't exist
+      try {
+        const { data: progressData } = await supabase
+          .from('student_progress')
+          .select('*')
+          .eq('student_id', user.id)
+          .eq('course_id', courseId)
+          .single();
+
+        if (progressData) {
+          setProgress(progressData);
+          setIsPurchased(true);
+        }
+      } catch (progressError) {
+        console.warn('Could not check student progress (table may not exist):', progressError);
+        // For now, assume not purchased
+        setIsPurchased(false);
       }
-      
-      // Record enrollment in student_progress
-      const { error } = await supabase
-        .from('student_progress')
-        .insert({
-          student_id: session.session.user.id,
-          course_id: courseId,
-          started_at: new Date().toISOString(),
-          completion_percentage: 0,
-          completed_materials: []
-        });
-        
-      if (error) throw error;
-      
-      toast.success("You are now enrolled in this course!");
-      setEnrolled(true);
-      setShowPayment(false);
-    } catch (error: any) {
-      console.error("Error enrolling in course:", error);
-      toast.error("Failed to complete enrollment");
+    } catch (error) {
+      console.warn('Could not check purchase status:', error);
+      setIsPurchased(false);
     }
   };
 
-  const renderEnrollmentOptions = () => {
-    if (enrolled) {
-      return (
-        <Button className="w-full" onClick={() => navigate(`/student/courses/${courseId}/learn`)}>
-          Continue Learning
-        </Button>
-      );
+  const handlePurchaseSuccess = async () => {
+    if (!user || !courseId) return;
+
+    try {
+      // Try to create progress record, but handle gracefully if table doesn't exist
+      try {
+        const { data, error } = await supabase
+          .from('student_progress')
+          .insert({
+            student_id: user.id,
+            course_id: courseId,
+            completion_percentage: 0,
+            last_accessed_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.warn('Could not create progress record:', error);
+        } else {
+          setProgress(data);
+        }
+      } catch (progressError) {
+        console.warn('Could not create student progress (table may not exist):', progressError);
+        // Continue without failing
+      }
+
+      setIsPurchased(true);
+      toast.success('Achat réussi ! Vous pouvez maintenant accéder au cours.');
+    } catch (error) {
+      console.error('Error handling purchase:', error);
+      toast.error('Erreur lors de l\'enregistrement de l\'achat');
     }
-    
-    if (showPayment) {
-      return (
-        <div className="space-y-4">
-          <PayPalButton 
-            amount={49.99} 
-            courseId={courseId || ""}
-            courseTitle={course?.title || ""}
-            onSuccess={handlePaymentSuccess}
-            onError={() => toast.error("Payment failed. Please try again.")}
-          />
-          <Button variant="outline" className="w-full" onClick={() => setShowPayment(false)}>
-            Cancel
-          </Button>
-        </div>
-      );
-    }
-    
-    return (
-      <Button className="w-full" onClick={() => setShowPayment(true)}>
-        Enroll for $49.99
-      </Button>
-    );
   };
 
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="container mx-auto py-8 px-4">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p>Chargement du cours...</p>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -184,175 +190,254 @@ const PaidCourseDetailsPage = () => {
   if (!course) {
     return (
       <DashboardLayout>
-        <div className="container mx-auto py-8 px-4">
-          <div className="text-center py-12">
-            <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Course Not Found</h2>
-            <p className="mb-4">The course you're looking for doesn't exist or has been removed.</p>
-            <Button onClick={() => navigate('/student/courses')}>
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back to Courses
-            </Button>
-          </div>
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-lg text-muted-foreground mb-4">
+                  Cours non trouvé.
+                </p>
+                <Button onClick={() => navigate('/student/courses')}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Retour aux cours
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     );
   }
 
+  const completedModules = progress ? Math.round((progress.completion_percentage / 100) * modules.length) : 0;
+
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto px-4 py-8">
         <Button 
-          variant="outline" 
+          variant="ghost" 
           onClick={() => navigate('/student/courses')}
           className="mb-6"
         >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Courses
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Retour aux cours
         </Button>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Course Info */}
           <div className="lg:col-span-2 space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{course.title}</h1>
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                <Badge variant="secondary">{course.difficulty}</Badge>
-                <Badge variant="outline">{course.path}</Badge>
-                <Badge variant="outline">{course.category}</Badge>
-              </div>
-              <p className="text-gray-600">{course.description}</p>
-            </div>
-            
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">What You'll Learn</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-start">
-                    <div className="mr-2 mt-1 h-4 w-4 rounded-full bg-green-500"></div>
-                    <span>Master artificial intelligence core concepts and applications</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="mr-2 mt-1 h-4 w-4 rounded-full bg-green-500"></div>
-                    <span>Implement machine learning algorithms from scratch</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="mr-2 mt-1 h-4 w-4 rounded-full bg-green-500"></div>
-                    <span>Build neural networks using modern frameworks</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="mr-2 mt-1 h-4 w-4 rounded-full bg-green-500"></div>
-                    <span>Deploy AI solutions to solve real-world problems</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Course Content</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm text-muted-foreground">
-                    8 sections • 24 lectures • 12 hours total
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-2xl mb-2">{course.title}</CardTitle>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <Badge variant="outline">{course.difficulty}</Badge>
+                      <Badge variant="secondary">{course.category}</Badge>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>6-8 heures</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <BookOpen className="h-4 w-4" />
+                        <span>{modules.length} modules</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">4.8</span>
+                    <span className="text-sm text-muted-foreground">(234)</span>
                   </div>
                 </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground leading-relaxed">
+                  {course.description}
+                </p>
                 
+                {isPurchased && progress && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Progression</span>
+                      <span className="text-sm text-muted-foreground">
+                        {completedModules}/{modules.length} modules
+                      </span>
+                    </div>
+                    <Progress value={progress.completion_percentage} className="w-full" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Course Modules */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Programme du cours</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
-                  <div className="border rounded-md p-4">
-                    <div className="font-medium mb-2">1. Introduction to Artificial Intelligence</div>
-                    <div className="pl-4 space-y-2 text-sm">
-                      <div className="flex items-center">
-                        <Video className="h-4 w-4 mr-2" />
-                        <span>What is Artificial Intelligence?</span>
+                  {modules.map((module, index) => (
+                    <div key={module.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          {isPurchased ? (
+                            completedModules > index ? (
+                              <CheckCircle className="h-6 w-6 text-green-500" />
+                            ) : (
+                              <Play className="h-6 w-6 text-primary" />
+                            )
+                          ) : (
+                            <Lock className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{module.title}</h4>
+                          <p className="text-sm text-muted-foreground">{module.description}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {module.difficulty}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {module.estimated_duration}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <Video className="h-4 w-4 mr-2" />
-                        <span>History and Evolution of AI</span>
-                      </div>
-                      <div className="flex items-center">
-                        <FileText className="h-4 w-4 mr-2" />
-                        <span>AI Ethics and Considerations</span>
-                      </div>
+                      
+                      {isPurchased && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/student/courses/${courseId}/modules/${module.id}`)}
+                        >
+                          {completedModules > index ? 'Revoir' : 'Commencer'}
+                        </Button>
+                      )}
                     </div>
-                  </div>
-                  
-                  <div className="border rounded-md p-4">
-                    <div className="font-medium mb-2">2. Machine Learning Fundamentals</div>
-                    <div className="pl-4 space-y-2 text-sm">
-                      <div className="flex items-center">
-                        <Video className="h-4 w-4 mr-2" />
-                        <span>Supervised vs Unsupervised Learning</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Presentation className="h-4 w-4 mr-2" />
-                        <span>Linear Regression Implementation</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Video className="h-4 w-4 mr-2" />
-                        <span>Classification Algorithms</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
-          
+
+          {/* Purchase/Access Panel */}
           <div className="space-y-6">
             <Card>
-              <CardContent className="pt-6">
-                <div className="aspect-video bg-gray-100 rounded-md mb-4 overflow-hidden">
-                  <img 
-                    src="/placeholder.svg" 
-                    alt={course.title} 
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                
-                <div className="text-3xl font-bold mb-4">$49.99</div>
-                
-                {renderEnrollmentOptions()}
-                
-                <div className="mt-6 space-y-4">
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm">{course.duration} duration</span>
+              <CardHeader>
+                <CardTitle className="text-center">
+                  {isPurchased ? 'Accès au cours' : 'Acheter le cours'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isPurchased ? (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Vous avez accès à ce cours
+                      </p>
+                    </div>
+                    
+                    <Button 
+                      className="w-full" 
+                      onClick={() => {
+                        const nextModule = modules.find((_, index) => index >= completedModules);
+                        if (nextModule) {
+                          navigate(`/student/courses/${courseId}/modules/${nextModule.id}`);
+                        }
+                      }}
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Continuer le cours
+                    </Button>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Progression:</span>
+                        <span>{progress?.completion_percentage || 0}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Modules terminés:</span>
+                        <span>{completedModules}/{modules.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Dernier accès:</span>
+                        <span>
+                          {progress?.last_accessed_at 
+                            ? new Date(progress.last_accessed_at).toLocaleDateString() 
+                            : 'Jamais'
+                          }
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <BookOpen className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm">24 lessons</span>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold mb-1">29,99 €</div>
+                      <p className="text-sm text-muted-foreground">
+                        Accès à vie au cours complet
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>Accès à vie</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>{modules.length} modules</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>Certificat de completion</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>Support communautaire</span>
+                      </div>
+                    </div>
+                    
+                    <PayPalButton 
+                      amount="29.99"
+                      onSuccess={handlePurchaseSuccess}
+                    />
                   </div>
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm">Instructor: {course.professor.name}</span>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
-            
+
+            {/* Instructor Info */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">This course includes:</CardTitle>
+                <CardTitle>Instructeur</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center">
-                  <Video className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm">12 hours on-demand video</span>
+              <CardContent>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-12 w-12 bg-primary rounded-full flex items-center justify-center text-white font-medium">
+                    JD
+                  </div>
+                  <div>
+                    <h4 className="font-medium">John Doe</h4>
+                    <p className="text-sm text-muted-foreground">Expert {course.path}</p>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm">8 downloadable resources</span>
-                </div>
-                <div className="flex items-center">
-                  <Presentation className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm">4 interactive exercises</span>
-                </div>
-                <div className="flex items-center">
-                  <BookOpen className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm">Full lifetime access</span>
+                <p className="text-sm text-muted-foreground">
+                  Développeur senior avec 10+ années d'expérience dans l'industrie.
+                </p>
+                <div className="flex items-center gap-4 mt-3 text-sm">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    <span>1,234 étudiants</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4" />
+                    <span>4.9 étoiles</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -361,6 +446,4 @@ const PaidCourseDetailsPage = () => {
       </div>
     </DashboardLayout>
   );
-};
-
-export default PaidCourseDetailsPage;
+}

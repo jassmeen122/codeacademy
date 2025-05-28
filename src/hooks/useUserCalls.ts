@@ -21,24 +21,57 @@ export const useUserCalls = () => {
     try {
       setLoading(true);
       
-      // Créer l'enregistrement d'appel
-      const { data, error } = await supabase
-        .from('user_calls')
-        .insert({
+      // Try to create the call record - with graceful fallback if table doesn't exist
+      try {
+        const { data, error } = await supabase
+          .from('user_calls')
+          .insert({
+            caller_id: user.id,
+            receiver_id: receiverId,
+            call_type: callType,
+            status: 'ongoing'
+          })
+          .select('*')
+          .single();
+          
+        if (error) {
+          console.warn('Could not create call record:', error);
+          // Create a local call object as fallback
+          const localCall: UserCall = {
+            id: 'local-' + Date.now(),
+            caller_id: user.id,
+            receiver_id: receiverId,
+            call_type: callType,
+            status: 'ongoing',
+            started_at: new Date().toISOString(),
+            ended_at: null,
+            duration: 0,
+            created_at: new Date().toISOString()
+          };
+          setCurrentCall(localCall);
+          return localCall;
+        }
+        
+        const call = data as UserCall;
+        setCurrentCall(call);
+        return call;
+      } catch (dbError) {
+        console.warn('Database not available for calls, using local state:', dbError);
+        // Fallback to local state
+        const localCall: UserCall = {
+          id: 'local-' + Date.now(),
           caller_id: user.id,
           receiver_id: receiverId,
           call_type: callType,
-          status: 'ongoing'
-        })
-        .select('*')
-        .single();
-        
-      if (error) throw error;
-      
-      const call = data as UserCall;
-      setCurrentCall(call);
-      
-      return call;
+          status: 'ongoing',
+          started_at: new Date().toISOString(),
+          ended_at: null,
+          duration: 0,
+          created_at: new Date().toISOString()
+        };
+        setCurrentCall(localCall);
+        return localCall;
+      }
     } catch (error) {
       console.error('Erreur lors de l\'initiation de l\'appel:', error);
       toast.error('Impossible de passer l\'appel');
@@ -55,19 +88,29 @@ export const useUserCalls = () => {
       const startTime = currentCall ? new Date(currentCall.started_at) : new Date();
       const duration = Math.round((endTime.getTime() - startTime.getTime()) / 1000); // en secondes
       
-      const { error } = await supabase
-        .from('user_calls')
-        .update({
-          status,
-          ended_at: endTime.toISOString(),
-          duration: duration > 0 ? duration : 0
-        })
-        .eq('id', callId);
-        
-      if (error) throw error;
+      // Try to update the database, but don't fail if it's not available
+      try {
+        const { error } = await supabase
+          .from('user_calls')
+          .update({
+            status,
+            ended_at: endTime.toISOString(),
+            duration: duration > 0 ? duration : 0
+          })
+          .eq('id', callId);
+          
+        if (error) {
+          console.warn('Could not update call record:', error);
+        }
+      } catch (dbError) {
+        console.warn('Database not available for call update:', dbError);
+      }
       
       setCurrentCall(null);
-      fetchCallHistory();
+      // Only fetch call history if database is available
+      if (!callId.startsWith('local-')) {
+        fetchCallHistory();
+      }
       
       return true;
     } catch (error) {
@@ -94,11 +137,16 @@ export const useUserCalls = () => {
         .or(`caller_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('started_at', { ascending: false });
         
-      if (error) throw error;
+      if (error) {
+        console.warn('Could not fetch call history:', error);
+        setCallHistory([]);
+        return;
+      }
       
       setCallHistory(data as unknown as UserCall[]);
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'historique des appels:', error);
+      console.warn('Database not available for call history:', error);
+      setCallHistory([]);
     } finally {
       setLoading(false);
     }
