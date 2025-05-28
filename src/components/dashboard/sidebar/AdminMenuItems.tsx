@@ -1,75 +1,56 @@
 
-import {
-  Activity,
-  Book,
-  BookOpen,
-  Briefcase,
-  FileCode,
-  Gauge,
-  Settings,
-  Users,
-  MessageSquare,
-  GraduationCap,
-  School,
-  BookText,
-  FileSearch,
-  Library
+import { 
+  Users, 
+  GraduationCap, 
+  BookOpen, 
+  Settings, 
+  FileText,
+  Building2,
+  MessageSquare
 } from "lucide-react";
 import { MenuItem } from "@/types/sidebar";
 
 export const adminMenuItems: MenuItem[] = [
   {
-    title: "Learning Dashboard",
-    icon: Gauge,
-    href: "/admin",
-    description: "Monitor platform statistics and activities"
-  },
-  {
-    title: "Learners Management",
-    icon: GraduationCap,
+    title: "Gestion Utilisateurs",
     href: "/admin/users",
-    description: "Manage student and teacher accounts"
+    icon: Users,
+    description: "Gérer les utilisateurs et leurs rôles"
   },
   {
-    title: "Community Discussions",
-    icon: MessageSquare,
-    href: "/admin/posts",
-    description: "Moderate and manage student discussions"
-  },
-  {
-    title: "Learning Modules",
-    icon: BookText,
+    title: "Gestion Cours",
     href: "/admin/courses",
-    description: "Create and manage educational courses"
+    icon: BookOpen,
+    description: "Administrer les cours et contenus"
   },
   {
-    title: "Learning Assessments",
-    icon: FileSearch,
+    title: "Gestion Exercices",
     href: "/admin/exercises",
-    description: "Manage coding challenges and quizzes"
+    icon: GraduationCap,
+    description: "Superviser les exercices"
   },
   {
-    title: "Knowledge Library",
-    icon: Library,
-    href: "/admin/knowledge",
-    description: "Manage educational resources"
+    title: "Gestion Posts",
+    href: "/admin/posts",
+    icon: FileText,
+    description: "Modérer les publications"
   },
   {
-    title: "Internship Program",
-    icon: Briefcase,
+    title: "Gestion Stages",
     href: "/admin/internships",
-    description: "Manage work experience opportunities"
+    icon: Building2,
+    description: "Administrer les offres de stage"
   },
   {
-    title: "Learning Analytics",
-    icon: Activity,
-    href: "/admin/analytics",
-    description: "View educational performance metrics"
+    title: "Messages Privés",
+    href: "/admin/private-messages",
+    icon: MessageSquare,
+    description: "Messages privés avec les utilisateurs"
   },
   {
-    title: "Platform Settings",
-    icon: Settings,
+    title: "Paramètres",
     href: "/admin/settings",
-    description: "Configure the learning platform"
-  },
+    icon: Settings,
+    description: "Configuration système"
+  }
 ];
