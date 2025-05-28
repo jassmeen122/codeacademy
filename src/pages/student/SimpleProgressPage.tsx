@@ -5,7 +5,7 @@ import { useUserProgress } from '@/hooks/useUserProgress';
 import { ProgressCard } from '@/components/progress/ProgressCard';
 import { BadgesSection } from '@/components/progress/BadgesSection';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Play, CheckCircle, XCircle } from 'lucide-react';
 
 const SimpleProgressPage = () => {
   const { progress, loading, updateProgress, getProgressStats, availableBadges } = useUserProgress();
@@ -15,12 +15,12 @@ const SimpleProgressPage = () => {
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-12 bg-card/50 rounded w-1/3 border border-neon-blue/30"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-40 bg-gray-200 rounded"></div>
-              <div className="h-40 bg-gray-200 rounded"></div>
+              <div className="h-48 bg-card/50 rounded border border-neon-blue/30"></div>
+              <div className="h-48 bg-card/50 rounded border border-neon-blue/30"></div>
             </div>
-            <div className="h-60 bg-gray-200 rounded"></div>
+            <div className="h-80 bg-card/50 rounded border border-neon-blue/30"></div>
           </div>
         </div>
       </DashboardLayout>
@@ -31,7 +31,9 @@ const SimpleProgressPage = () => {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
-          <p>Erreur lors du chargement du progrès</p>
+          <div className="cyber-card p-8 text-center">
+            <p className="text-neon-blue font-mono">ERROR: Progress data not found...</p>
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -56,24 +58,26 @@ const SimpleProgressPage = () => {
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-            <span className="text-4xl">🌟</span>
-            Mon Progrès
+          <h1 className="text-4xl font-bold font-mono mb-3 flex items-center gap-3">
+            <span className="text-5xl animate-hologram">🌟</span>
+            <span className="text-cyber-gradient typewriter">MY_JOURNEY</span>
           </h1>
-          <p className="text-muted-foreground">Suivez votre progression et vos achievements</p>
+          <p className="text-muted-foreground font-mono terminal-text">
+            > Monitoring progress and achievements...
+          </p>
         </div>
 
         {/* Cartes de progrès */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <ProgressCard
-            title="Contenu lu"
+            title="CONTENT_READ"
             current={progress.content_read}
             total={progress.total_content}
             icon="📚"
           />
           
           <ProgressCard
-            title="Bonnes réponses"
+            title="CORRECT_ANSWERS"
             current={progress.correct_answers}
             total={progress.total_answers}
             icon="🧠"
@@ -89,38 +93,43 @@ const SimpleProgressPage = () => {
           />
         </div>
 
-        {/* Boutons de test pour simuler les actions */}
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-medium mb-3 text-blue-800">🧪 Zone de test (simuler les actions)</h3>
-          <div className="flex flex-wrap gap-2">
+        {/* Zone de test cyber */}
+        <div className="cyber-card p-6 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 border-neon-blue/30">
+          <h3 className="font-mono font-bold mb-4 text-neon-blue flex items-center gap-2">
+            <Play className="h-5 w-5" />
+            DEBUG_MODE // Simulation controls
+          </h3>
+          <div className="flex flex-wrap gap-3 mb-4">
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleTestReading}
-              className="bg-green-100 hover:bg-green-200"
+              className="cyber-button bg-neon-green/10 border-neon-green/30 hover:border-neon-green/80 font-mono"
             >
-              <RefreshCw className="h-4 w-4 mr-1" />
-              Marquer comme lu
+              <RefreshCw className="h-4 w-4 mr-2" />
+              mark_as_read()
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleTestCorrectAnswer}
-              className="bg-blue-100 hover:bg-blue-200"
+              className="cyber-button bg-neon-blue/10 border-neon-blue/30 hover:border-neon-blue/80 font-mono"
             >
-              ✅ Bonne réponse
+              <CheckCircle className="h-4 w-4 mr-2" />
+              correct_answer()
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleTestWrongAnswer}
-              className="bg-red-100 hover:bg-red-200"
+              className="cyber-button bg-red-500/10 border-red-500/30 hover:border-red-500/80 font-mono"
             >
-              ❌ Mauvaise réponse
+              <XCircle className="h-4 w-4 mr-2" />
+              wrong_answer()
             </Button>
           </div>
-          <p className="text-xs text-blue-600 mt-2">
-            Ces boutons simulent les actions pour tester le système de badges
+          <p className="text-xs text-muted-foreground font-mono terminal-text">
+            > Execute functions to test badge system integration
           </p>
         </div>
       </div>

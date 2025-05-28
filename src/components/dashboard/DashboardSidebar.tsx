@@ -54,37 +54,37 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
   const getRoleTitle = () => {
     switch (userRole) {
       case 'admin':
-        return 'Admin Portal';
+        return 'ADMIN_PORTAL';
       case 'teacher':
-        return 'Teacher Portal';
+        return 'TEACHER_INTERFACE';
       case 'student':
-        return 'Student Portal';
+        return 'STUDENT_TERMINAL';
       default:
-        return 'Loading...';
+        return 'LOADING...';
     }
   };
 
   const RoleIcon = getRoleIcon();
 
   return (
-    <Sidebar className="border-r border-gray-700 bg-gray-900">
-      <SidebarHeader className="border-b border-gray-700 p-4">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-gray-800 rounded-md">
-            <RoleIcon className="h-6 w-6 text-primary" />
+    <Sidebar className="cyber-sidebar">
+      <SidebarHeader className="border-b border-neon-blue/20 p-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-black/60 rounded-md border border-neon-blue/30 shadow-cyber-sm">
+            <RoleIcon className="h-6 w-6 text-neon-blue animate-cyber-glow" />
           </div>
           <div>
-            <span className="font-mono font-semibold text-lg">{getRoleTitle()}</span>
-            <div className="text-xs text-gray-500 font-mono">{`> CodeAcademy`}</div>
+            <span className="font-mono font-bold text-lg text-cyber-gradient typewriter">{getRoleTitle()}</span>
+            <div className="text-xs text-neon-green font-mono terminal-text">{`> system.initialized`}</div>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="bg-gray-900">
+      <SidebarContent className="cyber-sidebar">
         <SidebarMenu menuItems={getMenuItems()} />
       </SidebarContent>
-      <SidebarFooter className="border-t border-gray-700 p-4 bg-gray-800">
-        <div className="text-xs text-gray-500 font-mono mb-2">{`// Toggle sidebar`}</div>
-        <SidebarTrigger />
+      <SidebarFooter className="border-t border-neon-blue/20 p-4 bg-black/40">
+        <div className="text-xs text-muted-foreground font-mono mb-2 terminal-text">{`// toggle_sidebar()`}</div>
+        <SidebarTrigger className="cyber-button" />
       </SidebarFooter>
     </Sidebar>
   );

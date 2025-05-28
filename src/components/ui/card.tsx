@@ -1,6 +1,5 @@
 
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
@@ -10,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm glass-card hover:shadow-neon transition-all duration-500 relative overflow-hidden group",
+      "cyber-card hover-glow transition-all duration-300",
       className
     )}
     {...props}
@@ -37,7 +36,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight text-gradient group-hover:animate-neon-pulse transition-all duration-300",
+      "text-2xl font-semibold leading-none tracking-tight text-cyber-gradient font-mono animate-neon-pulse",
       className
     )}
     {...props}
@@ -51,7 +50,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors duration-300", className)}
+    className={cn("text-sm text-muted-foreground font-mono", className)}
     {...props}
   />
 ))
