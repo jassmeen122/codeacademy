@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase, authWithRetry } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Terminal, User, Mail, Lock, Code, Server, BookOpen } from "lucide-react";
+import { Terminal, User, Mail, Lock, Code, BookOpen } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,7 +19,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [systemStatus, setSystemStatus] = useState<'checking' | 'available' | 'degraded'>('checking');
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,35 +29,6 @@ const Auth = () => {
   const welcomeText = isSignUp 
     ? "> Preparing new user registration..." 
     : "> Authenticating user...";
-
-  // Check system status on mount
-  useEffect(() => {
-    const checkSystemStatus = async () => {
-      try {
-        // Simple health check
-        const { data, error } = await supabase.auth.getSession();
-        setSystemStatus(error ? 'degraded' : 'available');
-      } catch (error) {
-        console.warn("System status check failed, continuing in degraded mode");
-        setSystemStatus('degraded');
-      }
-    };
-    
-    checkSystemStatus();
-  }, []);
-
-  // Clean up any stale auth tokens before logging in
-  const cleanupAuthState = () => {
-    try {
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch (error) {
-      console.warn("Error cleaning auth state:", error);
-    }
-  };
 
   // Animation effect for terminal-style text
   useEffect(() => {
@@ -85,11 +55,8 @@ const Auth = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          console.log("Found existing session:", session.user.id);
-          
+          console.log("Found existing session, redirecting...");
           const role = session.user.user_metadata?.role || 'student';
-          console.log("User role from metadata:", role);
-          
           redirectUserByRole(role);
         }
       } catch (error) {
@@ -97,26 +64,23 @@ const Auth = () => {
       }
     };
 
-    if (systemStatus !== 'checking') {
-      checkAuth();
-    }
-  }, [navigate, systemStatus]);
+    checkAuth();
+  }, [navigate]);
 
   // Helper function to redirect user based on role
   const redirectUserByRole = (role: string) => {
     console.log("Redirecting user with role:", role);
     
-    // Use setTimeout to ensure the redirect happens after the current execution
     setTimeout(() => {
       switch (role) {
         case 'admin': 
-          window.location.href = '/admin'; 
+          navigate('/admin');
           break;
         case 'teacher': 
-          window.location.href = '/teacher'; 
+          navigate('/teacher'); 
           break;
         default: 
-          window.location.href = '/student'; 
+          navigate('/student'); 
           break;
       }
     }, 100);
@@ -127,20 +91,18 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      // Clean up any stale auth state first
-      cleanupAuthState();
-      
-      // Force sign out any existing session
+      // Clean up any existing auth state
       try {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            localStorage.removeItem(key);
+          }
+        });
         await supabase.auth.signOut({ scope: 'global' });
-        console.log("Previous session cleared");
-      } catch (signOutError) {
-        console.warn("Sign out during cleanup failed (non-critical):", signOutError);
+      } catch (cleanupError) {
+        console.warn("Cleanup error (non-critical):", cleanupError);
       }
 
-      // Small delay to ensure cleanup is complete
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
       if (isSignUp) {
         // Validate form data
         if (!formData.email || !formData.password || !formData.fullName) {
@@ -151,11 +113,7 @@ const Auth = () => {
           throw new Error("Le mot de passe doit contenir au moins 6 caractères");
         }
 
-        console.log("Attempting signup with data:", {
-          email: formData.email,
-          fullName: formData.fullName,
-          role: formData.role
-        });
+        console.log("Attempting signup...");
         
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
@@ -179,28 +137,28 @@ const Auth = () => {
           throw new Error("Cet email est déjà enregistré. Veuillez vous connecter.");
         }
 
-        console.log("Signup successful:", data.user?.id);
-        toast.success("Compte créé avec succès! Vérifiez votre email pour confirmation.");
+        console.log("Signup successful");
+        toast.success("Compte créé avec succès! Vous pouvez maintenant vous connecter.");
         setIsSignUp(false);
       } else {
-        console.log("Attempting signin with email:", formData.email);
+        console.log("Attempting signin...");
         
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
-          
+
         if (error) {
           console.error("Login error:", error);
           
-          // Handle specific login errors with better messages but continue with auth flow
+          // Even if there's a database error, check if auth was successful
           if (error.message?.includes('Database error') || 
               error.message?.includes('permission denied') ||
               error.code === 'unexpected_failure') {
             
-            console.log("Database error during login, but checking if auth was successful...");
+            console.log("Database error but checking if auth succeeded...");
             
-            // Wait a moment then check if we actually got authenticated despite the error
+            // Wait and check if we got authenticated despite the error
             setTimeout(async () => {
               try {
                 const { data: sessionData } = await supabase.auth.getSession();
@@ -217,6 +175,7 @@ const Auth = () => {
               
               // If we get here, auth really failed
               toast.error("Erreur de connexion. Veuillez réessayer.");
+              setIsLoading(false);
             }, 1000);
             
             return; // Don't throw the error, let the timeout handle it
@@ -229,13 +188,11 @@ const Auth = () => {
           throw new Error("Email ou mot de passe invalide");
         }
 
-        console.log("Login successful:", data.user.id);
+        console.log("Login successful");
         toast.success("Connexion réussie! Redirection...");
         
-        // Get role from user metadata and redirect accordingly
+        // Get role and redirect
         const role = data.user.user_metadata?.role || 'student';
-        
-        // Force redirect with role-based navigation
         redirectUserByRole(role);
       }
     } catch (error: any) {
@@ -257,24 +214,9 @@ const Auth = () => {
       } else {
         toast.error(error.message || "Une erreur s'est produite lors de l'authentification");
       }
-    } finally {
+      
       setIsLoading(false);
     }
-  };
-
-  // Show system status if degraded
-  const SystemStatusBanner = () => {
-    if (systemStatus === 'degraded') {
-      return (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-          <div className="flex items-center text-sm text-yellow-800">
-            <Server className="h-4 w-4 mr-2" />
-            <span>Service en mode dégradé - Certaines fonctionnalités peuvent être limitées</span>
-          </div>
-        </div>
-      );
-    }
-    return null;
   };
 
   return (
@@ -294,8 +236,6 @@ const Auth = () => {
         </div>
 
         <div className="p-8 bg-white rounded-b-lg border border-gray-200 shadow-md highlight-animation">
-          <SystemStatusBanner />
-          
           <div className="mb-6">
             <h2 className="text-xl font-bold text-primary mb-2 flex items-center gap-2">
               <Code className="h-5 w-5" />
@@ -339,24 +279,21 @@ const Auth = () => {
                     <Label htmlFor="role" className="text-sm font-medium text-gray-600">
                       <span className="keyword-text">const</span> <span className="variable-text">role</span> <span className="text-gray-500">=</span>
                     </Label>
-                    <div className="flex items-center">
-                      <Server className="w-4 h-4 mr-2 text-gray-500" />
-                      <Select
-                        value={formData.role}
-                        onValueChange={(value: "admin" | "teacher" | "student") =>
-                          setFormData({ ...formData, role: value })
-                        }
-                      >
-                        <SelectTrigger className="w-full bg-white border-gray-300 text-gray-800">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border-gray-200 text-gray-800">
-                          <SelectItem value="student" className="hover:bg-blue-50">student</SelectItem>
-                          <SelectItem value="teacher" className="hover:bg-blue-50">teacher</SelectItem>
-                          <SelectItem value="admin" className="hover:bg-blue-50">admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Select
+                      value={formData.role}
+                      onValueChange={(value: "admin" | "teacher" | "student") =>
+                        setFormData({ ...formData, role: value })
+                      }
+                    >
+                      <SelectTrigger className="w-full bg-white border-gray-300 text-gray-800">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-200 text-gray-800">
+                        <SelectItem value="student" className="hover:bg-blue-50">student</SelectItem>
+                        <SelectItem value="teacher" className="hover:bg-blue-50">teacher</SelectItem>
+                        <SelectItem value="admin" className="hover:bg-blue-50">admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </>

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { supabase, authWithRetry } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -21,48 +21,10 @@ export const useAuthState = () => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [systemAvailable, setSystemAvailable] = useState(true);
   const navigate = useNavigate();
 
-  // Helper function to clean up auth state from localStorage
-  const cleanupAuthState = () => {
-    try {
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch (error) {
-      console.warn("Error cleaning auth state:", error);
-    }
-  };
-
-  // Enhanced profile fetching with system degradation handling
-  const safelyFetchProfile = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      if (error) {
-        console.warn("Error fetching profile:", error.message);
-        setSystemAvailable(false);
-        return null;
-      }
-      
-      setSystemAvailable(true);
-      return profile;
-    } catch (err: any) {
-      console.warn("Error in profile fetch:", err);
-      setSystemAvailable(false);
-      return null;
-    }
-  };
-
-  // Create minimal user profile from auth metadata
-  const createMinimalUser = (authUser: any): UserProfile => {
+  // Create user profile from auth metadata only (no database calls)
+  const createUserFromAuth = (authUser: any): UserProfile => {
     return {
       id: authUser.id,
       email: authUser.email || '',
@@ -78,37 +40,19 @@ export const useAuthState = () => {
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener first
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("Auth state changed", event, currentSession?.user?.id);
+      console.log("Auth state changed:", event, currentSession?.user?.id);
       
       if (!mounted) return;
       
       setSession(currentSession);
       
       if (currentSession?.user) {
-        // Create minimal user immediately to prevent loading states
-        const minimalUser = createMinimalUser(currentSession.user);
-        setUser(minimalUser);
-        
-        // Try to fetch full profile in background
-        const profile = await safelyFetchProfile(currentSession.user.id);
-        
-        if (profile && mounted) {
-          console.log("Profile fetched:", profile);
-          setUser(profile as UserProfile);
-        }
-        
-        // Try to create/update profile if system is available
-        if (systemAvailable && !profile) {
-          try {
-            await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
-            console.log("Profile created/updated");
-          } catch (profileError) {
-            console.warn("Non-critical: Error creating profile:", profileError);
-            setSystemAvailable(false);
-          }
-        }
+        // Create user from auth data immediately - no database calls
+        const userProfile = createUserFromAuth(currentSession.user);
+        setUser(userProfile);
+        console.log("User profile created:", userProfile);
         
         if (mounted) setLoading(false);
       } else {
@@ -117,11 +61,10 @@ export const useAuthState = () => {
       }
     });
 
-    // After setting up listener, check for existing session
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.warn("Session check error:", error);
-        setSystemAvailable(false);
       }
       
       console.log("Initial session check:", session?.user?.id);
@@ -131,32 +74,15 @@ export const useAuthState = () => {
       setSession(session);
       
       if (session?.user) {
-        // Create minimal user immediately
-        const minimalUser = createMinimalUser(session.user);
-        setUser(minimalUser);
-        
-        const profile = await safelyFetchProfile(session.user.id);
-        
-        if (profile && mounted) {
-          setUser(profile as UserProfile);
-        }
-        
-        if (systemAvailable && !profile) {
-          try {
-            await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
-          } catch (error) {
-            console.warn("Non-critical initialization error:", error);
-            setSystemAvailable(false);
-          }
-        }
-        
+        const userProfile = createUserFromAuth(session.user);
+        setUser(userProfile);
+        console.log("Initial user profile:", userProfile);
         if (mounted) setLoading(false);
       } else {
         if (mounted) setLoading(false);
       }
     }).catch(error => {
       console.error("Error in initial session check:", error);
-      setSystemAvailable(false);
       if (mounted) setLoading(false);
     });
 
@@ -170,20 +96,25 @@ export const useAuthState = () => {
     try {
       setLoading(true);
       
-      // Clean up auth state
-      cleanupAuthState();
+      // Clear localStorage
+      try {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (error) {
+        console.warn("Error cleaning auth state:", error);
+      }
       
-      // Sign out with retry mechanism
-      await authWithRetry(async () => {
-        const { error } = await supabase.auth.signOut({ scope: 'global' });
-        if (error) throw error;
-        return { error: null };
-      });
+      // Sign out
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      if (error) throw error;
       
       setUser(null);
       setSession(null);
       
-      // Force page reload to ensure clean state
+      // Force page reload
       window.location.href = '/auth';
       toast.success('Déconnexion réussie');
       return true;
@@ -192,8 +123,6 @@ export const useAuthState = () => {
       console.error("Sign out error:", error);
       setLoading(false);
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -202,6 +131,6 @@ export const useAuthState = () => {
     user,
     loading,
     handleSignOut,
-    systemAvailable
+    systemAvailable: true // Always true since we're not using database calls
   };
 };
