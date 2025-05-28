@@ -12,7 +12,7 @@ interface Challenge {
   code: string;
   correctAnswer: string;
   explanation: string;
-  type: 'sql' | 'python' | 'javascript' | 'php' | 'java';
+  type: 'sql' | 'python' | 'javascript' | 'php' | 'java' | 'c' | 'cpp';
 }
 
 interface GameLevel {
@@ -71,6 +71,26 @@ const JavaScriptLogo = () => (
       <div className="absolute inset-0 flex items-center justify-center text-black text-xs font-bold">JS</div>
     </div>
     <span className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent">JavaScript</span>
+  </div>
+);
+
+const CLogo = () => (
+  <div className="inline-flex items-center gap-2">
+    <div className="relative w-8 h-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800 rounded-md"></div>
+      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">🔥</div>
+    </div>
+    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">C</span>
+  </div>
+);
+
+const CPPLogo = () => (
+  <div className="inline-flex items-center gap-2">
+    <div className="relative w-8 h-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-md"></div>
+      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">🚀</div>
+    </div>
+    <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-700 bg-clip-text text-transparent">C++</span>
   </div>
 );
 
@@ -538,6 +558,95 @@ console.log(b);`,
     correctAnswer: "[1, 2, 3]",
     explanation: "b référence le tableau original [1,2,3]. Quand a = [4,5,6], on change la référence de a vers un nouveau tableau, mais b garde sa référence vers l'ancien tableau.",
     type: 'javascript'
+  },
+  {
+    id: 34,
+    title: "Pointeurs et Modification",
+    description: "Que va afficher ce code et pourquoi ?",
+    code: `int a = 1;
+int b = 2;
+int *p = &a;
+*p = b;
+printf("%d %d\\n", a, b);`,
+    correctAnswer: "2 2",
+    explanation: "p pointe vers a. L'instruction *p = b; assigne la valeur de b (2) à la variable pointée par p (donc a). Donc a devient 2. b reste 2. Affichage : 2 2.",
+    type: 'c'
+  },
+  {
+    id: 35,
+    title: "Chaîne Constante et Modification",
+    description: "Que se passe-t-il ?",
+    code: `char *str = "Hello";
+str[0] = 'J';
+printf("%s\\n", str);`,
+    correctAnswer: "Comportement indéfini, segmentation fault",
+    explanation: "str pointe vers une chaîne constante en mémoire en lecture seule. Modifier str[0] est interdit. Cela peut planter le programme avec une segmentation fault.",
+    type: 'c'
+  },
+  {
+    id: 36,
+    title: "Pointeur vers Pointeur",
+    description: "Que s'affiche ?",
+    code: `int x = 5;
+int *p = &x;
+int **pp = &p;
+**pp = 10;
+printf("%d\\n", x);`,
+    correctAnswer: "10",
+    explanation: "pp est un pointeur vers un pointeur p. **pp = 10; modifie la valeur pointée par p, donc x devient 10.",
+    type: 'c'
+  },
+  {
+    id: 37,
+    title: "Constructeur et Méthodes Virtuelles",
+    description: "Que s'affiche et pourquoi ?",
+    code: `class Base {
+public:
+    Base() { foo(); }
+    virtual void foo() { std::cout << "Base\\n"; }
+};
+
+class Derived : public Base {
+public:
+    void foo() override { std::cout << "Derived\\n"; }
+};
+
+int main() {
+    Derived d;
+}`,
+    correctAnswer: "Base",
+    explanation: "Lors du constructeur Base(), l'objet est en cours de construction en tant que Base. La liaison virtuelle n'appelle pas la méthode Derived::foo(). Donc c'est Base::foo() qui est appelée.",
+    type: 'cpp'
+  },
+  {
+    id: 38,
+    title: "Références rvalue et move",
+    description: "Que s'affiche ?",
+    code: `int main() {
+    int a = 5;
+    int& ref = a;
+    int&& rref = std::move(ref);
+    rref = 10;
+    std::cout << a << std::endl;
+}`,
+    correctAnswer: "10",
+    explanation: "rref est une référence rvalue vers a. Modifier rref modifie a.",
+    type: 'cpp'
+  },
+  {
+    id: 39,
+    title: "Surcharge de Fonctions",
+    description: "Quelle est la sortie ?",
+    code: `void func(int x) { std::cout << "int\\n"; }
+void func(int& x) { std::cout << "int&\\n"; }
+int main() {
+    int a = 1;
+    func(a);
+    func(1);
+}`,
+    correctAnswer: "int& puis int",
+    explanation: "func(a) appelle la version par référence (car a est une variable modifiable). func(1) appelle la version par valeur (car 1 est une constante temporaire).",
+    type: 'cpp'
   }
 ];
 
@@ -618,6 +727,10 @@ export const CandyCrushCodingGame = () => {
         return 'bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500';
       } else if (level.challenge.type === 'javascript') {
         return 'bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500';
+      } else if (level.challenge.type === 'c') {
+        return 'bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900';
+      } else if (level.challenge.type === 'cpp') {
+        return 'bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800';
       }
     }
     return 'bg-gray-400';
@@ -636,6 +749,8 @@ export const CandyCrushCodingGame = () => {
       case 'php': return 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border-purple-200';
       case 'java': return 'bg-gradient-to-r from-red-100 to-orange-100 text-red-800 border-red-200';
       case 'javascript': return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-200';
+      case 'c': return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-200';
+      case 'cpp': return 'bg-gradient-to-r from-indigo-100 to-purple-200 text-indigo-800 border-indigo-200';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -647,6 +762,8 @@ export const CandyCrushCodingGame = () => {
       case 'php': return 'PHP';
       case 'java': return 'JAVA';
       case 'javascript': return 'JAVASCRIPT';
+      case 'c': return 'C';
+      case 'cpp': return 'C++';
       default: return type.toUpperCase();
     }
   };
@@ -676,9 +793,11 @@ export const CandyCrushCodingGame = () => {
             <PHPLogo />
             <JavaLogo />
             <JavaScriptLogo />
+            <CLogo />
+            <CPPLogo />
           </div>
           <p className="text-lg text-muted-foreground">
-            Résous des défis Python, SQL, PHP, Java et JavaScript avancés pour débloquer les niveaux suivants !
+            Résous des défis Python, SQL, PHP, Java, JavaScript, C et C++ avancés pour débloquer les niveaux suivants !
           </p>
         </div>
 
@@ -727,6 +846,8 @@ export const CandyCrushCodingGame = () => {
           <p>🐘 Défis PHP Experts • Type Juggling, Méthodes Magiques, Références</p>
           <p>☕ Défis Java Experts • Final, Héritage, Threads, String Pool</p>
           <p>🌐 Défis JavaScript Experts • NaN, Closures, ASI, Références</p>
+          <p>🔥 Défis C Experts • Pointeurs, Chaînes Constantes, Double Pointeurs</p>
+          <p>🚀 Défis C++ Experts • Constructeurs, rvalue, Surcharge</p>
         </div>
       </motion.div>
     );
@@ -752,7 +873,9 @@ export const CandyCrushCodingGame = () => {
           Tu maîtrises {currentLevelData?.challenge.type === 'python' ? 'Python' : 
                       currentLevelData?.challenge.type === 'sql' ? 'SQL' : 
                       currentLevelData?.challenge.type === 'php' ? 'PHP' :
-                      currentLevelData?.challenge.type === 'java' ? 'Java' : 'JavaScript'} niveau {currentLevel} !
+                      currentLevelData?.challenge.type === 'java' ? 'Java' : 
+                      currentLevelData?.challenge.type === 'c' ? 'C' :
+                      currentLevelData?.challenge.type === 'cpp' ? 'C++' : 'JavaScript'} niveau {currentLevel} !
         </p>
         <motion.div
           animate={{ rotate: [0, 5, -5, 0] }}
@@ -762,7 +885,9 @@ export const CandyCrushCodingGame = () => {
             {currentLevelData?.challenge.type === 'python' ? '🐍' : 
              currentLevelData?.challenge.type === 'sql' ? '🗃️' : 
              currentLevelData?.challenge.type === 'php' ? '🐘' :
-             currentLevelData?.challenge.type === 'java' ? '☕' : '🌐'}
+             currentLevelData?.challenge.type === 'java' ? '☕' : 
+             currentLevelData?.challenge.type === 'c' ? '🔥' :
+             currentLevelData?.challenge.type === 'cpp' ? '🚀' : '🌐'}
           </div>
         </motion.div>
         <Button onClick={handleBackToMenu} size="lg" className={
@@ -774,6 +899,10 @@ export const CandyCrushCodingGame = () => {
             ? "bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
             : currentLevelData?.challenge.type === 'java'
             ? "bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500"
+            : currentLevelData?.challenge.type === 'c'
+            ? "bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900"
+            : currentLevelData?.challenge.type === 'cpp'
+            ? "bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800"
             : "bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500"
         }>
           Continuer vers le menu
@@ -822,6 +951,16 @@ export const CandyCrushCodingGame = () => {
                 <div className="w-4 h-4 bg-red-500 rounded-sm"></div>
                 <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
               </>
+            ) : currentLevelData.challenge.type === 'c' ? (
+              <>
+                <div className="w-4 h-4 bg-blue-600 rounded-sm"></div>
+                <div className="w-4 h-4 bg-blue-800 rounded-sm"></div>
+              </>
+            ) : currentLevelData.challenge.type === 'cpp' ? (
+              <>
+                <div className="w-4 h-4 bg-indigo-600 rounded-sm"></div>
+                <div className="w-4 h-4 bg-purple-700 rounded-sm"></div>
+              </>
             ) : (
               <>
                 <div className="w-4 h-4 bg-yellow-500 rounded-sm"></div>
@@ -834,7 +973,9 @@ export const CandyCrushCodingGame = () => {
           currentLevelData.challenge.type === 'python' ? 'text-blue-600' : 
           currentLevelData.challenge.type === 'sql' ? 'text-orange-600' : 
           currentLevelData.challenge.type === 'php' ? 'text-purple-600' :
-          currentLevelData.challenge.type === 'java' ? 'text-red-600' : 'text-yellow-600'
+          currentLevelData.challenge.type === 'java' ? 'text-red-600' : 
+          currentLevelData.challenge.type === 'c' ? 'text-blue-700' :
+          currentLevelData.challenge.type === 'cpp' ? 'text-indigo-700' : 'text-yellow-600'
         }`}>
           {currentLevelData.challenge.title}
         </h3>
@@ -863,6 +1004,10 @@ export const CandyCrushCodingGame = () => {
                   ? 'border-purple-200'
                   : currentLevelData.challenge.type === 'java'
                   ? 'border-red-200'
+                  : currentLevelData.challenge.type === 'c'
+                  ? 'border-blue-300'
+                  : currentLevelData.challenge.type === 'cpp'
+                  ? 'border-indigo-300'
                   : 'border-yellow-200'
               }`}
               disabled={showResult}
@@ -881,6 +1026,10 @@ export const CandyCrushCodingGame = () => {
                     ? "w-full bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
                     : currentLevelData.challenge.type === 'java'
                     ? "w-full bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500"
+                    : currentLevelData.challenge.type === 'c'
+                    ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900"
+                    : currentLevelData.challenge.type === 'cpp'
+                    ? "w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800"
                     : "w-full bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500"
                 }
               >
@@ -911,7 +1060,9 @@ export const CandyCrushCodingGame = () => {
                       ? `Parfait ! Tu maîtrises ${currentLevelData.challenge.type === 'python' ? 'Python' : 
                                                 currentLevelData.challenge.type === 'sql' ? 'SQL' : 
                                                 currentLevelData.challenge.type === 'php' ? 'PHP' :
-                                                currentLevelData.challenge.type === 'java' ? 'Java' : 'JavaScript'} !` 
+                                                currentLevelData.challenge.type === 'java' ? 'Java' : 
+                                                currentLevelData.challenge.type === 'c' ? 'C' :
+                                                currentLevelData.challenge.type === 'cpp' ? 'C++' : 'JavaScript'} !` 
                       : 'Pas tout à fait...'
                     }
                   </h3>
