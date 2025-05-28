@@ -227,12 +227,8 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navigation />
       
-      <HeroSection 
-        session={session} 
-        userRole={userRole} 
-        navigateToPortal={navigateToPortal}
-      />
-
+      <HeroSection />
+      
       <TechFeaturesSection />
       
       <LanguagesSection />
