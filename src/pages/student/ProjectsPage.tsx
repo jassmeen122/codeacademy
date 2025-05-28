@@ -6,35 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Eye, Download, Rocket, Palette, Users, Target } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectSpecs {
   projectName: string;
   description: string;
-  objectives: string;
-  targetAudience: string;
   primaryColor: string;
   secondaryColor: string;
   sections: string[];
-  inspiration: string;
-  projectType: string;
 }
 
 const ProjectsPage = () => {
   const [specs, setSpecs] = useState<ProjectSpecs>({
     projectName: "",
     description: "",
-    objectives: "",
-    targetAudience: "",
     primaryColor: "#3b82f6",
     secondaryColor: "#1e40af",
-    sections: [],
-    inspiration: "",
-    projectType: "web"
+    sections: []
   });
   
   const [isGenerating, setIsGenerating] = useState(false);
@@ -42,16 +32,9 @@ const ProjectsPage = () => {
   const [previewMode, setPreviewMode] = useState<'form' | 'preview'>('form');
 
   const availableSections = [
-    "Hero/Bannière",
     "À propos",
-    "Services",
-    "Portfolio/Réalisations",
-    "Équipe",
-    "Témoignages",
-    "Tarifs",
-    "Blog",
-    "Contact",
-    "FAQ"
+    "Services", 
+    "Contact"
   ];
 
   const handleSectionChange = (section: string, checked: boolean) => {
@@ -63,73 +46,158 @@ const ProjectsPage = () => {
     }));
   };
 
-  const generateLandingPage = async () => {
+  const generateSimplePage = () => {
     if (!specs.projectName.trim() || !specs.description.trim()) {
-      toast.error("Veuillez remplir au moins le nom et la description du projet");
+      toast.error("Veuillez remplir le nom et la description du projet");
+      return;
+    }
+
+    if (specs.sections.length === 0) {
+      toast.error("Veuillez sélectionner au moins une section");
       return;
     }
 
     setIsGenerating(true);
     
-    try {
-      const prompt = `Génère le code HTML complet d'une landing page moderne et responsive pour un projet ${specs.projectType}. 
-
-DÉTAILS DU PROJET:
-- Nom: ${specs.projectName}
-- Description: ${specs.description}
-- Objectifs: ${specs.objectives}
-- Public cible: ${specs.targetAudience}
-- Couleur principale: ${specs.primaryColor}
-- Couleur secondaire: ${specs.secondaryColor}
-- Sections à inclure: ${specs.sections.join(', ')}
-- Inspiration: ${specs.inspiration}
-
-EXIGENCES TECHNIQUES:
-- Code HTML complet avec CSS intégré dans des balises <style>
-- Design moderne et responsive (mobile-first)
-- Utilisation de Flexbox/Grid pour la mise en page
-- Animations CSS subtiles
-- Typographie claire et professionnelle
-- Optimisé pour la conversion
-- Compatible avec tous les navigateurs modernes
-
-STRUCTURE ATTENDUE:
-- Header avec navigation
-- ${specs.sections.map(section => `- Section ${section}`).join('\n')}
-- Footer avec informations de contact
-
-Utilise les couleurs spécifiées et crée un design cohérent qui reflète les objectifs du projet.`;
-
-      const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: { 
-          prompt,
-          messageHistory: [],
+    // Générer le code HTML/CSS simple
+    setTimeout(() => {
+      const htmlCode = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${specs.projectName}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      });
-
-      if (error) throw new Error(error.message);
-      
-      if (data?.reply?.content) {
-        // Extraire le code HTML du contenu
-        const htmlMatch = data.reply.content.match(/```html([\s\S]*?)```/);
-        if (htmlMatch && htmlMatch[1]) {
-          setGeneratedCode(htmlMatch[1].trim());
-        } else {
-          // Si pas de code block, prendre tout le contenu
-          setGeneratedCode(data.reply.content);
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
         }
-        setPreviewMode('preview');
-        toast.success("Landing page générée avec succès!");
-      } else {
-        throw new Error("Impossible de générer la landing page");
-      }
-      
-    } catch (error) {
-      console.error("Error generating landing page:", error);
-      toast.error("Erreur lors de la génération de la landing page");
-    } finally {
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background-color: ${specs.primaryColor};
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        /* Sections */
+        section {
+            padding: 3rem 0;
+        }
+        
+        section:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        section h2 {
+            color: ${specs.secondaryColor};
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        section p {
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: ${specs.secondaryColor};
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>${specs.projectName}</h1>
+            <p>${specs.description}</p>
+        </div>
+    </header>
+    
+    <main>
+        ${specs.sections.map(section => {
+          switch(section) {
+            case "À propos":
+              return `        <section id="about">
+            <div class="container">
+                <h2>À propos</h2>
+                <p>Découvrez qui nous sommes et notre mission. Notre équipe est dédiée à vous offrir le meilleur service possible.</p>
+            </div>
+        </section>`;
+            case "Services":
+              return `        <section id="services">
+            <div class="container">
+                <h2>Nos Services</h2>
+                <p>Nous proposons une gamme complète de services adaptés à vos besoins. Contactez-nous pour en savoir plus.</p>
+            </div>
+        </section>`;
+            case "Contact":
+              return `        <section id="contact">
+            <div class="container">
+                <h2>Contact</h2>
+                <p>N'hésitez pas à nous contacter pour toute question ou demande d'information. Nous sommes là pour vous aider.</p>
+            </div>
+        </section>`;
+            default:
+              return "";
+          }
+        }).join('\n\n')}
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ${specs.projectName}. Tous droits réservés.</p>
+        </div>
+    </footer>
+</body>
+</html>`;
+
+      setGeneratedCode(htmlCode);
+      setPreviewMode('preview');
       setIsGenerating(false);
-    }
+      toast.success("Page générée avec succès!");
+    }, 1500);
   };
 
   const downloadCode = () => {
@@ -139,7 +207,7 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${specs.projectName.replace(/\s+/g, '-').toLowerCase()}-landing-page.html`;
+    a.download = `${specs.projectName.replace(/\s+/g, '-').toLowerCase()}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -152,13 +220,9 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
     setSpecs({
       projectName: "",
       description: "",
-      objectives: "",
-      targetAudience: "",
       primaryColor: "#3b82f6",
       secondaryColor: "#1e40af",
-      sections: [],
-      inspiration: "",
-      projectType: "web"
+      sections: []
     });
     setGeneratedCode(null);
     setPreviewMode('form');
@@ -174,8 +238,8 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
                 <Rocket className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Générateur de Landing Pages</h1>
-                <p className="text-muted-foreground">Créez une landing page automatiquement à partir de votre cahier des charges</p>
+                <h1 className="text-3xl font-bold">Générateur de Pages Web</h1>
+                <p className="text-muted-foreground">Créez une page web simple en quelques clics</p>
               </div>
             </div>
             
@@ -204,7 +268,7 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
-                  Cahier des charges du projet
+                  Informations du projet
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -216,59 +280,18 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
                         id="projectName"
                         value={specs.projectName}
                         onChange={(e) => setSpecs(prev => ({ ...prev, projectName: e.target.value }))}
-                        placeholder="Ex: Mon E-commerce"
+                        placeholder="Ex: Mon Site Web"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="projectType">Type de projet</Label>
-                      <Select value={specs.projectType} onValueChange={(value) => setSpecs(prev => ({ ...prev, projectType: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="web">Site Web</SelectItem>
-                          <SelectItem value="mobile">Application Mobile</SelectItem>
-                          <SelectItem value="software">Logiciel</SelectItem>
-                          <SelectItem value="ecommerce">E-commerce</SelectItem>
-                          <SelectItem value="blog">Blog</SelectItem>
-                          <SelectItem value="portfolio">Portfolio</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="description">Description du projet *</Label>
+                      <Label htmlFor="description">Description *</Label>
                       <Textarea
                         id="description"
                         value={specs.description}
                         onChange={(e) => setSpecs(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Décrivez votre projet en quelques phrases..."
+                        placeholder="Décrivez votre projet..."
                         className="min-h-[100px]"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="objectives">Objectifs principaux</Label>
-                      <Textarea
-                        id="objectives"
-                        value={specs.objectives}
-                        onChange={(e) => setSpecs(prev => ({ ...prev, objectives: e.target.value }))}
-                        placeholder="Quels sont vos objectifs avec ce projet?"
-                        className="min-h-[80px]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="targetAudience">Public cible</Label>
-                      <Textarea
-                        id="targetAudience"
-                        value={specs.targetAudience}
-                        onChange={(e) => setSpecs(prev => ({ ...prev, targetAudience: e.target.value }))}
-                        placeholder="Qui sont vos utilisateurs cibles?"
-                        className="min-h-[80px]"
                       />
                     </div>
 
@@ -312,13 +335,15 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
                         </div>
                       </div>
                     </div>
+                  </div>
 
+                  <div className="space-y-4">
                     <div>
                       <Label className="flex items-center gap-2 mb-3">
                         <Users className="h-4 w-4" />
-                        Sections souhaitées
+                        Sections de la page *
                       </Label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-2">
                         {availableSections.map((section) => (
                           <div key={section} className="flex items-center space-x-2">
                             <Checkbox
@@ -331,24 +356,13 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
                         ))}
                       </div>
                     </div>
-
-                    <div>
-                      <Label htmlFor="inspiration">Inspiration / Références</Label>
-                      <Textarea
-                        id="inspiration"
-                        value={specs.inspiration}
-                        onChange={(e) => setSpecs(prev => ({ ...prev, inspiration: e.target.value }))}
-                        placeholder="Liens de sites, mots-clés, style souhaité..."
-                        className="min-h-[80px]"
-                      />
-                    </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end pt-4">
                   <Button 
-                    onClick={generateLandingPage} 
-                    disabled={isGenerating || !specs.projectName.trim() || !specs.description.trim()}
+                    onClick={generateSimplePage} 
+                    disabled={isGenerating || !specs.projectName.trim() || !specs.description.trim() || specs.sections.length === 0}
                     size="lg"
                   >
                     {isGenerating ? (
@@ -359,7 +373,7 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
                     ) : (
                       <>
                         <Rocket className="mr-2 h-4 w-4" />
-                        Générer la landing page
+                        Générer la page
                       </>
                     )}
                   </Button>
@@ -371,7 +385,7 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="h-5 w-5" />
-                  Aperçu de votre landing page
+                  Aperçu de votre page web
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -390,7 +404,7 @@ Utilise les couleurs spécifiées et crée un design cohérent qui reflète les 
                         <iframe
                           srcDoc={generatedCode}
                           className="w-full h-[600px] border-0"
-                          title="Aperçu de la landing page"
+                          title="Aperçu de la page web"
                         />
                       </div>
                     </div>
