@@ -36,6 +36,50 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_submissions: {
+        Row: {
+          challenge_id: string
+          id: string
+          is_correct: boolean
+          points_earned: number
+          submission_code: string | null
+          submitted_answer: string | null
+          submitted_at: string
+          time_taken: number
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number
+          submission_code?: string | null
+          submitted_answer?: string | null
+          submitted_at?: string
+          time_taken: number
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          id?: string
+          is_correct?: boolean
+          points_earned?: number
+          submission_code?: string | null
+          submitted_answer?: string | null
+          submitted_at?: string
+          time_taken?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_submissions_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenges: {
         Row: {
           created_at: string
@@ -365,6 +409,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      daily_challenges: {
+        Row: {
+          challenge_type: string
+          code_snippet: string | null
+          correct_answer: string | null
+          created_at: string
+          description: string
+          difficulty: string
+          expected_output: string | null
+          expires_at: string
+          id: string
+          is_active: boolean
+          points_reward: number
+          time_limit: number
+          title: string
+        }
+        Insert: {
+          challenge_type?: string
+          code_snippet?: string | null
+          correct_answer?: string | null
+          created_at?: string
+          description: string
+          difficulty?: string
+          expected_output?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          points_reward?: number
+          time_limit?: number
+          title: string
+        }
+        Update: {
+          challenge_type?: string
+          code_snippet?: string | null
+          correct_answer?: string | null
+          created_at?: string
+          description?: string
+          difficulty?: string
+          expected_output?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          points_reward?: number
+          time_limit?: number
+          title?: string
+        }
+        Relationships: []
       }
       exercise_notes: {
         Row: {
@@ -1292,6 +1384,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_leaderboard: {
+        Row: {
+          badges_earned: number
+          challenges_completed: number
+          current_streak: number
+          id: string
+          last_activity: string | null
+          longest_streak: number
+          monthly_points: number
+          total_points: number
+          updated_at: string
+          user_id: string
+          weekly_points: number
+        }
+        Insert: {
+          badges_earned?: number
+          challenges_completed?: number
+          current_streak?: number
+          id?: string
+          last_activity?: string | null
+          longest_streak?: number
+          monthly_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+          weekly_points?: number
+        }
+        Update: {
+          badges_earned?: number
+          challenges_completed?: number
+          current_streak?: number
+          id?: string
+          last_activity?: string | null
+          longest_streak?: number
+          monthly_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+          weekly_points?: number
+        }
+        Relationships: []
+      }
       user_metrics: {
         Row: {
           course_completions: number | null
@@ -1393,6 +1527,48 @@ export type Database = {
           },
         ]
       }
+      user_progress_detailed: {
+        Row: {
+          chapter_name: string
+          completed_steps: Json | null
+          completion_percentage: number
+          estimated_completion_time: number | null
+          id: string
+          in_progress_steps: Json | null
+          last_accessed: string | null
+          module_id: string
+          pending_steps: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_name: string
+          completed_steps?: Json | null
+          completion_percentage?: number
+          estimated_completion_time?: number | null
+          id?: string
+          in_progress_steps?: Json | null
+          last_accessed?: string | null
+          module_id: string
+          pending_steps?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapter_name?: string
+          completed_steps?: Json | null
+          completion_percentage?: number
+          estimated_completion_time?: number | null
+          id?: string
+          in_progress_steps?: Json | null
+          last_accessed?: string | null
+          module_id?: string
+          pending_steps?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress_reports: {
         Row: {
           completed_steps: Json | null
@@ -1460,6 +1636,33 @@ export type Database = {
           item_id?: string
           recommendation_type?: string
           relevance_score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          last_updated: string
+          progress: number
+          skill_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          progress?: number
+          skill_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_updated?: string
+          progress?: number
+          skill_name?: string
           user_id?: string
         }
         Relationships: []

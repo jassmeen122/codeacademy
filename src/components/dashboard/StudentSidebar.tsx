@@ -23,7 +23,8 @@ import {
   MessageCircle,
   Book,
   Briefcase,
-  Youtube
+  Youtube,
+  Trophy
 } from 'lucide-react';
 
 const links = [
@@ -91,6 +92,11 @@ const links = [
     title: 'Progress',
     href: '/student/progress',
     icon: TrendingUp,
+  },
+  {
+    title: 'Progress & Gamification',
+    href: '/student/progress-gamification',
+    icon: Trophy,
   },
   {
     title: 'Achievements',
