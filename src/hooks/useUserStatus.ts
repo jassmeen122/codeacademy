@@ -83,7 +83,13 @@ export const useUserStatus = () => {
         .single();
 
       if (data && !error) {
-        return data as UserStatus;
+        // Convert the database response to match our UserStatus type
+        return {
+          id: data.id.toString(), // Convert number to string
+          user_id: data.user_id,
+          status: data.status,
+          last_active: data.last_active
+        } as UserStatus;
       }
     } catch (error) {
       console.warn("Could not get user status from database:", error);
