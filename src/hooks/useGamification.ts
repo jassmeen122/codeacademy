@@ -68,24 +68,37 @@ export const useGamification = () => {
       })) || [];
       setDailyChallenges(transformedChallenges);
       
-      // Récupérer le leaderboard (top 10)
+      // Récupérer le leaderboard (top 10) - First get leaderboard data
       const { data: leaderboardData, error: leaderboardError } = await supabase
         .from('user_leaderboard')
-        .select(`
-          *,
-          profiles!inner(full_name)
-        `)
+        .select('*')
         .order('total_points', { ascending: false })
         .limit(10);
       
       if (leaderboardError) throw leaderboardError;
       
-      // Transform leaderboard data to match our type
-      const transformedLeaderboard = leaderboardData?.map(item => ({
-        ...item,
-        profiles: item.profiles ? { full_name: item.profiles.full_name } : { full_name: 'Utilisateur inconnu' }
-      })) || [];
-      setLeaderboard(transformedLeaderboard);
+      // Then get profiles for those users
+      if (leaderboardData && leaderboardData.length > 0) {
+        const userIds = leaderboardData.map(item => item.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', userIds);
+        
+        if (profilesError) throw profilesError;
+        
+        // Merge the data
+        const transformedLeaderboard = leaderboardData.map(item => {
+          const profile = profilesData?.find(p => p.id === item.user_id);
+          return {
+            ...item,
+            profiles: profile ? { full_name: profile.full_name || 'Utilisateur inconnu' } : { full_name: 'Utilisateur inconnu' }
+          };
+        });
+        setLeaderboard(transformedLeaderboard);
+      } else {
+        setLeaderboard([]);
+      }
       
       // Récupérer les stats de l'utilisateur
       const { data: userStatsData, error: userStatsError } = await supabase
