@@ -1,3 +1,4 @@
+
 import {
   Activity,
   Book,
@@ -70,7 +71,7 @@ export const studentMenuItems: MenuItem[] = [
     href: "/student/knowledge",
   },
   {
-    title: "Progrès Simple",
+    title: "My Journey",
     href: '/student/progress-simple',
     icon: TrendingUp,
   },
