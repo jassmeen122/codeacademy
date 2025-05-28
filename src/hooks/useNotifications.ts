@@ -20,7 +20,10 @@ export const useNotifications = () => {
   const { user } = useAuthState();
 
   const fetchNotifications = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -31,11 +34,20 @@ export const useNotifications = () => {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.read).length || 0);
+      if (error) {
+        console.warn('Error fetching notifications:', error);
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
+      
+      const notificationData = data || [];
+      setNotifications(notificationData);
+      setUnreadCount(notificationData.filter(n => !n.read).length);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.warn('Error fetching notifications:', error);
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setLoading(false);
     }
@@ -51,7 +63,10 @@ export const useNotifications = () => {
         .eq('id', notificationId)
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Error marking notification as read:', error);
+        return;
+      }
       
       // Update the local state
       setNotifications(prev =>
@@ -61,7 +76,7 @@ export const useNotifications = () => {
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.warn('Error marking notification as read:', error);
     }
   };
 
@@ -75,7 +90,10 @@ export const useNotifications = () => {
         .eq('user_id', user.id)
         .eq('read', false);
 
-      if (error) throw error;
+      if (error) {
+        console.warn('Error marking all notifications as read:', error);
+        return;
+      }
       
       // Update the local state
       setNotifications(prev =>
@@ -83,7 +101,7 @@ export const useNotifications = () => {
       );
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      console.warn('Error marking all notifications as read:', error);
     }
   };
 

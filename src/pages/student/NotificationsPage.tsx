@@ -1,71 +1,12 @@
 
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Bell, Mail, Trophy, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Notification {
-  id: string;
-  title: string;
-  content: string;
-  type: 'announcement' | 'reminder' | 'achievement' | 'message';
-  created_at: string;
-  read: boolean;
-}
-
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Type assertion to ensure the data matches the Notification interface
-      setNotifications((data?.filter(notification => 
-        ['announcement', 'reminder', 'achievement', 'message'].includes(notification.type)
-      ) || []) as Notification[]);
-
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-      
-      setNotifications(notifications.map(notification =>
-        notification.id === notificationId
-          ? { ...notification, read: true }
-          : notification
-      ));
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
+  const { notifications, loading, markAsRead } = useNotifications();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -81,7 +22,14 @@ export default function NotificationsPage() {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-8">Notifications</h1>
+          <p>Chargement...</p>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -119,7 +67,7 @@ export default function NotificationsPage() {
           ))}
           {notifications.length === 0 && (
             <p className="text-center text-muted-foreground py-8">
-              No notifications yet
+              Aucune notification pour le moment
             </p>
           )}
         </div>
