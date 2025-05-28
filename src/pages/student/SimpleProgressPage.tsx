@@ -1,43 +1,41 @@
 
 import React from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { StudentLayout } from '@/layouts/StudentLayout';
+import { PageHeader } from '@/components/common/PageHeader';
+import { ActionCard } from '@/components/common/ActionCard';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { ProgressCard } from '@/components/progress/ProgressCard';
 import { BadgesSection } from '@/components/progress/BadgesSection';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Play, CheckCircle, XCircle, BookOpen, Brain, Target, TrendingUp, BarChart3 } from 'lucide-react';
+import { RefreshCw, BookOpen, CheckCircle, XCircle, Brain, TrendingUp, BarChart3 } from 'lucide-react';
 
 const SimpleProgressPage = () => {
   const { progress, loading, updateProgress, getProgressStats, availableBadges } = useUserProgress();
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-12 bg-card rounded w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-48 bg-card rounded"></div>
-              <div className="h-48 bg-card rounded"></div>
-            </div>
-            <div className="h-80 bg-card rounded"></div>
+      <StudentLayout>
+        <div className="animate-pulse space-y-6">
+          <div className="h-12 bg-card rounded w-1/3"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="h-48 bg-card rounded"></div>
+            <div className="h-48 bg-card rounded"></div>
           </div>
+          <div className="h-80 bg-card rounded"></div>
         </div>
-      </DashboardLayout>
+      </StudentLayout>
     );
   }
 
   if (!progress) {
     return (
-      <DashboardLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="professional-card p-8 text-center">
-            <p className="text-muted-foreground">
-              Données de progression non disponibles
-            </p>
-          </div>
+      <StudentLayout>
+        <div className="professional-card p-8 text-center">
+          <p className="text-muted-foreground">
+            Données de progression non disponibles
+          </p>
         </div>
-      </DashboardLayout>
+      </StudentLayout>
     );
   }
 
@@ -56,57 +54,47 @@ const SimpleProgressPage = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold font-display mb-3 flex items-center gap-3">
-            <TrendingUp className="h-10 w-10 text-primary" />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Mon Parcours d'Apprentissage
-            </span>
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Suivez votre progression et développez vos compétences en informatique
-          </p>
-        </div>
+    <StudentLayout>
+      <PageHeader
+        title="Mon Parcours d'Apprentissage"
+        description="Suivez votre progression et développez vos compétences en informatique"
+        icon={TrendingUp}
+      />
 
-        {/* Cartes de progression */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <ProgressCard
-            title="Contenu Étudié"
-            current={progress.content_read}
-            total={progress.total_content}
-            icon="📚"
-          />
-          
-          <ProgressCard
-            title="Maîtrise Technique"
-            current={progress.correct_answers}
-            total={progress.total_answers}
-            icon="🧠"
-            percentage={stats.answersProgress}
-          />
-        </div>
+      {/* Cartes de progression */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <ProgressCard
+          title="Contenu Étudié"
+          current={progress.content_read}
+          total={progress.total_content}
+          icon="📚"
+        />
+        
+        <ProgressCard
+          title="Maîtrise Technique"
+          current={progress.correct_answers}
+          total={progress.total_answers}
+          icon="🧠"
+          percentage={stats.answersProgress}
+        />
+      </div>
 
-        {/* Section réalisations */}
-        <div className="mb-8">
-          <BadgesSection 
-            earnedBadges={stats.badges}
-            availableBadges={availableBadges}
-          />
-        </div>
+      {/* Section réalisations */}
+      <div className="mb-8">
+        <BadgesSection 
+          earnedBadges={stats.badges}
+          availableBadges={availableBadges}
+        />
+      </div>
 
-        {/* Zone d'interaction */}
-        <div className="professional-card p-6">
-          <h3 className="font-semibold mb-4 text-primary flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            Laboratoire d'Apprentissage
-            <span className="text-xs bg-robot-primary/10 text-robot-primary px-2 py-1 rounded-full">
-              Simulateur
-            </span>
-          </h3>
-          
-          <div className="flex flex-wrap gap-3 mb-6">
+      {/* Zone d'interaction */}
+      <ActionCard
+        title="Laboratoire d'Apprentissage"
+        description="Utilisez ces fonctions pour simuler votre progression et débloquer de nouvelles réalisations"
+        icon={Brain}
+      >
+        <div className="space-y-6">
+          <div className="flex flex-wrap gap-3">
             <Button 
               onClick={handleTestReading}
               className="robot-button"
@@ -135,12 +123,6 @@ const SimpleProgressPage = () => {
               Apprendre d'une Erreur
             </Button>
           </div>
-          
-          <div className="p-4 bg-tech-dark rounded-lg border border-border mb-6">
-            <p className="text-sm text-tech-light font-mono">
-              💡 Utilisez ces fonctions pour simuler votre progression et débloquer de nouvelles réalisations
-            </p>
-          </div>
 
           {/* Statistiques en temps réel */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -163,8 +145,8 @@ const SimpleProgressPage = () => {
             </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </ActionCard>
+    </StudentLayout>
   );
 };
 
