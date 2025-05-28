@@ -32,21 +32,29 @@ export const useDiscussionMessages = () => {
           message_type,
           audio_url,
           created_at,
-          user_id,
-          profiles!discussion_messages_user_id_fkey(
-            full_name,
-            avatar_url
-          )
+          user_id
         `)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
       
+      // Fetch user profiles separately
+      const userIds = [...new Set(data?.map(msg => msg.user_id) || [])];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of user profiles
+      const profilesMap = new Map(profiles?.map(profile => [profile.id, profile]) || []);
+      
       // Transform the data to match our interface
-      const transformedMessages = (data || []).map(msg => ({
+      const transformedMessages: DiscussionMessage[] = (data || []).map(msg => ({
         ...msg,
         message_type: msg.message_type as 'text' | 'audio',
-        sender: msg.profiles
+        sender: profilesMap.get(msg.user_id) || null
       }));
       
       setMessages(transformedMessages);
@@ -71,28 +79,25 @@ export const useDiscussionMessages = () => {
           audio_url: audioUrl,
           user_id: user.id
         })
-        .select(`
-          id,
-          content,
-          message_type,
-          audio_url,
-          created_at,
-          user_id,
-          profiles!discussion_messages_user_id_fkey(
-            full_name,
-            avatar_url
-          )
-        `)
+        .select()
         .single();
 
       if (error) throw error;
 
       if (data) {
-        const transformedMessage = {
+        // Fetch the user profile for the new message
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        const transformedMessage: DiscussionMessage = {
           ...data,
           message_type: data.message_type as 'text' | 'audio',
-          sender: data.profiles
+          sender: profile || null
         };
+        
         setMessages(prev => [...prev, transformedMessage]);
         toast.success('Message envoyé !');
       }
@@ -119,27 +124,24 @@ export const useDiscussionMessages = () => {
           // Fetch the complete message with sender info
           const { data } = await supabase
             .from('discussion_messages')
-            .select(`
-              id,
-              content,
-              message_type,
-              audio_url,
-              created_at,
-              user_id,
-              profiles!discussion_messages_user_id_fkey(
-                full_name,
-                avatar_url
-              )
-            `)
+            .select('*')
             .eq('id', payload.new.id)
             .single();
 
           if (data) {
-            const transformedMessage = {
+            // Fetch the user profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url')
+              .eq('id', data.user_id)
+              .single();
+
+            const transformedMessage: DiscussionMessage = {
               ...data,
               message_type: data.message_type as 'text' | 'audio',
-              sender: data.profiles
+              sender: profile || null
             };
+            
             setMessages(prev => {
               // Check if message already exists to avoid duplicates
               if (prev.some(msg => msg.id === data.id)) {
