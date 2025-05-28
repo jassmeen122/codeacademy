@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,16 @@ const PythonLogo = () => (
       <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">Py</div>
     </div>
     <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-yellow-500 bg-clip-text text-transparent">Python</span>
+  </div>
+);
+
+const SQLLogo = () => (
+  <div className="inline-flex items-center gap-2">
+    <div className="relative w-8 h-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-600 rounded-md"></div>
+      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">SQL</div>
+    </div>
+    <span className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">SQL</span>
   </div>
 );
 
@@ -168,6 +177,117 @@ print(b)`,
     correctAnswer: "Met en cache les résultats",
     explanation: "Mémoization : stocke les résultats des appels de fonction pour éviter les recalculs. Limitation : ne fonctionne qu'avec des arguments hashables (pas de listes/dict).",
     type: 'python'
+  },
+  {
+    id: 11,
+    title: "Comparaison NULL",
+    description: "Quelle est la sortie de cette requête et pourquoi ?",
+    code: `SELECT NULL = NULL;`,
+    correctAnswer: "NULL (pas TRUE)",
+    explanation: "En SQL, NULL représente l'absence de valeur. Comparer NULL avec quoi que ce soit (même NULL) retourne NULL, pas TRUE. Il faut utiliser IS NULL pour tester la nullité.",
+    type: 'sql'
+  },
+  {
+    id: 12,
+    title: "Requête Récursive",
+    description: "Que fait cette requête récursive ?",
+    code: `WITH RECURSIVE cnt(x) AS (
+  SELECT 1
+  UNION ALL
+  SELECT x + 1 FROM cnt WHERE x < 5
+)
+SELECT * FROM cnt;`,
+    correctAnswer: "Génère les nombres 1 à 5",
+    explanation: "CTE récursive : commence par SELECT 1, puis ajoute x+1 tant que x<5. Résultat : 1, 2, 3, 4, 5. La récursivité s'arrête quand la condition WHERE devient fausse.",
+    type: 'sql'
+  },
+  {
+    id: 13,
+    title: "LEFT JOIN vs FULL OUTER JOIN",
+    description: "Quelle est la différence entre LEFT JOIN et FULL OUTER JOIN ?",
+    code: `-- LEFT JOIN : garde toutes les lignes de la table de gauche
+-- FULL OUTER JOIN : garde toutes les lignes des deux tables
+SELECT * FROM table1 LEFT JOIN table2 ON ...
+-- vs
+SELECT * FROM table1 FULL OUTER JOIN table2 ON ...`,
+    correctAnswer: "FULL garde toutes les lignes",
+    explanation: "LEFT JOIN garde toutes les lignes de la table de gauche + les correspondances. FULL OUTER JOIN garde toutes les lignes des deux tables, même sans correspondance (avec NULL).",
+    type: 'sql'
+  },
+  {
+    id: 14,
+    title: "Fonction Fenêtre OVER",
+    description: "Que fait cette requête ?",
+    code: `SELECT department_id, AVG(salary) OVER (PARTITION BY department_id)
+FROM employees;`,
+    correctAnswer: "Moyenne par département",
+    explanation: "OVER (PARTITION BY ...) calcule AVG(salary) pour chaque département séparément, tout en gardant toutes les lignes individuelles. Différent de GROUP BY qui agrège les lignes.",
+    type: 'sql'
+  },
+  {
+    id: 15,
+    title: "Contrainte CHECK",
+    description: "Que signifie cette contrainte ?",
+    code: `CHECK (salary > 0 AND salary < 99999)`,
+    correctAnswer: "Valide les valeurs de salary",
+    explanation: "CHECK valide que salary est entre 0 et 99999. Peut être contournée en désactivant les contraintes ou avec des privilèges admin. NULL passe toujours les contraintes CHECK.",
+    type: 'sql'
+  },
+  {
+    id: 16,
+    title: "Transaction et Crash",
+    description: "Que se passe-t-il ici ?",
+    code: `BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+-- crash du système ici
+COMMIT;`,
+    correctAnswer: "Transaction annulée (ROLLBACK)",
+    explanation: "Si le système crash avant COMMIT, la transaction est automatiquement annulée (ROLLBACK). En autocommit, chaque instruction est commitée immédiatement.",
+    type: 'sql'
+  },
+  {
+    id: 17,
+    title: "Injection SQL",
+    description: "Pourquoi cette requête est-elle dangereuse ?",
+    code: `SELECT * FROM users WHERE name = 'John' OR 1=1;`,
+    correctAnswer: "Injection SQL - retourne tout",
+    explanation: "OR 1=1 est toujours vrai, donc retourne tous les utilisateurs. Injection SQL classique. Solution : requêtes préparées avec paramètres liés (prepared statements).",
+    type: 'sql'
+  },
+  {
+    id: 18,
+    title: "EXISTS vs IN",
+    description: "Que fait cette requête ?",
+    code: `SELECT * FROM orders o
+WHERE EXISTS (
+  SELECT 1 FROM customers c WHERE c.id = o.customer_id AND c.status = 'VIP'
+);`,
+    correctAnswer: "Commandes de clients VIP",
+    explanation: "EXISTS teste l'existence d'au moins une ligne. Plus efficace que IN pour les grosses tables. EXISTS s'arrête dès qu'une ligne est trouvée, IN doit tout évaluer.",
+    type: 'sql'
+  },
+  {
+    id: 19,
+    title: "COUNT et NULL",
+    description: "Quelle est la différence ?",
+    code: `SELECT COUNT(*), COUNT(column_name) FROM table_name;`,
+    correctAnswer: "COUNT(*) compte tout, COUNT(col) ignore NULL",
+    explanation: "COUNT(*) compte toutes les lignes. COUNT(column_name) ignore les valeurs NULL dans cette colonne. Important pour les statistiques avec des données manquantes.",
+    type: 'sql'
+  },
+  {
+    id: 20,
+    title: "Vue Matérialisée",
+    description: "Qu'est-ce qu'une vue matérialisée ?",
+    code: `CREATE MATERIALIZED VIEW sales_summary AS
+SELECT region, SUM(amount) as total
+FROM sales GROUP BY region;
+
+-- vs vue normale :
+CREATE VIEW sales_view AS SELECT ...`,
+    correctAnswer: "Vue stockée physiquement",
+    explanation: "Vue matérialisée : résultats stockés physiquement, rapide à lire mais doit être rafraîchie. Vue normale : recalculée à chaque accès, toujours à jour mais plus lente.",
+    type: 'sql'
   }
 ];
 
@@ -237,7 +357,13 @@ export const CandyCrushCodingGame = () => {
 
   const getLevelColor = (level: GameLevel) => {
     if (level.completed) return 'bg-green-500 hover:bg-green-600';
-    if (level.unlocked) return 'bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500';
+    if (level.unlocked) {
+      if (level.challenge.type === 'python') {
+        return 'bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500';
+      } else {
+        return 'bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500';
+      }
+    }
     return 'bg-gray-400';
   };
 
@@ -250,7 +376,16 @@ export const CandyCrushCodingGame = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'python': return 'bg-gradient-to-r from-blue-100 to-yellow-100 text-blue-800 border-blue-200';
+      case 'sql': return 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-200';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTypeBadgeText = (type: string) => {
+    switch (type) {
+      case 'python': return 'PYTHON';
+      case 'sql': return 'SQL';
+      default: return type.toUpperCase();
     }
   };
 
@@ -273,11 +408,12 @@ export const CandyCrushCodingGame = () => {
             </h1>
             <Trophy className="h-8 w-8 text-yellow-500" />
           </motion.div>
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center gap-6 mb-4">
             <PythonLogo />
+            <SQLLogo />
           </div>
           <p className="text-lg text-muted-foreground">
-            Résous des défis Python avancés pour débloquer les niveaux suivants !
+            Résous des défis Python et SQL avancés pour débloquer les niveaux suivants !
           </p>
         </div>
 
@@ -303,7 +439,7 @@ export const CandyCrushCodingGame = () => {
                   </div>
                   <h3 className="font-semibold mb-2">{level.name}</h3>
                   <Badge className={getTypeColor(level.challenge.type)}>
-                    PYTHON
+                    {getTypeBadgeText(level.challenge.type)}
                   </Badge>
                   {level.completed && (
                     <motion.div
@@ -322,12 +458,14 @@ export const CandyCrushCodingGame = () => {
         
         <div className="text-center mt-8 text-sm text-muted-foreground">
           <p>🐍 Défis Python Avancés • Closures, Métaclasses, Méthodes Magiques</p>
+          <p>🗃️ Défis SQL Experts • Récursivité, Fonctions Fenêtre, Optimisation</p>
         </div>
       </motion.div>
     );
   }
 
   if (gameMode === 'success') {
+    const currentLevelData = levels.find(l => l.id === currentLevel);
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -342,14 +480,22 @@ export const CandyCrushCodingGame = () => {
           <Trophy className="h-24 w-24 text-yellow-500 mx-auto mb-4" />
         </motion.div>
         <h2 className="text-3xl font-bold text-green-600 mb-4">Excellent ! 🎉</h2>
-        <p className="text-lg mb-6">Tu maîtrises Python niveau {currentLevel} !</p>
+        <p className="text-lg mb-6">
+          Tu maîtrises {currentLevelData?.challenge.type === 'python' ? 'Python' : 'SQL'} niveau {currentLevel} !
+        </p>
         <motion.div
           animate={{ rotate: [0, 5, -5, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
-          <div className="text-6xl mb-6">🐍</div>
+          <div className="text-6xl mb-6">
+            {currentLevelData?.challenge.type === 'python' ? '🐍' : '🗃️'}
+          </div>
         </motion.div>
-        <Button onClick={handleBackToMenu} size="lg" className="bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500">
+        <Button onClick={handleBackToMenu} size="lg" className={
+          currentLevelData?.challenge.type === 'python' 
+            ? "bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
+            : "bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
+        }>
           Continuer vers le menu
         </Button>
       </motion.div>
@@ -373,14 +519,25 @@ export const CandyCrushCodingGame = () => {
         <div className="flex items-center gap-3 mb-4">
           <h2 className="text-2xl font-bold">Niveau {currentLevel}</h2>
           <Badge className={getTypeColor(currentLevelData.challenge.type)}>
-            PYTHON
+            {getTypeBadgeText(currentLevelData.challenge.type)}
           </Badge>
           <div className="flex items-center gap-1">
-            <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-            <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+            {currentLevelData.challenge.type === 'python' ? (
+              <>
+                <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
+                <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+              </>
+            ) : (
+              <>
+                <div className="w-4 h-4 bg-orange-500 rounded-sm"></div>
+                <div className="w-4 h-4 bg-red-400 rounded-sm"></div>
+              </>
+            )}
           </div>
         </div>
-        <h3 className="text-xl font-semibold text-blue-600">
+        <h3 className={`text-xl font-semibold ${
+          currentLevelData.challenge.type === 'python' ? 'text-blue-600' : 'text-orange-600'
+        }`}>
           {currentLevelData.challenge.title}
         </h3>
       </div>
@@ -399,7 +556,11 @@ export const CandyCrushCodingGame = () => {
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
               placeholder="Explique ce qui se passe..."
-              className="w-full p-3 border rounded-lg border-blue-200 focus:border-blue-400"
+              className={`w-full p-3 border rounded-lg focus:border-blue-400 ${
+                currentLevelData.challenge.type === 'python' 
+                  ? 'border-blue-200' 
+                  : 'border-orange-200'
+              }`}
               disabled={showResult}
             />
             
@@ -407,7 +568,11 @@ export const CandyCrushCodingGame = () => {
               <Button 
                 onClick={handleSubmitAnswer}
                 disabled={!userAnswer.trim()}
-                className="w-full bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
+                className={
+                  currentLevelData.challenge.type === 'python'
+                    ? "w-full bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
+                    : "w-full bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
+                }
               >
                 Vérifier ma réponse
               </Button>
@@ -432,7 +597,10 @@ export const CandyCrushCodingGame = () => {
                     <XCircle className="h-8 w-8 text-red-600" />
                   )}
                   <h3 className={`text-xl font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                    {isCorrect ? 'Parfait ! Tu maîtrises Python !' : 'Pas tout à fait...'}
+                    {isCorrect 
+                      ? `Parfait ! Tu maîtrises ${currentLevelData.challenge.type === 'python' ? 'Python' : 'SQL'} !` 
+                      : 'Pas tout à fait...'
+                    }
                   </h3>
                 </div>
                 <p className="mb-4">
