@@ -38,7 +38,7 @@ export const studentMenuItems: MenuItem[] = [
   {
     title: "Code Editor",
     icon: Code,
-    href: "/student/editor",
+    href: "/student/code-editor",
   },
   {
     title: "AI Assistant",
