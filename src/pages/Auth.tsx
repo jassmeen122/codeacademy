@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, authWithRetry } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -19,6 +18,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [systemStatus, setSystemStatus] = useState<'checking' | 'available' | 'degraded'>('checking');
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,13 +30,33 @@ const Auth = () => {
     ? "> Preparing new user registration..." 
     : "> Authenticating user...";
 
+  // Check system status on mount
+  useEffect(() => {
+    const checkSystemStatus = async () => {
+      try {
+        // Simple health check
+        const { data, error } = await supabase.auth.getSession();
+        setSystemStatus(error ? 'degraded' : 'available');
+      } catch (error) {
+        console.warn("System status check failed, continuing in degraded mode");
+        setSystemStatus('degraded');
+      }
+    };
+    
+    checkSystemStatus();
+  }, []);
+
   // Clean up any stale auth tokens before logging in
   const cleanupAuthState = () => {
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
+    try {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (error) {
+      console.warn("Error cleaning auth state:", error);
+    }
   };
 
   // Animation effect for terminal-style text
@@ -80,11 +100,14 @@ const Auth = () => {
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
+        // Continue to show auth form
       }
     };
 
-    checkAuth();
-  }, [navigate]);
+    if (systemStatus !== 'checking') {
+      checkAuth();
+    }
+  }, [navigate, systemStatus]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,16 +118,20 @@ const Auth = () => {
       cleanupAuthState();
       
       // Force sign out any existing session
-      await supabase.auth.signOut({ scope: 'global' });
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutError) {
+        console.warn("Sign out during cleanup failed (non-critical):", signOutError);
+      }
       
       if (isSignUp) {
         // Validate form data
         if (!formData.email || !formData.password || !formData.fullName) {
-          throw new Error("Please fill in all fields");
+          throw new Error("Veuillez remplir tous les champs");
         }
 
         if (formData.password.length < 6) {
-          throw new Error("Password must be at least 6 characters long");
+          throw new Error("Le mot de passe doit contenir au moins 6 caractères");
         }
 
         console.log("Attempting signup with data:", {
@@ -113,42 +140,46 @@ const Auth = () => {
           role: formData.role
         });
         
-        // Sign up the user with a simplified approach
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              full_name: formData.fullName,
-              role: formData.role,
-            }
-          },
+        // Sign up with retry mechanism
+        const { data, error } = await authWithRetry(async () => {
+          return await supabase.auth.signUp({
+            email: formData.email,
+            password: formData.password,
+            options: {
+              data: {
+                full_name: formData.fullName,
+                role: formData.role,
+              }
+            },
+          });
         });
 
         if (error) throw error;
 
         if (data?.user?.identities?.length === 0) {
-          throw new Error("This email is already registered. Please sign in instead.");
+          throw new Error("Cet email est déjà enregistré. Veuillez vous connecter.");
         }
 
-        toast.success("Account created successfully! Please check your email for verification.");
-        setIsSignUp(false); // Switch to sign in view after successful signup
+        toast.success("Compte créé avec succès! Vérifiez votre email pour confirmation.");
+        setIsSignUp(false);
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        // Sign in with email and password
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
+        // Sign in with retry mechanism
+        const { data, error } = await authWithRetry(async () => {
+          return await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
         });
           
         if (error) throw error;
 
         if (!data.user) {
-          throw new Error("Invalid email or password");
+          throw new Error("Email ou mot de passe invalide");
         }
 
-        toast.success("Signed in successfully! Redirecting...");
+        toast.success("Connexion réussie! Redirection...");
         
         // Get role from user metadata and redirect accordingly
         const role = data.user.user_metadata?.role || 'student';
@@ -163,22 +194,42 @@ const Auth = () => {
     } catch (error: any) {
       console.error("Auth error:", error);
       
-      // Display different error messages based on error code/message
+      // Enhanced error handling with French messages
       if (error.message?.includes("Invalid login credentials")) {
-        toast.error("Invalid email or password. Please try again.");
+        toast.error("Email ou mot de passe incorrect. Veuillez réessayer.");
       } else if (error.message?.includes("Email not confirmed")) {
-        toast.error("Please verify your email address before signing in.");
+        toast.error("Veuillez vérifier votre adresse email avant de vous connecter.");
       } else if (error.message?.includes("rate limited")) {
-        toast.error("Too many login attempts. Please try again later.");
-      } else if (error.message?.includes("Database error")) {
-        toast.error("System is temporarily unavailable. Please try again in a few moments.");
-        console.error("Database error detected, likely related to user_status permissions");
+        toast.error("Trop de tentatives de connexion. Veuillez réessayer plus tard.");
+      } else if (error.message?.includes("Database error") || 
+                 error.message?.includes("permission denied") ||
+                 error.message?.includes("temporarily unavailable")) {
+        toast.error("Le système est temporairement indisponible. Nous travaillons à résoudre le problème.");
+        setSystemStatus('degraded');
+      } else if (error.message?.includes("Network error") || 
+                 error.message?.includes("Failed to fetch")) {
+        toast.error("Problème de connexion réseau. Vérifiez votre connexion internet.");
       } else {
-        toast.error(error.message || "An error occurred during authentication");
+        toast.error(error.message || "Une erreur s'est produite lors de l'authentification");
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Show system status if degraded
+  const SystemStatusBanner = () => {
+    if (systemStatus === 'degraded') {
+      return (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+          <div className="flex items-center text-sm text-yellow-800">
+            <Server className="h-4 w-4 mr-2" />
+            <span>Service en mode dégradé - Certaines fonctionnalités peuvent être limitées</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -198,6 +249,8 @@ const Auth = () => {
         </div>
 
         <div className="p-8 bg-white rounded-b-lg border border-gray-200 shadow-md highlight-animation">
+          <SystemStatusBanner />
+          
           <div className="mb-6">
             <h2 className="text-xl font-bold text-primary mb-2 flex items-center gap-2">
               <Code className="h-5 w-5" />
@@ -343,8 +396,8 @@ const Auth = () => {
           <div className="mt-4 text-xs text-gray-500 font-mono">
             <div className="comment-text">
               {isSignUp 
-                ? "// A confirmation email will be sent to verify your account"
-                : "// Enter your credentials to access your account"}
+                ? "// Un email de confirmation sera envoyé pour vérifier votre compte"
+                : "// Entrez vos identifiants pour accéder à votre compte"}
             </div>
           </div>
         </div>

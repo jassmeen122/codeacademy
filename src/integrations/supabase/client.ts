@@ -9,7 +9,7 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Configure the Supabase client with explicit auth settings
+// Configure the Supabase client with enhanced error handling
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
@@ -18,5 +18,42 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storageKey: 'supabase.auth.token',
     storage: localStorage,
     flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'x-application-name': 'codeacademy'
+    }
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 2
+    }
   }
 });
+
+// Enhanced error handling wrapper for auth operations
+export const authWithRetry = async (operation: () => Promise<any>, maxRetries = 3) => {
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+      
+      // If it's a database permission error, don't retry
+      if (error.message?.includes('permission denied') || 
+          error.message?.includes('Database error') ||
+          error.code === 'unexpected_failure') {
+        throw error;
+      }
+      
+      // Wait before retrying (exponential backoff)
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      }
+    }
+  }
+  
+  throw lastError;
+};

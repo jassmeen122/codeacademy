@@ -36,78 +36,6 @@ export type Database = {
         }
         Relationships: []
       }
-      certificates: {
-        Row: {
-          certificate_url: string
-          course_id: string
-          id: string
-          issued_at: string
-          user_id: string
-        }
-        Insert: {
-          certificate_url: string
-          course_id: string
-          id?: string
-          issued_at?: string
-          user_id: string
-        }
-        Update: {
-          certificate_url?: string
-          course_id?: string
-          id?: string
-          issued_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "certificates_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certificates_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      challenges: {
-        Row: {
-          created_at: string
-          description: string
-          end_date: string
-          id: string
-          points: number
-          start_date: string
-          title: string
-          type: string
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          end_date: string
-          id?: string
-          points?: number
-          start_date: string
-          title: string
-          type: string
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          end_date?: string
-          id?: string
-          points?: number
-          start_date?: string
-          title?: string
-          type?: string
-        }
-        Relationships: []
-      }
       coding_exercises: {
         Row: {
           created_at: string
@@ -684,48 +612,6 @@ export type Database = {
           },
         ]
       }
-      messages: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          read: boolean | null
-          receiver_id: string
-          sender_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          read?: boolean | null
-          receiver_id: string
-          sender_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          read?: boolean | null
-          receiver_id?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       mini_game_scores: {
         Row: {
           completed_at: string
@@ -752,44 +638,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      notifications: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          read: boolean | null
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          read?: boolean | null
-          title: string
-          type: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          read?: boolean | null
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       post_comments: {
         Row: {
@@ -1075,89 +923,6 @@ export type Database = {
           },
         ]
       }
-      student_internship_preferences: {
-        Row: {
-          created_at: string
-          id: string
-          industries: string[] | null
-          is_remote: boolean | null
-          locations: string[] | null
-          student_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          industries?: string[] | null
-          is_remote?: boolean | null
-          locations?: string[] | null
-          student_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          industries?: string[] | null
-          is_remote?: boolean | null
-          locations?: string[] | null
-          student_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_internship_preferences_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      student_progress: {
-        Row: {
-          completed_materials: Json | null
-          completion_percentage: number | null
-          course_id: string | null
-          id: string
-          last_accessed_at: string
-          started_at: string
-          student_id: string | null
-        }
-        Insert: {
-          completed_materials?: Json | null
-          completion_percentage?: number | null
-          course_id?: string | null
-          id?: string
-          last_accessed_at?: string
-          started_at?: string
-          student_id?: string | null
-        }
-        Update: {
-          completed_materials?: Json | null
-          completion_percentage?: number | null
-          course_id?: string | null
-          id?: string
-          last_accessed_at?: string
-          started_at?: string
-          student_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_progress_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_progress_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_activities: {
         Row: {
           activity_data: Json | null
@@ -1231,215 +996,6 @@ export type Database = {
             columns: ["module_id"]
             isOneToOne: false
             referencedRelation: "course_modules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_badges: {
-        Row: {
-          badge_id: string
-          earned_at: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          badge_id: string
-          earned_at?: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          badge_id?: string
-          earned_at?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_badges_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "badges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_badges_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_calls: {
-        Row: {
-          call_type: string
-          caller_id: string
-          duration: number | null
-          ended_at: string | null
-          id: string
-          receiver_id: string
-          started_at: string
-          status: string
-        }
-        Insert: {
-          call_type: string
-          caller_id: string
-          duration?: number | null
-          ended_at?: string | null
-          id?: string
-          receiver_id: string
-          started_at?: string
-          status: string
-        }
-        Update: {
-          call_type?: string
-          caller_id?: string
-          duration?: number | null
-          ended_at?: string | null
-          id?: string
-          receiver_id?: string
-          started_at?: string
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_calls_caller_id_fkey"
-            columns: ["caller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_calls_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_certificates: {
-        Row: {
-          certificate_url: string | null
-          course_id: string
-          description: string | null
-          id: string
-          issued_at: string
-          title: string
-          user_id: string
-        }
-        Insert: {
-          certificate_url?: string | null
-          course_id: string
-          description?: string | null
-          id?: string
-          issued_at?: string
-          title: string
-          user_id: string
-        }
-        Update: {
-          certificate_url?: string | null
-          course_id?: string
-          description?: string | null
-          id?: string
-          issued_at?: string
-          title?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_challenges: {
-        Row: {
-          challenge_id: string
-          completed_at: string | null
-          created_at: string
-          id: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          challenge_id: string
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          challenge_id?: string
-          completed_at?: string | null
-          created_at?: string
-          id?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_challenges_challenge_id_fkey"
-            columns: ["challenge_id"]
-            isOneToOne: false
-            referencedRelation: "challenges"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_challenges_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_daily_challenges: {
-        Row: {
-          challenge_type: string
-          completed: boolean
-          completed_at: string | null
-          created_at: string
-          current_progress: number
-          description: string
-          expires_at: string
-          id: string
-          reward_badge_id: string | null
-          reward_xp: number
-          target: number
-          user_id: string
-        }
-        Insert: {
-          challenge_type: string
-          completed?: boolean
-          completed_at?: string | null
-          created_at?: string
-          current_progress?: number
-          description: string
-          expires_at: string
-          id?: string
-          reward_badge_id?: string | null
-          reward_xp?: number
-          target: number
-          user_id: string
-        }
-        Update: {
-          challenge_type?: string
-          completed?: boolean
-          completed_at?: string | null
-          created_at?: string
-          current_progress?: number
-          description?: string
-          expires_at?: string
-          id?: string
-          reward_badge_id?: string | null
-          reward_xp?: number
-          target?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_daily_challenges_reward_badge_id_fkey"
-            columns: ["reward_badge_id"]
-            isOneToOne: false
-            referencedRelation: "badges"
             referencedColumns: ["id"]
           },
         ]
@@ -1549,44 +1105,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_language_progress: {
-        Row: {
-          badge_earned: boolean | null
-          id: string
-          language_id: string
-          last_updated: string | null
-          quiz_completed: boolean | null
-          summary_read: boolean | null
-          user_id: string
-        }
-        Insert: {
-          badge_earned?: boolean | null
-          id?: string
-          language_id: string
-          last_updated?: string | null
-          quiz_completed?: boolean | null
-          summary_read?: boolean | null
-          user_id: string
-        }
-        Update: {
-          badge_earned?: boolean | null
-          id?: string
-          language_id?: string
-          last_updated?: string | null
-          quiz_completed?: boolean | null
-          summary_read?: boolean | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_language_progress_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "programming_languages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_metrics: {
         Row: {
           course_completions: number | null
@@ -1619,47 +1137,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      user_performance_metrics: {
-        Row: {
-          id: string
-          interactions_count: number | null
-          pages_created: number | null
-          recorded_at: string
-          response_time: number | null
-          session_duration: number | null
-          site_generation_time: number | null
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          interactions_count?: number | null
-          pages_created?: number | null
-          recorded_at?: string
-          response_time?: number | null
-          session_duration?: number | null
-          site_generation_time?: number | null
-          user_id: string
-        }
-        Update: {
-          id?: string
-          interactions_count?: number | null
-          pages_created?: number | null
-          recorded_at?: string
-          response_time?: number | null
-          session_duration?: number | null
-          site_generation_time?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_performance_metrics_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_points: {
         Row: {
@@ -1826,64 +1303,27 @@ export type Database = {
       }
       user_status: {
         Row: {
-          id: string
-          last_active: string
-          status: string
-          user_id: string
+          created_at: string | null
+          id: number
+          last_active: string | null
+          status: string | null
+          user_id: string | null
         }
         Insert: {
-          id?: string
-          last_active?: string
-          status?: string
-          user_id: string
+          created_at?: string | null
+          id?: never
+          last_active?: string | null
+          status?: string | null
+          user_id?: string | null
         }
         Update: {
-          id?: string
-          last_active?: string
-          status?: string
-          user_id?: string
+          created_at?: string | null
+          id?: never
+          last_active?: string | null
+          status?: string | null
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_status_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      voice_messages: {
-        Row: {
-          audio_url: string
-          created_at: string
-          duration: number
-          id: string
-          message_id: string
-        }
-        Insert: {
-          audio_url: string
-          created_at?: string
-          duration: number
-          id?: string
-          message_id: string
-        }
-        Update: {
-          audio_url?: string
-          created_at?: string
-          duration?: number
-          id?: string
-          message_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "voice_messages_message_id_fkey"
-            columns: ["message_id"]
-            isOneToOne: false
-            referencedRelation: "private_messages"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
