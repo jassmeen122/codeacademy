@@ -1,25 +1,27 @@
 
 import React, { useRef, useEffect } from "react";
-import { Brain, UserCircle } from "lucide-react";
+import { Brain, UserCircle, Lightbulb } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormattedMessage } from "./FormattedMessage";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import "./ai-assistant.css";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
+  suggestions?: string[];
 };
 
 interface MessageDisplayProps {
   messages: Message[];
   isLoading: boolean;
+  onSuggestionClick?: (suggestion: string) => void;
 }
 
-export const MessageDisplay = ({ messages, isLoading }: MessageDisplayProps) => {
+export const MessageDisplay = ({ messages, isLoading, onSuggestionClick }: MessageDisplayProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom whenever messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
@@ -46,17 +48,47 @@ export const MessageDisplay = ({ messages, isLoading }: MessageDisplayProps) => 
                 <UserCircle className="w-4 h-4 text-gray-700" />
               </div>
             )}
-            <div
-              className={`rounded-lg p-3 max-w-[85%] ${
-                message.role === "assistant"
-                  ? "bg-muted"
-                  : "bg-primary text-primary-foreground"
-              }`}
-            >
-              {message.role === "assistant" ? (
-                <FormattedMessage content={message.content} />
-              ) : (
-                <div className="whitespace-pre-wrap">{message.content}</div>
+            <div className="flex flex-col max-w-[85%]">
+              <div
+                className={`rounded-lg p-3 ${
+                  message.role === "assistant"
+                    ? "bg-muted"
+                    : "bg-primary text-primary-foreground"
+                }`}
+              >
+                {message.role === "assistant" ? (
+                  <FormattedMessage content={message.content} />
+                ) : (
+                  <div className="whitespace-pre-wrap">{message.content}</div>
+                )}
+              </div>
+              
+              {/* Afficher les suggestions pour les messages de l'assistant */}
+              {message.role === "assistant" && message.suggestions && onSuggestionClick && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-2 space-y-1"
+                >
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                    <Lightbulb className="w-3 h-3" />
+                    <span>Suggestions :</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {message.suggestions.map((suggestion, sugIndex) => (
+                      <Button
+                        key={sugIndex}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2"
+                        onClick={() => onSuggestionClick(suggestion)}
+                      >
+                        {suggestion}
+                      </Button>
+                    ))}
+                  </div>
+                </motion.div>
               )}
             </div>
           </motion.div>

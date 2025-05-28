@@ -30,6 +30,14 @@ export const FloatingAIAssistant = () => {
     setUserInput("");
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    if (!isLoading) {
+      // Nettoyer la suggestion des emojis pour l'envoi
+      const cleanSuggestion = suggestion.replace(/^[🐛📚💪🎯🔧]+\s*/, '');
+      sendMessage(cleanSuggestion);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -43,7 +51,7 @@ export const FloatingAIAssistant = () => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14 p-0"
+          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14 p-0 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
         >
           <Brain className="h-6 w-6" />
         </Button>
@@ -53,18 +61,18 @@ export const FloatingAIAssistant = () => {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="right" className="sm:max-w-md w-[90vw] p-0">
           <div className="flex flex-col h-full">
-            <SheetHeader className="border-b p-4">
+            <SheetHeader className="border-b p-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
               <div className="flex justify-between items-center">
-                <SheetTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-primary" />
-                  Assistant IA
+                <SheetTitle className="flex items-center gap-2 text-white">
+                  <Brain className="h-5 w-5" />
+                  Assistant IA Intelligent
                 </SheetTitle>
                 <div className="flex items-center gap-2">
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setIsMinimized(!isMinimized)}
-                    className="h-8 w-8"
+                    className="h-8 w-8 text-white hover:bg-white/20"
                   >
                     <MinimizeIcon className="h-4 w-4" />
                   </Button>
@@ -72,7 +80,7 @@ export const FloatingAIAssistant = () => {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setIsOpen(false)}
-                    className="h-8 w-8"
+                    className="h-8 w-8 text-white hover:bg-white/20"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -83,7 +91,11 @@ export const FloatingAIAssistant = () => {
             {!isMinimized && (
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 overflow-y-auto p-4">
-                  <MessageDisplay messages={messages} isLoading={isLoading} />
+                  <MessageDisplay 
+                    messages={messages} 
+                    isLoading={isLoading}
+                    onSuggestionClick={handleSuggestionClick}
+                  />
                   
                   <ErrorDisplay 
                     errorMessage={errorMessage} 
@@ -99,7 +111,7 @@ export const FloatingAIAssistant = () => {
                   </ErrorDisplay>
                 </div>
 
-                <div className="border-t p-4 space-y-4">
+                <div className="border-t p-4 space-y-4 bg-gray-50">
                   <div className="flex justify-between items-center">
                     <ChatActions 
                       onClearChat={clearChat}
@@ -112,7 +124,7 @@ export const FloatingAIAssistant = () => {
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="Posez votre question..."
+                      placeholder="💬 Dis-moi ton problème ou pose ta question..."
                       className="min-h-[80px] resize-none"
                     />
                     <Button 
