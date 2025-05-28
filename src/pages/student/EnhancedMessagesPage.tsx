@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useAuthState } from '@/hooks/useAuthState';
 import { usePrivateMessages, PrivateMessage } from '@/hooks/usePrivateMessages';
-import { useUserFriends } from '@/hooks/useUserFriends';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,20 +15,22 @@ import {
 
 const EnhancedMessagesPage = () => {
   const { user } = useAuthState();
-  const { conversations, fetchMessages, sendMessage } = usePrivateMessages();
-  const { friends } = useUserFriends();
+  const { messages, sendMessage } = usePrivateMessages(user?.id);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<PrivateMessage[]>([]);
+  const [filteredMessages, setFilteredMessages] = useState<PrivateMessage[]>([]);
   const [messageContent, setMessageContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (selectedFriendId) {
-      fetchMessages(selectedFriendId).then(messages => {
-        setMessages(messages);
-      });
+    if (selectedFriendId && user?.id) {
+      const filtered = messages.filter(
+        msg => 
+          (msg.sender_id === user.id && msg.receiver_id === selectedFriendId) ||
+          (msg.sender_id === selectedFriendId && msg.receiver_id === user.id)
+      );
+      setFilteredMessages(filtered);
     }
-  }, [selectedFriendId, fetchMessages]);
+  }, [selectedFriendId, messages, user?.id]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -36,7 +38,7 @@ const EnhancedMessagesPage = () => {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages]);
+  }, [filteredMessages]);
 
   const handleFriendSelect = (friendId: string) => {
     setSelectedFriendId(friendId);
@@ -44,13 +46,32 @@ const EnhancedMessagesPage = () => {
 
   const handleSendMessage = async () => {
     if (selectedFriendId && messageContent.trim() !== '') {
-      const newMessage = await sendMessage(selectedFriendId, messageContent);
-      if (newMessage) {
-        setMessages(prevMessages => [...prevMessages, newMessage]);
-        setMessageContent('');
-      }
+      await sendMessage(messageContent, selectedFriendId);
+      setMessageContent('');
     }
   };
+
+  // Get unique contacts from messages
+  const friends = React.useMemo(() => {
+    if (!user?.id) return [];
+    const contactsMap = new Map();
+    
+    messages.forEach(msg => {
+      const contactId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+      const isFromMe = msg.sender_id === user.id;
+      
+      if (!contactsMap.has(contactId)) {
+        contactsMap.set(contactId, {
+          id: contactId,
+          full_name: isFromMe ? 'Utilisateur' : msg.sender?.full_name || 'Utilisateur',
+          avatar_url: isFromMe ? null : msg.sender?.avatar_url,
+          email: ''
+        });
+      }
+    });
+    
+    return Array.from(contactsMap.values());
+  }, [messages, user?.id]);
 
   const selectedFriend = friends.find(friend => friend.id === selectedFriendId);
 
@@ -102,7 +123,7 @@ const EnhancedMessagesPage = () => {
 
               {/* Message List */}
               <div className="flex-1 p-4 overflow-y-auto">
-                {messages.map(message => (
+                {filteredMessages.map(message => (
                   <div
                     key={message.id}
                     className={`mb-2 flex flex-col ${message.sender_id === user?.id ? 'items-end' : 'items-start'}`}

@@ -45,6 +45,7 @@ export const useDiscussionMessages = () => {
       // Transform the data to match our interface
       const transformedMessages = (data || []).map(msg => ({
         ...msg,
+        message_type: msg.message_type as 'text' | 'audio',
         sender: msg.profiles
       }));
       
@@ -89,6 +90,7 @@ export const useDiscussionMessages = () => {
       if (data) {
         const transformedMessage = {
           ...data,
+          message_type: data.message_type as 'text' | 'audio',
           sender: data.profiles
         };
         setMessages(prev => [...prev, transformedMessage]);
@@ -135,6 +137,7 @@ export const useDiscussionMessages = () => {
           if (data) {
             const transformedMessage = {
               ...data,
+              message_type: data.message_type as 'text' | 'audio',
               sender: data.profiles
             };
             setMessages(prev => {

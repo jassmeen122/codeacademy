@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface PrivateMessage {
+export interface PrivateMessage {
   id: string;
   content: string;
   sender_id: string;

@@ -44,6 +44,7 @@ import ModuleContentPage from "@/pages/student/ModuleContentPage";
 import StudentExercisesPage from "@/pages/student/ExercisesPage";
 import YTDevTutorialsPage from "@/pages/student/YTDevTutorialsPage";
 import DiscussionPage from "@/pages/student/DiscussionPage";
+import PrivateMessagesPage from "@/pages/student/PrivateMessagesPage";
 import ProjectsPage from "@/pages/student/ProjectsPage";
 import InternshipOpportunitiesPage from "@/pages/student/InternshipOpportunitiesPage";
 import CodeEditorPage from "@/pages/student/CodeEditorPage";
