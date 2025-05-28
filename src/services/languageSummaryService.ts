@@ -89,26 +89,22 @@ export const createDefaultSummary = async (languageId: string): Promise<Language
 };
 
 /**
- * Fetches the user's progress for a language
+ * Fetches the user's progress for a language (using local storage)
  * @param userId The user's ID
  * @param languageId The language ID
  * @returns The user's progress or null if not found
  */
 export const fetchUserProgress = async (userId: string, languageId: string): Promise<UserProgress | null> => {
   try {
-    const { data, error } = await supabase
-      .from('user_language_progress')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('language_id', languageId)
-      .maybeSingle();
-      
-    if (error) {
-      console.error('Error fetching user progress:', error);
-      return null;
+    // Use local storage since the table doesn't exist in the database
+    const localProgressKey = `language_progress_${userId}_${languageId}`;
+    const localProgress = localStorage.getItem(localProgressKey);
+    
+    if (localProgress) {
+      return JSON.parse(localProgress) as UserProgress;
     }
     
-    return data as UserProgress;
+    return null;
   } catch (err) {
     console.error('Exception fetching user progress:', err);
     return null;
@@ -116,25 +112,17 @@ export const fetchUserProgress = async (userId: string, languageId: string): Pro
 };
 
 /**
- * Creates or updates a user's progress for a language
+ * Creates or updates a user's progress for a language (using local storage)
  * @param progress The progress data to save
  * @returns The updated progress or null if the operation failed
  */
 export const saveUserProgress = async (progress: UserProgress): Promise<UserProgress | null> => {
   try {
-    const { data, error } = await supabase
-      .from('user_language_progress')
-      .upsert([progress], { onConflict: 'user_id,language_id' })
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Error saving user progress:', error);
-      toast.error('Erreur lors de la mise à jour');
-      return null;
-    }
+    // Use local storage since the table doesn't exist in the database
+    const localProgressKey = `language_progress_${progress.user_id}_${progress.language_id}`;
+    localStorage.setItem(localProgressKey, JSON.stringify(progress));
     
-    return data as UserProgress;
+    return progress;
   } catch (err) {
     console.error('Exception saving user progress:', err);
     toast.error('Erreur lors de la mise à jour');
