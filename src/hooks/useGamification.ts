@@ -73,13 +73,19 @@ export const useGamification = () => {
         .from('user_leaderboard')
         .select(`
           *,
-          profiles(full_name)
+          profiles!inner(full_name)
         `)
         .order('total_points', { ascending: false })
         .limit(10);
       
       if (leaderboardError) throw leaderboardError;
-      setLeaderboard(leaderboardData || []);
+      
+      // Transform leaderboard data to match our type
+      const transformedLeaderboard = leaderboardData?.map(item => ({
+        ...item,
+        profiles: item.profiles ? { full_name: item.profiles.full_name } : { full_name: 'Utilisateur inconnu' }
+      })) || [];
+      setLeaderboard(transformedLeaderboard);
       
       // Récupérer les stats de l'utilisateur
       const { data: userStatsData, error: userStatsError } = await supabase

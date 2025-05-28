@@ -57,7 +57,7 @@ export const updateSkillsFromActivity = async (
 
 export const awardBadgeForProgress = async (userId: string, skillName: string, progress: number) => {
   // Logique pour attribuer des badges basés sur la progression
-  const badges: Array<{ name: string; requiredProgress: number }> = [
+  const badges = [
     { name: `Débutant ${skillName}`, requiredProgress: 25 },
     { name: `Intermédiaire ${skillName}`, requiredProgress: 50 },
     { name: `Avancé ${skillName}`, requiredProgress: 75 },
@@ -66,18 +66,8 @@ export const awardBadgeForProgress = async (userId: string, skillName: string, p
   
   for (const badge of badges) {
     if (progress >= badge.requiredProgress) {
-      // Vérifier si le badge n'a pas déjà été attribué
-      const { data: existingBadge } = await supabase
-        .from('user_badges')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('badge_name', badge.name)
-        .single();
-      
-      if (!existingBadge) {
-        // Attribuer le badge (nécessiterait une table user_badges)
-        console.log(`Badge "${badge.name}" attribué à l'utilisateur ${userId}`);
-      }
+      // Log pour debugging - une vraie implémentation nécessiterait une table user_badges
+      console.log(`Badge "${badge.name}" attribué à l'utilisateur ${userId}`);
     }
   }
 };

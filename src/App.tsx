@@ -16,7 +16,7 @@ import ExerciseManagementPage from "@/pages/admin/ExerciseManagementPage";
 import UserManagementPage from "@/pages/admin/UserManagementPage";
 import PostManagementPage from "@/pages/admin/PostManagementPage";
 import InternshipManagementPage from "@/pages/admin/InternshipManagementPage";
-import SettingsPage from "@/pages/admin/SettingsPage";
+import AdminSettingsPage from "@/pages/admin/SettingsPage";
 
 // Teacher Pages (only including existing ones)
 import TeacherDashboard from "@/pages/TeacherDashboard";
@@ -57,7 +57,7 @@ import MessagesPage from "@/pages/student/MessagesPage";
 import EnhancedMessagesPage from "@/pages/student/EnhancedMessagesPage";
 import NotificationsPage from "@/pages/student/NotificationsPage";
 import ProfilePage from "@/pages/student/ProfilePage";
-import SettingsPage from "@/pages/student/SettingsPage";
+import StudentSettingsPage from "@/pages/student/SettingsPage";
 import ProgressGamificationPage from "@/pages/student/ProgressGamificationPage";
 
 const queryClient = new QueryClient();
@@ -81,7 +81,7 @@ function App() {
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/posts" element={<PostManagementPage />} />
             <Route path="/admin/internships" element={<InternshipManagementPage />} />
-            <Route path="/admin/settings" element={<SettingsPage />} />
+            <Route path="/admin/settings" element={<AdminSettingsPage />} />
             
             {/* Teacher routes */}
             <Route path="/teacher/courses" element={<CoursesPage />} />
@@ -122,7 +122,7 @@ function App() {
             <Route path="/student/enhanced-messages" element={<EnhancedMessagesPage />} />
             <Route path="/student/notifications" element={<NotificationsPage />} />
             <Route path="/student/profile" element={<ProfilePage />} />
-            <Route path="/student/settings" element={<SettingsPage />} />
+            <Route path="/student/settings" element={<StudentSettingsPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
