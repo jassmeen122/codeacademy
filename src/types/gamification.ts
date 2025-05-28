@@ -62,6 +62,9 @@ export interface UserLeaderboard {
   challenges_completed: number;
   last_activity: string;
   updated_at: string;
+  profiles?: {
+    full_name: string;
+  };
 }
 
 export interface Badge {

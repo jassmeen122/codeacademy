@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -8,27 +9,27 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
-// Admin Pages
-import AdminDashboard from "@/pages/admin/AdminDashboard";
+// Admin Pages (only including existing ones)
+import AdminDashboard from "@/pages/AdminDashboard";
 import CourseManagementPage from "@/pages/admin/CourseManagementPage";
 import ExerciseManagementPage from "@/pages/admin/ExerciseManagementPage";
 import UserManagementPage from "@/pages/admin/UserManagementPage";
 import PostManagementPage from "@/pages/admin/PostManagementPage";
 import InternshipManagementPage from "@/pages/admin/InternshipManagementPage";
-import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
+import SettingsPage from "@/pages/admin/SettingsPage";
 
-// Teacher Pages
-import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
-import TeacherCoursesPage from "@/pages/teacher/TeacherCoursesPage";
+// Teacher Pages (only including existing ones)
+import TeacherDashboard from "@/pages/TeacherDashboard";
+import CoursesPage from "@/pages/teacher/CoursesPage";
 import CreateCoursePage from "@/pages/teacher/CreateCoursePage";
 import EditCoursePage from "@/pages/teacher/EditCoursePage";
-import TeacherExercisesPage from "@/pages/teacher/TeacherExercisesPage";
+import ExercisesPage from "@/pages/teacher/ExercisesPage";
 import CreateExercisePage from "@/pages/teacher/CreateExercisePage";
-import TeacherSettingsPage from "@/pages/teacher/TeacherSettingsPage";
+import TeacherSettingsPage from "@/pages/teacher/SettingsPage";
 
-// Student Pages
-import StudentDashboard from "@/pages/student/StudentDashboard";
-import CoursesPage from "@/pages/student/CoursesPage";
+// Student Pages (only including existing ones)
+import StudentDashboard from "@/pages/StudentDashboard";
+import StudentCoursesPage from "@/pages/student/CoursesPage";
 import CourseDetailsPage from "@/pages/student/CourseDetailsPage";
 import CourseLearnPage from "@/pages/student/CourseLearnPage";
 import PaidCourseDetailsPage from "@/pages/student/PaidCourseDetailsPage";
@@ -40,7 +41,7 @@ import LanguageCoursePage from "@/pages/student/LanguageCoursePage";
 import LanguageSelectionPage from "@/pages/student/LanguageSelectionPage";
 import LanguageSummaryPage from "@/pages/student/LanguageSummaryPage";
 import ModuleContentPage from "@/pages/student/ModuleContentPage";
-import ExercisesPage from "@/pages/student/ExercisesPage";
+import StudentExercisesPage from "@/pages/student/ExercisesPage";
 import YTDevTutorialsPage from "@/pages/student/YTDevTutorialsPage";
 import DiscussionPage from "@/pages/student/DiscussionPage";
 import ProjectsPage from "@/pages/student/ProjectsPage";
@@ -51,12 +52,12 @@ import MiniGamePage from "@/pages/student/MiniGamePage";
 import ProgressPage from "@/pages/student/ProgressPage";
 import AchievementsPage from "@/pages/student/AchievementsPage";
 import SocialFeedPage from "@/pages/student/SocialFeedPage";
-import KnowledgeSharePage from "@/pages/student/KnowledgeSharePage";
+import KnowledgeSharePage from "@/pages/KnowledgeSharePage";
 import MessagesPage from "@/pages/student/MessagesPage";
 import EnhancedMessagesPage from "@/pages/student/EnhancedMessagesPage";
 import NotificationsPage from "@/pages/student/NotificationsPage";
 import ProfilePage from "@/pages/student/ProfilePage";
-import StudentSettingsPage from "@/pages/student/StudentSettingsPage";
+import SettingsPage from "@/pages/student/SettingsPage";
 import ProgressGamificationPage from "@/pages/student/ProgressGamificationPage";
 
 const queryClient = new QueryClient();
@@ -80,18 +81,18 @@ function App() {
             <Route path="/admin/users" element={<UserManagementPage />} />
             <Route path="/admin/posts" element={<PostManagementPage />} />
             <Route path="/admin/internships" element={<InternshipManagementPage />} />
-            <Route path="/admin/settings" element={<AdminSettingsPage />} />
+            <Route path="/admin/settings" element={<SettingsPage />} />
             
             {/* Teacher routes */}
-            <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
+            <Route path="/teacher/courses" element={<CoursesPage />} />
             <Route path="/teacher/create-course" element={<CreateCoursePage />} />
             <Route path="/teacher/edit-course/:id" element={<EditCoursePage />} />
-            <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
+            <Route path="/teacher/exercises" element={<ExercisesPage />} />
             <Route path="/teacher/create-exercise" element={<CreateExercisePage />} />
             <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
             
             {/* Student routes */}
-            <Route path="/student/courses" element={<CoursesPage />} />
+            <Route path="/student/courses" element={<StudentCoursesPage />} />
             <Route path="/student/course/:id" element={<CourseDetailsPage />} />
             <Route path="/student/course/:courseId/learn" element={<CourseLearnPage />} />
             <Route path="/student/paid-course/:id" element={<PaidCourseDetailsPage />} />
@@ -103,7 +104,7 @@ function App() {
             <Route path="/student/language-selection" element={<LanguageSelectionPage />} />
             <Route path="/student/language-summary/:languageId" element={<LanguageSummaryPage />} />
             <Route path="/student/module/:moduleId" element={<ModuleContentPage />} />
-            <Route path="/student/exercises" element={<ExercisesPage />} />
+            <Route path="/student/exercises" element={<StudentExercisesPage />} />
             <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
             <Route path="/student/discussion" element={<DiscussionPage />} />
             <Route path="/student/projects" element={<ProjectsPage />} />
@@ -121,7 +122,7 @@ function App() {
             <Route path="/student/enhanced-messages" element={<EnhancedMessagesPage />} />
             <Route path="/student/notifications" element={<NotificationsPage />} />
             <Route path="/student/profile" element={<ProfilePage />} />
-            <Route path="/student/settings" element={<StudentSettingsPage />} />
+            <Route path="/student/settings" element={<SettingsPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

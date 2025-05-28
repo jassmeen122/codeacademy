@@ -42,7 +42,14 @@ export const useGamification = () => {
         .eq('user_id', user.id);
       
       if (progressError) throw progressError;
-      setProgressReports(progressData || []);
+      // Transform the data to match our types
+      const transformedProgress = progressData?.map(item => ({
+        ...item,
+        completed_steps: Array.isArray(item.completed_steps) ? item.completed_steps : [],
+        in_progress_steps: Array.isArray(item.in_progress_steps) ? item.in_progress_steps : [],
+        pending_steps: Array.isArray(item.pending_steps) ? item.pending_steps : [],
+      })) || [];
+      setProgressReports(transformedProgress);
       
       // Récupérer les défis quotidiens actifs
       const { data: challengesData, error: challengesError } = await supabase
@@ -53,7 +60,13 @@ export const useGamification = () => {
         .order('created_at', { ascending: false });
       
       if (challengesError) throw challengesError;
-      setDailyChallenges(challengesData || []);
+      // Transform the data to match our types
+      const transformedChallenges = challengesData?.map(item => ({
+        ...item,
+        challenge_type: item.challenge_type as 'code_fix' | 'quiz' | 'speed_coding',
+        difficulty: item.difficulty as 'beginner' | 'intermediate' | 'advanced',
+      })) || [];
+      setDailyChallenges(transformedChallenges);
       
       // Récupérer le leaderboard (top 10)
       const { data: leaderboardData, error: leaderboardError } = await supabase
