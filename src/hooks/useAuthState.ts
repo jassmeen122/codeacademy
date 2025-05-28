@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export interface UserProfile {
@@ -21,7 +20,6 @@ export const useAuthState = () => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
-  const navigate = useNavigate();
 
   // Create user profile from auth data and database profile
   const createUserProfile = async (authUser: any): Promise<UserProfile> => {
@@ -179,7 +177,7 @@ export const useAuthState = () => {
       setUser(null);
       setSession(null);
       
-      // Force page reload
+      // Force page reload to /auth instead of using navigate
       window.location.href = '/auth';
       toast.success('Déconnexion réussie');
       return true;
