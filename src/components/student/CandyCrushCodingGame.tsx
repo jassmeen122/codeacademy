@@ -12,7 +12,7 @@ interface Challenge {
   code: string;
   correctAnswer: string;
   explanation: string;
-  type: 'sql' | 'python' | 'javascript' | 'php';
+  type: 'sql' | 'python' | 'javascript' | 'php' | 'java';
 }
 
 interface GameLevel {
@@ -51,6 +51,26 @@ const PHPLogo = () => (
       <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">PHP</div>
     </div>
     <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text text-transparent">PHP</span>
+  </div>
+);
+
+const JavaLogo = () => (
+  <div className="inline-flex items-center gap-2">
+    <div className="relative w-8 h-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 rounded-md"></div>
+      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">☕</div>
+    </div>
+    <span className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">Java</span>
+  </div>
+);
+
+const JavaScriptLogo = () => (
+  <div className="inline-flex items-center gap-2">
+    <div className="relative w-8 h-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-md"></div>
+      <div className="absolute inset-0 flex items-center justify-center text-black text-xs font-bold">JS</div>
+    </div>
+    <span className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent">JavaScript</span>
   </div>
 );
 
@@ -382,6 +402,142 @@ $magic->other = 10;`,
     correctAnswer: "Call nonExistentMethod, Get prop, Set other = 10",
     explanation: "__call() intercepte les méthodes inexistantes, __get() les propriétés lues, __set() les assignations. Ordre d'exécution : call, get, set. Ces méthodes permettent la programmation dynamique en PHP.",
     type: 'php'
+  },
+  {
+    id: 26,
+    title: "Variable Final Non Initialisée",
+    description: "Pourquoi ce code ne compile-t-il pas ?",
+    code: `public class Test {
+    public static void main(String[] args) {
+        final int x;
+        System.out.println(x);
+    }
+}`,
+    correctAnswer: "Variable final non initialisée",
+    explanation: "Une variable final doit être initialisée avant utilisation. Ici, x est déclarée final mais jamais assignée avant d'être utilisée dans println(), causant une erreur de compilation.",
+    type: 'java'
+  },
+  {
+    id: 27,
+    title: "Héritage et Liaison Dynamique",
+    description: "Que fait ce code et quelle est la sortie ?",
+    code: `class A {
+    int x = 10;
+    A() {
+        this.x = 20;
+        method();
+    }
+    void method() {
+        System.out.println(x);
+    }
+}
+class B extends A {
+    int x = 30;
+    B() {
+        this.x = 40;
+    }
+    void method() {
+        System.out.println(x);
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        A a = new B();
+    }
+}`,
+    correctAnswer: "Affiche 0",
+    explanation: "Lors de la construction de B, le constructeur A() appelle method() de B avant que x de B soit initialisé. La variable x de B vaut 0 (valeur par défaut int) au moment de l'appel.",
+    type: 'java'
+  },
+  {
+    id: 28,
+    title: "Deadlock avec Threads",
+    description: "Que fait ce code avec les threads ?",
+    code: `public class DeadlockDemo {
+    private final Object lock1 = new Object();
+    private final Object lock2 = new Object();
+
+    public void method1() {
+        synchronized(lock1) {
+            synchronized(lock2) {
+                System.out.println("method1");
+            }
+        }
+    }
+
+    public void method2() {
+        synchronized(lock2) {
+            synchronized(lock1) {
+                System.out.println("method2");
+            }
+        }
+    }
+}`,
+    correctAnswer: "Risque de deadlock",
+    explanation: "Si deux threads appellent method1() et method2() simultanément, un deadlock peut survenir : thread1 prend lock1 puis attend lock2, thread2 prend lock2 puis attend lock1. Aucun ne peut continuer.",
+    type: 'java'
+  },
+  {
+    id: 29,
+    title: "String Pool et Égalité",
+    description: "Quel est le résultat et pourquoi ?",
+    code: `String s1 = "hello";
+String s2 = new String("hello");
+System.out.println(s1 == s2);
+System.out.println(s1.equals(s2));`,
+    correctAnswer: "false puis true",
+    explanation: "s1 référence le string pool, s2 crée un nouvel objet en heap. == compare les références (false), equals() compare le contenu (true). Utiliser equals() pour comparer les strings en Java.",
+    type: 'java'
+  },
+  {
+    id: 30,
+    title: "NaN et ses Particularités",
+    description: "Quelle est la sortie et pourquoi ?",
+    code: `console.log(typeof NaN);
+console.log(NaN === NaN);`,
+    correctAnswer: "number et false",
+    explanation: "NaN est de type 'number' mais représente 'Not a Number'. Particularité unique : NaN !== NaN (false). Pour tester NaN, utiliser Number.isNaN() ou Object.is(value, NaN).",
+    type: 'javascript'
+  },
+  {
+    id: 31,
+    title: "Closure et Boucle",
+    description: "Que fait ce code ?",
+    code: `for (var i = 0; i < 3; i++) {
+    setTimeout(function() {
+        console.log(i);
+    }, 100);
+}`,
+    correctAnswer: "Affiche 3 trois fois",
+    explanation: "var a une portée de fonction, pas de bloc. Quand setTimeout s'exécute, la boucle est finie et i=3. Solution : utiliser let ou créer une closure avec une IIFE.",
+    type: 'javascript'
+  },
+  {
+    id: 32,
+    title: "ASI et Return",
+    description: "Que renvoie cette fonction ?",
+    code: `function foo() {
+    return
+    {
+        bar: "hello"
+    };
+}
+console.log(foo());`,
+    correctAnswer: "undefined",
+    explanation: "Automatic Semicolon Insertion (ASI) : JavaScript insère automatiquement un ; après return, transformant le code en 'return;'. L'objet devient du code mort. Toujours mettre { sur la même ligne que return.",
+    type: 'javascript'
+  },
+  {
+    id: 33,
+    title: "Références vs Valeurs",
+    description: "Quelle est la sortie ?",
+    code: `let a = [1, 2, 3];
+let b = a;
+a = [4, 5, 6];
+console.log(b);`,
+    correctAnswer: "[1, 2, 3]",
+    explanation: "b référence le tableau original [1,2,3]. Quand a = [4,5,6], on change la référence de a vers un nouveau tableau, mais b garde sa référence vers l'ancien tableau.",
+    type: 'javascript'
   }
 ];
 
@@ -458,6 +614,10 @@ export const CandyCrushCodingGame = () => {
         return 'bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500';
       } else if (level.challenge.type === 'php') {
         return 'bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500';
+      } else if (level.challenge.type === 'java') {
+        return 'bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500';
+      } else if (level.challenge.type === 'javascript') {
+        return 'bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500';
       }
     }
     return 'bg-gray-400';
@@ -474,6 +634,8 @@ export const CandyCrushCodingGame = () => {
       case 'python': return 'bg-gradient-to-r from-blue-100 to-yellow-100 text-blue-800 border-blue-200';
       case 'sql': return 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-200';
       case 'php': return 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border-purple-200';
+      case 'java': return 'bg-gradient-to-r from-red-100 to-orange-100 text-red-800 border-red-200';
+      case 'javascript': return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-200';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -483,6 +645,8 @@ export const CandyCrushCodingGame = () => {
       case 'python': return 'PYTHON';
       case 'sql': return 'SQL';
       case 'php': return 'PHP';
+      case 'java': return 'JAVA';
+      case 'javascript': return 'JAVASCRIPT';
       default: return type.toUpperCase();
     }
   };
@@ -506,13 +670,15 @@ export const CandyCrushCodingGame = () => {
             </h1>
             <Trophy className="h-8 w-8 text-yellow-500" />
           </motion.div>
-          <div className="flex justify-center gap-6 mb-4">
+          <div className="flex justify-center gap-6 mb-4 flex-wrap">
             <PythonLogo />
             <SQLLogo />
             <PHPLogo />
+            <JavaLogo />
+            <JavaScriptLogo />
           </div>
           <p className="text-lg text-muted-foreground">
-            Résous des défis Python, SQL et PHP avancés pour débloquer les niveaux suivants !
+            Résous des défis Python, SQL, PHP, Java et JavaScript avancés pour débloquer les niveaux suivants !
           </p>
         </div>
 
@@ -559,6 +725,8 @@ export const CandyCrushCodingGame = () => {
           <p>🐍 Défis Python Avancés • Closures, Métaclasses, Méthodes Magiques</p>
           <p>🗃️ Défis SQL Experts • Récursivité, Fonctions Fenêtre, Optimisation</p>
           <p>🐘 Défis PHP Experts • Type Juggling, Méthodes Magiques, Références</p>
+          <p>☕ Défis Java Experts • Final, Héritage, Threads, String Pool</p>
+          <p>🌐 Défis JavaScript Experts • NaN, Closures, ASI, Références</p>
         </div>
       </motion.div>
     );
@@ -582,7 +750,9 @@ export const CandyCrushCodingGame = () => {
         <h2 className="text-3xl font-bold text-green-600 mb-4">Excellent ! 🎉</h2>
         <p className="text-lg mb-6">
           Tu maîtrises {currentLevelData?.challenge.type === 'python' ? 'Python' : 
-                      currentLevelData?.challenge.type === 'sql' ? 'SQL' : 'PHP'} niveau {currentLevel} !
+                      currentLevelData?.challenge.type === 'sql' ? 'SQL' : 
+                      currentLevelData?.challenge.type === 'php' ? 'PHP' :
+                      currentLevelData?.challenge.type === 'java' ? 'Java' : 'JavaScript'} niveau {currentLevel} !
         </p>
         <motion.div
           animate={{ rotate: [0, 5, -5, 0] }}
@@ -590,7 +760,9 @@ export const CandyCrushCodingGame = () => {
         >
           <div className="text-6xl mb-6">
             {currentLevelData?.challenge.type === 'python' ? '🐍' : 
-             currentLevelData?.challenge.type === 'sql' ? '🗃️' : '🐘'}
+             currentLevelData?.challenge.type === 'sql' ? '🗃️' : 
+             currentLevelData?.challenge.type === 'php' ? '🐘' :
+             currentLevelData?.challenge.type === 'java' ? '☕' : '🌐'}
           </div>
         </motion.div>
         <Button onClick={handleBackToMenu} size="lg" className={
@@ -598,7 +770,11 @@ export const CandyCrushCodingGame = () => {
             ? "bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
             : currentLevelData?.challenge.type === 'sql'
             ? "bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
-            : "bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
+            : currentLevelData?.challenge.type === 'php'
+            ? "bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
+            : currentLevelData?.challenge.type === 'java'
+            ? "bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500"
+            : "bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500"
         }>
           Continuer vers le menu
         </Button>
@@ -636,17 +812,29 @@ export const CandyCrushCodingGame = () => {
                 <div className="w-4 h-4 bg-orange-500 rounded-sm"></div>
                 <div className="w-4 h-4 bg-red-400 rounded-sm"></div>
               </>
-            ) : (
+            ) : currentLevelData.challenge.type === 'php' ? (
               <>
                 <div className="w-4 h-4 bg-purple-500 rounded-sm"></div>
                 <div className="w-4 h-4 bg-indigo-400 rounded-sm"></div>
+              </>
+            ) : currentLevelData.challenge.type === 'java' ? (
+              <>
+                <div className="w-4 h-4 bg-red-500 rounded-sm"></div>
+                <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
+              </>
+            ) : (
+              <>
+                <div className="w-4 h-4 bg-yellow-500 rounded-sm"></div>
+                <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
               </>
             )}
           </div>
         </div>
         <h3 className={`text-xl font-semibold ${
           currentLevelData.challenge.type === 'python' ? 'text-blue-600' : 
-          currentLevelData.challenge.type === 'sql' ? 'text-orange-600' : 'text-purple-600'
+          currentLevelData.challenge.type === 'sql' ? 'text-orange-600' : 
+          currentLevelData.challenge.type === 'php' ? 'text-purple-600' :
+          currentLevelData.challenge.type === 'java' ? 'text-red-600' : 'text-yellow-600'
         }`}>
           {currentLevelData.challenge.title}
         </h3>
@@ -671,7 +859,11 @@ export const CandyCrushCodingGame = () => {
                   ? 'border-blue-200' 
                   : currentLevelData.challenge.type === 'sql' 
                   ? 'border-orange-200'
-                  : 'border-purple-200'
+                  : currentLevelData.challenge.type === 'php'
+                  ? 'border-purple-200'
+                  : currentLevelData.challenge.type === 'java'
+                  ? 'border-red-200'
+                  : 'border-yellow-200'
               }`}
               disabled={showResult}
             />
@@ -685,7 +877,11 @@ export const CandyCrushCodingGame = () => {
                     ? "w-full bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
                     : currentLevelData.challenge.type === 'sql'
                     ? "w-full bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
-                    : "w-full bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
+                    : currentLevelData.challenge.type === 'php'
+                    ? "w-full bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
+                    : currentLevelData.challenge.type === 'java'
+                    ? "w-full bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500"
+                    : "w-full bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500"
                 }
               >
                 Vérifier ma réponse
@@ -713,7 +909,9 @@ export const CandyCrushCodingGame = () => {
                   <h3 className={`text-xl font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
                     {isCorrect 
                       ? `Parfait ! Tu maîtrises ${currentLevelData.challenge.type === 'python' ? 'Python' : 
-                                                currentLevelData.challenge.type === 'sql' ? 'SQL' : 'PHP'} !` 
+                                                currentLevelData.challenge.type === 'sql' ? 'SQL' : 
+                                                currentLevelData.challenge.type === 'php' ? 'PHP' :
+                                                currentLevelData.challenge.type === 'java' ? 'Java' : 'JavaScript'} !` 
                       : 'Pas tout à fait...'
                     }
                   </h3>
