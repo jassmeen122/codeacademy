@@ -1593,6 +1593,10 @@ export type Database = {
         Args: { user_uuid: string; points_to_add: number }
         Returns: boolean
       }
+      update_user_status_safe: {
+        Args: { status_value?: string }
+        Returns: undefined
+      }
       upsert_custom_resource: {
         Args: {
           lang_id: string

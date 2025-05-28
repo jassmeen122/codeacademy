@@ -150,37 +150,6 @@ const Auth = () => {
 
         if (error) {
           console.error("Login error:", error);
-          
-          // Even if there's a database error, check if auth was successful
-          if (error.message?.includes('Database error') || 
-              error.message?.includes('permission denied') ||
-              error.code === 'unexpected_failure') {
-            
-            console.log("Database error but checking if auth succeeded...");
-            
-            // Wait and check if we got authenticated despite the error
-            setTimeout(async () => {
-              try {
-                const { data: sessionData } = await supabase.auth.getSession();
-                if (sessionData.session?.user) {
-                  console.log("Auth successful despite database error");
-                  const role = sessionData.session.user.user_metadata?.role || 'student';
-                  toast.success("Connexion réussie! Redirection...");
-                  redirectUserByRole(role);
-                  return;
-                }
-              } catch (sessionError) {
-                console.warn("Session check failed:", sessionError);
-              }
-              
-              // If we get here, auth really failed
-              toast.error("Erreur de connexion. Veuillez réessayer.");
-              setIsLoading(false);
-            }, 1000);
-            
-            return; // Don't throw the error, let the timeout handle it
-          }
-          
           throw error;
         }
 
@@ -235,28 +204,28 @@ const Auth = () => {
           <BookOpen className="w-4 h-4 text-primary" />
         </div>
 
-        <div className="p-8 bg-white rounded-b-lg border border-gray-200 shadow-md highlight-animation">
+        <div className="p-8 bg-white rounded-b-lg border border-gray-200 shadow-md">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-primary mb-2 flex items-center gap-2">
               <Code className="h-5 w-5" />
               <span>CodeAcademy</span>
             </h2>
-            <div className="comment-text text-xs">// Programming Excellence Platform</div>
+            <div className="text-xs text-gray-500">// Programming Excellence Platform</div>
             
             <div className="mt-4 font-mono text-sm text-primary">
               {animatedText}
-              <span className="terminal-cursor"></span>
+              <span className="animate-pulse">|</span>
             </div>
           </div>
           
           <form onSubmit={handleAuth} className="space-y-4">
             {isSignUp && (
               <>
-                <div className="code-block p-3 rounded-md bg-blue-50">
-                  <div className="comment-text mb-1">// User details</div>
+                <div className="p-3 rounded-md bg-blue-50">
+                  <div className="text-xs text-gray-500 mb-1">// User details</div>
                   <div className="flex flex-col space-y-2">
                     <Label htmlFor="fullName" className="text-sm font-medium text-gray-600">
-                      <span className="keyword-text">const</span> <span className="variable-text">fullName</span> <span className="text-gray-500">=</span>
+                      <span className="text-blue-600">const</span> <span className="text-purple-600">fullName</span> <span className="text-gray-500">=</span>
                     </Label>
                     <div className="flex items-center">
                       <User className="w-4 h-4 mr-2 text-gray-500" />
@@ -273,11 +242,11 @@ const Auth = () => {
                   </div>
                 </div>
                 
-                <div className="code-block p-3 rounded-md bg-blue-50">
-                  <div className="comment-text mb-1">// Access level</div>
+                <div className="p-3 rounded-md bg-blue-50">
+                  <div className="text-xs text-gray-500 mb-1">// Access level</div>
                   <div className="flex flex-col space-y-2">
                     <Label htmlFor="role" className="text-sm font-medium text-gray-600">
-                      <span className="keyword-text">const</span> <span className="variable-text">role</span> <span className="text-gray-500">=</span>
+                      <span className="text-blue-600">const</span> <span className="text-purple-600">role</span> <span className="text-gray-500">=</span>
                     </Label>
                     <Select
                       value={formData.role}
@@ -289,9 +258,9 @@ const Auth = () => {
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border-gray-200 text-gray-800">
-                        <SelectItem value="student" className="hover:bg-blue-50">student</SelectItem>
-                        <SelectItem value="teacher" className="hover:bg-blue-50">teacher</SelectItem>
-                        <SelectItem value="admin" className="hover:bg-blue-50">admin</SelectItem>
+                        <SelectItem value="student">student</SelectItem>
+                        <SelectItem value="teacher">teacher</SelectItem>
+                        <SelectItem value="admin">admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -299,12 +268,12 @@ const Auth = () => {
               </>
             )}
             
-            <div className="code-block p-3 rounded-md bg-blue-50">
-              <div className="comment-text mb-1">// Authentication credentials</div>
+            <div className="p-3 rounded-md bg-blue-50">
+              <div className="text-xs text-gray-500 mb-1">// Authentication credentials</div>
               <div className="flex flex-col space-y-4">
                 <div>
                   <Label htmlFor="email" className="text-sm font-medium text-gray-600">
-                    <span className="keyword-text">const</span> <span className="variable-text">email</span> <span className="text-gray-500">=</span>
+                    <span className="text-blue-600">const</span> <span className="text-purple-600">email</span> <span className="text-gray-500">=</span>
                   </Label>
                   <div className="flex items-center mt-1">
                     <Mail className="w-4 h-4 mr-2 text-gray-500" />
@@ -322,7 +291,7 @@ const Auth = () => {
                 
                 <div>
                   <Label htmlFor="password" className="text-sm font-medium text-gray-600">
-                    <span className="keyword-text">const</span> <span className="variable-text">password</span> <span className="text-gray-500">=</span>
+                    <span className="text-blue-600">const</span> <span className="text-purple-600">password</span> <span className="text-gray-500">=</span>
                   </Label>
                   <div className="flex items-center mt-1">
                     <Lock className="w-4 h-4 mr-2 text-gray-500" />
@@ -348,10 +317,10 @@ const Auth = () => {
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
-                    <div className="typing-animation">
-                      <span></span>
-                      <span></span>
-                      <span></span>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                   </div>
                 ) : (
@@ -376,7 +345,7 @@ const Auth = () => {
           </div>
           
           <div className="mt-4 text-xs text-gray-500 font-mono">
-            <div className="comment-text">
+            <div className="text-gray-500">
               {isSignUp 
                 ? "// Un email de confirmation sera envoyé pour vérifier votre compte"
                 : "// Entrez vos identifiants pour accéder à votre compte"}

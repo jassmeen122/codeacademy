@@ -23,9 +23,26 @@ export const useAuthState = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
 
-  // Create user profile from auth metadata only (no database calls)
-  const createUserFromAuth = (authUser: any): UserProfile => {
-    return {
+  // Create user profile from auth data and database profile
+  const createUserProfile = async (authUser: any): Promise<UserProfile> => {
+    try {
+      // Try to get profile from database first
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (profile && !error) {
+        console.log("Profile loaded from database:", profile);
+        return profile;
+      }
+    } catch (error) {
+      console.warn("Could not load profile from database:", error);
+    }
+
+    // Fallback to auth metadata if database profile doesn't exist
+    const fallbackProfile: UserProfile = {
       id: authUser.id,
       email: authUser.email || '',
       full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || null,
@@ -35,6 +52,18 @@ export const useAuthState = () => {
       created_at: authUser.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+
+    console.log("Using fallback profile:", fallbackProfile);
+    return fallbackProfile;
+  };
+
+  // Update user status safely (optional, won't block auth)
+  const updateUserStatusSafely = async () => {
+    try {
+      await supabase.rpc('update_user_status_safe', { status_value: 'online' });
+    } catch (error) {
+      console.warn("Could not update user status (non-critical):", error);
+    }
   };
 
   useEffect(() => {
@@ -49,10 +78,27 @@ export const useAuthState = () => {
       setSession(currentSession);
       
       if (currentSession?.user) {
-        // Create user from auth data immediately - no database calls
-        const userProfile = createUserFromAuth(currentSession.user);
-        setUser(userProfile);
-        console.log("User profile created:", userProfile);
+        try {
+          const userProfile = await createUserProfile(currentSession.user);
+          setUser(userProfile);
+          console.log("User profile created:", userProfile);
+          
+          // Update status in background (non-blocking)
+          setTimeout(() => updateUserStatusSafely(), 0);
+        } catch (error) {
+          console.error("Error creating user profile:", error);
+          // Still allow authentication to proceed with basic user data
+          setUser({
+            id: currentSession.user.id,
+            email: currentSession.user.email || '',
+            full_name: currentSession.user.user_metadata?.full_name || null,
+            avatar_url: null,
+            points: 0,
+            role: 'student',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
         
         if (mounted) setLoading(false);
       } else {
@@ -62,7 +108,7 @@ export const useAuthState = () => {
     });
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (error) {
         console.warn("Session check error:", error);
       }
@@ -74,9 +120,28 @@ export const useAuthState = () => {
       setSession(session);
       
       if (session?.user) {
-        const userProfile = createUserFromAuth(session.user);
-        setUser(userProfile);
-        console.log("Initial user profile:", userProfile);
+        try {
+          const userProfile = await createUserProfile(session.user);
+          setUser(userProfile);
+          console.log("Initial user profile:", userProfile);
+          
+          // Update status in background (non-blocking)
+          setTimeout(() => updateUserStatusSafely(), 0);
+        } catch (error) {
+          console.error("Error creating initial user profile:", error);
+          // Still allow authentication to proceed
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            full_name: session.user.user_metadata?.full_name || null,
+            avatar_url: null,
+            points: 0,
+            role: 'student',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
+        
         if (mounted) setLoading(false);
       } else {
         if (mounted) setLoading(false);
@@ -131,6 +196,6 @@ export const useAuthState = () => {
     user,
     loading,
     handleSignOut,
-    systemAvailable: true // Always true since we're not using database calls
+    systemAvailable: true
   };
 };
