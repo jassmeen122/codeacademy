@@ -1,4 +1,3 @@
-
 import {
   Activity,
   Book,
@@ -15,6 +14,7 @@ import {
   Trophy,
   UserRound,
   Youtube,
+  TrendingUp,
 } from "lucide-react";
 import { MenuItem } from "@/types/sidebar";
 
@@ -68,6 +68,11 @@ export const studentMenuItems: MenuItem[] = [
     title: "Knowledge Share",
     icon: BookOpen,
     href: "/student/knowledge",
+  },
+  {
+    title: "Progrès Simple",
+    href: '/student/progress-simple',
+    icon: TrendingUp,
   },
   {
     title: "Progress",
