@@ -1,91 +1,96 @@
 
-import React from "react";
-import { 
-  BookOpen, 
-  Trophy, 
-  Code, 
-  MessageSquare, 
-  Briefcase, 
-  Settings, 
-  Bell, 
-  Users, 
-  User, 
-  BarChart3, 
-  PlayCircle,
+import {
+  Activity,
+  Book,
+  BookOpen,
   Brain,
-  Zap
+  Briefcase,
+  Code,
+  FileCode,
+  Gamepad2,
+  Layout,
+  MessageSquare,
+  School,
+  Settings,
+  Trophy,
+  UserRound,
+  Youtube,
 } from "lucide-react";
 import { MenuItem } from "@/types/sidebar";
 
-export const getStudentMenuItems = (): MenuItem[] => [
+export const studentMenuItems: MenuItem[] = [
   {
-    title: "Cours",
-    icon: BookOpen,
+    title: "Dashboard",
+    icon: School,
+    href: "/student",
+  },
+  {
+    title: "Profile",
+    icon: UserRound,
+    href: "/student/profile",
+  },
+  {
+    title: "My Courses",
+    icon: Book,
     href: "/student/courses",
   },
   {
-    title: "Exercices",
+    title: "Code Editor",
     icon: Code,
-    href: "/student/exercises",
+    href: "/student/editor",
   },
   {
-    title: "Réalisations",
-    icon: Trophy,
-    href: "/student/achievements",
-  },
-  {
-    title: "Progrès",
-    icon: BarChart3,
-    href: "/student/progress",
-  },
-  {
-    title: "Mini-Jeu",
-    icon: PlayCircle,
-    href: "/student/mini-game",
-  },
-  {
-    title: "Éditeur de Code",
-    icon: Code,
-    href: "/student/code-editor",
-  },
-  {
-    title: "Assistant IA",
+    title: "AI Assistant",
     icon: Brain,
     href: "/student/ai-assistant",
   },
   {
-    title: "IA Locale",
-    icon: Zap,
-    href: "/student/local-ai-assistant",
-    isNew: true
+    title: "Exercises",
+    icon: FileCode,
+    href: "/student/exercises",
   },
   {
-    title: "Discussions",
-    icon: MessageSquare,
-    href: "/student/discussion",
+    title: "YT Dev Tutorials",
+    icon: Youtube,
+    href: "/student/yt-dev-tutorials",
   },
   {
-    title: "Messages",
-    icon: Users,
-    href: "/student/messages",
+    title: "Projects",
+    icon: Layout,
+    href: "/student/projects",
   },
   {
-    title: "Stages",
+    title: "Internship Opportunities",
     icon: Briefcase,
     href: "/student/internships",
   },
   {
-    title: "Notifications",
-    icon: Bell,
-    href: "/student/notifications",
+    title: "Knowledge Share",
+    icon: BookOpen,
+    href: "/student/knowledge",
   },
   {
-    title: "Profil",
-    icon: User,
-    href: "/student/profile",
+    title: "Progress",
+    icon: Activity,
+    href: "/student/progress",
   },
   {
-    title: "Paramètres",
+    title: "Achievements",
+    icon: Trophy,
+    href: "/student/achievements",
+  },
+  {
+    title: "Mini-Jeu",
+    icon: Gamepad2,
+    href: "/student/mini-game",
+  },
+  {
+    title: "Discussion",
+    icon: MessageSquare,
+    href: "/student/discussion",
+  },
+  {
+    title: "Settings",
     icon: Settings,
     href: "/student/settings",
   },

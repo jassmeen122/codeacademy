@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { adminMenuItems } from "./sidebar/AdminMenuItems";
 import { teacherMenuItems } from "./sidebar/TeacherMenuItems";
-import { getStudentMenuItems } from "./sidebar/StudentMenuItems";
+import { studentMenuItems } from "./sidebar/StudentMenuItems";
 import { SidebarMenu } from "./sidebar/SidebarMenu";
 
 interface DashboardSidebarProps {
@@ -32,7 +32,7 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
       case 'teacher':
         return teacherMenuItems;
       case 'student':
-        return getStudentMenuItems();
+        return studentMenuItems;
       default:
         return [];
     }
