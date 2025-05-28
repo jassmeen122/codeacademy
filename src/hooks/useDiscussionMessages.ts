@@ -33,7 +33,7 @@ export const useDiscussionMessages = () => {
           audio_url,
           created_at,
           user_id,
-          sender:profiles!discussion_messages_user_id_fkey(
+          profiles!discussion_messages_user_id_fkey(
             full_name,
             avatar_url
           )
@@ -41,7 +41,14 @@ export const useDiscussionMessages = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      
+      // Transform the data to match our interface
+      const transformedMessages = (data || []).map(msg => ({
+        ...msg,
+        sender: msg.profiles
+      }));
+      
+      setMessages(transformedMessages);
     } catch (err: any) {
       setError(err.message);
       toast.error('Erreur lors du chargement des messages');
@@ -70,7 +77,7 @@ export const useDiscussionMessages = () => {
           audio_url,
           created_at,
           user_id,
-          sender:profiles!discussion_messages_user_id_fkey(
+          profiles!discussion_messages_user_id_fkey(
             full_name,
             avatar_url
           )
@@ -80,7 +87,11 @@ export const useDiscussionMessages = () => {
       if (error) throw error;
 
       if (data) {
-        setMessages(prev => [...prev, data]);
+        const transformedMessage = {
+          ...data,
+          sender: data.profiles
+        };
+        setMessages(prev => [...prev, transformedMessage]);
         toast.success('Message envoyé !');
       }
     } catch (err: any) {
@@ -113,7 +124,7 @@ export const useDiscussionMessages = () => {
               audio_url,
               created_at,
               user_id,
-              sender:profiles!discussion_messages_user_id_fkey(
+              profiles!discussion_messages_user_id_fkey(
                 full_name,
                 avatar_url
               )
@@ -122,12 +133,16 @@ export const useDiscussionMessages = () => {
             .single();
 
           if (data) {
+            const transformedMessage = {
+              ...data,
+              sender: data.profiles
+            };
             setMessages(prev => {
               // Check if message already exists to avoid duplicates
               if (prev.some(msg => msg.id === data.id)) {
                 return prev;
               }
-              return [...prev, data];
+              return [...prev, transformedMessage];
             });
           }
         }

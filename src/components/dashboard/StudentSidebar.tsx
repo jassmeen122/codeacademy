@@ -64,6 +64,11 @@ const links = [
     icon: MessageSquare,
   },
   {
+    title: 'Messages Privés',
+    href: '/student/private-messages',
+    icon: MessageCircle,
+  },
+  {
     title: 'Projects',
     href: '/student/projects',
     icon: FolderKanban,

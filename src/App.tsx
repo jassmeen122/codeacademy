@@ -107,6 +107,7 @@ function App() {
             <Route path="/student/exercises" element={<StudentExercisesPage />} />
             <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
             <Route path="/student/discussion" element={<DiscussionPage />} />
+            <Route path="/student/private-messages" element={<PrivateMessagesPage />} />
             <Route path="/student/projects" element={<ProjectsPage />} />
             <Route path="/student/internships" element={<InternshipOpportunitiesPage />} />
             <Route path="/student/code-editor" element={<CodeEditorPage />} />
