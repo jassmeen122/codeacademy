@@ -80,11 +80,15 @@ export const LanguagesSection: React.FC = () => {
             </p>
             <div className="code-block">
               <span className="comment-text">// Votre parcours commence ici</span><br/>
-              <span className="keyword-text">for</span> (<span className="variable-text">language</span> <span className="keyword-text">of</span> <span className="variable-text">availableCourses</span>) {<br/>
-              &nbsp;&nbsp;<span className="function-text">learn</span>(<span className="variable-text">language</span>);<br/>
-              &nbsp;&nbsp;<span className="function-text">practice</span>(<span className="variable-text">projects</span>);<br/>
-              &nbsp;&nbsp;<span className="function-text">master</span>(<span className="variable-text">skills</span>);<br/>
-              }
+              <span className="keyword-text">for</span> (<span className="variable-text">language</span> <span className="keyword-text">of</span> <span className="variable-text">availableCourses</span>) {"{"}
+              <br/>
+              &nbsp;&nbsp;<span className="function-text">learn</span>(<span className="variable-text">language</span>);
+              <br/>
+              &nbsp;&nbsp;<span className="function-text">practice</span>(<span className="variable-text">projects</span>);
+              <br/>
+              &nbsp;&nbsp;<span className="function-text">master</span>(<span className="variable-text">skills</span>);
+              <br/>
+              {"}"}
             </div>
           </div>
         </div>
