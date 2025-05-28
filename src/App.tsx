@@ -85,6 +85,9 @@ function App() {
             <Route path="/student/language/:languageId/module/:moduleId" element={<ModuleContentPage />} />
             <Route path="/student/language/:id/quiz" element={<LanguageQuizPage />} />
             <Route path="/student/language/:id/summary" element={<LanguageSummaryPage />} />
+            <Route path="/student/language-summary/:languageId" element={<LanguageSummaryPage />} />
+            <Route path="/student/language-quiz/:languageId" element={<LanguageQuizPage />} />
+            <Route path="/student/language-courses/:languageId" element={<LanguageCoursePage />} />
             <Route path="/student/courses" element={<CoursesPage />} />
             <Route path="/student/course/:id" element={<CourseDetailsPage />} />
             <Route path="/student/course/:id/learn" element={<CourseLearnPage />} />
@@ -102,6 +105,7 @@ function App() {
             <Route path="/student/mini-game" element={<MiniGamePage />} />
             <Route path="/student/ai-assistant" element={<AIAssistantPage />} />
             <Route path="/student/internships" element={<InternshipOpportunitiesPage />} />
+            <Route path="/student/internship-opportunities" element={<InternshipOpportunitiesPage />} />
             <Route path="/student/discussion" element={<DiscussionPage />} />
             <Route path="/student/messages" element={<MessagesPage />} />
             <Route path="/student/enhanced-messages" element={<EnhancedMessagesPage />} />
@@ -109,7 +113,9 @@ function App() {
             <Route path="/student/free-courses" element={<FreeCoursesDashboard />} />
             <Route path="/student/paid-course/:id" element={<PaidCourseDetailsPage />} />
             <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
+            <Route path="/student/youtube-tutorials" element={<YTDevTutorialsPage />} />
             <Route path="/student/knowledge" element={<KnowledgeSharePage />} />
+            <Route path="/student/knowledge-share" element={<KnowledgeSharePage />} />
 
             {/* Teacher routes */}
             <Route path="/teacher" element={<TeacherDashboard />} />
