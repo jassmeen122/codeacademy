@@ -1,74 +1,89 @@
 
 import React from "react";
-import { CodeBlock } from "./CodeBlock";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface FormattedMessageProps {
   content: string;
 }
 
 export const FormattedMessage: React.FC<FormattedMessageProps> = ({ content }) => {
-  // This regex looks for code blocks in markdown format: ```language\ncode\n```
-  const codeBlockRegex = /```(\w+)?\n([\s\S]*?)\n```/g;
-  const parts = [];
-  
-  let lastIndex = 0;
-  let match;
-  
-  // Find all code blocks and process them
-  while ((match = codeBlockRegex.exec(content)) !== null) {
-    // Add the text before the code block
-    if (match.index > lastIndex) {
-      parts.push({
-        type: "text",
-        content: content.substring(lastIndex, match.index),
-      });
-    }
-    
-    // Add the code block
-    const language = match[1] || "plaintext";
-    const code = match[2];
-    
-    parts.push({
-      type: "code",
-      language,
-      code,
-    });
-    
-    lastIndex = match.index + match[0].length;
-  }
-  
-  // Add any remaining text after the last code block
-  if (lastIndex < content.length) {
-    parts.push({
-      type: "text",
-      content: content.substring(lastIndex),
-    });
-  }
-  
-  return (
-    <div className="whitespace-pre-wrap">
-      {parts.map((part, index) => {
-        if (part.type === "code") {
-          return (
-            <CodeBlock 
-              key={index} 
-              language={part.language} 
-              code={part.code} 
-            />
+  const formatContent = (text: string) => {
+    const lines = text.split('\n');
+    const result: React.ReactNode[] = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      
+      // Detect code blocks
+      if (line.trim().startsWith('```')) {
+        const language = line.trim().substring(3);
+        const codeLines: string[] = [];
+        i++; // Skip the opening ```
+        
+        // Collect code lines until closing ```
+        while (i < lines.length && !lines[i].trim().startsWith('```')) {
+          codeLines.push(lines[i]);
+          i++;
+        }
+        
+        // Add code block
+        result.push(
+          <div key={`code-${result.length}`} className="my-2">
+            <SyntaxHighlighter
+              language={language || 'text'}
+              style={tomorrow}
+              customStyle={{
+                fontSize: '0.875rem',
+                borderRadius: '0.375rem',
+                padding: '1rem',
+              }}
+            >
+              {codeLines.join('\n')}
+            </SyntaxHighlighter>
+          </div>
+        );
+        
+        i++; // Skip the closing ```
+      } else {
+        // Regular text line
+        if (line.trim()) {
+          // Handle inline code with backticks
+          const parts = line.split(/(`[^`]+`)/g);
+          const lineContent = parts.map((part, index) => {
+            if (part.startsWith('`') && part.endsWith('`')) {
+              return (
+                <code 
+                  key={index}
+                  className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono"
+                >
+                  {part.slice(1, -1)}
+                </code>
+              );
+            }
+            return part;
+          });
+          
+          result.push(
+            <p key={`text-${result.length}`} className="mb-2 last:mb-0">
+              {lineContent}
+            </p>
           );
         } else {
-          return (
-            <div key={index} className="mb-4">
-              {part.content.split("\n").map((line, i) => (
-                <React.Fragment key={i}>
-                  {line}
-                  {i < part.content.split("\n").length - 1 && <br />}
-                </React.Fragment>
-              ))}
-            </div>
-          );
+          // Empty line creates spacing
+          result.push(<br key={`br-${result.length}`} />);
         }
-      })}
+        i++;
+      }
+    }
+
+    return result;
+  };
+
+  return (
+    <div className="whitespace-pre-wrap">
+      {formatContent(content)}
     </div>
   );
 };

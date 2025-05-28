@@ -38,6 +38,8 @@ export const useAIAssistant = () => {
     if ((!userInput.trim() && !code?.trim()) || isLoading) return;
 
     try {
+      console.log("🚀 Début envoi message IA:", { userInput, code: !!code, language });
+      
       // Analyser la question avec notre IA intelligente
       const { analysis, prompt, suggestions } = intelligentAI.analyzeAndRespond(
         userInput, 
@@ -65,6 +67,7 @@ export const useAIAssistant = () => {
       // Vérifier si on peut répondre localement pour certains cas
       const localResponse = getLocalResponse(analysis);
       if (localResponse) {
+        console.log("💬 Réponse locale:", localResponse.substring(0, 50) + "...");
         setMessages(prev => [...prev, { 
           role: "assistant", 
           content: localResponse,
@@ -107,6 +110,7 @@ export const useAIAssistant = () => {
           content: response.data.reply.content,
           suggestions: suggestions.length > 0 ? suggestions : undefined
         }]);
+        console.log("✅ Message IA ajouté avec succès");
       } else if (response.data?.error) {
         throw new Error(response.data.error);
       } else {
@@ -164,6 +168,7 @@ export const useAIAssistant = () => {
         ]
       }]);
       setErrorMessage(null);
+      console.log("🗑️ Chat effacé");
     }
   };
 
@@ -171,6 +176,7 @@ export const useAIAssistant = () => {
     const lastUserMessageIndex = [...messages].reverse().findIndex(msg => msg.role === "user");
     if (lastUserMessageIndex !== -1) {
       const lastUserMessage = messages[messages.length - 1 - lastUserMessageIndex];
+      console.log("🔄 Retry du dernier message:", lastUserMessage.content.substring(0, 50) + "...");
       sendMessage(lastUserMessage.content);
     }
     setErrorMessage(null);
@@ -179,6 +185,8 @@ export const useAIAssistant = () => {
   const switchAssistantModel = () => {
     setUseHuggingFace(prev => !prev);
     setErrorMessage(null);
+    const newModel = !useHuggingFace ? "Hugging Face" : "OpenAI";
+    console.log(`🔄 Changement vers ${newModel}`);
     toast.info(useHuggingFace ? 
       "🤖 Changement vers OpenAI" : 
       "🤗 Changement vers Hugging Face");

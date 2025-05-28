@@ -26,6 +26,7 @@ export const FloatingAIAssistant = () => {
   const handleSend = () => {
     if (!userInput.trim() || isLoading) return;
     
+    console.log("🎯 Envoi message depuis FloatingAI:", userInput);
     sendMessage(userInput);
     setUserInput("");
   };
@@ -34,6 +35,7 @@ export const FloatingAIAssistant = () => {
     if (!isLoading) {
       // Nettoyer la suggestion des emojis pour l'envoi
       const cleanSuggestion = suggestion.replace(/^[🐛📚💪🎯🔧]+\s*/, '');
+      console.log("💡 Suggestion cliquée:", cleanSuggestion);
       sendMessage(cleanSuggestion);
     }
   };
@@ -50,7 +52,10 @@ export const FloatingAIAssistant = () => {
       {/* Floating Button */}
       {!isOpen && (
         <Button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            console.log("🚀 Ouverture assistant IA");
+            setIsOpen(true);
+          }}
           className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14 p-0 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
         >
           <Brain className="h-6 w-6" />
