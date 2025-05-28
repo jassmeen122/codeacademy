@@ -105,13 +105,18 @@ const ProfilePage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: coursesProgress, error: coursesError } = await supabase
-        .from('student_progress')
-        .select('*')
-        .eq('student_id', user.id)
-        .gte('completion_percentage', 100);
-
-      if (coursesError) throw coursesError;
+      // Use local storage since student_progress table doesn't exist
+      const localProgressKey = `student_progress_${user.id}`;
+      const localProgress = localStorage.getItem(localProgressKey);
+      
+      let coursesCompleted = 0;
+      let completionRate = 0;
+      
+      if (localProgress) {
+        const progressData = JSON.parse(localProgress);
+        coursesCompleted = progressData.coursesCompleted || 0;
+        completionRate = progressData.completionRate || 0;
+      }
 
       const { data: profiles, error: rankError } = await supabase
         .from('profiles')
@@ -120,19 +125,8 @@ const ProfilePage = () => {
 
       if (rankError) throw rankError;
 
-      const { data: allProgress, error: progressError } = await supabase
-        .from('student_progress')
-        .select('completion_percentage')
-        .eq('student_id', user.id);
-
-      if (progressError) throw progressError;
-
-      const completionRate = allProgress?.length 
-        ? allProgress.reduce((acc, curr) => acc + (curr.completion_percentage || 0), 0) / allProgress.length 
-        : 0;
-
       setProgress({
-        coursesCompleted: coursesProgress?.length || 0,
+        coursesCompleted,
         totalPoints: profile?.points || 0,
         rank: (profiles?.length || 0) + 1,
         completionRate,

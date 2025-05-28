@@ -387,7 +387,7 @@ export default function PaidCourseDetailsPage() {
                     </div>
                     
                     <PayPalButton 
-                      amount="29.99"
+                      amount={29.99}
                       onSuccess={handlePurchaseSuccess}
                     />
                   </div>
