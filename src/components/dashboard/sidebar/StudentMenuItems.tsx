@@ -1,97 +1,91 @@
-
-import {
-  Activity,
-  Book,
-  BookOpen,
+import React from "react";
+import { 
+  BookOpen, 
+  Trophy, 
+  Code, 
+  MessageSquare, 
+  Briefcase, 
+  Settings, 
+  Bell, 
+  Users, 
+  User, 
+  BarChart3, 
+  PlayCircle,
   Brain,
-  Briefcase,
-  Code,
-  FileCode,
-  Gamepad2,
-  Layout,
-  MessageSquare,
-  School,
-  Settings,
-  Trophy,
-  UserRound,
-  Youtube,
+  Zap
 } from "lucide-react";
-import { MenuItem } from "@/types/sidebar";
+import { SidebarMenuItem } from "../DashboardSidebar";
 
-export const studentMenuItems: MenuItem[] = [
+export const getStudentMenuItems = (): SidebarMenuItem[] => [
   {
-    title: "Dashboard",
-    icon: School,
-    href: "/student",
-  },
-  {
-    title: "Profile",
-    icon: UserRound,
-    href: "/student/profile",
-  },
-  {
-    title: "My Courses",
-    icon: Book,
+    icon: BookOpen,
+    label: "Cours",
     href: "/student/courses",
   },
   {
-    title: "Code Editor",
     icon: Code,
-    href: "/student/editor",
-  },
-  {
-    title: "AI Assistant",
-    icon: Brain,
-    href: "/student/ai-assistant",
-  },
-  {
-    title: "Exercises",
-    icon: FileCode,
+    label: "Exercices",
     href: "/student/exercises",
   },
   {
-    title: "YT Dev Tutorials",
-    icon: Youtube,
-    href: "/student/yt-dev-tutorials",
-  },
-  {
-    title: "Projects",
-    icon: Layout,
-    href: "/student/projects",
-  },
-  {
-    title: "Internship Opportunities",
-    icon: Briefcase,
-    href: "/student/internships",
-  },
-  {
-    title: "Knowledge Share",
-    icon: BookOpen,
-    href: "/student/knowledge",
-  },
-  {
-    title: "Progress",
-    icon: Activity,
-    href: "/student/progress",
-  },
-  {
-    title: "Achievements",
     icon: Trophy,
+    label: "Réalisations",
     href: "/student/achievements",
   },
   {
-    title: "Mini-Jeu",
-    icon: Gamepad2,
+    icon: BarChart3,
+    label: "Progrès",
+    href: "/student/progress",
+  },
+  {
+    icon: PlayCircle,
+    label: "Mini-Jeu",
     href: "/student/mini-game",
   },
   {
-    title: "Discussion",
+    icon: Code,
+    label: "Éditeur de Code",
+    href: "/student/code-editor",
+  },
+  {
+    icon: Brain,
+    label: "Assistant IA",
+    href: "/student/ai-assistant",
+  },
+  {
+    icon: Zap,
+    label: "IA Locale",
+    href: "/student/local-ai-assistant",
+    badge: "Nouveau"
+  },
+  {
     icon: MessageSquare,
+    label: "Discussions",
     href: "/student/discussion",
   },
   {
-    title: "Settings",
+    icon: Users,
+    label: "Messages",
+    href: "/student/messages",
+  },
+  {
+    icon: Briefcase,
+    label: "Stages",
+    href: "/student/internships",
+  },
+  {
+    icon: Bell,
+    label: "Notifications",
+    href: "/student/notifications",
+  },
+  {
+    icon: User,
+    label: "Profil",
+    href: "/student/profile",
+  },
+  {
     icon: Settings,
+    label: "Paramètres",
     href: "/student/settings",
   },
 ];
