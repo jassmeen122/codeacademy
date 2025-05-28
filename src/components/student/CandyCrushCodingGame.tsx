@@ -12,7 +12,7 @@ interface Challenge {
   code: string;
   correctAnswer: string;
   explanation: string;
-  type: 'sql' | 'python' | 'javascript';
+  type: 'sql' | 'python' | 'javascript' | 'php';
 }
 
 interface GameLevel {
@@ -41,6 +41,16 @@ const SQLLogo = () => (
       <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">SQL</div>
     </div>
     <span className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">SQL</span>
+  </div>
+);
+
+const PHPLogo = () => (
+  <div className="inline-flex items-center gap-2">
+    <div className="relative w-8 h-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-600 rounded-md"></div>
+      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">PHP</div>
+    </div>
+    <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-500 bg-clip-text text-transparent">PHP</span>
   </div>
 );
 
@@ -288,6 +298,90 @@ CREATE VIEW sales_view AS SELECT ...`,
     correctAnswer: "Vue stockée physiquement",
     explanation: "Vue matérialisée : résultats stockés physiquement, rapide à lire mais doit être rafraîchie. Vue normale : recalculée à chaque accès, toujours à jour mais plus lente.",
     type: 'sql'
+  },
+  {
+    id: 21,
+    title: "Comparaisons PHP Bizarres",
+    description: "Que renvoie ce code, et pourquoi ?",
+    code: `$a = "0";
+$b = 0;
+$c = false;
+
+var_dump($a == $b);
+var_dump($b == $c);
+var_dump($a == $c);`,
+    correctAnswer: "true, true, false",
+    explanation: "PHP fait du type juggling : '0' == 0 (string vers int), 0 == false (int vers bool), mais '0' != false car la conversion directe string-bool donne true pour toute string non-vide.",
+    type: 'php'
+  },
+  {
+    id: 22,
+    title: "Destructeur et Variables Statiques",
+    description: "Quelle est la sortie, et pourquoi ?",
+    code: `class A {
+    public function __destruct() {
+        echo "Bye";
+    }
+}
+
+function test() {
+    static $a = new A();
+}
+
+test();
+echo "End";`,
+    correctAnswer: "End puis Bye",
+    explanation: "Les variables statiques persistent pendant toute l'exécution du script. Le destructeur n'est appelé qu'à la fin du script, après 'End'. L'objet reste en mémoire car il est statique.",
+    type: 'php'
+  },
+  {
+    id: 23,
+    title: "Retour par Référence Dangereux",
+    description: "Pourquoi cette fonction ne renvoie pas ce que l'on attend ?",
+    code: `function &getValue() {
+    $value = 42;
+    return $value;
+}
+
+$a = &getValue();`,
+    correctAnswer: "Référence vers variable locale détruite",
+    explanation: "Retour par référence d'une variable locale : $value est détruite à la fin de la fonction, laissant $a avec une référence invalide. Cause un avertissement et un comportement imprévisible.",
+    type: 'php'
+  },
+  {
+    id: 24,
+    title: "Modification de String par Index",
+    description: "Que se passe-t-il ici ?",
+    code: `$a = '1';
+$a[1] = '2';
+echo $a;`,
+    correctAnswer: "12",
+    explanation: "PHP étend automatiquement la string quand on assigne à un index. $a[0]='1' existe, $a[1]='2' est ajouté. Résultat : '12'. Comportement unique à PHP parmi les langages populaires.",
+    type: 'php'
+  },
+  {
+    id: 25,
+    title: "Méthodes Magiques PHP",
+    description: "Que fait réellement cette classe ?",
+    code: `class Magic {
+    public function __call($name, $args) {
+        echo "Call $name";
+    }
+    public function __get($name) {
+        echo "Get $name";
+    }
+    public function __set($name, $value) {
+        echo "Set $name = $value";
+    }
+}
+
+$magic = new Magic();
+$magic->nonExistentMethod(1, 2);
+echo $magic->prop;
+$magic->other = 10;`,
+    correctAnswer: "Call nonExistentMethod, Get prop, Set other = 10",
+    explanation: "__call() intercepte les méthodes inexistantes, __get() les propriétés lues, __set() les assignations. Ordre d'exécution : call, get, set. Ces méthodes permettent la programmation dynamique en PHP.",
+    type: 'php'
   }
 ];
 
@@ -360,8 +454,10 @@ export const CandyCrushCodingGame = () => {
     if (level.unlocked) {
       if (level.challenge.type === 'python') {
         return 'bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500';
-      } else {
+      } else if (level.challenge.type === 'sql') {
         return 'bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500';
+      } else if (level.challenge.type === 'php') {
+        return 'bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500';
       }
     }
     return 'bg-gray-400';
@@ -377,6 +473,7 @@ export const CandyCrushCodingGame = () => {
     switch (type) {
       case 'python': return 'bg-gradient-to-r from-blue-100 to-yellow-100 text-blue-800 border-blue-200';
       case 'sql': return 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-200';
+      case 'php': return 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border-purple-200';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -385,6 +482,7 @@ export const CandyCrushCodingGame = () => {
     switch (type) {
       case 'python': return 'PYTHON';
       case 'sql': return 'SQL';
+      case 'php': return 'PHP';
       default: return type.toUpperCase();
     }
   };
@@ -411,9 +509,10 @@ export const CandyCrushCodingGame = () => {
           <div className="flex justify-center gap-6 mb-4">
             <PythonLogo />
             <SQLLogo />
+            <PHPLogo />
           </div>
           <p className="text-lg text-muted-foreground">
-            Résous des défis Python et SQL avancés pour débloquer les niveaux suivants !
+            Résous des défis Python, SQL et PHP avancés pour débloquer les niveaux suivants !
           </p>
         </div>
 
@@ -459,6 +558,7 @@ export const CandyCrushCodingGame = () => {
         <div className="text-center mt-8 text-sm text-muted-foreground">
           <p>🐍 Défis Python Avancés • Closures, Métaclasses, Méthodes Magiques</p>
           <p>🗃️ Défis SQL Experts • Récursivité, Fonctions Fenêtre, Optimisation</p>
+          <p>🐘 Défis PHP Experts • Type Juggling, Méthodes Magiques, Références</p>
         </div>
       </motion.div>
     );
@@ -481,20 +581,24 @@ export const CandyCrushCodingGame = () => {
         </motion.div>
         <h2 className="text-3xl font-bold text-green-600 mb-4">Excellent ! 🎉</h2>
         <p className="text-lg mb-6">
-          Tu maîtrises {currentLevelData?.challenge.type === 'python' ? 'Python' : 'SQL'} niveau {currentLevel} !
+          Tu maîtrises {currentLevelData?.challenge.type === 'python' ? 'Python' : 
+                      currentLevelData?.challenge.type === 'sql' ? 'SQL' : 'PHP'} niveau {currentLevel} !
         </p>
         <motion.div
           animate={{ rotate: [0, 5, -5, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
           <div className="text-6xl mb-6">
-            {currentLevelData?.challenge.type === 'python' ? '🐍' : '🗃️'}
+            {currentLevelData?.challenge.type === 'python' ? '🐍' : 
+             currentLevelData?.challenge.type === 'sql' ? '🗃️' : '🐘'}
           </div>
         </motion.div>
         <Button onClick={handleBackToMenu} size="lg" className={
           currentLevelData?.challenge.type === 'python' 
             ? "bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
-            : "bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
+            : currentLevelData?.challenge.type === 'sql'
+            ? "bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
+            : "bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
         }>
           Continuer vers le menu
         </Button>
@@ -527,16 +631,22 @@ export const CandyCrushCodingGame = () => {
                 <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
                 <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
               </>
-            ) : (
+            ) : currentLevelData.challenge.type === 'sql' ? (
               <>
                 <div className="w-4 h-4 bg-orange-500 rounded-sm"></div>
                 <div className="w-4 h-4 bg-red-400 rounded-sm"></div>
+              </>
+            ) : (
+              <>
+                <div className="w-4 h-4 bg-purple-500 rounded-sm"></div>
+                <div className="w-4 h-4 bg-indigo-400 rounded-sm"></div>
               </>
             )}
           </div>
         </div>
         <h3 className={`text-xl font-semibold ${
-          currentLevelData.challenge.type === 'python' ? 'text-blue-600' : 'text-orange-600'
+          currentLevelData.challenge.type === 'python' ? 'text-blue-600' : 
+          currentLevelData.challenge.type === 'sql' ? 'text-orange-600' : 'text-purple-600'
         }`}>
           {currentLevelData.challenge.title}
         </h3>
@@ -559,7 +669,9 @@ export const CandyCrushCodingGame = () => {
               className={`w-full p-3 border rounded-lg focus:border-blue-400 ${
                 currentLevelData.challenge.type === 'python' 
                   ? 'border-blue-200' 
-                  : 'border-orange-200'
+                  : currentLevelData.challenge.type === 'sql' 
+                  ? 'border-orange-200'
+                  : 'border-purple-200'
               }`}
               disabled={showResult}
             />
@@ -571,7 +683,9 @@ export const CandyCrushCodingGame = () => {
                 className={
                   currentLevelData.challenge.type === 'python'
                     ? "w-full bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
-                    : "w-full bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
+                    : currentLevelData.challenge.type === 'sql'
+                    ? "w-full bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
+                    : "w-full bg-gradient-to-r from-purple-500 to-indigo-400 hover:from-purple-600 hover:to-indigo-500"
                 }
               >
                 Vérifier ma réponse
@@ -598,7 +712,8 @@ export const CandyCrushCodingGame = () => {
                   )}
                   <h3 className={`text-xl font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
                     {isCorrect 
-                      ? `Parfait ! Tu maîtrises ${currentLevelData.challenge.type === 'python' ? 'Python' : 'SQL'} !` 
+                      ? `Parfait ! Tu maîtrises ${currentLevelData.challenge.type === 'python' ? 'Python' : 
+                                                currentLevelData.challenge.type === 'sql' ? 'SQL' : 'PHP'} !` 
                       : 'Pas tout à fait...'
                     }
                   </h3>
