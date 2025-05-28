@@ -2,172 +2,407 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Lightbulb, FileText } from "lucide-react";
+import { Loader2, Eye, Download, Rocket, Palette, Users, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthState } from "@/hooks/useAuthState";
+
+interface ProjectSpecs {
+  projectName: string;
+  description: string;
+  objectives: string;
+  targetAudience: string;
+  primaryColor: string;
+  secondaryColor: string;
+  sections: string[];
+  inspiration: string;
+  projectType: string;
+}
 
 const ProjectsPage = () => {
-  const { user } = useAuthState();
-  const [projectIdea, setProjectIdea] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [specs, setSpecs] = useState<ProjectSpecs>({
+    projectName: "",
+    description: "",
+    objectives: "",
+    targetAudience: "",
+    primaryColor: "#3b82f6",
+    secondaryColor: "#1e40af",
+    sections: [],
+    inspiration: "",
+    projectType: "web"
+  });
+  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [previewMode, setPreviewMode] = useState<'form' | 'preview'>('form');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!projectIdea.trim()) {
-      toast.error("Veuillez décrire votre idée de projet");
+  const availableSections = [
+    "Hero/Bannière",
+    "À propos",
+    "Services",
+    "Portfolio/Réalisations",
+    "Équipe",
+    "Témoignages",
+    "Tarifs",
+    "Blog",
+    "Contact",
+    "FAQ"
+  ];
+
+  const handleSectionChange = (section: string, checked: boolean) => {
+    setSpecs(prev => ({
+      ...prev,
+      sections: checked 
+        ? [...prev.sections, section]
+        : prev.sections.filter(s => s !== section)
+    }));
+  };
+
+  const generateLandingPage = async () => {
+    if (!specs.projectName.trim() || !specs.description.trim()) {
+      toast.error("Veuillez remplir au moins le nom et la description du projet");
       return;
     }
 
-    setIsSubmitting(true);
-    setIsLoading(true);
+    setIsGenerating(true);
     
     try {
-      // Call the AI assistant edge function
+      const prompt = `Génère le code HTML complet d'une landing page moderne et responsive pour un projet ${specs.projectType}. 
+
+DÉTAILS DU PROJET:
+- Nom: ${specs.projectName}
+- Description: ${specs.description}
+- Objectifs: ${specs.objectives}
+- Public cible: ${specs.targetAudience}
+- Couleur principale: ${specs.primaryColor}
+- Couleur secondaire: ${specs.secondaryColor}
+- Sections à inclure: ${specs.sections.join(', ')}
+- Inspiration: ${specs.inspiration}
+
+EXIGENCES TECHNIQUES:
+- Code HTML complet avec CSS intégré dans des balises <style>
+- Design moderne et responsive (mobile-first)
+- Utilisation de Flexbox/Grid pour la mise en page
+- Animations CSS subtiles
+- Typographie claire et professionnelle
+- Optimisé pour la conversion
+- Compatible avec tous les navigateurs modernes
+
+STRUCTURE ATTENDUE:
+- Header avec navigation
+- ${specs.sections.map(section => `- Section ${section}`).join('\n')}
+- Footer avec informations de contact
+
+Utilise les couleurs spécifiées et crée un design cohérent qui reflète les objectifs du projet.`;
+
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: { 
-          prompt: `Je suis un développeur et j'ai besoin d'aide pour conceptualiser un projet. Voici mon cahier des charges: ${projectIdea}. 
-          Crée un concept simple de page web qui répond à ce besoin. 
-          Fournis une description détaillée de l'interface utilisateur et des fonctionnalités principales.
-          Structuré en HTML sémantique basique avec des classes Tailwind CSS pour le style.`,
+          prompt,
           messageHistory: [],
         }
       });
 
       if (error) throw new Error(error.message);
       
-      // Process the AI response
       if (data?.reply?.content) {
-        setAiResponse(data.reply.content);
+        // Extraire le code HTML du contenu
+        const htmlMatch = data.reply.content.match(/```html([\s\S]*?)```/);
+        if (htmlMatch && htmlMatch[1]) {
+          setGeneratedCode(htmlMatch[1].trim());
+        } else {
+          // Si pas de code block, prendre tout le contenu
+          setGeneratedCode(data.reply.content);
+        }
+        setPreviewMode('preview');
+        toast.success("Landing page générée avec succès!");
       } else {
-        throw new Error("Le service d'IA n'a pas pu générer de réponse");
+        throw new Error("Impossible de générer la landing page");
       }
       
-      // Success message
-      toast.success("Votre projet a été conceptualisé avec succès!");
-      
     } catch (error) {
-      console.error("Error generating project concept:", error);
-      toast.error("Une erreur s'est produite lors de la génération du concept");
+      console.error("Error generating landing page:", error);
+      toast.error("Erreur lors de la génération de la landing page");
     } finally {
-      setIsSubmitting(false);
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
-  // Function to extract HTML from AI response if it contains code blocks
-  const getHtmlPreview = (response: string) => {
-    // Check if the response contains code blocks
-    const htmlMatch = response.match(/```html([\s\S]*?)```/);
-    if (htmlMatch && htmlMatch[1]) {
-      return htmlMatch[1].trim();
-    }
-    return null;
+  const downloadCode = () => {
+    if (!generatedCode) return;
+    
+    const blob = new Blob([generatedCode], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${specs.projectName.replace(/\s+/g, '-').toLowerCase()}-landing-page.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Code téléchargé avec succès!");
+  };
+
+  const resetForm = () => {
+    setSpecs({
+      projectName: "",
+      description: "",
+      objectives: "",
+      targetAudience: "",
+      primaryColor: "#3b82f6",
+      secondaryColor: "#1e40af",
+      sections: [],
+      inspiration: "",
+      projectType: "web"
+    });
+    setGeneratedCode(null);
+    setPreviewMode('form');
   };
 
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Projets</h1>
-          
-          <div className="mb-8">
-            <p className="text-muted-foreground mb-4">
-              Décrivez votre idée de projet ou votre besoin, et notre assistant IA vous aidera à le conceptualiser.
-            </p>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-lg">
+                <Rocket className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Générateur de Landing Pages</h1>
+                <p className="text-muted-foreground">Créez une landing page automatiquement à partir de votre cahier des charges</p>
+              </div>
+            </div>
             
-            <Card className={aiResponse ? "mb-8" : ""}>
-              <CardContent className="pt-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <Textarea 
-                    placeholder="Décrivez votre projet, ses fonctionnalités, son public cible, et tout autre détail pertinent..."
-                    value={projectIdea}
-                    onChange={(e) => setProjectIdea(e.target.value)}
-                    className="min-h-[200px] resize-none"
-                    disabled={isSubmitting}
-                  />
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      type="submit" 
-                      disabled={isSubmitting || !projectIdea.trim()}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Génération en cours...
-                        </>
-                      ) : (
-                        <>
-                          <Lightbulb className="mr-2 h-4 w-4" />
-                          Générer un concept
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-            
-            {isLoading && !aiResponse && (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className="text-lg font-medium">Conceptualisation en cours...</p>
-                <p className="text-sm text-muted-foreground mt-2">Notre assistant IA transforme votre idée en concept</p>
+            {generatedCode && (
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setPreviewMode(previewMode === 'form' ? 'preview' : 'form')}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  {previewMode === 'form' ? 'Voir l\'aperçu' : 'Voir le formulaire'}
+                </Button>
+                <Button variant="outline" onClick={downloadCode}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Télécharger
+                </Button>
+                <Button variant="outline" onClick={resetForm}>
+                  Nouveau projet
+                </Button>
               </div>
             )}
-            
-            {aiResponse && (
-              <Card className="bg-gray-50 border-t-4 border-primary">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 mb-4 text-lg font-medium text-primary">
-                    <Lightbulb className="h-5 w-5" />
-                    <h2>Concept de projet</h2>
-                  </div>
-                  
-                  <div className="prose max-w-none">
-                    {/* Display formatted HTML if code blocks exist */}
-                    {getHtmlPreview(aiResponse) ? (
-                      <div className="mb-4">
-                        <div className="bg-white rounded-md p-4 border mb-4">
-                          <div dangerouslySetInnerHTML={{ 
-                            __html: getHtmlPreview(aiResponse) || "" 
-                          }} />
-                        </div>
-                        <div className="border-t pt-4 mt-4">
-                          <h3 className="text-sm font-medium flex items-center gap-2 mb-2">
-                            <FileText className="h-4 w-4" />
-                            Description complète
-                          </h3>
-                          <div className="whitespace-pre-wrap text-sm">
-                            {aiResponse.replace(/```html[\s\S]*?```/g, '')}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="whitespace-pre-wrap">
-                        {aiResponse}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex justify-end mt-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setProjectIdea("")}
-                    >
-                      Nouveau projet
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
+
+          {previewMode === 'form' ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Cahier des charges du projet
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="projectName">Nom du projet *</Label>
+                      <Input
+                        id="projectName"
+                        value={specs.projectName}
+                        onChange={(e) => setSpecs(prev => ({ ...prev, projectName: e.target.value }))}
+                        placeholder="Ex: Mon E-commerce"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="projectType">Type de projet</Label>
+                      <Select value={specs.projectType} onValueChange={(value) => setSpecs(prev => ({ ...prev, projectType: value }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="web">Site Web</SelectItem>
+                          <SelectItem value="mobile">Application Mobile</SelectItem>
+                          <SelectItem value="software">Logiciel</SelectItem>
+                          <SelectItem value="ecommerce">E-commerce</SelectItem>
+                          <SelectItem value="blog">Blog</SelectItem>
+                          <SelectItem value="portfolio">Portfolio</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="description">Description du projet *</Label>
+                      <Textarea
+                        id="description"
+                        value={specs.description}
+                        onChange={(e) => setSpecs(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Décrivez votre projet en quelques phrases..."
+                        className="min-h-[100px]"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="objectives">Objectifs principaux</Label>
+                      <Textarea
+                        id="objectives"
+                        value={specs.objectives}
+                        onChange={(e) => setSpecs(prev => ({ ...prev, objectives: e.target.value }))}
+                        placeholder="Quels sont vos objectifs avec ce projet?"
+                        className="min-h-[80px]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="targetAudience">Public cible</Label>
+                      <Textarea
+                        id="targetAudience"
+                        value={specs.targetAudience}
+                        onChange={(e) => setSpecs(prev => ({ ...prev, targetAudience: e.target.value }))}
+                        placeholder="Qui sont vos utilisateurs cibles?"
+                        className="min-h-[80px]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="primaryColor" className="flex items-center gap-2">
+                          <Palette className="h-4 w-4" />
+                          Couleur principale
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="primaryColor"
+                            type="color"
+                            value={specs.primaryColor}
+                            onChange={(e) => setSpecs(prev => ({ ...prev, primaryColor: e.target.value }))}
+                            className="w-16 h-10"
+                          />
+                          <Input
+                            value={specs.primaryColor}
+                            onChange={(e) => setSpecs(prev => ({ ...prev, primaryColor: e.target.value }))}
+                            placeholder="#3b82f6"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="secondaryColor">Couleur secondaire</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="secondaryColor"
+                            type="color"
+                            value={specs.secondaryColor}
+                            onChange={(e) => setSpecs(prev => ({ ...prev, secondaryColor: e.target.value }))}
+                            className="w-16 h-10"
+                          />
+                          <Input
+                            value={specs.secondaryColor}
+                            onChange={(e) => setSpecs(prev => ({ ...prev, secondaryColor: e.target.value }))}
+                            placeholder="#1e40af"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="flex items-center gap-2 mb-3">
+                        <Users className="h-4 w-4" />
+                        Sections souhaitées
+                      </Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {availableSections.map((section) => (
+                          <div key={section} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={section}
+                              checked={specs.sections.includes(section)}
+                              onCheckedChange={(checked) => handleSectionChange(section, checked as boolean)}
+                            />
+                            <Label htmlFor={section} className="text-sm">{section}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="inspiration">Inspiration / Références</Label>
+                      <Textarea
+                        id="inspiration"
+                        value={specs.inspiration}
+                        onChange={(e) => setSpecs(prev => ({ ...prev, inspiration: e.target.value }))}
+                        placeholder="Liens de sites, mots-clés, style souhaité..."
+                        className="min-h-[80px]"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    onClick={generateLandingPage} 
+                    disabled={isGenerating || !specs.projectName.trim() || !specs.description.trim()}
+                    size="lg"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Génération en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Rocket className="mr-2 h-4 w-4" />
+                        Générer la landing page
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Aperçu de votre landing page
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {generatedCode ? (
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 border rounded-lg p-4">
+                      <div className="mb-4 flex justify-between items-center">
+                        <h3 className="font-medium">Projet: {specs.projectName}</h3>
+                        <Button variant="outline" size="sm" onClick={downloadCode}>
+                          <Download className="mr-2 h-4 w-4" />
+                          Télécharger le code
+                        </Button>
+                      </div>
+                      
+                      <div className="border rounded-lg bg-white overflow-hidden">
+                        <iframe
+                          srcDoc={generatedCode}
+                          className="w-full h-[600px] border-0"
+                          title="Aperçu de la landing page"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Aucun aperçu disponible</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </DashboardLayout>
