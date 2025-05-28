@@ -28,10 +28,13 @@ export const MessageDisplay = ({ messages, isLoading, onSuggestionClick }: Messa
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
+  // Safety check: ensure messages is an array
+  const safeMessages = Array.isArray(messages) ? messages : [];
+
   return (
     <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
       <AnimatePresence initial={false}>
-        {messages.map((message, index) => (
+        {safeMessages.map((message, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 10 }}
