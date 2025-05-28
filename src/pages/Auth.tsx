@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase, authWithRetry } from "@/integrations/supabase/client";
@@ -91,12 +92,8 @@ const Auth = () => {
           const role = session.user.user_metadata?.role || 'student';
           console.log("User role from metadata:", role);
           
-          // Redirect based on role
-          switch (role) {
-            case 'admin': navigate('/admin'); break;
-            case 'teacher': navigate('/teacher'); break;
-            default: navigate('/student'); break;
-          }
+          // Redirect based on role immediately
+          redirectUserByRole(role);
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
@@ -109,20 +106,41 @@ const Auth = () => {
     }
   }, [navigate, systemStatus]);
 
+  // Helper function to redirect user based on role
+  const redirectUserByRole = (role: string) => {
+    console.log("Redirecting user with role:", role);
+    
+    switch (role) {
+      case 'admin': 
+        window.location.href = '/admin'; 
+        break;
+      case 'teacher': 
+        window.location.href = '/teacher'; 
+        break;
+      default: 
+        window.location.href = '/student'; 
+        break;
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Clean up any stale auth state
+      // Clean up any stale auth state first
       cleanupAuthState();
       
       // Force sign out any existing session
       try {
         await supabase.auth.signOut({ scope: 'global' });
+        console.log("Previous session cleared");
       } catch (signOutError) {
         console.warn("Sign out during cleanup failed (non-critical):", signOutError);
       }
+
+      // Small delay to ensure cleanup is complete
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       if (isSignUp) {
         // Validate form data
@@ -140,56 +158,84 @@ const Auth = () => {
           role: formData.role
         });
         
-        // Sign up with retry mechanism
-        const { data, error } = await authWithRetry(async () => {
-          return await supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password,
-            options: {
-              data: {
-                full_name: formData.fullName,
-                role: formData.role,
-              }
-            },
-          });
+        // Sign up with enhanced error handling
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+              role: formData.role,
+            }
+          },
         });
 
-        if (error) throw error;
+        if (error) {
+          // Handle specific signup errors
+          if (error.message?.includes('User already registered')) {
+            throw new Error("Cet email est déjà enregistré. Veuillez vous connecter.");
+          }
+          throw error;
+        }
 
         if (data?.user?.identities?.length === 0) {
           throw new Error("Cet email est déjà enregistré. Veuillez vous connecter.");
         }
 
+        console.log("Signup successful:", data.user?.id);
         toast.success("Compte créé avec succès! Vérifiez votre email pour confirmation.");
         setIsSignUp(false);
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        // Sign in with retry mechanism
-        const { data, error } = await authWithRetry(async () => {
-          return await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
+        // Sign in with enhanced error handling
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
         });
           
-        if (error) throw error;
+        if (error) {
+          console.error("Login error:", error);
+          
+          // Handle specific login errors with better messages
+          if (error.message?.includes('Database error') || 
+              error.message?.includes('permission denied') ||
+              error.code === 'unexpected_failure') {
+            
+            // Even with database errors, check if auth was successful
+            setTimeout(async () => {
+              try {
+                const { data: sessionData } = await supabase.auth.getSession();
+                if (sessionData.session) {
+                  console.log("Auth successful despite database error");
+                  const role = sessionData.session.user.user_metadata?.role || 'student';
+                  toast.success("Connexion réussie! Redirection...");
+                  redirectUserByRole(role);
+                  return;
+                }
+              } catch (sessionError) {
+                console.warn("Session check failed:", sessionError);
+              }
+            }, 500);
+            
+            throw new Error("Erreur temporaire du système. Connexion en cours...");
+          }
+          
+          throw error;
+        }
 
         if (!data.user) {
           throw new Error("Email ou mot de passe invalide");
         }
 
+        console.log("Login successful:", data.user.id);
         toast.success("Connexion réussie! Redirection...");
         
         // Get role from user metadata and redirect accordingly
         const role = data.user.user_metadata?.role || 'student';
         
-        // Force page reload for a clean state
-        switch (role) {
-          case 'admin': window.location.href = '/admin'; break;
-          case 'teacher': window.location.href = '/teacher'; break;
-          default: window.location.href = '/student'; break;
-        }
+        // Force redirect with role-based navigation
+        redirectUserByRole(role);
       }
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -201,11 +247,9 @@ const Auth = () => {
         toast.error("Veuillez vérifier votre adresse email avant de vous connecter.");
       } else if (error.message?.includes("rate limited")) {
         toast.error("Trop de tentatives de connexion. Veuillez réessayer plus tard.");
-      } else if (error.message?.includes("Database error") || 
-                 error.message?.includes("permission denied") ||
-                 error.message?.includes("temporarily unavailable")) {
-        toast.error("Le système est temporairement indisponible. Nous travaillons à résoudre le problème.");
-        setSystemStatus('degraded');
+      } else if (error.message?.includes("User already registered")) {
+        toast.error("Cet email est déjà enregistré. Veuillez vous connecter.");
+        setIsSignUp(false);
       } else if (error.message?.includes("Network error") || 
                  error.message?.includes("Failed to fetch")) {
         toast.error("Problème de connexion réseau. Vérifiez votre connexion internet.");

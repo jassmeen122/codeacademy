@@ -61,6 +61,20 @@ export const useAuthState = () => {
     }
   };
 
+  // Create minimal user profile from auth metadata
+  const createMinimalUser = (authUser: any): UserProfile => {
+    return {
+      id: authUser.id,
+      email: authUser.email || '',
+      full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || null,
+      avatar_url: authUser.user_metadata?.avatar_url || null,
+      points: 0,
+      role: (authUser.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
+      created_at: authUser.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -73,7 +87,11 @@ export const useAuthState = () => {
       setSession(currentSession);
       
       if (currentSession?.user) {
-        // Fetch profile separately to prevent deadlocks
+        // Create minimal user immediately to prevent loading states
+        const minimalUser = createMinimalUser(currentSession.user);
+        setUser(minimalUser);
+        
+        // Try to fetch full profile in background
         setTimeout(async () => {
           if (!mounted) return;
           
@@ -82,33 +100,21 @@ export const useAuthState = () => {
           if (profile && mounted) {
             console.log("Profile fetched:", profile);
             setUser(profile as UserProfile);
-          } else if (mounted) {
-            // Create a minimal user object from auth metadata
-            const minimalUser = {
-              id: currentSession.user.id,
-              email: currentSession.user.email || '',
-              full_name: currentSession.user.user_metadata?.full_name || null,
-              avatar_url: null,
-              points: 0,
-              role: (currentSession.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            };
-            setUser(minimalUser);
-            
-            // Try to create profile if system is available
-            if (systemAvailable) {
-              try {
-                await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
-              } catch (profileError) {
-                console.warn("Non-critical: Error creating profile:", profileError);
-                setSystemAvailable(false);
-              }
+          }
+          
+          // Try to create/update profile if system is available
+          if (systemAvailable && !profile) {
+            try {
+              await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
+              console.log("Profile created/updated");
+            } catch (profileError) {
+              console.warn("Non-critical: Error creating profile:", profileError);
+              setSystemAvailable(false);
             }
           }
           
           if (mounted) setLoading(false);
-        }, 0);
+        }, 100);
       } else {
         setUser(null);
         if (mounted) setLoading(false);
@@ -129,6 +135,10 @@ export const useAuthState = () => {
       setSession(session);
       
       if (session?.user) {
+        // Create minimal user immediately
+        const minimalUser = createMinimalUser(session.user);
+        setUser(minimalUser);
+        
         setTimeout(async () => {
           if (!mounted) return;
           
@@ -136,31 +146,19 @@ export const useAuthState = () => {
           
           if (profile && mounted) {
             setUser(profile as UserProfile);
-          } else if (mounted) {
-            const minimalUser = {
-              id: session.user.id,
-              email: session.user.email || '',
-              full_name: session.user.user_metadata?.full_name || null,
-              avatar_url: null,
-              points: 0,
-              role: (session.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            };
-            setUser(minimalUser);
-            
-            if (systemAvailable) {
-              try {
-                await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
-              } catch (error) {
-                console.warn("Non-critical initialization error:", error);
-                setSystemAvailable(false);
-              }
+          }
+          
+          if (systemAvailable && !profile) {
+            try {
+              await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
+            } catch (error) {
+              console.warn("Non-critical initialization error:", error);
+              setSystemAvailable(false);
             }
           }
           
           if (mounted) setLoading(false);
-        }, 0);
+        }, 100);
       } else {
         if (mounted) setLoading(false);
       }
@@ -174,7 +172,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [systemAvailable]);
+  }, []);
 
   const handleSignOut = async () => {
     try {
