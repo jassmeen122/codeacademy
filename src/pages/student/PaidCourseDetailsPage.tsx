@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -44,7 +45,7 @@ interface CourseModule {
   order_index: number;
 }
 
-interface StudentProgress {
+interface LocalStudentProgress {
   id: string;
   student_id: string;
   course_id: string;
@@ -59,7 +60,7 @@ export default function PaidCourseDetailsPage() {
   
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<CourseModule[]>([]);
-  const [progress, setProgress] = useState<StudentProgress | null>(null);
+  const [progress, setProgress] = useState<LocalStudentProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPurchased, setIsPurchased] = useState(false);
 
@@ -113,22 +114,15 @@ export default function PaidCourseDetailsPage() {
     if (!user || !courseId) return;
 
     try {
-      // Try to get student progress, but handle gracefully if table doesn't exist
-      try {
-        const { data: progressData } = await supabase
-          .from('student_progress')
-          .select('*')
-          .eq('student_id', user.id)
-          .eq('course_id', courseId)
-          .single();
-
-        if (progressData) {
-          setProgress(progressData);
-          setIsPurchased(true);
-        }
-      } catch (progressError) {
-        console.warn('Could not check student progress (table may not exist):', progressError);
-        // For now, assume not purchased
+      // Use local storage to simulate progress tracking
+      const localProgressKey = `course_progress_${user.id}_${courseId}`;
+      const localProgress = localStorage.getItem(localProgressKey);
+      
+      if (localProgress) {
+        const progressData = JSON.parse(localProgress);
+        setProgress(progressData);
+        setIsPurchased(true);
+      } else {
         setIsPurchased(false);
       }
     } catch (error) {
@@ -141,29 +135,19 @@ export default function PaidCourseDetailsPage() {
     if (!user || !courseId) return;
 
     try {
-      // Try to create progress record, but handle gracefully if table doesn't exist
-      try {
-        const { data, error } = await supabase
-          .from('student_progress')
-          .insert({
-            student_id: user.id,
-            course_id: courseId,
-            completion_percentage: 0,
-            last_accessed_at: new Date().toISOString()
-          })
-          .select()
-          .single();
+      // Create local progress record
+      const localProgress: LocalStudentProgress = {
+        id: `local_${Date.now()}`,
+        student_id: user.id,
+        course_id: courseId,
+        completion_percentage: 0,
+        last_accessed_at: new Date().toISOString()
+      };
 
-        if (error) {
-          console.warn('Could not create progress record:', error);
-        } else {
-          setProgress(data);
-        }
-      } catch (progressError) {
-        console.warn('Could not create student progress (table may not exist):', progressError);
-        // Continue without failing
-      }
-
+      const localProgressKey = `course_progress_${user.id}_${courseId}`;
+      localStorage.setItem(localProgressKey, JSON.stringify(localProgress));
+      
+      setProgress(localProgress);
       setIsPurchased(true);
       toast.success('Achat réussi ! Vous pouvez maintenant accéder au cours.');
     } catch (error) {

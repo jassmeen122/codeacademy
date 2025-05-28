@@ -22,7 +22,7 @@ export interface UserCall {
   call_type: 'audio' | 'video';
   status: 'ongoing' | 'missed' | 'completed';
   started_at: string;
-  ended_at?: string;
+  ended_at?: string | null;
   duration?: number;
 }
 

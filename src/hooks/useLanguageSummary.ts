@@ -47,21 +47,23 @@ export const useLanguageSummary = (languageId: string | undefined) => {
           }
         }
         
-        // Fetch user progress if logged in
+        // Use local progress tracking since table doesn't exist
         if (user) {
-          const progressData = await fetchUserProgress(user.id, languageId);
+          const localProgressKey = `language_progress_${user.id}_${languageId}`;
+          const localProgress = localStorage.getItem(localProgressKey);
           
-          if (progressData) {
-            setProgress(progressData);
+          if (localProgress) {
+            setProgress(JSON.parse(localProgress));
           } else {
             // Set default progress
-            setProgress({
+            const defaultProgress = {
               user_id: user.id,
               language_id: languageId,
               summary_read: false,
               quiz_completed: false,
               badge_earned: false
-            });
+            };
+            setProgress(defaultProgress);
           }
         }
       } catch (err: any) {
@@ -95,12 +97,12 @@ export const useLanguageSummary = (languageId: string | undefined) => {
         progressData.summary_read = true;
       }
       
-      const updatedProgress = await saveUserProgress(progressData);
+      // Save to local storage
+      const localProgressKey = `language_progress_${user.id}_${languageId}`;
+      localStorage.setItem(localProgressKey, JSON.stringify(progressData));
       
-      if (updatedProgress) {
-        setProgress(updatedProgress);
-        toast.success('Résumé marqué comme lu !');
-      }
+      setProgress(progressData);
+      toast.success('Résumé marqué comme lu !');
     } catch (err: any) {
       console.error('Error marking summary as read:', err);
       toast.error('Erreur lors de la mise à jour');
