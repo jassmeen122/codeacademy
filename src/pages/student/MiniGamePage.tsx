@@ -2,10 +2,12 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { CodingMiniGame } from "@/components/student/CodingMiniGame";
+import { CandyCrushCodingGame } from "@/components/student/CandyCrushCodingGame";
 import { GameInstructions } from "@/components/student/GameInstructions";
 import { GameLeaderboard } from "@/components/student/GameLeaderboard";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Gamepad2, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { GameDifficulty } from "@/hooks/useCodingGame";
 
@@ -30,23 +32,42 @@ const MiniGamePage = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour
           </Button>
-          <h1 className="text-3xl font-bold">Mini-Jeu de Code</h1>
+          <h1 className="text-3xl font-bold">Mini-Jeux de Code</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <GameInstructions />
-              <CodingMiniGame />
+        <Tabs defaultValue="code-crush" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="code-crush" className="flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
+              Code Crush
+            </TabsTrigger>
+            <TabsTrigger value="quiz-game" className="flex items-center gap-2">
+              <Gamepad2 className="h-4 w-4" />
+              Quiz Classique
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="code-crush" className="mt-6">
+            <CandyCrushCodingGame />
+          </TabsContent>
+
+          <TabsContent value="quiz-game" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <GameInstructions />
+                  <CodingMiniGame />
+                </div>
+              </div>
+              <div className="lg:col-span-1">
+                <GameLeaderboard 
+                  selectedDifficulty={selectedDifficulty}
+                  onDifficultyChange={handleDifficultyChange}
+                />
+              </div>
             </div>
-          </div>
-          <div className="lg:col-span-1">
-            <GameLeaderboard 
-              selectedDifficulty={selectedDifficulty}
-              onDifficultyChange={handleDifficultyChange}
-            />
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
