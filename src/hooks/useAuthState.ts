@@ -92,29 +92,25 @@ export const useAuthState = () => {
         setUser(minimalUser);
         
         // Try to fetch full profile in background
-        setTimeout(async () => {
-          if (!mounted) return;
-          
-          const profile = await safelyFetchProfile(currentSession.user.id);
-          
-          if (profile && mounted) {
-            console.log("Profile fetched:", profile);
-            setUser(profile as UserProfile);
+        const profile = await safelyFetchProfile(currentSession.user.id);
+        
+        if (profile && mounted) {
+          console.log("Profile fetched:", profile);
+          setUser(profile as UserProfile);
+        }
+        
+        // Try to create/update profile if system is available
+        if (systemAvailable && !profile) {
+          try {
+            await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
+            console.log("Profile created/updated");
+          } catch (profileError) {
+            console.warn("Non-critical: Error creating profile:", profileError);
+            setSystemAvailable(false);
           }
-          
-          // Try to create/update profile if system is available
-          if (systemAvailable && !profile) {
-            try {
-              await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
-              console.log("Profile created/updated");
-            } catch (profileError) {
-              console.warn("Non-critical: Error creating profile:", profileError);
-              setSystemAvailable(false);
-            }
-          }
-          
-          if (mounted) setLoading(false);
-        }, 100);
+        }
+        
+        if (mounted) setLoading(false);
       } else {
         setUser(null);
         if (mounted) setLoading(false);
@@ -139,26 +135,22 @@ export const useAuthState = () => {
         const minimalUser = createMinimalUser(session.user);
         setUser(minimalUser);
         
-        setTimeout(async () => {
-          if (!mounted) return;
-          
-          const profile = await safelyFetchProfile(session.user.id);
-          
-          if (profile && mounted) {
-            setUser(profile as UserProfile);
+        const profile = await safelyFetchProfile(session.user.id);
+        
+        if (profile && mounted) {
+          setUser(profile as UserProfile);
+        }
+        
+        if (systemAvailable && !profile) {
+          try {
+            await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
+          } catch (error) {
+            console.warn("Non-critical initialization error:", error);
+            setSystemAvailable(false);
           }
-          
-          if (systemAvailable && !profile) {
-            try {
-              await supabase.from('profiles').upsert(minimalUser, { onConflict: 'id' });
-            } catch (error) {
-              console.warn("Non-critical initialization error:", error);
-              setSystemAvailable(false);
-            }
-          }
-          
-          if (mounted) setLoading(false);
-        }, 100);
+        }
+        
+        if (mounted) setLoading(false);
       } else {
         if (mounted) setLoading(false);
       }

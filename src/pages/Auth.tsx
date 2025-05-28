@@ -64,7 +64,7 @@ const Auth = () => {
   useEffect(() => {
     let i = 0;
     const txt = welcomeText;
-    const speed = 50; // typing speed in ms
+    const speed = 50;
 
     const typeWriter = () => {
       if (i < txt.length) {
@@ -74,7 +74,6 @@ const Auth = () => {
       }
     };
 
-    // Reset animation when switching between signup and signin
     setAnimatedText("");
     i = 0;
     typeWriter();
@@ -85,19 +84,16 @@ const Auth = () => {
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
+        if (session?.user) {
           console.log("Found existing session:", session.user.id);
           
-          // Get user metadata for role-based redirect
           const role = session.user.user_metadata?.role || 'student';
           console.log("User role from metadata:", role);
           
-          // Redirect based on role immediately
           redirectUserByRole(role);
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
-        // Continue to show auth form
       }
     };
 
@@ -110,17 +106,20 @@ const Auth = () => {
   const redirectUserByRole = (role: string) => {
     console.log("Redirecting user with role:", role);
     
-    switch (role) {
-      case 'admin': 
-        window.location.href = '/admin'; 
-        break;
-      case 'teacher': 
-        window.location.href = '/teacher'; 
-        break;
-      default: 
-        window.location.href = '/student'; 
-        break;
-    }
+    // Use setTimeout to ensure the redirect happens after the current execution
+    setTimeout(() => {
+      switch (role) {
+        case 'admin': 
+          window.location.href = '/admin'; 
+          break;
+        case 'teacher': 
+          window.location.href = '/teacher'; 
+          break;
+        default: 
+          window.location.href = '/student'; 
+          break;
+      }
+    }, 100);
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -158,7 +157,6 @@ const Auth = () => {
           role: formData.role
         });
         
-        // Sign up with enhanced error handling
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -171,7 +169,6 @@ const Auth = () => {
         });
 
         if (error) {
-          // Handle specific signup errors
           if (error.message?.includes('User already registered')) {
             throw new Error("Cet email est déjà enregistré. Veuillez vous connecter.");
           }
@@ -188,7 +185,6 @@ const Auth = () => {
       } else {
         console.log("Attempting signin with email:", formData.email);
         
-        // Sign in with enhanced error handling
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
@@ -197,16 +193,18 @@ const Auth = () => {
         if (error) {
           console.error("Login error:", error);
           
-          // Handle specific login errors with better messages
+          // Handle specific login errors with better messages but continue with auth flow
           if (error.message?.includes('Database error') || 
               error.message?.includes('permission denied') ||
               error.code === 'unexpected_failure') {
             
-            // Even with database errors, check if auth was successful
+            console.log("Database error during login, but checking if auth was successful...");
+            
+            // Wait a moment then check if we actually got authenticated despite the error
             setTimeout(async () => {
               try {
                 const { data: sessionData } = await supabase.auth.getSession();
-                if (sessionData.session) {
+                if (sessionData.session?.user) {
                   console.log("Auth successful despite database error");
                   const role = sessionData.session.user.user_metadata?.role || 'student';
                   toast.success("Connexion réussie! Redirection...");
@@ -216,9 +214,12 @@ const Auth = () => {
               } catch (sessionError) {
                 console.warn("Session check failed:", sessionError);
               }
-            }, 500);
+              
+              // If we get here, auth really failed
+              toast.error("Erreur de connexion. Veuillez réessayer.");
+            }, 1000);
             
-            throw new Error("Erreur temporaire du système. Connexion en cours...");
+            return; // Don't throw the error, let the timeout handle it
           }
           
           throw error;
