@@ -3,11 +3,13 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { intelligentAI } from "@/services/intelligentAIService";
+import { localAI } from "@/services/localAIService";
 
 export type Message = {
   role: "user" | "assistant";
   content: string;
   suggestions?: string[];
+  isLocal?: boolean; // Nouveau : indique si c'est une réponse locale
 };
 
 export const useAIAssistant = () => {
@@ -17,18 +19,37 @@ export const useAIAssistant = () => {
       ? JSON.parse(savedMessages) 
       : [{ 
           role: "assistant", 
-          content: intelligentAI.getWelcomeMessage(),
+          content: `🤖 **Assistant IA Local Activé !**
+
+Salut ! Les services IA externes sont temporairement indisponibles, mais j'ai activé mon **système d'IA locale** pour t'aider !
+
+**🧠 Ce que je peux faire :**
+- 🐛 T'aider avec tes bugs de code
+- 📚 T'expliquer les concepts de programmation
+- 🐍 Support Python (variables, fonctions, boucles)
+- 🟨 Support JavaScript (DOM, événements)
+- 💡 Te donner des conseils de débogage
+
+**💬 Parle-moi naturellement !**
+- "Mon code Python ne marche pas"
+- "Comment faire une boucle ?"
+- "J'ai une erreur de syntaxe"
+
+Pose-moi ta question !`,
           suggestions: [
             "🐛 J'ai un bug dans mon code",
-            "📚 Expliquer les fonctions Python",
-            "💪 Exercices pour débutant JavaScript"
-          ]
+            "🐍 Apprendre Python",
+            "🟨 Apprendre JavaScript",
+            "📚 Expliquer les fonctions"
+          ],
+          isLocal: true
         }];
   });
   
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [useHuggingFace, setUseHuggingFace] = useState<boolean>(false);
+  const [useLocalAI, setUseLocalAI] = useState<boolean>(true); // Nouveau : utiliser l'IA locale par défaut
 
   useEffect(() => {
     localStorage.setItem("ai-assistant-messages", JSON.stringify(messages));
@@ -38,17 +59,7 @@ export const useAIAssistant = () => {
     if ((!userInput.trim() && !code?.trim()) || isLoading) return;
 
     try {
-      console.log("🚀 Début envoi message IA:", { userInput, code: !!code, language });
-      
-      // Analyser la question avec notre IA intelligente
-      const { analysis, prompt, suggestions } = intelligentAI.analyzeAndRespond(
-        userInput, 
-        code, 
-        language
-      );
-
-      console.log("🧠 Analyse NLP:", analysis);
-      console.log("💡 Suggestions:", suggestions);
+      console.log("🚀 Début envoi message IA:", { userInput, code: !!code, language, useLocal: useLocalAI });
 
       // Format user message including code if provided
       let userContent = userInput;
@@ -64,18 +75,36 @@ export const useAIAssistant = () => {
       setIsLoading(true);
       setErrorMessage(null);
 
-      // Vérifier si on peut répondre localement pour certains cas
-      const localResponse = getLocalResponse(analysis);
-      if (localResponse) {
-        console.log("💬 Réponse locale:", localResponse.substring(0, 50) + "...");
-        setMessages(prev => [...prev, { 
-          role: "assistant", 
-          content: localResponse,
-          suggestions: suggestions
-        }]);
-        setIsLoading(false);
-        return;
+      // Essayer d'abord l'IA locale si activée
+      if (useLocalAI || true) { // Force l'IA locale pour le moment
+        console.log("🤖 Utilisation de l'IA locale");
+        
+        // Analyser avec l'IA locale
+        const localResponse = localAI.analyzeQuery(userInput);
+        
+        if (localResponse.confidence > 0.3) {
+          console.log("💬 Réponse locale trouvée:", localResponse.confidence);
+          setMessages(prev => [...prev, { 
+            role: "assistant", 
+            content: localResponse.answer,
+            suggestions: localResponse.suggestions,
+            isLocal: true
+          }]);
+          setIsLoading(false);
+          toast.success("Réponse générée localement !");
+          return;
+        }
       }
+
+      // Fallback vers l'IA externe uniquement si l'IA locale n'a pas de bonne réponse
+      console.log("📡 Tentative IA externe...");
+
+      // Analyser la question avec notre IA intelligente
+      const { analysis, prompt, suggestions } = intelligentAI.analyzeAndRespond(
+        userInput, 
+        code, 
+        language
+      );
 
       // Format messages for the API
       const messageHistory = messages.map(msg => ({
@@ -89,7 +118,7 @@ export const useAIAssistant = () => {
       const functionName = useHuggingFace ? 'huggingface-assistant' : 'ai-assistant';
       let response = await supabase.functions.invoke(functionName, {
         body: { 
-          prompt: prompt, // Utiliser le prompt intelligent généré
+          prompt: prompt,
           messageHistory: messageHistory,
           code: code,
           language: language || analysis.language
@@ -99,8 +128,7 @@ export const useAIAssistant = () => {
       console.log("📨 Réponse reçue:", response.data, response.error);
 
       if (response.error) {
-        console.error("❌ Erreur Edge function:", response.error);
-        throw new Error(response.error.message || "Le service d'IA est temporairement indisponible.");
+        throw new Error(response.error.message || "Service IA externe indisponible");
       }
 
       // Add AI response with suggestions
@@ -108,64 +136,46 @@ export const useAIAssistant = () => {
         setMessages(prev => [...prev, { 
           role: "assistant", 
           content: response.data.reply.content,
-          suggestions: suggestions.length > 0 ? suggestions : undefined
+          suggestions: suggestions.length > 0 ? suggestions : undefined,
+          isLocal: false
         }]);
-        console.log("✅ Message IA ajouté avec succès");
-      } else if (response.data?.error) {
-        throw new Error(response.data.error);
+        console.log("✅ Message IA externe ajouté avec succès");
       } else {
-        throw new Error("Le service d'IA est temporairement indisponible.");
+        throw new Error("Service IA externe indisponible");
       }
 
     } catch (error: any) {
       console.error("❌ Erreur assistant IA:", error);
       
-      let friendlyError = "Le service d'IA est temporairement indisponible. 😅";
+      // En cas d'erreur, utiliser l'IA locale comme fallback
+      console.log("🔄 Fallback vers IA locale");
+      const localResponse = localAI.analyzeQuery(userInput);
       
-      if (error.message && error.message.includes("langages de programmation")) {
-        friendlyError = error.message;
-      } else if (error.message && (
-          error.message.includes("quota") || 
-          error.message.includes("billing") ||
-          error.message.includes("exceeded")
-      )) {
-        friendlyError = "Le service d'IA est en maintenance. 🔧 Essaie le modèle alternatif !";
-      }
+      setMessages(prev => [...prev, { 
+        role: "assistant", 
+        content: `⚠️ **Service IA externe indisponible**\n\n${localResponse.answer}`,
+        suggestions: localResponse.suggestions,
+        isLocal: true
+      }]);
       
-      setErrorMessage(friendlyError);
-      toast.error(friendlyError);
+      toast.info("IA locale utilisée (service externe indisponible)");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Réponses locales pour certains cas simples
-  const getLocalResponse = (analysis: any): string | null => {
-    if (analysis.type === 'exercise' && analysis.language && analysis.difficulty) {
-      return intelligentAI.generateExerciseSuggestions(analysis.language, analysis.difficulty);
-    }
-    
-    // Réponses pour questions très simples
-    const simpleResponses: { [key: string]: string } = {
-      'salut': '👋 Salut ! Comment puis-je t\'aider avec la programmation aujourd\'hui ?',
-      'bonjour': '🌅 Bonjour ! Prêt à coder ? Dis-moi ce sur quoi tu travailles !',
-      'aide': '🤝 Bien sûr ! Je peux t\'aider avec tes bugs, t\'expliquer des concepts ou te proposer des exercices. Que veux-tu faire ?'
-    };
-
-    const query = analysis.keywords.join(' ').toLowerCase();
-    return simpleResponses[query] || null;
   };
 
   const clearChat = () => {
     if (confirm("🗑️ Effacer l'historique de discussion ?")) {
       setMessages([{ 
         role: "assistant", 
-        content: intelligentAI.getWelcomeMessage(),
+        content: useLocalAI ? `🤖 **IA Locale Active**\n\nSalut ! Comment puis-je t'aider avec la programmation ?` : intelligentAI.getWelcomeMessage(),
         suggestions: [
           "🐛 J'ai un bug dans mon code",
-          "📚 Expliquer les fonctions Python", 
-          "💪 Exercices pour débutant JavaScript"
-        ]
+          "🐍 Apprendre Python", 
+          "🟨 Apprendre JavaScript",
+          "📚 Expliquer les fonctions"
+        ],
+        isLocal: useLocalAI
       }]);
       setErrorMessage(null);
       console.log("🗑️ Chat effacé");
@@ -183,21 +193,21 @@ export const useAIAssistant = () => {
   };
 
   const switchAssistantModel = () => {
-    setUseHuggingFace(prev => !prev);
+    setUseLocalAI(prev => !prev);
     setErrorMessage(null);
-    const newModel = !useHuggingFace ? "Hugging Face" : "OpenAI";
+    const newModel = !useLocalAI ? "IA Locale" : "IA Externe";
     console.log(`🔄 Changement vers ${newModel}`);
-    toast.info(useHuggingFace ? 
-      "🤖 Changement vers OpenAI" : 
-      "🤗 Changement vers Hugging Face");
-    
-    const lastUserMessageIndex = [...messages].reverse().findIndex(msg => msg.role === "user");
-    if (lastUserMessageIndex !== -1) {
-      const lastUserMessage = messages[messages.length - 1 - lastUserMessageIndex];
-      setTimeout(() => {
-        sendMessage(lastUserMessage.content);
-      }, 100);
-    }
+    toast.info(useLocalAI ? 
+      "🌐 Changement vers IA externe" : 
+      "🤖 Changement vers IA locale");
+  };
+
+  const toggleLocalAI = () => {
+    setUseLocalAI(prev => !prev);
+    const message = useLocalAI ? 
+      "🌐 IA externe activée (si disponible)" : 
+      "🤖 IA locale activée";
+    toast.info(message);
   };
 
   return {
@@ -207,6 +217,8 @@ export const useAIAssistant = () => {
     sendMessage,
     clearChat,
     retryLastMessage,
-    switchAssistantModel
+    switchAssistantModel,
+    toggleLocalAI,
+    useLocalAI
   };
 };

@@ -1,13 +1,14 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Brain, X, MinimizeIcon } from "lucide-react";
+import { Brain, X, MinimizeIcon, Cpu } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { MessageDisplay } from "@/components/ai-assistant/MessageDisplay";
 import { useAIAssistant } from "@/hooks/useAIAssistant";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorDisplay } from "@/components/ai-assistant/ErrorDisplay";
 import { ChatActions } from "@/components/ai-assistant/ChatActions";
+import { Badge } from "@/components/ui/badge";
 
 export const FloatingAIAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +21,9 @@ export const FloatingAIAssistant = () => {
     sendMessage,
     clearChat,
     retryLastMessage,
-    switchAssistantModel
+    switchAssistantModel,
+    toggleLocalAI,
+    useLocalAI
   } = useAIAssistant();
 
   const handleSend = () => {
@@ -34,7 +37,7 @@ export const FloatingAIAssistant = () => {
   const handleSuggestionClick = (suggestion: string) => {
     if (!isLoading) {
       // Nettoyer la suggestion des emojis pour l'envoi
-      const cleanSuggestion = suggestion.replace(/^[🐛📚💪🎯🔧]+\s*/, '');
+      const cleanSuggestion = suggestion.replace(/^[🐛📚💪🎯🔧🐍🟨🤖⚡🌐🔄]+\s*/, '');
       console.log("💡 Suggestion cliquée:", cleanSuggestion);
       sendMessage(cleanSuggestion);
     }
@@ -56,9 +59,9 @@ export const FloatingAIAssistant = () => {
             console.log("🚀 Ouverture assistant IA");
             setIsOpen(true);
           }}
-          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14 p-0 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14 p-0 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
         >
-          <Brain className="h-6 w-6" />
+          {useLocalAI ? <Cpu className="h-6 w-6" /> : <Brain className="h-6 w-6" />}
         </Button>
       )}
 
@@ -66,11 +69,14 @@ export const FloatingAIAssistant = () => {
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent side="right" className="sm:max-w-md w-[90vw] p-0">
           <div className="flex flex-col h-full">
-            <SheetHeader className="border-b p-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+            <SheetHeader className="border-b p-4 bg-gradient-to-r from-green-500 to-blue-600 text-white">
               <div className="flex justify-between items-center">
                 <SheetTitle className="flex items-center gap-2 text-white">
-                  <Brain className="h-5 w-5" />
-                  Assistant IA Intelligent
+                  {useLocalAI ? <Cpu className="h-5 w-5" /> : <Brain className="h-5 w-5" />}
+                  Assistant IA {useLocalAI ? "Local" : "Intelligent"}
+                  <Badge variant="secondary" className="text-xs">
+                    {useLocalAI ? "🤖 Local" : "🌐 Externe"}
+                  </Badge>
                 </SheetTitle>
                 <div className="flex items-center gap-2">
                   <Button 
@@ -107,6 +113,14 @@ export const FloatingAIAssistant = () => {
                     onRetry={retryLastMessage}
                   >
                     <Button 
+                      onClick={toggleLocalAI} 
+                      variant="outline" 
+                      size="sm"
+                      className="mr-2"
+                    >
+                      {useLocalAI ? "🌐 IA Externe" : "🤖 IA Locale"}
+                    </Button>
+                    <Button 
                       onClick={switchAssistantModel} 
                       variant="outline" 
                       size="sm"
@@ -123,13 +137,19 @@ export const FloatingAIAssistant = () => {
                       onRetry={retryLastMessage}
                       showRetry={messages.length > 1 && !isLoading && messages[messages.length - 1].role === "assistant"}
                     />
+                    <Badge variant={useLocalAI ? "default" : "secondary"} className="text-xs">
+                      {useLocalAI ? "🤖 Mode Local" : "🌐 Mode Externe"}
+                    </Badge>
                   </div>
                   <div className="flex gap-2">
                     <Textarea
                       value={userInput}
                       onChange={(e) => setUserInput(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="💬 Dis-moi ton problème ou pose ta question..."
+                      placeholder={useLocalAI ? 
+                        "💬 Dis-moi ton problème de code (IA locale)..." : 
+                        "💬 Dis-moi ton problème ou pose ta question..."
+                      }
                       className="min-h-[80px] resize-none"
                     />
                     <Button 

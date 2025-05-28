@@ -1,16 +1,18 @@
 
 import React, { useRef, useEffect } from "react";
-import { Brain, UserCircle, Lightbulb } from "lucide-react";
+import { Brain, UserCircle, Lightbulb, Cpu } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FormattedMessage } from "./FormattedMessage";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 import "./ai-assistant.css";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
   suggestions?: string[];
+  isLocal?: boolean;
 };
 
 interface MessageDisplayProps {
@@ -40,8 +42,14 @@ export const MessageDisplay = ({ messages, isLoading, onSuggestionClick }: Messa
             }`}
           >
             {message.role === "assistant" ? (
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <Brain className="w-4 h-4 text-white" />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                message.isLocal ? "bg-green-500" : "bg-primary"
+              }`}>
+                {message.isLocal ? (
+                  <Cpu className="w-4 h-4 text-white" />
+                ) : (
+                  <Brain className="w-4 h-4 text-white" />
+                )}
               </div>
             ) : (
               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
@@ -57,7 +65,14 @@ export const MessageDisplay = ({ messages, isLoading, onSuggestionClick }: Messa
                 }`}
               >
                 {message.role === "assistant" ? (
-                  <FormattedMessage content={message.content} />
+                  <div>
+                    {message.isLocal && (
+                      <Badge variant="secondary" className="mb-2 text-xs">
+                        🤖 IA Locale
+                      </Badge>
+                    )}
+                    <FormattedMessage content={message.content} />
+                  </div>
                 ) : (
                   <div className="whitespace-pre-wrap">{message.content}</div>
                 )}
@@ -101,8 +116,8 @@ export const MessageDisplay = ({ messages, isLoading, onSuggestionClick }: Messa
           animate={{ opacity: 1, y: 0 }}
           className="flex items-start gap-2"
         >
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <Brain className="w-4 h-4 text-white animate-pulse" />
+          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+            <Cpu className="w-4 h-4 text-white animate-pulse" />
           </div>
           <div className="rounded-lg p-3 max-w-[85%] bg-muted">
             <div className="flex gap-1">
