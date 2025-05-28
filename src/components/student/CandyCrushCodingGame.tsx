@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Lock, Play, CheckCircle, XCircle } from 'lucide-react';
+import { Trophy, Star, Lock, Play, CheckCircle, XCircle, Code } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Challenge {
@@ -24,67 +24,149 @@ interface GameLevel {
   completed: boolean;
 }
 
+const PythonLogo = () => (
+  <div className="inline-flex items-center gap-2">
+    <div className="relative w-8 h-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-md transform rotate-3"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-md transform -rotate-3 scale-90"></div>
+      <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">Py</div>
+    </div>
+    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-yellow-500 bg-clip-text text-transparent">Python</span>
+  </div>
+);
+
 const challenges: Challenge[] = [
   {
     id: 1,
-    title: "Erreur SQL Basique",
-    description: "Trouve et corrige l'erreur dans cette requête SQL :",
-    code: `SELECT nom, age 
-FROM utilisateurs 
-WERE age > 18;`,
-    correctAnswer: "WHERE",
-    explanation: "Il faut utiliser 'WHERE' et non 'WERE' pour filtrer les résultats.",
-    type: 'sql'
+    title: "Tuple et Mutabilité",
+    description: "Que renvoie ce code et pourquoi ?",
+    code: `a = (1, 2, [3, 4])
+a[2] += [5]
+print(a)`,
+    correctAnswer: "TypeError mais a est modifié",
+    explanation: "Le tuple contient une liste mutable. L'opération += modifie la liste mais lève une TypeError car on essaie de réassigner dans un tuple.",
+    type: 'python'
   },
   {
     id: 2,
-    title: "Bug Python Simple",
-    description: "Corrige cette fonction Python :",
-    code: `def calculer_moyenne(notes):
-    total = sum(notes)
-    return total / len(notes)
-
-moyenne = calculer_moyenne([])
-print(moyenne)`,
-    correctAnswer: "if len(notes) == 0: return 0",
-    explanation: "Il faut vérifier que la liste n'est pas vide pour éviter une division par zéro.",
+    title: "Closure et Variable Locale",
+    description: "Quel est le problème ici ?",
+    code: `def make_counter():
+    count = 0
+    def counter():
+        count += 1
+        return count
+    return counter`,
+    correctAnswer: "UnboundLocalError",
+    explanation: "L'opérateur += tente de lire count avant de l'assigner, mais Python considère count comme une variable locale non initialisée. Il faut utiliser 'nonlocal count'.",
     type: 'python'
   },
   {
     id: 3,
-    title: "JavaScript Débutant",
-    description: "Corrige cette fonction JavaScript :",
-    code: `function additionner(a, b) {
-    return a + b
-}
+    title: "Argument par Défaut Mutable",
+    description: "Que fait cette fonction exactement ?",
+    code: `def func(x=[]):
+    x.append(1)
+    return x
 
-console.log(additionner(5, "3"));`,
-    correctAnswer: "parseInt(b) ou Number(b)",
-    explanation: "Il faut convertir les paramètres en nombres pour éviter la concaténation.",
-    type: 'javascript'
+print(func())
+print(func())
+print(func())`,
+    correctAnswer: "Accumule les valeurs",
+    explanation: "L'argument par défaut [] est créé une seule fois. Chaque appel modifie la même liste, causant une accumulation des valeurs : [1], [1,1], [1,1,1].",
+    type: 'python'
   },
   {
     id: 4,
-    title: "SQL Intermédiaire",
-    description: "Optimise cette requête SQL :",
-    code: `SELECT * FROM produits 
-WHERE prix > 100 
-AND prix < 500 
-AND categorie = 'electronique';`,
-    correctAnswer: "BETWEEN 100 AND 500",
-    explanation: "Utiliser BETWEEN est plus lisible et efficace pour les plages de valeurs.",
-    type: 'sql'
+    title: "Paramètres Positional-Only",
+    description: "Que fait ce code ?",
+    code: `def f(x, y, /, z):
+    return x + y + z
+
+# f(1, 2, 3)     # OK
+# f(x=1, y=2, z=3)  # Erreur`,
+    correctAnswer: "/ sépare positional-only",
+    explanation: "Le symbole / indique que x et y doivent être passés uniquement par position, pas par nom. Seul z peut être passé par nom.",
+    type: 'python'
   },
   {
     id: 5,
-    title: "Python Avancé",
-    description: "Optimise cette boucle Python :",
-    code: `nombres = [1, 2, 3, 4, 5]
-carres = []
-for n in nombres:
-    carres.append(n * n)`,
-    correctAnswer: "[n*n for n in nombres]",
-    explanation: "Une list comprehension est plus pythonique et plus rapide.",
+    title: "Slots et Attributs Dynamiques",
+    description: "Peut-on modifier un objet défini avec __slots__ ?",
+    code: `class Test:
+    __slots__ = ['a']
+    def __init__(self):
+        self.a = 1
+
+t = Test()
+t.b = 2  # Que se passe-t-il ?`,
+    correctAnswer: "AttributeError",
+    explanation: "__slots__ limite les attributs aux noms spécifiés et empêche la création d'un __dict__. Ajouter un attribut non défini lève AttributeError.",
+    type: 'python'
+  },
+  {
+    id: 6,
+    title: "Méthodes Magiques getattr",
+    description: "Quelle est la sortie ?",
+    code: `class A:
+    def __init__(self):
+        self.x = 1
+    def __getattr__(self, name):
+        return 42
+
+a = A()
+print(a.x)
+print(a.y)`,
+    correctAnswer: "1 puis 42",
+    explanation: "__getattr__ n'est appelé que si l'attribut n'existe pas. a.x existe (1), a.y n'existe pas donc __getattr__ retourne 42.",
+    type: 'python'
+  },
+  {
+    id: 7,
+    title: "Métaclasses et Type",
+    description: "Quelle est la différence entre ces deux appels ?",
+    code: `print(type(type))
+print(type(object))`,
+    correctAnswer: "<class 'type'> deux fois",
+    explanation: "type est une métaclasse, instance d'elle-même. object est la classe de base, instance de type. Donc type(type) et type(object) retournent tous deux <class 'type'>.",
+    type: 'python'
+  },
+  {
+    id: 8,
+    title: "Opérations Booléennes",
+    description: "Que produit cette expression ?",
+    code: `result = (True * False) ** True + False
+print(result)
+print(type(result))`,
+    correctAnswer: "0 de type int",
+    explanation: "True=1, False=0 en arithmétique. (1*0)**1 + 0 = 0**1 + 0 = 0 + 0 = 0. Le résultat est un int car les opérations arithmétiques convertissent les bool en int.",
+    type: 'python'
+  },
+  {
+    id: 9,
+    title: "Références et Slicing",
+    description: "Que se passe-t-il ici ?",
+    code: `a = [1, 2, 3]
+b = a
+a[:] = []
+print(b)`,
+    correctAnswer: "[] - liste vide",
+    explanation: "b et a référencent la même liste. a[:] = [] modifie le contenu de la liste existante (ne crée pas une nouvelle liste), donc b est aussi affecté.",
+    type: 'python'
+  },
+  {
+    id: 10,
+    title: "Décorateur Mémoization",
+    description: "Que fait ce décorateur ?",
+    code: `def memoize(f):
+    cache = {}
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = f(*args)
+        return cache[args]
+    return wrapper`,
+    correctAnswer: "Met en cache les résultats",
+    explanation: "Mémoization : stocke les résultats des appels de fonction pour éviter les recalculs. Limitation : ne fonctionne qu'avec des arguments hashables (pas de listes/dict).",
     type: 'python'
   }
 ];
@@ -155,21 +237,19 @@ export const CandyCrushCodingGame = () => {
 
   const getLevelColor = (level: GameLevel) => {
     if (level.completed) return 'bg-green-500 hover:bg-green-600';
-    if (level.unlocked) return 'bg-blue-500 hover:bg-blue-600';
+    if (level.unlocked) return 'bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500';
     return 'bg-gray-400';
   };
 
   const getLevelIcon = (level: GameLevel) => {
     if (level.completed) return <CheckCircle className="h-6 w-6" />;
-    if (level.unlocked) return <Play className="h-6 w-6" />;
+    if (level.unlocked) return <Code className="h-6 w-6" />;
     return <Lock className="h-6 w-6" />;
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'sql': return 'bg-purple-100 text-purple-800';
-      case 'python': return 'bg-blue-100 text-blue-800';
-      case 'javascript': return 'bg-yellow-100 text-yellow-800';
+      case 'python': return 'bg-gradient-to-r from-blue-100 to-yellow-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -179,7 +259,7 @@ export const CandyCrushCodingGame = () => {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-4xl mx-auto p-6"
+        className="max-w-6xl mx-auto p-6"
       >
         <div className="text-center mb-8">
           <motion.div
@@ -193,8 +273,11 @@ export const CandyCrushCodingGame = () => {
             </h1>
             <Trophy className="h-8 w-8 text-yellow-500" />
           </motion.div>
+          <div className="flex justify-center mb-4">
+            <PythonLogo />
+          </div>
           <p className="text-lg text-muted-foreground">
-            Résous des défis de code pour débloquer les niveaux suivants !
+            Résous des défis Python avancés pour débloquer les niveaux suivants !
           </p>
         </div>
 
@@ -210,7 +293,7 @@ export const CandyCrushCodingGame = () => {
             >
               <Card 
                 className={`cursor-pointer transition-all duration-300 ${
-                  level.unlocked ? 'hover:shadow-lg' : 'opacity-60'
+                  level.unlocked ? 'hover:shadow-lg border-blue-200' : 'opacity-60'
                 }`}
                 onClick={() => handleLevelClick(level.id)}
               >
@@ -220,7 +303,7 @@ export const CandyCrushCodingGame = () => {
                   </div>
                   <h3 className="font-semibold mb-2">{level.name}</h3>
                   <Badge className={getTypeColor(level.challenge.type)}>
-                    {level.challenge.type.toUpperCase()}
+                    PYTHON
                   </Badge>
                   {level.completed && (
                     <motion.div
@@ -235,6 +318,10 @@ export const CandyCrushCodingGame = () => {
               </Card>
             </motion.div>
           ))}
+        </div>
+        
+        <div className="text-center mt-8 text-sm text-muted-foreground">
+          <p>🐍 Défis Python Avancés • Closures, Métaclasses, Méthodes Magiques</p>
         </div>
       </motion.div>
     );
@@ -254,15 +341,15 @@ export const CandyCrushCodingGame = () => {
         >
           <Trophy className="h-24 w-24 text-yellow-500 mx-auto mb-4" />
         </motion.div>
-        <h2 className="text-3xl font-bold text-green-600 mb-4">Bravo ! 🎉</h2>
-        <p className="text-lg mb-6">Tu as réussi le niveau {currentLevel} !</p>
+        <h2 className="text-3xl font-bold text-green-600 mb-4">Excellent ! 🎉</h2>
+        <p className="text-lg mb-6">Tu maîtrises Python niveau {currentLevel} !</p>
         <motion.div
           animate={{ rotate: [0, 5, -5, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
-          <div className="text-6xl mb-6">🌟</div>
+          <div className="text-6xl mb-6">🐍</div>
         </motion.div>
-        <Button onClick={handleBackToMenu} size="lg">
+        <Button onClick={handleBackToMenu} size="lg" className="bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500">
           Continuer vers le menu
         </Button>
       </motion.div>
@@ -284,10 +371,14 @@ export const CandyCrushCodingGame = () => {
           ← Retour au menu
         </Button>
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-2xl font-bold">{currentLevelData.name}</h2>
+          <h2 className="text-2xl font-bold">Niveau {currentLevel}</h2>
           <Badge className={getTypeColor(currentLevelData.challenge.type)}>
-            {currentLevelData.challenge.type.toUpperCase()}
+            PYTHON
           </Badge>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
+            <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+          </div>
         </div>
         <h3 className="text-xl font-semibold text-blue-600">
           {currentLevelData.challenge.title}
@@ -297,7 +388,7 @@ export const CandyCrushCodingGame = () => {
       <Card className="mb-6">
         <CardContent className="p-6">
           <p className="mb-4 text-lg">{currentLevelData.challenge.description}</p>
-          <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm whitespace-pre-wrap mb-4">
+          <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm whitespace-pre-wrap mb-4 border-l-4 border-blue-500">
             {currentLevelData.challenge.code}
           </div>
           
@@ -307,8 +398,8 @@ export const CandyCrushCodingGame = () => {
               type="text"
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
-              placeholder="Écris ta correction ici..."
-              className="w-full p-3 border rounded-lg"
+              placeholder="Explique ce qui se passe..."
+              className="w-full p-3 border rounded-lg border-blue-200 focus:border-blue-400"
               disabled={showResult}
             />
             
@@ -316,7 +407,7 @@ export const CandyCrushCodingGame = () => {
               <Button 
                 onClick={handleSubmitAnswer}
                 disabled={!userAnswer.trim()}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
               >
                 Vérifier ma réponse
               </Button>
@@ -341,7 +432,7 @@ export const CandyCrushCodingGame = () => {
                     <XCircle className="h-8 w-8 text-red-600" />
                   )}
                   <h3 className={`text-xl font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                    {isCorrect ? 'Correct !' : 'Pas tout à fait...'}
+                    {isCorrect ? 'Parfait ! Tu maîtrises Python !' : 'Pas tout à fait...'}
                   </h3>
                 </div>
                 <p className="mb-4">
