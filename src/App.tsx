@@ -89,6 +89,7 @@ function App() {
             <Route path="/student/course/:id" element={<CourseDetailsPage />} />
             <Route path="/student/course/:id/learn" element={<CourseLearnPage />} />
             <Route path="/student/exercises" element={<ExercisesPage />} />
+            <Route path="/student/editor" element={<CodeEditorPage />} />
             <Route path="/student/code-editor" element={<CodeEditorPage />} />
             <Route path="/student/settings" element={<SettingsPage />} />
             <Route path="/student/profile" element={<ProfilePage />} />
@@ -107,7 +108,8 @@ function App() {
             <Route path="/student/private-messages" element={<PrivateMessagesPage />} />
             <Route path="/student/free-courses" element={<FreeCoursesDashboard />} />
             <Route path="/student/paid-course/:id" element={<PaidCourseDetailsPage />} />
-            <Route path="/student/yt-tutorials" element={<YTDevTutorialsPage />} />
+            <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
+            <Route path="/student/knowledge" element={<KnowledgeSharePage />} />
 
             {/* Teacher routes */}
             <Route path="/teacher" element={<TeacherDashboard />} />

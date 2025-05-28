@@ -9,7 +9,7 @@ import { InternshipOffer } from '@/types/internship';
 import { useInternshipOffers } from '@/hooks/useInternshipOffers';
 import { useInternshipApplications } from '@/hooks/useInternshipApplications';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, Sparkles, TrendingUp } from 'lucide-react';
 import { ApplicationList } from '@/components/internships/ApplicationList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -77,27 +77,35 @@ export default function InternshipOpportunitiesPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-8 animate-fade-in">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Briefcase className="h-8 w-8" />
-              Internship Opportunities
+          <div className="animate-slide-in-right">
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2 hover-scale">
+              <Briefcase className="h-8 w-8 text-blue-600 animate-bounce" />
+              Opportunités de Stage
+              <Sparkles className="h-6 w-6 text-yellow-500 animate-pulse" />
             </h1>
-            <p className="text-muted-foreground">
-              Find and apply for internships that match your interests and skills
+            <p className="text-muted-foreground flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              Trouvez et postulez pour des stages qui correspondent à vos intérêts et compétences
             </p>
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="opportunities">Available Opportunities</TabsTrigger>
-            <TabsTrigger value="applications">My Applications</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="animate-scale-in">
+          <TabsList className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+            <TabsTrigger value="opportunities" className="data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">
+              Opportunités Disponibles
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">
+              Mes Candidatures
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="opportunities" className="space-y-6">
-            <InternshipFilters onFilterChange={handleFilter} />
+            <div className="animate-slide-in-right">
+              <InternshipFilters onFilterChange={handleFilter} />
+            </div>
             
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -113,20 +121,22 @@ export default function InternshipOpportunitiesPage() {
                 ))}
               </div>
             ) : offers.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {offers.map((internship) => (
-                  <InternshipCard
-                    key={internship.id}
-                    internship={internship}
-                    onApply={() => handleApply(internship)}
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                {offers.map((internship, index) => (
+                  <div key={internship.id} className="hover-scale" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <InternshipCard
+                      internship={internship}
+                      onApply={() => handleApply(internship)}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium">No internships found</h3>
+              <div className="text-center py-12 animate-scale-in">
+                <Briefcase className="mx-auto h-16 w-16 text-gray-400 mb-4 animate-bounce" />
+                <h3 className="text-lg font-medium">Aucun stage trouvé</h3>
                 <p className="text-muted-foreground">
-                  No internship opportunities match your current filters. Try adjusting your search or check back later.
+                  Aucune opportunité de stage ne correspond à vos filtres actuels. Ajustez votre recherche ou revenez plus tard.
                 </p>
               </div>
             )}
@@ -146,7 +156,9 @@ export default function InternshipOpportunitiesPage() {
                 ))}
               </div>
             ) : (
-              <ApplicationList applications={applications} />
+              <div className="animate-fade-in">
+                <ApplicationList applications={applications} />
+              </div>
             )}
           </TabsContent>
         </Tabs>
@@ -158,11 +170,14 @@ export default function InternshipOpportunitiesPage() {
           setApplySheetOpen(open);
         }
       }}>
-        <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto">
+        <SheetContent side="right" className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto animate-slide-in-right">
           <SheetHeader className="pb-4">
-            <SheetTitle>Apply for Internship</SheetTitle>
+            <SheetTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5 text-blue-600" />
+              Postuler pour le Stage
+            </SheetTitle>
             <SheetDescription>
-              Fill out the form below to apply for this internship opportunity
+              Remplissez le formulaire ci-dessous pour postuler à cette opportunité de stage
             </SheetDescription>
           </SheetHeader>
           
