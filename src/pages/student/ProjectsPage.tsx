@@ -47,8 +47,13 @@ const ProjectsPage = () => {
   };
 
   const generateSimplePage = () => {
-    if (!specs.projectName.trim() || !specs.description.trim()) {
-      toast.error("Veuillez remplir le nom et la description du projet");
+    if (!specs.projectName.trim()) {
+      toast.error("Veuillez entrer le nom du projet");
+      return;
+    }
+
+    if (!specs.description.trim()) {
+      toast.error("Veuillez entrer une description");
       return;
     }
 
@@ -86,27 +91,25 @@ const ProjectsPage = () => {
             padding: 0 20px;
         }
         
-        /* Header */
         header {
             background-color: ${specs.primaryColor};
             color: white;
-            padding: 2rem 0;
+            padding: 60px 0;
             text-align: center;
         }
         
         header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
         
         header p {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             opacity: 0.9;
         }
         
-        /* Sections */
         section {
-            padding: 3rem 0;
+            padding: 60px 0;
         }
         
         section:nth-child(even) {
@@ -115,34 +118,32 @@ const ProjectsPage = () => {
         
         section h2 {
             color: ${specs.secondaryColor};
-            font-size: 2rem;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
             text-align: center;
         }
         
         section p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             text-align: center;
             max-width: 800px;
             margin: 0 auto;
         }
         
-        /* Footer */
         footer {
             background-color: ${specs.secondaryColor};
             color: white;
             text-align: center;
-            padding: 2rem 0;
+            padding: 40px 0;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             header h1 {
                 font-size: 2rem;
             }
             
             section h2 {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
             }
         }
     </style>
@@ -156,33 +157,33 @@ const ProjectsPage = () => {
     </header>
     
     <main>
-        ${specs.sections.map(section => {
-          switch(section) {
-            case "À propos":
-              return `        <section id="about">
+${specs.sections.map(section => {
+  if (section === "À propos") {
+    return `        <section>
             <div class="container">
                 <h2>À propos</h2>
-                <p>Découvrez qui nous sommes et notre mission. Notre équipe est dédiée à vous offrir le meilleur service possible.</p>
+                <p>Découvrez notre histoire et notre mission. Nous sommes passionnés par ce que nous faisons et nous nous engageons à vous offrir le meilleur service possible.</p>
             </div>
         </section>`;
-            case "Services":
-              return `        <section id="services">
+  }
+  if (section === "Services") {
+    return `        <section>
             <div class="container">
                 <h2>Nos Services</h2>
-                <p>Nous proposons une gamme complète de services adaptés à vos besoins. Contactez-nous pour en savoir plus.</p>
+                <p>Nous offrons une gamme complète de services de qualité. Notre équipe expérimentée est là pour répondre à tous vos besoins.</p>
             </div>
         </section>`;
-            case "Contact":
-              return `        <section id="contact">
+  }
+  if (section === "Contact") {
+    return `        <section>
             <div class="container">
                 <h2>Contact</h2>
-                <p>N'hésitez pas à nous contacter pour toute question ou demande d'information. Nous sommes là pour vous aider.</p>
+                <p>Contactez-nous dès aujourd'hui pour discuter de votre projet. Nous serons ravis de vous aider à concrétiser vos idées.</p>
             </div>
         </section>`;
-            default:
-              return "";
-          }
-        }).join('\n\n')}
+  }
+  return "";
+}).join('\n\n')}
     </main>
     
     <footer>
@@ -197,7 +198,7 @@ const ProjectsPage = () => {
       setPreviewMode('preview');
       setIsGenerating(false);
       toast.success("Page générée avec succès!");
-    }, 1500);
+    }, 1000);
   };
 
   const downloadCode = () => {
@@ -213,7 +214,7 @@ const ProjectsPage = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    toast.success("Code téléchargé avec succès!");
+    toast.success("Fichier téléchargé!");
   };
 
   const resetForm = () => {
@@ -268,7 +269,7 @@ const ProjectsPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
-                  Informations du projet
+                  Créer votre page web
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -290,7 +291,7 @@ const ProjectsPage = () => {
                         id="description"
                         value={specs.description}
                         onChange={(e) => setSpecs(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Décrivez votre projet..."
+                        placeholder="Décrivez votre projet en quelques mots..."
                         className="min-h-[100px]"
                       />
                     </div>
@@ -362,13 +363,13 @@ const ProjectsPage = () => {
                 <div className="flex justify-end pt-4">
                   <Button 
                     onClick={generateSimplePage} 
-                    disabled={isGenerating || !specs.projectName.trim() || !specs.description.trim() || specs.sections.length === 0}
+                    disabled={isGenerating}
                     size="lg"
                   >
                     {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Génération en cours...
+                        Génération...
                       </>
                     ) : (
                       <>
@@ -385,7 +386,7 @@ const ProjectsPage = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="h-5 w-5" />
-                  Aperçu de votre page web
+                  Votre page web générée
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -396,7 +397,7 @@ const ProjectsPage = () => {
                         <h3 className="font-medium">Projet: {specs.projectName}</h3>
                         <Button variant="outline" size="sm" onClick={downloadCode}>
                           <Download className="mr-2 h-4 w-4" />
-                          Télécharger le code
+                          Télécharger HTML
                         </Button>
                       </div>
                       
@@ -404,14 +405,14 @@ const ProjectsPage = () => {
                         <iframe
                           srcDoc={generatedCode}
                           className="w-full h-[600px] border-0"
-                          title="Aperçu de la page web"
+                          title="Aperçu de votre page web"
                         />
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-muted-foreground">Aucun aperçu disponible</p>
+                    <p className="text-muted-foreground">Aucune page générée</p>
                   </div>
                 )}
               </CardContent>
