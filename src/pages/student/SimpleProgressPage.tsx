@@ -5,7 +5,7 @@ import { useUserProgress } from '@/hooks/useUserProgress';
 import { ProgressCard } from '@/components/progress/ProgressCard';
 import { BadgesSection } from '@/components/progress/BadgesSection';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Play, CheckCircle, XCircle, BookOpen, Brain, Target } from 'lucide-react';
+import { RefreshCw, Play, CheckCircle, XCircle, BookOpen, Brain, Target, TrendingUp, BarChart3 } from 'lucide-react';
 
 const SimpleProgressPage = () => {
   const { progress, loading, updateProgress, getProgressStats, availableBadges } = useUserProgress();
@@ -15,12 +15,12 @@ const SimpleProgressPage = () => {
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-12 bg-card/50 rounded w-1/3 border border-knowledge-blue/30 knowledge-glow"></div>
+            <div className="h-12 bg-card rounded w-1/3"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-48 bg-card/50 rounded border border-education-gold/30 study-focus"></div>
-              <div className="h-48 bg-card/50 rounded border border-learning-teal/30"></div>
+              <div className="h-48 bg-card rounded"></div>
+              <div className="h-48 bg-card rounded"></div>
             </div>
-            <div className="h-80 bg-card/50 rounded border border-knowledge-blue/30 knowledge-glow"></div>
+            <div className="h-80 bg-card rounded"></div>
           </div>
         </div>
       </DashboardLayout>
@@ -31,11 +31,9 @@ const SimpleProgressPage = () => {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">
-          <div className="cyber-card p-8 text-center knowledge-glow">
-            <p className="text-knowledge-blue font-mono flex items-center justify-center gap-2">
-              <span>📚</span>
-              ERROR: Learning progress data not found...
-              <span>💡</span>
+          <div className="professional-card p-8 text-center">
+            <p className="text-muted-foreground">
+              Données de progression non disponibles
             </p>
           </div>
         </div>
@@ -45,7 +43,6 @@ const SimpleProgressPage = () => {
 
   const stats = getProgressStats();
 
-  // Fonctions de test pour simuler les actions éducatives
   const handleTestReading = () => {
     updateProgress('reading');
   };
@@ -62,29 +59,28 @@ const SimpleProgressPage = () => {
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold font-mono mb-3 flex items-center gap-3">
-            <span className="text-5xl animate-knowledge-hologram">🎓</span>
-            <span className="text-cyber-gradient typewriter">MY_LEARNING_JOURNEY</span>
-            <span className="text-3xl animate-bulb-flash">💡</span>
+          <h1 className="text-4xl font-bold font-display mb-3 flex items-center gap-3">
+            <TrendingUp className="h-10 w-10 text-primary" />
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Mon Parcours d'Apprentissage
+            </span>
           </h1>
-          <p className="text-muted-foreground font-mono terminal-text flex items-center gap-2">
-            <span>📊</span>
-            {`> Tracking educational progress and knowledge achievements...`}
-            <span className="animate-book-study">📚</span>
+          <p className="text-muted-foreground text-lg">
+            Suivez votre progression et développez vos compétences en informatique
           </p>
         </div>
 
-        {/* Cartes de progrès éducatives */}
+        {/* Cartes de progression */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <ProgressCard
-            title="KNOWLEDGE_ABSORPTION"
+            title="Contenu Étudié"
             current={progress.content_read}
             total={progress.total_content}
             icon="📚"
           />
           
           <ProgressCard
-            title="SKILL_MASTERY"
+            title="Maîtrise Technique"
             current={progress.correct_answers}
             total={progress.total_answers}
             icon="🧠"
@@ -92,7 +88,7 @@ const SimpleProgressPage = () => {
           />
         </div>
 
-        {/* Section badges éducatives */}
+        {/* Section réalisations */}
         <div className="mb-8">
           <BadgesSection 
             earnedBadges={stats.badges}
@@ -100,75 +96,70 @@ const SimpleProgressPage = () => {
           />
         </div>
 
-        {/* Zone d'apprentissage interactif */}
-        <div className="cyber-card p-6 bg-gradient-to-r from-knowledge-blue/5 to-education-gold/5 border-knowledge-blue/30 study-focus">
-          <h3 className="font-mono font-bold mb-4 text-education-gold flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            LEARNING_LAB // Interactive study simulator
-            <span className="animate-bulb-flash">💡</span>
+        {/* Zone d'interaction */}
+        <div className="professional-card p-6">
+          <h3 className="font-semibold mb-4 text-primary flex items-center gap-2">
+            <Brain className="h-5 w-5" />
+            Laboratoire d'Apprentissage
+            <span className="text-xs bg-robot-primary/10 text-robot-primary px-2 py-1 rounded-full">
+              Simulateur
+            </span>
           </h3>
           
-          <div className="flex flex-wrap gap-3 mb-4">
+          <div className="flex flex-wrap gap-3 mb-6">
             <Button 
-              variant="outline" 
-              size="sm"
               onClick={handleTestReading}
-              className="cyber-button bg-learning-teal/10 border-learning-teal/30 hover:border-learning-teal/80 font-mono group"
+              className="robot-button"
+              size="sm"
             >
               <BookOpen className="h-4 w-4 mr-2" />
-              <span>📖</span>
-              complete_reading()
+              Terminer une Lecture
             </Button>
             
             <Button 
-              variant="outline" 
-              size="sm"
               onClick={handleTestCorrectAnswer}
-              className="cyber-button bg-education-gold/10 border-education-gold/30 hover:border-education-gold/80 font-mono"
+              className="bg-education-success hover:bg-education-success/90 text-white"
+              size="sm"
             >
               <CheckCircle className="h-4 w-4 mr-2" />
-              <span>🎯</span>
-              correct_answer()
+              Réponse Correcte
             </Button>
             
             <Button 
-              variant="outline" 
-              size="sm"
+              variant="outline"
               onClick={handleTestWrongAnswer}
-              className="cyber-button bg-red-500/10 border-red-500/30 hover:border-red-500/80 font-mono"
+              className="border-destructive/30 text-destructive hover:bg-destructive/10"
+              size="sm"
             >
               <XCircle className="h-4 w-4 mr-2" />
-              <span>📝</span>
-              learn_from_mistake()
+              Apprendre d'une Erreur
             </Button>
           </div>
           
-          <div className="p-3 bg-black/20 rounded border border-learning-teal/20 mb-4">
-            <p className="text-xs text-learning-teal font-mono terminal-text flex items-center gap-2">
-              <span>💡</span>
-              {`> Execute learning functions to simulate educational progress and unlock achievements`}
-              <span className="animate-diploma-shine">🏆</span>
+          <div className="p-4 bg-tech-dark rounded-lg border border-border mb-6">
+            <p className="text-sm text-tech-light font-mono">
+              💡 Utilisez ces fonctions pour simuler votre progression et débloquer de nouvelles réalisations
             </p>
           </div>
 
-          {/* Indicateurs de progression en temps réel */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div className="text-center p-3 bg-knowledge-blue/10 rounded border border-knowledge-blue/30">
-              <div className="text-2xl mb-1 animate-book-study">📚</div>
-              <div className="text-sm font-mono text-knowledge-blue">Study Sessions</div>
-              <div className="text-lg font-bold text-education-gold">{progress.content_read}</div>
+          {/* Statistiques en temps réel */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="text-2xl mb-2">📖</div>
+              <div className="text-sm font-medium text-primary">Sessions d'Étude</div>
+              <div className="text-2xl font-bold text-foreground">{progress.content_read}</div>
             </div>
             
-            <div className="text-center p-3 bg-education-gold/10 rounded border border-education-gold/30">
-              <div className="text-2xl mb-1 animate-bulb-flash">💡</div>
-              <div className="text-sm font-mono text-education-gold">Knowledge Points</div>
-              <div className="text-lg font-bold text-learning-teal">{progress.correct_answers}</div>
+            <div className="text-center p-4 bg-education-secondary/10 rounded-lg border border-education-secondary/20">
+              <div className="text-2xl mb-2">🎯</div>
+              <div className="text-sm font-medium text-education-secondary">Points de Compétence</div>
+              <div className="text-2xl font-bold text-foreground">{progress.correct_answers}</div>
             </div>
             
-            <div className="text-center p-3 bg-learning-teal/10 rounded border border-learning-teal/30">
-              <div className="text-2xl mb-1 animate-diploma-shine">🎓</div>
-              <div className="text-sm font-mono text-learning-teal">Achievements</div>
-              <div className="text-lg font-bold text-knowledge-blue">{stats.badges.length}</div>
+            <div className="text-center p-4 bg-robot-accent/10 rounded-lg border border-robot-accent/20">
+              <div className="text-2xl mb-2">🏆</div>
+              <div className="text-sm font-medium text-robot-accent">Réalisations</div>
+              <div className="text-2xl font-bold text-foreground">{stats.badges.length}</div>
             </div>
           </div>
         </div>

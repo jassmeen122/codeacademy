@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Code, Terminal, Database, Cpu } from 'lucide-react';
 
 interface ProgressCardProps {
   title: string;
@@ -21,70 +22,65 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
   const progressValue = percentage !== undefined ? percentage : 
     total > 0 ? Math.round((current / total) * 100) : 0;
 
-  // Déterminer le niveau éducatif basé sur le pourcentage
-  const getLevelBadge = (progress: number) => {
-    if (progress < 30) return { level: 'BEGINNER', emoji: '🌱', class: 'level-beginner' };
-    if (progress < 70) return { level: 'INTERMEDIATE', emoji: '📚', class: 'level-intermediate' };
-    return { level: 'ADVANCED', emoji: '🎓', class: 'level-advanced' };
+  const getSkillLevel = (progress: number) => {
+    if (progress < 30) return { level: 'Débutant', color: 'text-yellow-500', bgColor: 'bg-yellow-500/10' };
+    if (progress < 70) return { level: 'Intermédiaire', color: 'text-blue-500', bgColor: 'bg-blue-500/10' };
+    return { level: 'Avancé', color: 'text-green-500', bgColor: 'bg-green-500/10' };
   };
 
-  const levelInfo = getLevelBadge(progressValue);
+  const skillInfo = getSkillLevel(progressValue);
+
+  const getIconComponent = () => {
+    switch (icon) {
+      case '💻': return <Code className="h-8 w-8 text-tech-blue" />;
+      case '🧠': return <Cpu className="h-8 w-8 text-robot-primary" />;
+      case '📚': return <Terminal className="h-8 w-8 text-education-primary" />;
+      default: return <Database className="h-8 w-8 text-tech-blue" />;
+    }
+  };
 
   return (
-    <Card className="w-full cyber-card hover-glow knowledge-glow">
+    <Card className="professional-card tech-glow hover:border-primary/50 transition-all duration-300">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-3 text-lg font-mono">
-          <span className="text-3xl animate-knowledge-hologram">{icon}</span>
-          <span className="text-cyber-gradient">{title}</span>
-          <span className="text-xl animate-bulb-flash">💡</span>
+        <CardTitle className="flex items-center gap-3 text-lg">
+          {getIconComponent()}
+          <span className="font-display font-semibold text-foreground">{title}</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Niveau éducatif */}
           <div className="flex justify-between items-center">
-            <div className={`level-badge ${levelInfo.class}`}>
-              <span>{levelInfo.emoji}</span>
-              <span className="text-xs">{levelInfo.level}</span>
+            <div className={`px-3 py-1 rounded-full text-xs font-medium ${skillInfo.bgColor} ${skillInfo.color} border border-current/20`}>
+              {skillInfo.level}
             </div>
-            <div className="flex items-center gap-2 text-sm font-mono text-education-gold">
-              <span>📖</span>
-              <span>Study Progress</span>
+            <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
+              <span>Progression</span>
             </div>
           </div>
 
           <div className="flex justify-between items-center font-mono">
-            <span className="text-sm text-learning-teal terminal-text flex items-center gap-1">
-              <span>📊</span>
+            <span className="text-sm text-muted-foreground">
               [{current}/{total}]
             </span>
-            <span className="text-sm font-bold text-education-gold flex items-center gap-1">
-              <span>🎯</span>
+            <span className="text-sm font-bold text-primary">
               {progressValue}%
             </span>
           </div>
           
-          <div className="relative progress-book">
+          <div className="relative">
             <Progress 
               value={progressValue} 
-              className="h-4 bg-black/60 border border-knowledge-blue/30 cyber-progress study-focus" 
+              className="h-3 bg-secondary border border-border tech-progress" 
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-knowledge-blue/20 to-education-gold/20 rounded animate-educational-data-flow opacity-50"></div>
-            
-            {/* Indicateurs de progression éducative */}
-            <div className="absolute -top-2 -right-2 text-xs animate-diploma-shine">
-              {progressValue === 100 ? '🏆' : progressValue > 75 ? '🥇' : progressValue > 50 ? '🥈' : progressValue > 25 ? '🥉' : '📝'}
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded opacity-50 animate-data-flow"></div>
           </div>
 
-          {/* Message d'encouragement éducatif */}
-          <div className="text-xs text-learning-teal/70 font-mono text-center">
-            {progressValue === 100 ? '🎓 Mastery achieved! ' : 
-             progressValue > 75 ? '📚 Excellent progress! ' : 
-             progressValue > 50 ? '💡 Keep learning! ' : 
-             progressValue > 25 ? '🌱 Good start! ' : 
-             '📖 Begin your journey!'}
-            <span className="animate-book-study">📚</span>
+          <div className="text-xs text-muted-foreground text-center font-mono">
+            {progressValue === 100 ? '✅ Compétence maîtrisée' : 
+             progressValue > 75 ? '🚀 Excellent progrès' : 
+             progressValue > 50 ? '📈 En bonne voie' : 
+             progressValue > 25 ? '🌱 Début prometteur' : 
+             '🎯 Commencer l\'apprentissage'}
           </div>
         </div>
       </CardContent>

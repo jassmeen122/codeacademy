@@ -49,29 +49,22 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Couleurs cyber néon éducatives
-        neon: {
-          blue: "hsl(var(--neon-blue))",
-          green: "hsl(var(--neon-green))",
-          purple: "hsl(var(--neon-purple))",
-          cyan: "hsl(var(--neon-cyan))",
-          orange: "hsl(var(--cyber-orange))",
+        // Couleurs professionnelles pour l'informatique
+        tech: {
+          blue: "hsl(216, 87%, 55%)",
+          dark: "hsl(220, 26%, 14%)",
+          light: "hsl(220, 26%, 96%)",
+          gray: "hsl(220, 13%, 65%)",
         },
-        terminal: {
-          green: "hsl(var(--terminal-green))",
+        robot: {
+          primary: "hsl(199, 89%, 48%)",
+          secondary: "hsl(204, 64%, 44%)",
+          accent: "hsl(142, 69%, 58%)",
         },
-        electric: {
-          violet: "hsl(var(--electric-violet))",
-        },
-        // Nouvelles couleurs éducatives
         education: {
-          gold: "hsl(var(--education-gold))",
-        },
-        knowledge: {
-          blue: "hsl(var(--knowledge-blue))",
-        },
-        learning: {
-          teal: "hsl(var(--learning-teal))",
+          primary: "hsl(231, 48%, 48%)",
+          secondary: "hsl(262, 83%, 58%)",
+          success: "hsl(142, 71%, 45%)",
         },
       },
       borderRadius: {
@@ -80,9 +73,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        mono: ['Fira Code', 'Monaco', 'Cascadia Code', 'Ubuntu Mono', 'Courier New', 'monospace'],
-        cyber: ['Orbitron', 'Fira Code', 'Monaco', 'monospace'],
-        education: ['Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['Fira Code', 'JetBrains Mono', 'Consolas', 'monospace'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {
@@ -101,139 +94,64 @@ export default {
           from: { transform: "translateX(-100%)" },
           to: { transform: "translateX(0)" },
         },
-        shimmer: {
-          from: { backgroundPosition: "200% 0" },
-          to: { backgroundPosition: "-200% 0" },
-        },
-        // Animations cyber éducatives
-        "cyber-glow": {
+        // Animations robotiques subtiles
+        "robot-pulse": {
           "0%, 100%": {
-            boxShadow: "0 0 20px hsl(var(--knowledge-blue) / 0.3)"
+            boxShadow: "0 0 0 0 hsl(199, 89%, 48% / 0.4)"
           },
           "50%": {
-            boxShadow: "0 0 40px hsl(var(--education-gold) / 0.6), 0 0 60px hsl(var(--knowledge-blue) / 0.3)"
+            boxShadow: "0 0 0 8px hsl(199, 89%, 48% / 0)"
           }
         },
-        "educational-data-flow": {
-          "0%": { 
-            transform: "translateX(-100%) scaleX(0)",
+        "tech-glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 20px hsl(216, 87%, 55% / 0.1)"
+          },
+          "50%": {
+            boxShadow: "0 0 30px hsl(216, 87%, 55% / 0.2)"
+          }
+        },
+        "data-flow": {
+          "0%": {
+            transform: "translateX(-100%)",
             opacity: "0"
           },
           "50%": {
-            transform: "translateX(0%) scaleX(1)",
             opacity: "1"
           },
-          "100%": { 
-            transform: "translateX(100%) scaleX(0)",
+          "100%": {
+            transform: "translateX(100%)",
             opacity: "0"
           }
         },
-        "learning-pulse": {
-          "0%, 100%": { 
-            borderColor: "hsl(var(--education-gold) / 0.3)",
-            boxShadow: "0 0 0 0 hsl(var(--education-gold) / 0.7)"
+        "circuit-pulse": {
+          "0%, 100%": {
+            opacity: "0.3"
           },
-          "50%": { 
-            borderColor: "hsl(var(--education-gold))",
-            boxShadow: "0 0 0 4px hsl(var(--education-gold) / 0)"
+          "50%": {
+            opacity: "0.8"
           }
         },
-        "knowledge-hologram": {
-          "0%, 100%": { 
-            opacity: "0.8",
-            filter: "hue-rotate(0deg)",
-            textShadow: "0 0 10px hsl(var(--knowledge-blue))"
-          },
-          "50%": { 
-            opacity: "1",
-            filter: "hue-rotate(90deg)",
-            textShadow: "0 0 20px hsl(var(--education-gold))"
-          }
-        },
-        "book-study": {
-          "0%": { transform: "rotateY(0deg) scale(1)" },
-          "25%": { transform: "rotateY(90deg) scale(1.1)" },
-          "50%": { transform: "rotateY(180deg) scale(1)" },
-          "75%": { transform: "rotateY(270deg) scale(1.1)" },
-          "100%": { transform: "rotateY(360deg) scale(1)" }
-        },
-        "educational-scan": {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(100vw)" }
-        },
-        "learning-typing": {
-          "0%": { width: "0%" },
-          "100%": { width: "100%" }
-        },
-        "education-neon-pulse": {
-          "0%, 100%": { 
-            textShadow: "0 0 5px hsl(var(--education-gold))",
-            transform: "scale(1)"
-          },
-          "50%": { 
-            textShadow: "0 0 20px hsl(var(--education-gold)), 0 0 30px hsl(var(--knowledge-blue))",
-            transform: "scale(1.05)"
-          },
-        },
-        "diploma-shine": {
-          "0%": { 
-            background: "linear-gradient(45deg, transparent, hsl(var(--education-gold) / 0.1), transparent)",
-            backgroundPosition: "-100% 0"
-          },
-          "100%": { 
-            background: "linear-gradient(45deg, transparent, hsl(var(--education-gold) / 0.3), transparent)",
-            backgroundPosition: "100% 0"
-          }
-        },
-        "bulb-flash": {
-          "0%, 100%": { 
-            filter: "brightness(1)",
-            transform: "scale(1)"
-          },
-          "50%": { 
-            filter: "brightness(1.5) drop-shadow(0 0 10px hsl(var(--education-gold)))",
-            transform: "scale(1.1)"
-          }
-        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.5s ease-out",
         slideIn: "slideIn 0.3s ease-out",
-        shimmer: "shimmer 8s infinite linear",
-        // Animations cyber éducatives
-        "cyber-glow": "cyber-glow 3s ease-in-out infinite",
-        "educational-data-flow": "educational-data-flow 4s ease-in-out infinite",
-        "learning-pulse": "learning-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "knowledge-hologram": "knowledge-hologram 5s ease-in-out infinite",
-        "book-study": "book-study 6s ease-in-out infinite",
-        "educational-scan": "educational-scan 3s linear infinite",
-        "learning-typing": "learning-typing 3s steps(25) infinite",
-        "education-neon-pulse": "education-neon-pulse 2.5s ease-in-out infinite",
-        "diploma-shine": "diploma-shine 3s ease-in-out infinite",
-        "bulb-flash": "bulb-flash 2s ease-in-out infinite",
+        "robot-pulse": "robot-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "tech-glow": "tech-glow 3s ease-in-out infinite",
+        "data-flow": "data-flow 4s ease-in-out infinite",
+        "circuit-pulse": "circuit-pulse 2s ease-in-out infinite",
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'educational-grid': 'linear-gradient(rgba(255, 193, 7, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 150, 255, 0.1) 1px, transparent 1px)',
-        'learning-gradient': 'linear-gradient(45deg, hsl(var(--knowledge-blue)), hsl(var(--education-gold)), hsl(var(--learning-teal)))',
-        'study-gradient': 'linear-gradient(180deg, transparent, hsl(var(--education-gold) / 0.1), transparent)',
-        'knowledge-circuit': 'radial-gradient(circle at 25% 25%, hsl(var(--knowledge-blue) / 0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, hsl(var(--education-gold) / 0.1) 0%, transparent 50%)',
-        'educational-pattern': 'repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(var(--education-gold) / 0.05) 10px, hsl(var(--education-gold) / 0.05) 20px)',
-      },
-      backdropBlur: {
-        'xs': '2px',
+        'tech-grid': 'linear-gradient(rgba(54, 57, 64, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(54, 57, 64, 0.4) 1px, transparent 1px)',
+        'circuit-pattern': 'radial-gradient(circle at 25% 25%, hsl(199, 89%, 48% / 0.05) 0%, transparent 50%), radial-gradient(circle at 75% 75%, hsl(216, 87%, 55% / 0.05) 0%, transparent 50%)',
       },
       boxShadow: {
-        'cyber-sm': '0 0 10px hsl(var(--knowledge-blue) / 0.3)',
-        'cyber': '0 0 20px hsl(var(--knowledge-blue) / 0.4)',
-        'cyber-lg': '0 0 40px hsl(var(--education-gold) / 0.6)',
-        'education-glow': '0 0 0 1px hsl(var(--education-gold) / 0.5), 0 0 20px hsl(var(--education-gold) / 0.3)',
-        'knowledge-glow': '0 0 20px hsl(var(--knowledge-blue) / 0.4)',
-        'learning-shadow': '0 4px 20px hsl(var(--learning-teal) / 0.3)',
-        'study-focus': '0 0 30px hsl(var(--education-gold) / 0.5), inset 0 0 20px hsl(var(--knowledge-blue) / 0.1)',
+        'tech': '0 4px 20px hsl(216, 87%, 55% / 0.1)',
+        'robot': '0 4px 20px hsl(199, 89%, 48% / 0.15)',
+        'card-hover': '0 8px 30px hsl(220, 26%, 14% / 0.12)',
       },
     },
   },
