@@ -90,6 +90,12 @@ export const studentMenuItems: MenuItem[] = [
     href: "/student/discussion",
   },
   {
+    title: "Messages Privés",
+    icon: MessageSquare,
+    href: "/student/private-messages",
+    description: "Messages privés avec les utilisateurs"
+  },
+  {
     title: "Settings",
     icon: Settings,
     href: "/student/settings",
