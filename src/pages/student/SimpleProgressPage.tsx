@@ -63,7 +63,7 @@ const SimpleProgressPage = () => {
             <span className="text-cyber-gradient typewriter">MY_JOURNEY</span>
           </h1>
           <p className="text-muted-foreground font-mono terminal-text">
-            > Monitoring progress and achievements...
+            {`> Monitoring progress and achievements...`}
           </p>
         </div>
 
@@ -129,7 +129,7 @@ const SimpleProgressPage = () => {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground font-mono terminal-text">
-            > Execute functions to test badge system integration
+            {`> Execute functions to test badge system integration`}
           </p>
         </div>
       </div>

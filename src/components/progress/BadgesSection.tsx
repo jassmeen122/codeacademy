@@ -41,7 +41,7 @@ export const BadgesSection: React.FC<BadgesSectionProps> = ({
                 ))
               ) : (
                 <div className="text-sm text-muted-foreground font-mono terminal-text">
-                  > No achievements unlocked yet...
+                  {`> No achievements unlocked yet...`}
                 </div>
               )}
             </div>

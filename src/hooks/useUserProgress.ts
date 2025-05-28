@@ -1,100 +1,81 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuthState } from '@/hooks/useAuthState';
-import { UserProgress, Badge, ProgressStats } from '@/types/userProgress';
-import { toast } from 'sonner';
-
-// Badges disponibles
-const availableBadges: Badge[] = [
-  {
-    id: '1',
-    name: 'Lecteur actif',
-    description: '10 lectures terminées',
-    icon: '📚',
-    requirement_type: 'reading',
-    requirement_value: 10
-  },
-  {
-    id: '2',
-    name: 'Débutant en logique',
-    description: '3 bonnes réponses',
-    icon: '🧠',
-    requirement_type: 'answers',
-    requirement_value: 3
-  },
-  {
-    id: '3',
-    name: 'Expert lecteur',
-    description: '20 lectures terminées',
-    icon: '🎓',
-    requirement_type: 'reading',
-    requirement_value: 20
-  },
-  {
-    id: '4',
-    name: 'Maître du quiz',
-    description: '10 bonnes réponses',
-    icon: '🏆',
-    requirement_type: 'answers',
-    requirement_value: 10
-  }
-];
+import { Badge, UserProgress } from '@/types/userProgress';
 
 export const useUserProgress = () => {
-  const { user } = useAuthState();
   const [progress, setProgress] = useState<UserProgress | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      loadUserProgress();
+  // Badges disponibles dans le système
+  const availableBadges: Badge[] = [
+    {
+      id: 'first-steps',
+      name: 'FIRST_STEPS',
+      description: 'Complete your first lesson',
+      icon: '🚀',
+      requirements: { content_read: 1 }
+    },
+    {
+      id: 'knowledge-seeker',
+      name: 'KNOWLEDGE_SEEKER',
+      description: 'Read 10 lessons',
+      icon: '📖',
+      requirements: { content_read: 10 }
+    },
+    {
+      id: 'quick-learner',
+      name: 'QUICK_LEARNER',
+      description: 'Answer 5 questions correctly',
+      icon: '⚡',
+      requirements: { correct_answers: 5 }
+    },
+    {
+      id: 'scholar',
+      name: 'SCHOLAR',
+      description: 'Answer 25 questions correctly',
+      icon: '🎓',
+      requirements: { correct_answers: 25 }
+    },
+    {
+      id: 'master',
+      name: 'CYBER_MASTER',
+      description: 'Complete 50 lessons and 50 correct answers',
+      icon: '👑',
+      requirements: { content_read: 50, correct_answers: 50 }
     }
-  }, [user]);
+  ];
 
-  const loadUserProgress = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      
-      // Récupérer le progrès depuis localStorage pour simplicité
-      const storageKey = `user_progress_${user.id}`;
-      const savedProgress = localStorage.getItem(storageKey);
-      
+  useEffect(() => {
+    // Simuler le chargement des données de progression
+    const loadProgress = () => {
+      const savedProgress = localStorage.getItem('userProgress');
       if (savedProgress) {
         setProgress(JSON.parse(savedProgress));
       } else {
-        // Créer un progrès initial
+        // Données initiales
         const initialProgress: UserProgress = {
-          id: crypto.randomUUID(),
-          user_id: user.id,
-          content_read: 0,
-          total_content: 10,
-          correct_answers: 0,
-          total_answers: 0,
-          badges_earned: [],
-          last_updated: new Date().toISOString()
+          content_read: 3,
+          total_content: 25,
+          correct_answers: 8,
+          total_answers: 15
         };
-        
-        localStorage.setItem(storageKey, JSON.stringify(initialProgress));
         setProgress(initialProgress);
+        localStorage.setItem('userProgress', JSON.stringify(initialProgress));
       }
-    } catch (error) {
-      console.error('Error loading user progress:', error);
-      toast.error('Erreur lors du chargement du progrès');
-    } finally {
       setLoading(false);
-    }
-  };
+    };
+
+    setTimeout(loadProgress, 500); // Simuler un délai de chargement
+  }, []);
 
   const updateProgress = (type: 'reading' | 'answer', correct?: boolean) => {
-    if (!user || !progress) return;
+    if (!progress) return;
 
     const newProgress = { ...progress };
-    
+
     if (type === 'reading') {
-      newProgress.content_read = Math.min(newProgress.content_read + 1, newProgress.total_content);
+      newProgress.content_read += 1;
+      newProgress.total_content = Math.max(newProgress.total_content, newProgress.content_read);
     } else if (type === 'answer') {
       newProgress.total_answers += 1;
       if (correct) {
@@ -102,61 +83,28 @@ export const useUserProgress = () => {
       }
     }
 
-    // Vérifier les nouveaux badges
-    const earnedBadges = checkForNewBadges(newProgress);
-    if (earnedBadges.length > 0) {
-      earnedBadges.forEach(badge => {
-        if (!newProgress.badges_earned.includes(badge.id)) {
-          newProgress.badges_earned.push(badge.id);
-          toast.success(`🏅 Nouveau badge débloqué : ${badge.name}!`);
-        }
-      });
-    }
-
-    newProgress.last_updated = new Date().toISOString();
-    
-    // Sauvegarder dans localStorage
-    const storageKey = `user_progress_${user.id}`;
-    localStorage.setItem(storageKey, JSON.stringify(newProgress));
-    
     setProgress(newProgress);
+    localStorage.setItem('userProgress', JSON.stringify(newProgress));
   };
 
-  const checkForNewBadges = (currentProgress: UserProgress): Badge[] => {
-    return availableBadges.filter(badge => {
-      // Si le badge est déjà obtenu, ne pas le retourner
-      if (currentProgress.badges_earned.includes(badge.id)) return false;
-      
-      // Vérifier les conditions
-      if (badge.requirement_type === 'reading') {
-        return currentProgress.content_read >= badge.requirement_value;
-      } else if (badge.requirement_type === 'answers') {
-        return currentProgress.correct_answers >= badge.requirement_value;
-      }
-      
-      return false;
+  const getProgressStats = () => {
+    if (!progress) return { badges: [], answersProgress: 0 };
+
+    // Calculer les badges obtenus
+    const earnedBadges = availableBadges.filter(badge => {
+      return Object.entries(badge.requirements).every(([key, value]) => {
+        return progress[key as keyof UserProgress] >= value;
+      });
     });
-  };
 
-  const getProgressStats = (): ProgressStats => {
-    if (!progress) {
-      return {
-        contentProgress: 0,
-        answersProgress: 0,
-        badges: []
-      };
-    }
-
-    const earnedBadges = availableBadges.filter(badge => 
-      progress.badges_earned.includes(badge.id)
-    );
+    // Calculer le pourcentage de bonnes réponses
+    const answersProgress = progress.total_answers > 0 
+      ? Math.round((progress.correct_answers / progress.total_answers) * 100)
+      : 0;
 
     return {
-      contentProgress: progress.total_content > 0 ? 
-        Math.round((progress.content_read / progress.total_content) * 100) : 0,
-      answersProgress: progress.total_answers > 0 ? 
-        Math.round((progress.correct_answers / progress.total_answers) * 100) : 0,
-      badges: earnedBadges
+      badges: earnedBadges,
+      answersProgress
     };
   };
 
