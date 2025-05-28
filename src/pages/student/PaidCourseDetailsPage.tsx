@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -388,6 +387,8 @@ export default function PaidCourseDetailsPage() {
                     
                     <PayPalButton 
                       amount={29.99}
+                      courseId={courseId || ''}
+                      courseTitle={course.title}
                       onSuccess={handlePurchaseSuccess}
                     />
                   </div>
