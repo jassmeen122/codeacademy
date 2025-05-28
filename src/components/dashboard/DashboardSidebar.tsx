@@ -1,4 +1,3 @@
-
 import {
   Database,
   GraduationCap,
@@ -17,8 +16,15 @@ import {
 } from "@/components/ui/sidebar";
 import { adminMenuItems } from "./sidebar/AdminMenuItems";
 import { teacherMenuItems } from "./sidebar/TeacherMenuItems";
-import { studentMenuItems } from "./sidebar/StudentMenuItems";
+import { getStudentMenuItems } from "./sidebar/StudentMenuItems";
 import { SidebarMenu } from "./sidebar/SidebarMenu";
+
+export interface SidebarMenuItem {
+  icon: any;
+  label: string;
+  href: string;
+  badge?: string;
+}
 
 interface DashboardSidebarProps {
   userRole: 'admin' | 'teacher' | 'student' | null;
@@ -32,7 +38,7 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
       case 'teacher':
         return teacherMenuItems;
       case 'student':
-        return studentMenuItems;
+        return getStudentMenuItems();
       default:
         return [];
     }
