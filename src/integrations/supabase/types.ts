@@ -994,6 +994,44 @@ export type Database = {
           },
         ]
       }
+      student_internship_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          industries: string[] | null
+          is_remote: boolean | null
+          locations: string[] | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industries?: string[] | null
+          is_remote?: boolean | null
+          locations?: string[] | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industries?: string[] | null
+          is_remote?: boolean | null
+          locations?: string[] | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_internship_preferences_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_activities: {
         Row: {
           activity_data: Json | null
@@ -1473,6 +1511,38 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      voice_messages: {
+        Row: {
+          audio_url: string
+          created_at: string
+          duration: number
+          id: string
+          message_id: string
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string
+          duration?: number
+          id?: string
+          message_id: string
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string
+          duration?: number
+          id?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_messages_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "private_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

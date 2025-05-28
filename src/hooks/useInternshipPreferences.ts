@@ -13,6 +13,7 @@ export const useInternshipPreferences = () => {
 
   const fetchPreferences = async () => {
     if (!user || user.role !== 'student') {
+      setLoading(false);
       return;
     }
 
@@ -23,15 +24,20 @@ export const useInternshipPreferences = () => {
         .from('student_internship_preferences')
         .select('*')
         .eq('student_id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid errors when no data exists
       
-      if (error && error.code !== 'PGRST116') throw error; // No rows found is not an error
-      
-      setPreferences(data as StudentInternshipPreferences || null);
+      if (error) {
+        console.warn('Error fetching internship preferences:', error);
+        setPreferences(null);
+      } else {
+        // Type assertion with proper error handling
+        setPreferences(data as StudentInternshipPreferences || null);
+      }
     } catch (err: any) {
       console.error('Error fetching internship preferences:', err);
       setError(err);
       toast.error('Failed to load internship preferences');
+      setPreferences(null);
     } finally {
       setLoading(false);
     }
@@ -49,11 +55,15 @@ export const useInternshipPreferences = () => {
 
     try {
       // Check if preferences already exist
-      const { data: existingPrefs } = await supabase
+      const { data: existingPrefs, error: checkError } = await supabase
         .from('student_internship_preferences')
         .select('id')
         .eq('student_id', user.id)
-        .single();
+        .maybeSingle();
+      
+      if (checkError) {
+        console.warn('Error checking existing preferences:', checkError);
+      }
       
       let result;
       
@@ -64,7 +74,8 @@ export const useInternshipPreferences = () => {
           .update({
             industries: preferences.industries,
             locations: preferences.locations,
-            is_remote: preferences.is_remote
+            is_remote: preferences.is_remote,
+            updated_at: new Date().toISOString()
           })
           .eq('id', existingPrefs.id)
           .select()
@@ -103,6 +114,8 @@ export const useInternshipPreferences = () => {
   useEffect(() => {
     if (user && user.role === 'student') {
       fetchPreferences();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
