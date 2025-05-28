@@ -1,3 +1,4 @@
+
 import React from "react";
 import { 
   BookOpen, 
@@ -14,78 +15,78 @@ import {
   Brain,
   Zap
 } from "lucide-react";
-import { SidebarMenuItem } from "../DashboardSidebar";
+import { MenuItem } from "@/types/sidebar";
 
-export const getStudentMenuItems = (): SidebarMenuItem[] => [
+export const getStudentMenuItems = (): MenuItem[] => [
   {
+    title: "Cours",
     icon: BookOpen,
-    label: "Cours",
     href: "/student/courses",
   },
   {
+    title: "Exercices",
     icon: Code,
-    label: "Exercices",
     href: "/student/exercises",
   },
   {
+    title: "Réalisations",
     icon: Trophy,
-    label: "Réalisations",
     href: "/student/achievements",
   },
   {
+    title: "Progrès",
     icon: BarChart3,
-    label: "Progrès",
     href: "/student/progress",
   },
   {
+    title: "Mini-Jeu",
     icon: PlayCircle,
-    label: "Mini-Jeu",
     href: "/student/mini-game",
   },
   {
+    title: "Éditeur de Code",
     icon: Code,
-    label: "Éditeur de Code",
     href: "/student/code-editor",
   },
   {
+    title: "Assistant IA",
     icon: Brain,
-    label: "Assistant IA",
     href: "/student/ai-assistant",
   },
   {
+    title: "IA Locale",
     icon: Zap,
-    label: "IA Locale",
     href: "/student/local-ai-assistant",
-    badge: "Nouveau"
+    isNew: true
   },
   {
+    title: "Discussions",
     icon: MessageSquare,
-    label: "Discussions",
     href: "/student/discussion",
   },
   {
+    title: "Messages",
     icon: Users,
-    label: "Messages",
     href: "/student/messages",
   },
   {
+    title: "Stages",
     icon: Briefcase,
-    label: "Stages",
     href: "/student/internships",
   },
   {
+    title: "Notifications",
     icon: Bell,
-    label: "Notifications",
     href: "/student/notifications",
   },
   {
+    title: "Profil",
     icon: User,
-    label: "Profil",
     href: "/student/profile",
   },
   {
+    title: "Paramètres",
     icon: Settings,
-    label: "Paramètres",
     href: "/student/settings",
   },
 ];

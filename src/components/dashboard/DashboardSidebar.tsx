@@ -1,3 +1,4 @@
+
 import {
   Database,
   GraduationCap,
@@ -18,13 +19,6 @@ import { adminMenuItems } from "./sidebar/AdminMenuItems";
 import { teacherMenuItems } from "./sidebar/TeacherMenuItems";
 import { getStudentMenuItems } from "./sidebar/StudentMenuItems";
 import { SidebarMenu } from "./sidebar/SidebarMenu";
-
-export interface SidebarMenuItem {
-  icon: any;
-  label: string;
-  href: string;
-  badge?: string;
-}
 
 interface DashboardSidebarProps {
   userRole: 'admin' | 'teacher' | 'student' | null;
