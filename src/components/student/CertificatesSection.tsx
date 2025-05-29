@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -193,7 +194,7 @@ export const CertificatesSection = () => {
       {/* Dialog pour afficher le certificat */}
       <CertificateDialog
         certificate={selectedCertificate}
-        userFullName={user?.user_metadata?.full_name || 'Étudiant'}
+        userFullName={user?.full_name || 'Étudiant'}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
       />
