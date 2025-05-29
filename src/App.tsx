@@ -31,6 +31,24 @@ const ProfilePage = React.lazy(() => import('./pages/student/ProfilePage'));
 const SettingsPage = React.lazy(() => import('./pages/student/SettingsPage'));
 const ModuleContentPage = React.lazy(() => import('./pages/student/ModuleContentPage'));
 
+// Teacher pages
+const TeacherCoursesPage = React.lazy(() => import('./pages/teacher/CoursesPage'));
+const TeacherExercisesPage = React.lazy(() => import('./pages/teacher/ExercisesPage'));
+const CreateCoursePage = React.lazy(() => import('./pages/teacher/CreateCoursePage'));
+const CreateExercisePage = React.lazy(() => import('./pages/teacher/CreateExercisePage'));
+const EditCoursePage = React.lazy(() => import('./pages/teacher/EditCoursePage'));
+const TeacherPrivateMessagesPage = React.lazy(() => import('./pages/teacher/PrivateMessagesPage'));
+const TeacherSettingsPage = React.lazy(() => import('./pages/teacher/SettingsPage'));
+
+// Admin pages
+const UserManagementPage = React.lazy(() => import('./pages/admin/UserManagementPage'));
+const CourseManagementPage = React.lazy(() => import('./pages/admin/CourseManagementPage'));
+const ExerciseManagementPage = React.lazy(() => import('./pages/admin/ExerciseManagementPage'));
+const PostManagementPage = React.lazy(() => import('./pages/admin/PostManagementPage'));
+const InternshipManagementPage = React.lazy(() => import('./pages/admin/InternshipManagementPage'));
+const AdminPrivateMessagesPage = React.lazy(() => import('./pages/admin/PrivateMessagesPage'));
+const AdminSettingsPage = React.lazy(() => import('./pages/admin/SettingsPage'));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -78,8 +96,24 @@ function App() {
                 <Route path="/student/module/:moduleId" element={<ModuleContentPage />} />
                 
                 {/* Teacher Routes */}
+                <Route path="/teacher" element={<TeacherDashboard />} />
+                <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
+                <Route path="/teacher/courses/create" element={<CreateCoursePage />} />
+                <Route path="/teacher/courses/:id/edit" element={<EditCoursePage />} />
+                <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
+                <Route path="/teacher/exercises/create" element={<CreateExercisePage />} />
+                <Route path="/teacher/private-messages" element={<TeacherPrivateMessagesPage />} />
+                <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
                 
                 {/* Admin Routes */}
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<UserManagementPage />} />
+                <Route path="/admin/courses" element={<CourseManagementPage />} />
+                <Route path="/admin/exercises" element={<ExerciseManagementPage />} />
+                <Route path="/admin/posts" element={<PostManagementPage />} />
+                <Route path="/admin/internships" element={<InternshipManagementPage />} />
+                <Route path="/admin/private-messages" element={<AdminPrivateMessagesPage />} />
+                <Route path="/admin/settings" element={<AdminSettingsPage />} />
                 
                 {/* Catch all route */}
                 <Route path="*" element={<Navigate to="/" replace />} />

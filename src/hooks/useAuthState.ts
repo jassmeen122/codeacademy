@@ -70,19 +70,28 @@ export const useAuthState = () => {
   const redirectUserByRole = (role: string) => {
     console.log("Redirecting user with role:", role);
     
+    // Get current path to avoid unnecessary redirects
+    const currentPath = window.location.pathname;
+    
     setTimeout(() => {
       switch (role) {
         case 'admin': 
-          console.log("Navigating to /admin");
-          navigate('/admin');
+          if (!currentPath.startsWith('/admin')) {
+            console.log("Navigating to /admin");
+            navigate('/admin');
+          }
           break;
         case 'teacher': 
-          console.log("Navigating to /teacher");
-          navigate('/teacher'); 
+          if (!currentPath.startsWith('/teacher')) {
+            console.log("Navigating to /teacher");
+            navigate('/teacher'); 
+          }
           break;
         default: 
-          console.log("Navigating to /student");
-          navigate('/student'); 
+          if (!currentPath.startsWith('/student')) {
+            console.log("Navigating to /student");
+            navigate('/student'); 
+          }
           break;
       }
     }, 100);
@@ -108,7 +117,7 @@ export const useAuthState = () => {
           // Update status in background (non-blocking)
           setTimeout(() => updateUserStatusSafely(), 0);
 
-          // Auto-redirect based on role if we're on auth page
+          // Auto-redirect based on role if we're on auth page or home
           if (window.location.pathname === '/auth' || window.location.pathname === '/') {
             redirectUserByRole(userProfile.role);
           }
