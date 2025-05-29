@@ -21,9 +21,10 @@ interface Chapter {
   id: string;
   title: string;
   content: string;
-  course_id: string;
-  published: boolean;
+  module_id: string;
+  is_published: boolean;
   order_index: number;
+  requires_completion: boolean;
   created_at: string;
   updated_at: string;
 }
