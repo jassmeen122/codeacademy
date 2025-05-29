@@ -56,7 +56,7 @@ const Navigation = () => {
   }
 
   return (
-    <nav className="fixed top-0 z-50 w-full backdrop-blur-lg bg-background/95 border-b border-border/50 shadow-sm">
+    <nav className="fixed top-0 z-50 w-full tech-nav">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo et Brand */}
@@ -68,19 +68,21 @@ const Navigation = () => {
               CodeAcademy
             </Link>
             
-            {/* Theme Toggle avec animation améliorée */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full hover:bg-accent/10 transition-all duration-300 group"
-            >
-              <div className="relative w-5 h-5">
-                <Sun className="h-5 w-5 absolute inset-0 rotate-0 scale-100 transition-all duration-500 dark:-rotate-90 dark:scale-0" />
-                <Moon className="h-5 w-5 absolute inset-0 rotate-90 scale-0 transition-all duration-500 dark:rotate-0 dark:scale-100" />
-              </div>
-              <span className="sr-only">Changer le thème</span>
-            </Button>
+            {/* Theme Toggle Amélioré */}
+            <div className="relative">
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="enhanced-theme-toggle focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+                aria-label="Changer le thème"
+              >
+                <div className="theme-icon sun">
+                  <Sun className="h-4 w-4" />
+                </div>
+                <div className="theme-icon moon">
+                  <Moon className="h-4 w-4" />
+                </div>
+              </button>
+            </div>
           </div>
 
           {/* Navigation Desktop */}
@@ -97,7 +99,7 @@ const Navigation = () => {
                   <span className="font-medium">Tutoriels Dev</span>
                 </Button>
                 
-                <div className="w-px h-6 bg-border"></div>
+                <div className="w-px h-6 bg-border/50"></div>
               </div>
             )}
 
@@ -106,7 +108,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-300 group"
+                  className="gap-2 text-primary hover:text-accent hover:bg-primary/10 transition-all duration-300 group tech-link"
                   onClick={goToUserDashboard}
                 >
                   <User className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
@@ -117,7 +119,7 @@ const Navigation = () => {
                 {user && (user.role === 'teacher' || user.role === 'admin') && (
                   <Button
                     variant="outline"
-                    className="border-accent/30 text-accent hover:bg-accent/10 hover:border-accent/50 transition-all duration-300"
+                    className="border-accent/30 text-accent hover:bg-accent/10 hover:border-accent/50 transition-all duration-300 robot-button"
                     onClick={() => navigate(user.role === 'admin' ? '/admin' : '/teacher')}
                   >
                     <span className="font-medium">
@@ -126,7 +128,7 @@ const Navigation = () => {
                   </Button>
                 )}
 
-                <div className="w-px h-6 bg-border"></div>
+                <div className="w-px h-6 bg-border/50"></div>
               </div>
             )}
 
@@ -143,7 +145,11 @@ const Navigation = () => {
                 </div>
                 
                 <div className="relative group">
-                  <UserAvatar user={user} size="md" className="ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300" />
+                  <UserAvatar 
+                    user={user} 
+                    size="md" 
+                    className="ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 hover:scale-105" 
+                  />
                 </div>
                 
                 <NotificationBell userId={session.user.id} />
@@ -155,7 +161,7 @@ const Navigation = () => {
               <Button
                 variant={session ? "destructive" : "default"}
                 onClick={handleAuth}
-                className="font-medium px-6 hover:scale-105 transition-all duration-200 shadow-sm"
+                className="font-medium px-6 hover:scale-105 transition-all duration-200 shadow-sm robot-button"
               >
                 {session ? "Se Déconnecter" : "Se Connecter"}
               </Button>
