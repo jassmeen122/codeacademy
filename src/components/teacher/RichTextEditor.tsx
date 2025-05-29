@@ -254,7 +254,7 @@ export const RichTextEditor = ({ onSave, initialContent, courseId }: RichTextEdi
               <Eye className="h-4 w-4 mr-2" />
               Aperçu
             </Button>
-            <Button onClick={handleSave}>
+            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
               <Save className="h-4 w-4 mr-2" />
               Sauvegarder
             </Button>

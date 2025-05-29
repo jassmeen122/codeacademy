@@ -200,7 +200,7 @@ const CreateCoursePage = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Chapitres du Cours</h3>
-                <Button type="button" onClick={addModule} size="sm">
+                <Button type="button" onClick={addModule} size="sm" className="bg-green-600 hover:bg-green-700">
                   <Plus className="mr-2 h-4 w-4" />
                   Ajouter un Chapitre
                 </Button>
@@ -215,7 +215,7 @@ const CreateCoursePage = () => {
               ) : (
                 <div className="space-y-4">
                   {modules.map((module, index) => (
-                    <Card key={index} className="border-l-4 border-l-primary">
+                    <Card key={index} className="border-l-4 border-l-green-600">
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-4">
                           <h4 className="font-medium">Chapitre {index + 1}</h4>
@@ -280,6 +280,7 @@ const CreateCoursePage = () => {
                 type="button"
                 disabled={loading || !title.trim() || !description.trim()}
                 onClick={() => handleSubmit(false)}
+                className="bg-green-600 hover:bg-green-700"
               >
                 {loading ? "Publication..." : "Publier le Cours"}
               </Button>

@@ -123,11 +123,11 @@ const TeacherDashboard = () => {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Teacher Dashboard</h1>
           <div className="flex space-x-2">
-            <Button onClick={() => navigate("/teacher/courses/create")}>
+            <Button onClick={() => navigate("/teacher/courses/create")} className="bg-green-600 hover:bg-green-700">
               <PlusCircle className="h-4 w-4 mr-2" />
               New Course
             </Button>
-            <Button onClick={() => navigate("/teacher/exercises/content")}>
+            <Button onClick={() => navigate("/teacher/exercises/content")} className="bg-green-600 hover:bg-green-700">
               <Dumbbell className="h-4 w-4 mr-2" />
               Manage Exercises
             </Button>
@@ -204,8 +204,8 @@ const TeacherDashboard = () => {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="completed" fill="#8884d8" />
-                      <Bar dataKey="total" fill="#82ca9d" />
+                      <Bar dataKey="completed" fill="#15803d" />
+                      <Bar dataKey="total" fill="#22c55e" />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -225,11 +225,11 @@ const TeacherDashboard = () => {
                         <div key={activity.id} className="flex items-start">
                           <div className="mr-3 mt-0.5">
                             {activity.type === 'course' ? (
-                              <Book className="h-4 w-4 text-primary" />
+                              <Book className="h-4 w-4 text-green-600" />
                             ) : activity.type === 'exercise' ? (
-                              <FileCode className="h-4 w-4 text-primary" />
+                              <FileCode className="h-4 w-4 text-green-600" />
                             ) : (
-                              <Users className="h-4 w-4 text-primary" />
+                              <Users className="h-4 w-4 text-green-600" />
                             )}
                           </div>
                           <div>
