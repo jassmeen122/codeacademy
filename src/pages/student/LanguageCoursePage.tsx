@@ -53,7 +53,7 @@ const LanguageCoursePage = () => {
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-4">Langage non trouvé</h1>
           <p>Le langage demandé n'existe pas. Veuillez retourner à la sélection des langages.</p>
-          <Button onClick={() => navigate('/student/language-selection')} className="mt-4">
+          <Button onClick={() => navigate('/student/yt-dev-tutorials')} className="mt-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour à la sélection
           </Button>
@@ -67,7 +67,7 @@ const LanguageCoursePage = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">{languageName} - Cours et Exercices</h1>
-          <Button variant="outline" onClick={() => navigate('/student/language-selection')}>
+          <Button variant="outline" onClick={() => navigate('/student/yt-dev-tutorials')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour aux langages
           </Button>
@@ -126,7 +126,10 @@ const LanguageCoursePage = () => {
               </p>
               <Button 
                 className="w-full"
-                onClick={() => navigate(`/student/language-summary/${languageId}`)}
+                onClick={() => {
+                  console.log('Navigation vers:', `/student/language-summary/${languageId}`);
+                  navigate(`/student/language-summary/${languageId}`);
+                }}
               >
                 <Book className="mr-2 h-4 w-4" />
                 Voir le Résumé
