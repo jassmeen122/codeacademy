@@ -8,14 +8,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuthState } from "@/hooks/useAuthState";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, UserCog, Mail, User, Terminal, Code, Database } from "lucide-react";
+import { LogOut, UserCog, Mail, User, Terminal, Code, Database, Bot } from "lucide-react";
 import { toast } from "sonner";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ DashboardLayoutProps }: DashboardLayoutProps) => {
   const { user, loading, handleSignOut } = useAuthState();
   const navigate = useNavigate();
 
@@ -34,7 +34,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         .single();
 
       if (profile) {
-        // Redirect users to their appropriate dashboard if they're on the wrong one
         const currentPath = window.location.pathname;
         const correctPath = `/${profile.role.toLowerCase()}`;
         if (!currentPath.startsWith(correctPath)) {
@@ -49,48 +48,67 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const handleLogout = async () => {
     try {
       await handleSignOut();
-      toast.success('Logged out successfully');
+      toast.success('Session terminée avec succès');
       navigate('/auth');
     } catch (error: any) {
-      toast.error(error.message || 'Error signing out');
+      toast.error(error.message || 'Erreur lors de la déconnexion');
     }
   };
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-900 text-white">
+      <div className="min-h-screen flex w-full cyber-grid">
+        {/* Background effects */}
+        <div className="fixed inset-0 bg-gradient-to-br from-background via-muted/50 to-background pointer-events-none"></div>
+        <div className="fixed inset-0 circuit-pattern opacity-10 pointer-events-none"></div>
+        
         <DashboardSidebar userRole={user?.role || null} />
-        <div className="flex-1">
+        <div className="flex-1 relative z-10">
           <Navigation />
-          <main className="pt-16 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-            {/* Enhanced Profile header section */}
-            <div className="bg-gray-800 shadow-md border-b border-gray-700 p-4">
-              <div className="container mx-auto">
+          <main className="pt-16 min-h-screen">
+            {/* Enhanced Profile header section with futuristic design */}
+            <div className="cyber-nav shadow-xl border-b border-primary/30 p-4 relative overflow-hidden">
+              {/* Animated background effects */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 animate-circuit-glow"></div>
+              
+              <div className="container mx-auto relative z-10">
                 {loading ? (
                   <div className="animate-pulse flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-700"></div>
+                    <div className="w-16 h-16 rounded-full bg-primary/20 cyber-glow"></div>
                     <div className="flex-1">
-                      <div className="h-5 bg-gray-700 rounded w-32 mb-2"></div>
-                      <div className="h-4 bg-gray-700 rounded w-24 mb-2"></div>
-                      <div className="h-3 bg-gray-700 rounded w-48"></div>
+                      <div className="h-5 bg-primary/20 rounded w-32 mb-2"></div>
+                      <div className="h-4 bg-primary/20 rounded w-24 mb-2"></div>
+                      <div className="h-3 bg-primary/20 rounded w-48"></div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <UserAvatar user={user} size="lg" />
-                      <div>
-                        <h2 className="font-bold text-xl">{user?.full_name || 'User'}</h2>
-                        <div className="flex items-center gap-2 text-gray-400 mb-1">
-                          <User className="h-3.5 w-3.5" />
-                          <span className="capitalize text-sm">{user?.role || 'User'}</span>
-                          {user?.role === 'admin' && <Database className="h-3.5 w-3.5 ml-2" />}
-                          {user?.role === 'teacher' && <Code className="h-3.5 w-3.5 ml-2" />}
-                          {user?.role === 'student' && <Terminal className="h-3.5 w-3.5 ml-2" />}
+                      <div className="relative">
+                        <UserAvatar user={user} size="lg" />
+                        <div className="absolute -bottom-1 -right-1 p-1 bg-primary rounded-full animate-cyber-pulse">
+                          <Bot className="h-3 w-3 text-white" />
                         </div>
-                        <div className="flex items-center gap-2 text-gray-400">
+                      </div>
+                      <div>
+                        <h2 className="font-cyber text-xl text-foreground mb-1">
+                          {user?.full_name || 'Apprenant du Futur'}
+                        </h2>
+                        <div className="flex items-center gap-2 text-primary mb-1">
+                          <User className="h-3.5 w-3.5" />
+                          <span className="capitalize text-sm font-cyber">
+                            {user?.role === 'admin' && 'Administrateur Système'}
+                            {user?.role === 'teacher' && 'Instructeur IA'}
+                            {user?.role === 'student' && 'Cadet de l\'Académie'}
+                            {!user?.role && 'Utilisateur'}
+                          </span>
+                          {user?.role === 'admin' && <Database className="h-3.5 w-3.5 ml-2 text-accent animate-cyber-pulse" />}
+                          {user?.role === 'teacher' && <Code className="h-3.5 w-3.5 ml-2 text-accent animate-cyber-pulse" />}
+                          {user?.role === 'student' && <Terminal className="h-3.5 w-3.5 ml-2 text-accent animate-cyber-pulse" />}
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
                           <Mail className="h-3.5 w-3.5" />
-                          <span className="text-sm">{user?.email || ''}</span>
+                          <span className="text-sm font-body">{user?.email || ''}</span>
                         </div>
                       </div>
                     </div>
@@ -99,10 +117,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         variant="outline" 
                         size="sm"
                         onClick={() => navigate(`/${user?.role}/settings`)}
-                        className="w-full sm:w-auto border-gray-600 text-gray-300 hover:bg-gray-700"
+                        className="w-full sm:w-auto"
                       >
                         <UserCog className="mr-2 h-4 w-4" />
-                        Edit Profile
+                        Configurer Profil
                       </Button>
                       <Button 
                         variant="destructive" 
@@ -111,14 +129,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                         className="w-full sm:w-auto"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        Logout
+                        Déconnexion
                       </Button>
                     </div>
                   </div>
                 )}
               </div>
+              
+              {/* Scan line effect */}
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-data-stream"></div>
             </div>
-            <div className="container mx-auto py-6 px-4">
+            
+            <div className="container mx-auto py-6 px-4 relative z-10">
               {children}
             </div>
           </main>
