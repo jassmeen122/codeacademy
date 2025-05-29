@@ -1,75 +1,78 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
  
 @layer base {
   :root {
-    /* Mode clair professionnel - Thème Blanc et Bleu */
-    --background: 0 0% 100%; /* #ffffff - Blanc pur */
-    --foreground: 213 94% 18%; /* #1e40af - Bleu foncé */
+    /* Mode clair professionnel */
+    --background: 0 0% 98%; /* #f9fafb - Blanc cassé */
+    --foreground: 220 26% 7%; /* #111827 - Gris très foncé */
     --card: 0 0% 100%; /* Blanc pur pour les cartes */
-    --card-foreground: 213 94% 18%;
+    --card-foreground: 220 26% 7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 213 94% 18%;
-    --primary: 213 94% 68%; /* #3b82f6 - Bleu principal */
-    --primary-foreground: 0 0% 100%; /* Blanc */
-    --secondary: 214 32% 91%; /* #e1e7ef - Bleu très clair */
-    --secondary-foreground: 213 94% 18%;
-    --muted: 214 32% 91%;
-    --muted-foreground: 215 25% 27%; /* #475569 - Bleu grisé */
-    --accent: 217 91% 60%; /* #2563eb - Bleu accent */
-    --accent-foreground: 0 0% 100%;
+    --popover-foreground: 220 26% 7%;
+    --primary: 213 94% 68%; /* #3b82f6 - Bleu doux */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 220 14% 96%; /* #e5e7eb - Gris clair */
+    --secondary-foreground: 220 9% 46%; /* #6b7280 - Gris moyen */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 217 91% 60%; /* #2563eb - Bleu ciel accentué */
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%; /* Bordures bleu clair */
-    --input: 0 0% 100%;
+    --destructive-foreground: 220 26% 96%;
+    --border: 220 13% 91%; /* Bordures douces */
+    --input: 220 14% 96%;
     --ring: 213 94% 68%;
     --radius: 0.75rem;
     
     /* Variables pour le toggle */
-    --toggle-bg: 214 32% 91%;
+    --toggle-bg: 220 13% 91%;
     --toggle-handle: 0 0% 100%;
-    --toggle-shadow: 0 4px 8px rgba(59, 130, 246, 0.1);
+    --toggle-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
   .dark {
-    /* Mode sombre - Garde les mêmes couleurs mais inversées */
-    --background: 213 94% 18%; /* Bleu très foncé */
-    --foreground: 0 0% 98%; /* Blanc cassé */
-    --card: 213 94% 15%;
-    --card-foreground: 0 0% 98%;
-    --popover: 213 94% 15%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 213 94% 68%;
-    --primary-foreground: 213 94% 18%;
-    --secondary: 213 94% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 213 94% 15%;
-    --muted-foreground: 215 25% 70%;
-    --accent: 213 94% 76%;
-    --accent-foreground: 213 94% 18%;
+    /* Mode sombre professionnel */
+    --background: 220 26% 7%; /* #111827 - Gris très foncé/noir */
+    --foreground: 220 14% 95%; /* #f3f4f6 - Gris très clair */
+    --card: 220 26% 12%; /* #1f2937 - Gris anthracite */
+    --card-foreground: 220 14% 95%;
+    --popover: 220 26% 12%;
+    --popover-foreground: 220 14% 95%;
+    --primary: 213 94% 68%; /* #3b82f6 - Bleu électrique */
+    --primary-foreground: 220 26% 7%;
+    --secondary: 220 26% 12%;
+    --secondary-foreground: 220 9% 68%; /* #9ca3af - Gris doux */
+    --muted: 220 26% 12%;
+    --muted-foreground: 220 9% 68%;
+    --accent: 213 94% 76%; /* #60a5fa - Bleu clair */
+    --accent-foreground: 220 26% 7%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 213 94% 25%;
-    --input: 213 94% 15%;
+    --destructive-foreground: 220 14% 95%;
+    --border: 220 26% 18%;
+    --input: 220 26% 12%;
     --ring: 213 94% 68%;
     
     /* Variables pour le toggle en mode sombre */
-    --toggle-bg: 213 94% 25%;
-    --toggle-handle: 0 0% 98%;
+    --toggle-bg: 220 26% 18%;
+    --toggle-handle: 220 14% 95%;
     --toggle-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
 
   * {
-    @apply border-border selection:bg-blue-200 selection:text-blue-800;
+    @apply border-border selection:bg-primary/20 selection:text-primary;
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
 
   body {
-    @apply bg-white text-blue-800 antialiased;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
-    background: white;
+    background-image: 
+      var(--tech-grid),
+      var(--circuit-pattern);
+    background-size: 50px 50px, 200px 200px;
+    background-position: 0 0, 0 0;
     transition: background-color 0.3s ease;
   }
 
@@ -79,17 +82,17 @@
 }
 
 @layer utilities {
-  /* Toggle amélioré avec couleurs bleues */
+  /* Toggle amélioré */
   .enhanced-theme-toggle {
     @apply relative w-14 h-7 rounded-full transition-all duration-300 ease-in-out;
     background: hsl(var(--toggle-bg));
-    box-shadow: inset 0 2px 4px rgba(59, 130, 246, 0.1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .enhanced-theme-toggle:hover {
     @apply scale-105;
     box-shadow: 
-      inset 0 2px 4px rgba(59, 130, 246, 0.1),
+      inset 0 2px 4px rgba(0, 0, 0, 0.1),
       0 0 0 2px hsl(var(--primary) / 0.2);
   }
 
@@ -110,13 +113,13 @@
     transform: translateX(26px);
   }
 
-  /* Icônes du toggle avec couleurs bleues */
+  /* Icônes du toggle avec animations fluides */
   .theme-icon {
     @apply absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out;
   }
 
   .theme-icon.sun {
-    @apply text-blue-500;
+    @apply text-amber-500;
     transform: rotate(0deg) scale(1);
     opacity: 1;
   }
@@ -127,21 +130,21 @@
   }
 
   .theme-icon.moon {
-    @apply text-blue-600;
+    @apply text-slate-400;
     transform: rotate(-180deg) scale(0);
     opacity: 0;
   }
 
   .dark .theme-icon.moon {
-    @apply text-blue-300;
+    @apply text-slate-300;
     transform: rotate(0deg) scale(1);
     opacity: 1;
   }
 
-  /* Cards professionnelles blanches */
+  /* Cards professionnelles */
   .professional-card {
-    @apply bg-white border-2 border-blue-200 rounded-lg shadow-lg backdrop-blur-sm;
-    background: white;
+    @apply bg-card border border-border rounded-lg shadow-tech backdrop-blur-sm;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -154,26 +157,26 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(213 94% 68% / 0.3), transparent);
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
   }
 
   .professional-card:hover {
-    @apply shadow-xl border-blue-400;
+    @apply shadow-card-hover border-primary/30;
     transform: translateY(-2px);
     transition: all 0.3s ease;
   }
 
-  /* Boutons bleus avec texte blanc */
+  /* Boutons avec nouvelles couleurs */
   .robot-button {
-    @apply relative overflow-hidden bg-blue-600 text-white font-medium py-3 px-6 rounded-lg;
-    box-shadow: 0 4px 15px hsl(213 94% 68% / 0.2);
+    @apply relative overflow-hidden bg-gradient-to-r from-primary to-accent text-primary-foreground font-medium py-3 px-6 rounded-lg;
+    box-shadow: 0 4px 15px hsl(var(--primary) / 0.2);
     transition: all 0.3s ease;
   }
 
   .robot-button:hover {
-    @apply bg-blue-700;
+    @apply shadow-robot;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px hsl(213 94% 68% / 0.3);
+    box-shadow: 0 6px 20px hsl(var(--primary) / 0.3);
   }
 
   .robot-button::before {
@@ -191,22 +194,23 @@
     left: 100%;
   }
 
-  /* Navigation avec fond blanc */
+  /* Navigation tech avec nouvelles couleurs */
   .tech-nav {
-    @apply bg-white/95 border-b-2 border-blue-200 backdrop-blur-md;
-    box-shadow: 0 2px 20px rgba(59, 130, 246, 0.1);
+    @apply bg-background/95 border-b border-border backdrop-blur-md;
+    box-shadow: 0 2px 20px hsl(var(--background) / 0.8);
     transition: all 0.3s ease;
   }
 
-  /* Sidebar blanche */
+  /* Sidebar professionnelle */
   .professional-sidebar {
-    @apply bg-white/95 border-r-2 border-blue-200 backdrop-blur-md;
+    @apply bg-card/95 border-r border-border backdrop-blur-md;
+    background-image: var(--circuit-pattern);
     transition: all 0.3s ease;
   }
 
-  /* Effets de survol bleus */
+  /* Effets de survol améliorés */
   .tech-link {
-    @apply relative text-blue-800 hover:text-blue-600 transition-all duration-300;
+    @apply relative text-foreground hover:text-primary transition-all duration-300;
   }
 
   .tech-link::before {
@@ -216,7 +220,7 @@
     left: 0;
     width: 0;
     height: 2px;
-    background: hsl(213 94% 68%);
+    background: hsl(var(--accent));
     transition: width 0.3s ease;
   }
 
@@ -224,129 +228,43 @@
     width: 100%;
   }
 
-  /* Input avec bordures bleues */
+  /* Input tech avec nouvelles couleurs */
   .tech-input {
-    @apply bg-white border-2 border-blue-200 rounded-lg px-4 py-3;
-    box-shadow: inset 0 2px 4px rgba(59, 130, 246, 0.05);
+    @apply bg-card border border-border rounded-lg px-4 py-3 font-mono;
+    box-shadow: inset 0 2px 4px hsl(var(--background) / 0.1);
     transition: all 0.3s ease;
   }
 
   .tech-input:focus {
-    @apply border-blue-500 ring-2 ring-blue-200;
+    @apply border-primary ring-2 ring-primary/20;
     box-shadow: 
-      inset 0 2px 4px rgba(59, 130, 246, 0.05),
-      0 0 20px rgba(59, 130, 246, 0.1);
+      inset 0 2px 4px hsl(var(--background) / 0.1),
+      0 0 20px hsl(var(--primary) / 0.1);
   }
 
-  /* Scrollbar bleue */
+  /* Scrollbar professionnelle avec nouvelles couleurs */
   ::-webkit-scrollbar {
     width: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: white;
+    background: hsl(var(--background));
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, hsl(213 94% 68% / 0.6), hsl(217 91% 60% / 0.6));
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--accent) / 0.6));
     border-radius: 4px;
     transition: background 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, hsl(213 94% 68%), hsl(217 91% 60%));
+    background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--accent)));
   }
 
-  /* Loading spinner bleu */
+  /* Loading spinner avec nouvelles couleurs */
   .tech-spinner {
-    @apply border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin;
-    box-shadow: 0 0 20px hsl(213 94% 68% / 0.2);
-  }
-
-  /* Cyber styles pour composants spéciaux */
-  .cyber-card {
-    @apply bg-white border-2 border-blue-200 rounded-lg shadow-lg;
-    transition: all 0.3s ease;
-  }
-
-  .cyber-card:hover {
-    @apply border-blue-400 shadow-xl;
-    transform: translateY(-2px);
-  }
-
-  .hover-glow:hover {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
-  }
-
-  .cyber-button {
-    @apply bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 hover:border-blue-700 transition-all duration-300;
-  }
-
-  .cyber-sidebar {
-    @apply bg-white border-r-2 border-blue-200;
-  }
-
-  .text-cyber-gradient {
-    @apply bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent;
-  }
-
-  .animate-neon-pulse {
-    animation: neon-pulse 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes neon-pulse {
-    from {
-      text-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
-    }
-    to {
-      text-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
-    }
-  }
-
-  .shadow-cyber {
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
-  }
-
-  .shadow-cyber-lg {
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-  }
-
-  .shadow-cyber-sm {
-    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.15);
-  }
-
-  .terminal-text {
-    @apply text-blue-600 font-mono;
-  }
-
-  .typewriter {
-    overflow: hidden;
-    border-right: 2px solid #3b82f6;
-    white-space: nowrap;
-    animation: typewriter 3s steps(40, end), blink-caret 0.75s step-end infinite;
-  }
-
-  @keyframes typewriter {
-    from { width: 0; }
-    to { width: 100%; }
-  }
-
-  @keyframes blink-caret {
-    from, to { border-color: transparent; }
-    50% { border-color: #3b82f6; }
-  }
-
-  .animate-cyber-glow {
-    animation: cyber-glow 2s ease-in-out infinite alternate;
-  }
-
-  @keyframes cyber-glow {
-    from {
-      filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
-    }
-    to {
-      filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.8));
-    }
+    @apply border-2 border-muted border-t-primary rounded-full animate-spin;
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
   }
 }
 
@@ -378,7 +296,7 @@
   }
 }
 
-/* Animations pour les effets de loading */
+/* Animations pour les effets robotiques */
 @keyframes circuit-scan {
   0% {
     transform: translateX(-100%);
@@ -409,7 +327,7 @@
   left: -100%;
   width: 2px;
   height: 100%;
-  background: linear-gradient(90deg, transparent, hsl(213 94% 68%), transparent);
+  background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
   animation: circuit-scan 3s linear infinite;
 }
 
@@ -418,7 +336,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(59, 130, 246, 0.1),
+    hsl(var(--primary) / 0.1),
     transparent
   );
   background-size: 200% 100%;
