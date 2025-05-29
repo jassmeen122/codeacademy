@@ -153,7 +153,6 @@ const StudentDashboard = () => {
                 <TabsTrigger value="achievements">Achievements</TabsTrigger>
               </TabsList>
               
-              {/* Place TabsContent components inside the Tabs component */}
               <TabsContent value="overview" className="mt-0 space-y-6">
                 {/* Main Dashboard Content */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -166,7 +165,7 @@ const StudentDashboard = () => {
                         title="Code Editor"
                         description="Write, run, and debug code with AI assistance."
                         buttonText="Open Editor"
-                        onClick={() => navigate("/student/editor")}
+                        onClick={() => navigate("/student/code-editor")}
                         className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 hover:shadow-md transition-all border-indigo-200 dark:border-indigo-800"
                       />
                       
@@ -175,7 +174,8 @@ const StudentDashboard = () => {
                         title="Daily Challenge"
                         description="Complete today's coding challenge to earn points."
                         buttonText="Start Challenge"
-                        className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 hover:shadow-md transition-all border-purple-200 dark:border-purple-800"
+                        onClick={() => navigate("/student/mini-game")}
+                        className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 hover:shadow-md transition-all border-green-200 dark:border-green-800"
                       />
                       
                       <NavigationCard
@@ -242,7 +242,7 @@ const StudentDashboard = () => {
                     {/* User Stats */}
                     <Card className="bg-white dark:bg-gray-800 overflow-hidden">
                       <CardContent className="p-0">
-                        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
+                        <div className="bg-gradient-to-r from-indigo-500 to-green-600 p-4">
                           <h3 className="text-white font-medium">Your Progress</h3>
                         </div>
                         <div className="p-4 space-y-4">
@@ -283,15 +283,15 @@ const StudentDashboard = () => {
                     <Card>
                       <CardHeader className="pb-2">
                         <h3 className="text-lg font-semibold flex items-center gap-2">
-                          <Trophy className="h-5 w-5 text-yellow-500" />
+                          <Trophy className="h-5 w-5 text-green-500" />
                           Recent Achievements
                         </h3>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {recentAchievements.map((achievement, i) => (
                           <div key={i} className="flex items-start gap-3">
-                            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-full">
-                              <achievement.icon className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                            <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full">
+                              <achievement.icon className="h-4 w-4 text-green-600 dark:text-green-400" />
                             </div>
                             <div>
                               <h4 className="font-medium">{achievement.title}</h4>
