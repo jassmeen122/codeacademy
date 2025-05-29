@@ -57,19 +57,17 @@ export const HeroSection = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeIn animation-delay-700">
             <Button
               size="lg"
-              variant="cyber"
-              className="text-lg px-8 py-4 group scan-effect"
+              className="text-lg px-8 py-4 group education-button"
               onClick={() => navigate("/auth")}
             >
               <Zap className="h-5 w-5 mr-2 group-hover:animate-pulse" />
               Commencer l'aventure
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-data-flow" />
             </Button>
             
             <Button
               size="lg"
               variant="outline"
-              className="text-lg px-8 py-4 group border-primary/30 hover:border-primary cyber-border"
+              className="text-lg px-8 py-4 group border-primary/30 hover:border-primary"
               onClick={() => navigate("/auth")}
             >
               <Code2 className="h-5 w-5 mr-2 group-hover:animate-pulse" />

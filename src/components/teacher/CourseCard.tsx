@@ -92,13 +92,11 @@ export const CourseCard = ({ course }: CourseCardProps) => {
         
         <div className="flex mt-6 space-x-3">
           <Button 
-            className="flex-1 group/btn cyber-border"
-            variant="cyber"
+            className="flex-1 group/btn education-button"
             onClick={() => navigate(`/teacher/courses/${course.id}`)}
           >
             <Zap className="h-4 w-4 mr-2 group-hover/btn:animate-pulse" />
             Manage
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 group-hover/btn:animate-data-flow" />
           </Button>
           
           <DropdownMenu>
