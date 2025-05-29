@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Menu, X, User, Youtube, ChevronDown, BookOpen, GraduationCap } from "lucide-react";
+import { Menu, X, User, Youtube, ChevronDown, BookOpen, GraduationCap, Video } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -44,6 +44,24 @@ const Navigation = () => {
     }
   };
 
+  const goToMeet = () => {
+    if (!user) return;
+    
+    switch (user.role) {
+      case 'admin':
+        navigate('/admin/private-messages');
+        break;
+      case 'teacher':
+        navigate('/teacher/private-messages');
+        break;
+      case 'student':
+        navigate('/student/private-messages');
+        break;
+      default:
+        navigate('/');
+    }
+  };
+
   return (
     <nav className="fixed top-0 z-50 w-full education-nav">
       <div className="container mx-auto px-4">
@@ -80,6 +98,22 @@ const Navigation = () => {
                 >
                   <BookOpen className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                   <span className="font-medium">Mes Cours</span>
+                </Button>
+                
+                <div className="w-px h-6 bg-border/50"></div>
+              </div>
+            )}
+
+            {/* Section Meet pour tous les utilisateurs connectés */}
+            {!loading && session && user && (
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  className="gap-2 text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all duration-300 group"
+                  onClick={goToMeet}
+                >
+                  <Video className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="font-medium">Meet</span>
                 </Button>
                 
                 <div className="w-px h-6 bg-border/50"></div>

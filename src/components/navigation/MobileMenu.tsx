@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UserAvatar } from "@/components/UserAvatar";
 import { UserProfile } from "@/hooks/useAuthState";
-import { User, Youtube, Settings, LogOut, ChevronRight, BookOpen, GraduationCap } from "lucide-react";
+import { User, Youtube, Settings, LogOut, ChevronRight, BookOpen, GraduationCap, Video } from "lucide-react";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -25,6 +25,24 @@ export const MobileMenu = ({
   user
 }: MobileMenuProps) => {
   if (!isOpen) return null;
+
+  const goToMeet = () => {
+    if (!user) return;
+    
+    switch (user.role) {
+      case 'admin':
+        window.location.href = '/admin/private-messages';
+        break;
+      case 'teacher':
+        window.location.href = '/teacher/private-messages';
+        break;
+      case 'student':
+        window.location.href = '/student/private-messages';
+        break;
+      default:
+        window.location.href = '/';
+    }
+  };
   
   return (
     <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-lg">
@@ -56,6 +74,18 @@ export const MobileMenu = ({
             <GraduationCap className="h-5 w-5 text-primary group-hover:scale-110 transition-transform duration-200" />
             <span className="font-medium">Accueil</span>
           </Link>
+          
+          {/* Meet pour tous les utilisateurs connectés */}
+          {!loading && session && user && (
+            <Button
+              onClick={goToMeet}
+              className="w-full justify-start gap-3 text-blue-500 hover:bg-blue-500/10 transition-all duration-300 group"
+              variant="ghost"
+            >
+              <Video className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+              <span className="font-medium">Meet</span>
+            </Button>
+          )}
           
           {/* Tutoriels pour les étudiants */}
           {!loading && session && userRole === 'student' && (
