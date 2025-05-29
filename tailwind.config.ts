@@ -53,16 +53,29 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
-        // Couleurs vertes pour remplacer le jaune
+        // Couleurs vertes foncées pour remplacer le jaune
         green: {
           50: "rgb(240 253 244)",
           100: "rgb(220 252 231)",
           200: "rgb(187 247 208)",
           300: "rgb(134 239 172)",
           400: "rgb(74 222 128)",
-          500: "rgb(34 197 94)",
-          600: "rgb(22 163 74)",
-          700: "rgb(21 128 61)",
+          500: "rgb(21 128 61)", // Vert foncé
+          600: "rgb(20 83 45)",   // Vert très foncé
+          700: "rgb(22 101 52)",
+          800: "rgb(22 101 52)",
+          900: "rgb(20 83 45)",
+        },
+        // Remapper le jaune vers le vert foncé
+        yellow: {
+          50: "rgb(240 253 244)",
+          100: "rgb(220 252 231)",
+          200: "rgb(187 247 208)",
+          300: "rgb(134 239 172)",
+          400: "rgb(74 222 128)",
+          500: "rgb(21 128 61)", // Vert foncé
+          600: "rgb(20 83 45)",   // Vert très foncé
+          700: "rgb(22 101 52)",
           800: "rgb(22 101 52)",
           900: "rgb(20 83 45)",
         },
