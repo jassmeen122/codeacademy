@@ -4,10 +4,9 @@ import {
   GraduationCap,
   School,
   UserRound,
-  Terminal,
-  Code,
-  Cpu,
-  Bot
+  Settings,
+  BookOpen,
+  Users
 } from "lucide-react";
 import {
   Sidebar,
@@ -44,9 +43,9 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
       case 'admin':
         return Database;
       case 'teacher':
-        return Code;
+        return BookOpen;
       case 'student':
-        return Terminal;
+        return GraduationCap;
       default:
         return UserRound;
     }
@@ -55,69 +54,54 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
   const getRoleTitle = () => {
     switch (userRole) {
       case 'admin':
-        return 'SYSTÈME_ADMIN';
+        return 'Administration';
       case 'teacher':
-        return 'INSTRUCTEUR_IA';
+        return 'Espace Professeur';
       case 'student':
-        return 'ACADÉMIE_TERMINAL';
+        return 'Espace Étudiant';
       default:
-        return 'INITIALISATION...';
+        return 'Chargement...';
     }
   };
 
   const getRoleSubtitle = () => {
     switch (userRole) {
       case 'admin':
-        return '> controle.système.actif';
+        return 'Gestion de la plateforme';
       case 'teacher':
-        return '> module.enseignement.prêt';
+        return 'Création et gestion des cours';
       case 'student':
-        return '> session.apprentissage.démarrée';
+        return 'Apprentissage et progression';
       default:
-        return '> chargement.en.cours...';
+        return 'Connexion en cours...';
     }
   };
 
   const RoleIcon = getRoleIcon();
 
   return (
-    <Sidebar className="cyber-sidebar border-r-2 border-primary/30">
-      <SidebarHeader className="border-b border-primary/20 p-4 relative overflow-hidden">
-        {/* Background glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent"></div>
-        
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="relative">
-            <div className="p-3 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg border border-primary/30 shadow-lg backdrop-blur-sm">
-              <RoleIcon className="h-6 w-6 text-primary animate-cyber-pulse" />
-            </div>
-            {/* Robot assistant indicator */}
-            <div className="absolute -top-1 -right-1 p-1 bg-accent rounded-full animate-cyber-pulse">
-              <Bot className="h-3 w-3 text-white" />
-            </div>
+    <Sidebar className="border-r border-gray-200 bg-white">
+      <SidebarHeader className="border-b border-gray-200 p-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-blue-500 rounded-lg">
+            <RoleIcon className="h-6 w-6 text-white" />
           </div>
           <div>
-            <span className="font-cyber font-bold text-lg text-primary">{getRoleTitle()}</span>
-            <div className="text-xs text-accent font-display">{getRoleSubtitle()}</div>
+            <h2 className="font-semibold text-lg text-black">{getRoleTitle()}</h2>
+            <p className="text-sm text-gray-600">{getRoleSubtitle()}</p>
           </div>
         </div>
-        
-        {/* Scan line */}
-        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-data-stream"></div>
       </SidebarHeader>
       
-      <SidebarContent className="cyber-sidebar">
+      <SidebarContent className="bg-white">
         <SidebarMenu menuItems={getMenuItems()} />
       </SidebarContent>
       
-      <SidebarFooter className="border-t border-primary/20 p-4 bg-gradient-to-t from-primary/5 to-transparent relative">
-        <div className="text-xs text-muted-foreground font-display mb-2">
-          // interface.contrôle.sidebar
+      <SidebarFooter className="border-t border-gray-200 p-4 bg-white">
+        <div className="text-xs text-gray-500 mb-2">
+          Interface de contrôle
         </div>
-        <SidebarTrigger className="cyber-button w-full justify-center" />
-        
-        {/* Circuit pattern */}
-        <div className="absolute top-0 left-0 w-full h-full circuit-pattern opacity-20 pointer-events-none"></div>
+        <SidebarTrigger className="w-full justify-center bg-black text-white hover:bg-gray-800" />
       </SidebarFooter>
     </Sidebar>
   );
