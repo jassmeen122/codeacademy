@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,9 +44,16 @@ export const ExerciseContentManager = () => {
 
   const fetchExercises = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Vous devez être connecté');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('exercise_content')
         .select('*')
+        .eq('teacher_id', user.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -62,6 +68,12 @@ export const ExerciseContentManager = () => {
 
   const handleSaveExercise = async (exerciseData: any) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Vous devez être connecté');
+        return;
+      }
+
       if (editingExercise) {
         // Update existing exercise
         const { error } = await supabase
@@ -87,6 +99,7 @@ export const ExerciseContentManager = () => {
         const { error } = await supabase
           .from('exercise_content')
           .insert({
+            teacher_id: user.id,
             title: exerciseData.title,
             description: exerciseData.description,
             content: exerciseData.content,
