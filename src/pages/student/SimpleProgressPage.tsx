@@ -6,6 +6,7 @@ import { ActionCard } from '@/components/common/ActionCard';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { ProgressCard } from '@/components/progress/ProgressCard';
 import { BadgesSection } from '@/components/progress/BadgesSection';
+import { CertificatesSection } from '@/components/student/CertificatesSection';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, BookOpen, CheckCircle, XCircle, Brain, TrendingUp, BarChart3 } from 'lucide-react';
 
@@ -85,6 +86,11 @@ const SimpleProgressPage = () => {
           earnedBadges={stats.badges}
           availableBadges={availableBadges}
         />
+      </div>
+
+      {/* Section certificats */}
+      <div className="mb-8">
+        <CertificatesSection />
       </div>
 
       {/* Zone d'interaction */}
