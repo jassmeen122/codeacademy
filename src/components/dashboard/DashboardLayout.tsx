@@ -15,7 +15,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export const DashboardLayout = ({ DashboardLayoutProps }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user, loading, handleSignOut } = useAuthState();
   const navigate = useNavigate();
 
