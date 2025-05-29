@@ -2,21 +2,23 @@
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { UsersList } from '@/components/messaging/UsersList';
-import { PrivateChat } from '@/components/messaging/PrivateChat';
-import { usePrivateMessages } from '@/hooks/usePrivateMessages';
+import { EnhancedPrivateChat } from '@/components/messaging/EnhancedPrivateChat';
+import { useEnhancedPrivateMessages } from '@/hooks/useEnhancedPrivateMessages';
 import { useAuthState } from '@/hooks/useAuthState';
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageSquare, Users, ArrowRight, Shield } from 'lucide-react';
+import { MessageSquare, Users, ArrowRight, Shield, Video, Phone } from 'lucide-react';
 
 export default function AdminPrivateMessagesPage() {
   const { user } = useAuthState();
-  const { messages, loading, sendMessage } = usePrivateMessages(user?.id);
+  const { conversations, loading } = useEnhancedPrivateMessages();
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedUserName, setSelectedUserName] = useState<string>('');
+  const [selectedUserAvatar, setSelectedUserAvatar] = useState<string>('');
 
-  const handleSelectUser = (userId: string, userName: string) => {
+  const handleSelectUser = (userId: string, userName: string, userAvatar?: string) => {
     setSelectedUserId(userId);
     setSelectedUserName(userName);
+    setSelectedUserAvatar(userAvatar || '');
   };
 
   if (!user) {
@@ -44,7 +46,7 @@ export default function AdminPrivateMessagesPage() {
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-2">
-              <Shield className="h-7 w-7 text-red-500" />
+              <Shield className="h-7 w-7 text-blue-500" />
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Messages Privés Admin
               </h1>
@@ -54,7 +56,9 @@ export default function AdminPrivateMessagesPage() {
             <Users className="h-4 w-4" />
             <span>Communication avec tous les utilisateurs</span>
             <ArrowRight className="h-4 w-4" />
-            <span>Gestion et support</span>
+            <span>Appels audio/vidéo disponibles</span>
+            <Video className="h-4 w-4 text-blue-500" />
+            <Phone className="h-4 w-4 text-green-500" />
           </div>
         </div>
 
@@ -71,13 +75,10 @@ export default function AdminPrivateMessagesPage() {
           {/* Chat Area - Center */}
           <div className="lg:col-span-2">
             {selectedUserId ? (
-              <PrivateChat
+              <EnhancedPrivateChat
                 selectedUserId={selectedUserId}
                 selectedUserName={selectedUserName}
-                currentUserId={user.id}
-                messages={messages}
-                onSendMessage={sendMessage}
-                loading={loading}
+                selectedUserAvatar={selectedUserAvatar}
               />
             ) : (
               <Card className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -85,13 +86,13 @@ export default function AdminPrivateMessagesPage() {
                   <div className="max-w-sm mx-auto">
                     <div className="relative mb-6">
                       <div className="flex items-center justify-center">
-                        <div className="bg-red-100 dark:bg-red-900/30 rounded-full p-6">
-                          <Shield className="h-16 w-16 text-red-500" />
+                        <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-6">
+                          <Shield className="h-16 w-16 text-blue-500" />
                         </div>
                       </div>
                       <div className="absolute -top-2 -right-2">
                         <div className="bg-green-500 rounded-full p-2">
-                          <MessageSquare className="h-6 w-6 text-white" />
+                          <Video className="h-6 w-6 text-white" />
                         </div>
                       </div>
                     </div>
@@ -100,12 +101,18 @@ export default function AdminPrivateMessagesPage() {
                       Sélectionnez un utilisateur
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-                      Choisissez un utilisateur pour commencer une conversation privée et fournir un support personnalisé.
+                      Choisissez un utilisateur pour commencer une conversation privée avec appels audio/vidéo.
                     </p>
                     
-                    <div className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span>Support en temps réel</span>
+                    <div className="flex items-center justify-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-1">
+                        <Phone className="h-4 w-4 text-green-500" />
+                        <span>Audio</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Video className="h-4 w-4 text-blue-500" />
+                        <span>Vidéo</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
