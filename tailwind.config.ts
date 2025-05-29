@@ -49,22 +49,19 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Couleurs professionnelles pour l'informatique
-        tech: {
-          blue: "hsl(216, 87%, 55%)",
-          dark: "hsl(220, 26%, 14%)",
-          light: "hsl(220, 26%, 96%)",
-          gray: "hsl(220, 13%, 65%)",
-        },
-        robot: {
-          primary: "hsl(199, 89%, 48%)",
-          secondary: "hsl(204, 64%, 44%)",
-          accent: "hsl(142, 69%, 58%)",
-        },
+        // Couleurs éducatives avec bleu, noir et blanc
         education: {
-          primary: "hsl(231, 48%, 48%)",
-          secondary: "hsl(262, 83%, 58%)",
-          success: "hsl(142, 71%, 45%)",
+          50: "#eff6ff",
+          100: "#dbeafe", 
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
+          950: "#172554",
         },
       },
       borderRadius: {
@@ -94,42 +91,20 @@ export default {
           from: { transform: "translateX(-100%)" },
           to: { transform: "translateX(0)" },
         },
-        // Animations robotiques subtiles
-        "robot-pulse": {
+        "education-pulse": {
           "0%, 100%": {
-            boxShadow: "0 0 0 0 hsl(199, 89%, 48% / 0.4)"
+            boxShadow: "0 0 0 0 rgb(59 130 246 / 0.4)"
           },
           "50%": {
-            boxShadow: "0 0 0 8px hsl(199, 89%, 48% / 0)"
+            boxShadow: "0 0 0 8px rgb(59 130 246 / 0)"
           }
         },
-        "tech-glow": {
+        "education-glow": {
           "0%, 100%": {
-            boxShadow: "0 0 20px hsl(216, 87%, 55% / 0.1)"
+            boxShadow: "0 0 20px rgb(37 99 235 / 0.1)"
           },
           "50%": {
-            boxShadow: "0 0 30px hsl(216, 87%, 55% / 0.2)"
-          }
-        },
-        "data-flow": {
-          "0%": {
-            transform: "translateX(-100%)",
-            opacity: "0"
-          },
-          "50%": {
-            opacity: "1"
-          },
-          "100%": {
-            transform: "translateX(100%)",
-            opacity: "0"
-          }
-        },
-        "circuit-pulse": {
-          "0%, 100%": {
-            opacity: "0.3"
-          },
-          "50%": {
-            opacity: "0.8"
+            boxShadow: "0 0 30px rgb(37 99 235 / 0.2)"
           }
         },
       },
@@ -138,20 +113,18 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.5s ease-out",
         slideIn: "slideIn 0.3s ease-out",
-        "robot-pulse": "robot-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "tech-glow": "tech-glow 3s ease-in-out infinite",
-        "data-flow": "data-flow 4s ease-in-out infinite",
-        "circuit-pulse": "circuit-pulse 2s ease-in-out infinite",
+        "education-pulse": "education-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "education-glow": "education-glow 3s ease-in-out infinite",
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'tech-grid': 'linear-gradient(rgba(54, 57, 64, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(54, 57, 64, 0.4) 1px, transparent 1px)',
-        'circuit-pattern': 'radial-gradient(circle at 25% 25%, hsl(199, 89%, 48% / 0.05) 0%, transparent 50%), radial-gradient(circle at 75% 75%, hsl(216, 87%, 55% / 0.05) 0%, transparent 50%)',
+        'education-grid': 'linear-gradient(rgba(37, 99, 235, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(37, 99, 235, 0.1) 1px, transparent 1px)',
+        'education-pattern': 'radial-gradient(circle at 25% 25%, rgb(37 99 235 / 0.05) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgb(59 130 246 / 0.05) 0%, transparent 50%)',
       },
       boxShadow: {
-        'tech': '0 4px 20px hsl(216, 87%, 55% / 0.1)',
-        'robot': '0 4px 20px hsl(199, 89%, 48% / 0.15)',
-        'card-hover': '0 8px 30px hsl(220, 26%, 14% / 0.12)',
+        'education': '0 4px 20px rgb(37 99 235 / 0.15)',
+        'education-lg': '0 8px 30px rgb(37 99 235 / 0.2)',
+        'card-hover': '0 8px 30px rgb(15 23 42 / 0.12)',
       },
     },
   },

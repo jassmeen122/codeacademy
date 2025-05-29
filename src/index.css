@@ -6,21 +6,21 @@
 @tailwind utilities;
 
 :root {
-  --primary: 37 98 204;
+  --primary: 34 85 170;
   --primary-foreground: 255 255 255;
   --secondary: 241 245 249;
   --secondary-foreground: 15 23 42;
-  --accent: 59 130 246;
+  --accent: 37 99 235;
   --accent-foreground: 255 255 255;
   --destructive: 239 68 68;
   --destructive-foreground: 255 255 255;
-  --muted: 241 245 249;
+  --muted: 248 250 252;
   --muted-foreground: 100 116 139;
   --card: 255 255 255;
   --card-foreground: 15 23 42;
   --border: 226 232 240;
   --input: 226 232 240;
-  --ring: 37 98 204;
+  --ring: 34 85 170;
   --radius: 0.5rem;
   --background: 255 255 255;
   --foreground: 15 23 42;
@@ -30,18 +30,18 @@
   :root {
     --primary: 59 130 246;
     --primary-foreground: 255 255 255;
-    --secondary: 51 65 85;
+    --secondary: 30 41 59;
     --secondary-foreground: 248 250 252;
     --accent: 37 99 235;
     --accent-foreground: 255 255 255;
     --destructive: 220 38 38;
     --destructive-foreground: 255 255 255;
-    --muted: 51 65 85;
+    --muted: 30 41 59;
     --muted-foreground: 148 163 184;
-    --card: 30 41 59;
+    --card: 15 23 42;
     --card-foreground: 248 250 252;
-    --border: 51 65 85;
-    --input: 51 65 85;
+    --border: 30 41 59;
+    --input: 30 41 59;
     --ring: 59 130 246;
     --background: 15 23 42;
     --foreground: 248 250 252;
@@ -80,19 +80,31 @@ body {
 }
 
 .professional-card {
-  @apply rounded-lg border border-border/50 bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300;
+  @apply rounded-lg border border-border bg-card text-card-foreground shadow-md hover:shadow-lg transition-all duration-300;
 }
 
 .education-card {
-  @apply rounded-lg border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 text-card-foreground shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1;
+  @apply rounded-lg border border-blue-200 bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 text-card-foreground shadow-md hover:shadow-lg transition-all duration-300;
 }
 
 .education-button {
-  @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300;
+  @apply bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-300;
+}
+
+.education-button-secondary {
+  @apply bg-slate-700 text-white hover:bg-slate-800 shadow-md hover:shadow-lg transition-all duration-300;
+}
+
+.education-nav {
+  @apply bg-white/95 backdrop-blur-sm border-b border-blue-200 shadow-sm;
+}
+
+.education-link {
+  @apply text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-300;
 }
 
 .robot-button {
-  @apply bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300;
+  @apply bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg transition-all duration-300;
 }
 
 .font-display {
@@ -109,15 +121,15 @@ body {
 }
 
 .text-education-secondary {
-  color: rgb(59 130 246);
+  color: rgb(37 99 235);
 }
 
 .bg-education-secondary\/10 {
-  background-color: rgb(59 130 246 / 0.1);
+  background-color: rgb(37 99 235 / 0.1);
 }
 
 .border-education-secondary\/20 {
-  border-color: rgb(59 130 246 / 0.2);
+  border-color: rgb(37 99 235 / 0.2);
 }
 
 .text-robot-accent {
@@ -130,4 +142,13 @@ body {
 
 .border-robot-accent\/20 {
   border-color: rgb(37 99 235 / 0.2);
+}
+
+/* Educational theme gradients */
+.education-gradient {
+  background: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(37 99 235) 100%);
+}
+
+.education-gradient-light {
+  background: linear-gradient(135deg, rgb(219 234 254) 0%, rgb(147 197 253) 100%);
 }
