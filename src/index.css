@@ -5,32 +5,27 @@
  
 @layer base {
   :root {
-    /* Thème sombre permanent et éducatif */
+    /* Thème bleu, blanc et gris/noir permanent */
     --background: 220 26% 7%; /* #111827 - Fond sombre principal */
-    --foreground: 220 14% 95%; /* #f3f4f6 - Texte clair */
+    --foreground: 220 14% 95%; /* #f3f4f6 - Texte blanc */
     --card: 220 26% 12%; /* #1f2937 - Cartes sombres */
     --card-foreground: 220 14% 95%;
     --popover: 220 26% 12%;
     --popover-foreground: 220 14% 95%;
-    --primary: 59 100% 50%; /* #ffff00 - Jaune vif pour l'éducation */
-    --primary-foreground: 220 26% 7%;
-    --secondary: 217 91% 60%; /* #2563eb - Bleu éducatif */
-    --secondary-foreground: 220 14% 95%;
-    --muted: 220 26% 18%;
-    --muted-foreground: 220 9% 68%;
-    --accent: 142 76% 36%; /* #10b981 - Vert accent */
+    --primary: 217 91% 60%; /* #2563eb - Bleu principal */
+    --primary-foreground: 0 0% 100%; /* Blanc sur bleu */
+    --secondary: 217 91% 50%; /* #1d4ed8 - Bleu secondaire */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 26% 18%; /* Gris sombre */
+    --muted-foreground: 220 9% 68%; /* Gris clair */
+    --accent: 217 91% 70%; /* Bleu accent */
     --accent-foreground: 220 26% 7%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 220 14% 95%;
     --border: 220 26% 18%;
     --input: 220 26% 12%;
-    --ring: 59 100% 50%;
+    --ring: 217 91% 60%;
     --radius: 0.75rem;
-    
-    /* Variables éducatives */
-    --success: 142 76% 36%; /* Vert succès */
-    --warning: 38 92% 50%; /* Orange avertissement */
-    --info: 213 94% 68%; /* Bleu information */
   }
 
   * {
@@ -42,8 +37,8 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     background-image: 
-      radial-gradient(circle at 25% 25%, hsl(var(--primary) / 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, hsl(var(--secondary) / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 25% 25%, hsl(217 91% 60% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(217 91% 50% / 0.1) 0%, transparent 50%),
       linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--card)) 100%);
     background-attachment: fixed;
     min-height: 100vh;
@@ -55,7 +50,7 @@
 }
 
 @layer utilities {
-  /* Cards éducatives */
+  /* Cards avec design bleu/blanc/gris */
   .education-card {
     @apply bg-card border border-border rounded-xl shadow-lg backdrop-blur-sm;
     background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
@@ -71,7 +66,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
+    background: linear-gradient(90deg, hsl(217 91% 60%), hsl(217 91% 50%), hsl(217 91% 70%));
   }
 
   .education-card:hover {
@@ -80,41 +75,45 @@
     transition: all 0.3s ease;
   }
 
-  /* Boutons éducatifs */
+  /* Boutons - TOUS EN BLEU */
   .education-button {
-    @apply relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-background font-semibold py-3 px-6 rounded-lg;
-    box-shadow: 0 4px 15px hsl(var(--primary) / 0.3);
+    @apply relative overflow-hidden bg-primary text-primary-foreground font-semibold py-3 px-6 rounded-lg;
+    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 50%));
+    box-shadow: 0 4px 15px hsl(217 91% 60% / 0.3);
     transition: all 0.3s ease;
   }
 
   .education-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px hsl(var(--primary) / 0.4);
+    box-shadow: 0 6px 20px hsl(217 91% 60% / 0.4);
+    background: linear-gradient(135deg, hsl(217 91% 70%), hsl(217 91% 60%));
   }
 
   .education-button-secondary {
     @apply bg-secondary hover:bg-secondary/90 text-secondary-foreground border border-secondary/30;
+    background: linear-gradient(135deg, hsl(217 91% 50%), hsl(217 91% 40%));
   }
 
-  .education-button-success {
-    @apply bg-green-600 hover:bg-green-700 text-white;
+  .education-button-outline {
+    @apply bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground;
+    transition: all 0.3s ease;
   }
 
-  /* Navigation éducative */
+  /* Navigation avec thème bleu/blanc/gris */
   .education-nav {
     @apply bg-background/95 border-b border-border backdrop-blur-md;
     box-shadow: 0 2px 20px hsl(var(--background) / 0.8);
     transition: all 0.3s ease;
   }
 
-  /* Sidebar éducative */
+  /* Sidebar */
   .education-sidebar {
     @apply bg-card/95 border-r border-border backdrop-blur-md;
     background-image: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
     transition: all 0.3s ease;
   }
 
-  /* Liens éducatifs */
+  /* Liens avec effet bleu */
   .education-link {
     @apply relative text-foreground hover:text-primary transition-all duration-300;
   }
@@ -134,9 +133,9 @@
     width: 100%;
   }
 
-  /* Input éducatifs */
+  /* Input avec style éducatif */
   .education-input {
-    @apply bg-card border border-border rounded-lg px-4 py-3;
+    @apply bg-card border border-border rounded-lg px-4 py-3 text-foreground;
     box-shadow: inset 0 2px 4px hsl(var(--background) / 0.1);
     transition: all 0.3s ease;
   }
@@ -148,39 +147,34 @@
       0 0 20px hsl(var(--primary) / 0.1);
   }
 
-  /* Progress bars éducatives */
+  /* Progress bars */
   .education-progress {
     @apply bg-muted rounded-full overflow-hidden;
     background: linear-gradient(90deg, hsl(var(--muted)), hsl(var(--card)));
   }
 
   .education-progress-fill {
-    @apply bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500;
-    box-shadow: 0 2px 4px hsl(var(--primary) / 0.3);
+    @apply rounded-full transition-all duration-500;
+    background: linear-gradient(90deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    box-shadow: 0 2px 4px hsl(217 91% 60% / 0.3);
   }
 
-  /* Badges éducatifs */
+  /* Badges en bleu */
   .education-badge {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--secondary) / 0.2));
-    border: 1px solid hsl(var(--primary) / 0.3);
-    color: hsl(var(--primary));
+    background: linear-gradient(135deg, hsl(217 91% 60% / 0.2), hsl(217 91% 50% / 0.2));
+    border: 1px solid hsl(217 91% 60% / 0.3);
+    color: hsl(217 91% 70%);
   }
 
-  .education-badge-success {
-    background: linear-gradient(135deg, hsl(var(--success) / 0.2), hsl(var(--accent) / 0.2));
-    border: 1px solid hsl(var(--success) / 0.3);
-    color: hsl(var(--success));
-  }
-
-  /* Notifications éducatives */
+  /* Notifications */
   .education-notification {
     @apply bg-card border border-border rounded-lg p-4 shadow-lg;
     background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)));
     border-left: 4px solid hsl(var(--primary));
   }
 
-  /* Scrollbar éducative */
+  /* Scrollbar bleue */
   ::-webkit-scrollbar {
     width: 8px;
   }
@@ -190,25 +184,13 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--secondary) / 0.6));
+    background: linear-gradient(180deg, hsl(217 91% 60%), hsl(217 91% 50%));
     border-radius: 4px;
     transition: background 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--secondary)));
-  }
-
-  /* Animations éducatives */
-  .education-shimmer {
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(var(--primary) / 0.1),
-      transparent
-    );
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
+    background: linear-gradient(180deg, hsl(217 91% 70%), hsl(217 91% 60%));
   }
 
   /* Tables éducatives */
@@ -223,6 +205,41 @@
   .education-table tr:hover {
     @apply bg-primary/5;
   }
+
+  /* Classes d'override pour forcer le style bleu sur tous les boutons */
+  button, .btn, [role="button"] {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 50%)) !important;
+    color: white !important;
+    border: none !important;
+    transition: all 0.3s ease;
+  }
+
+  button:hover, .btn:hover, [role="button"]:hover {
+    background: linear-gradient(135deg, hsl(217 91% 70%), hsl(217 91% 60%)) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px hsl(217 91% 60% / 0.3);
+  }
+
+  /* Boutons outline spéciaux */
+  button[variant="outline"], .btn-outline {
+    @apply bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white;
+    background: transparent !important;
+    color: hsl(217 91% 60%) !important;
+    border: 2px solid hsl(217 91% 60%) !important;
+  }
+
+  button[variant="outline"]:hover, .btn-outline:hover {
+    background: hsl(217 91% 60%) !important;
+    color: white !important;
+  }
+
+  /* Boutons destructifs - gardent leur couleur rouge */
+  button[variant="destructive"], .btn-destructive {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+    background: hsl(var(--destructive)) !important;
+    color: white !important;
+  }
 }
 
 /* Animations pour les effets éducatifs */
@@ -235,14 +252,14 @@
   }
 }
 
-@keyframes pulse-education {
+@keyframes pulse-blue {
   0%, 100% {
     opacity: 1;
-    transform: scale(1);
+    box-shadow: 0 0 20px hsl(217 91% 60% / 0.3);
   }
   50% {
     opacity: 0.8;
-    transform: scale(1.05);
+    box-shadow: 0 0 30px hsl(217 91% 60% / 0.5);
   }
 }
 
@@ -255,22 +272,21 @@
   }
 }
 
-.pulse-education {
-  animation: pulse-education 2s infinite;
+.pulse-blue {
+  animation: pulse-blue 2s infinite;
 }
 
 .float-animation {
   animation: float 3s ease-in-out infinite;
 }
 
-/* Effets de focus pour l'accessibilité éducative */
+/* Effets de focus pour l'accessibilité */
 *:focus-visible {
   @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
 }
 
-/* Amélioration des contrastes pour l'éducation */
+/* Amélioration des contrastes */
 .high-contrast {
   @apply text-foreground bg-background;
   filter: contrast(1.2);
 }
-
