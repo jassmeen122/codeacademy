@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -123,40 +122,47 @@ const StudentDashboard = () => {
 
   // Quick Stats
   const quickStats = [
-    { label: 'Cours complétés', value: '4', icon: Book, color: 'bg-gradient-to-r from-primary to-accent' },
-    { label: 'Heures d\'étude', value: '67h', icon: Clock, color: 'bg-gradient-to-r from-green-500 to-green-600' },
-    { label: 'Défis résolus', value: '23', icon: Code, color: 'bg-gradient-to-r from-purple-500 to-purple-600' },
-    { label: 'Points obtenus', value: '2,450', icon: Star, color: 'bg-gradient-to-r from-yellow-500 to-orange-500' },
+    { label: 'Cours complétés', value: '4', icon: Book, color: 'bg-blue-500' },
+    { label: 'Heures d\'étude', value: '67h', icon: Clock, color: 'bg-blue-600' },
+    { label: 'Défis résolus', value: '23', icon: Code, color: 'bg-blue-700' },
+    { label: 'Points obtenus', value: '2,450', icon: Star, color: 'bg-blue-800' },
   ];
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto px-4 py-6 space-y-8">
-        {/* Header Section avec gradient */}
-        <div className="professional-card bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border-primary/20">
+      <div className="container mx-auto px-4 py-6 space-y-8 bg-white min-h-screen">
+        {/* Header Section */}
+        <div className="bg-white border-2 border-blue-200 rounded-lg shadow-lg">
           <div className="p-8">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-3">
-                <h1 className="text-4xl font-bold font-display bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold font-display text-blue-700">
                   Bienvenue, {userProfile?.full_name || 'Développeur'}!
                 </h1>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-lg text-blue-600">
                   Continuez votre parcours d'apprentissage en programmation
                 </p>
                 <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-2 text-primary">
+                  <div className="flex items-center gap-2 text-blue-700">
                     <TrendingUp className="h-4 w-4" />
                     <span className="font-medium">+15% cette semaine</span>
                   </div>
-                  <div className="w-px h-4 bg-border"></div>
-                  <span className="text-muted-foreground">Niveau: Intermédiaire</span>
+                  <div className="w-px h-4 bg-blue-300"></div>
+                  <span className="text-blue-600">Niveau: Intermédiaire</span>
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => navigate("/student/profile")} className="border-primary/30 hover:bg-primary/10">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate("/student/profile")} 
+                  className="border-blue-500 text-blue-700 hover:bg-blue-50 bg-white"
+                >
                   Voir le profil
                 </Button>
-                <Button onClick={() => navigate("/student/courses")} className="robot-button">
+                <Button 
+                  onClick={() => navigate("/student/courses")} 
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                >
                   Explorer les cours
                 </Button>
               </div>
@@ -167,12 +173,12 @@ const StudentDashboard = () => {
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickStats.map((stat, index) => (
-            <Card key={index} className="professional-card hover:scale-105 transition-all duration-300">
+            <Card key={index} className="bg-white border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
-                    <p className="text-3xl font-bold text-foreground mt-1">{stat.value}</p>
+                    <p className="text-sm text-blue-600 font-medium">{stat.label}</p>
+                    <p className="text-3xl font-bold text-blue-800 mt-1">{stat.value}</p>
                   </div>
                   <div className={`p-3 rounded-lg ${stat.color} text-white shadow-lg`}>
                     <stat.icon className="h-6 w-6" />
@@ -185,14 +191,23 @@ const StudentDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-lg">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsList className="grid w-full grid-cols-3 bg-blue-50 p-1 rounded-lg border border-blue-200">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-blue-700"
+            >
               Vue d'ensemble
             </TabsTrigger>
-            <TabsTrigger value="progress" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger 
+              value="progress" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-blue-700"
+            >
               Progrès
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger 
+              value="achievements" 
+              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-blue-700"
+            >
               Réussites
             </TabsTrigger>
           </TabsList>
@@ -201,10 +216,8 @@ const StudentDashboard = () => {
             {/* Actions Rapides */}
             <div>
               <h2 className="text-2xl font-bold font-display mb-6 flex items-center gap-3">
-                <Terminal className="h-6 w-6 text-primary" />
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Actions Rapides
-                </span>
+                <Terminal className="h-6 w-6 text-blue-600" />
+                <span className="text-blue-700">Actions Rapides</span>
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 <NavigationCard
@@ -213,7 +226,7 @@ const StudentDashboard = () => {
                   description="Écrivez, testez et déboguez avec l'IA."
                   buttonText="Ouvrir l'éditeur"
                   onClick={() => navigate("/student/code-editor")}
-                  className="professional-card bg-gradient-to-br from-blue-50/50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200/50 dark:border-blue-800/50 hover:border-blue-300 dark:hover:border-blue-700"
+                  className="bg-white border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 shadow-md"
                 />
                 
                 <NavigationCard
@@ -221,7 +234,7 @@ const StudentDashboard = () => {
                   title="Défi Quotidien"
                   description="Résolvez le défi du jour et gagnez des points."
                   buttonText="Commencer"
-                  className="professional-card bg-gradient-to-br from-purple-50/50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200/50 dark:border-purple-800/50 hover:border-purple-300 dark:hover:border-purple-700"
+                  className="bg-white border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 shadow-md"
                 />
                 
                 <NavigationCard
@@ -230,7 +243,7 @@ const StudentDashboard = () => {
                   description="Vidéos gratuites des meilleurs YouTubeurs."
                   buttonText="Regarder"
                   onClick={() => navigate("/student/yt-dev-tutorials")}
-                  className="professional-card bg-gradient-to-br from-red-50/50 to-red-100/50 dark:from-red-900/20 dark:to-red-800/20 border-red-200/50 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700"
+                  className="bg-white border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 shadow-md"
                 />
                 
                 <NavigationCard
@@ -239,7 +252,7 @@ const StudentDashboard = () => {
                   description="Obtenez de l'aide pour vos questions."
                   buttonText="Demander à l'IA"
                   onClick={() => navigate("/student/ai-assistant")}
-                  className="professional-card bg-gradient-to-br from-green-50/50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20 border-green-200/50 dark:border-green-800/50 hover:border-green-300 dark:hover:border-green-700"
+                  className="bg-white border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 shadow-md"
                 />
               </div>
             </div>
@@ -249,36 +262,40 @@ const StudentDashboard = () => {
               {/* Left Column - 2/3 width */}
               <div className="xl:col-span-2 space-y-8">
                 {/* Activité Hebdomadaire */}
-                <Card className="professional-card">
+                <Card className="bg-white border-2 border-blue-200 shadow-md">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Activity className="h-5 w-5 text-primary" />
-                        <span className="text-xl font-semibold">Activité Hebdomadaire</span>
+                        <Activity className="h-5 w-5 text-blue-600" />
+                        <span className="text-xl font-semibold text-blue-700">Activité Hebdomadaire</span>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-blue-600 hover:bg-blue-50 bg-white border border-blue-200"
+                      >
                         Détails
                       </Button>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-between items-end h-40 bg-gradient-to-t from-muted/20 to-transparent rounded-lg p-4">
+                    <div className="flex justify-between items-end h-40 bg-blue-50 rounded-lg p-4">
                       {weeklyActivity.map((day, i) => (
                         <div key={i} className="flex flex-col items-center gap-2">
                           <div 
-                            className="w-8 bg-gradient-to-t from-primary to-accent rounded-t-md hover:shadow-lg transition-all duration-300"
+                            className="w-8 bg-blue-600 rounded-t-md hover:shadow-lg transition-all duration-300"
                             style={{ height: `${Math.max(day.hours * 15, 8)}px` }}
                           ></div>
-                          <span className="text-xs font-medium text-muted-foreground">{day.day}</span>
-                          <span className="text-xs text-primary font-semibold">{day.hours}h</span>
+                          <span className="text-xs font-medium text-blue-600">{day.day}</span>
+                          <span className="text-xs text-blue-700 font-semibold">{day.hours}h</span>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-6 flex justify-between items-center p-4 bg-muted/30 rounded-lg">
-                      <span className="text-sm text-muted-foreground">Total cette semaine:</span>
+                    <div className="mt-6 flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+                      <span className="text-sm text-blue-600">Total cette semaine:</span>
                       <div className="flex items-center gap-4">
-                        <span className="text-xl font-bold text-foreground">15.3 heures</span>
-                        <span className="text-sm text-green-600 dark:text-green-400 font-medium bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded">
+                        <span className="text-xl font-bold text-blue-800">15.3 heures</span>
+                        <span className="text-sm text-green-600 font-medium bg-green-100 px-2 py-1 rounded">
                           +23%
                         </span>
                       </div>
@@ -289,10 +306,8 @@ const StudentDashboard = () => {
                 {/* Cours Inscrits */}
                 <div>
                   <h2 className="text-2xl font-bold font-display mb-6 flex items-center gap-3">
-                    <Book className="h-6 w-6 text-primary" />
-                    <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      Vos Cours
-                    </span>
+                    <Book className="h-6 w-6 text-blue-600" />
+                    <span className="text-blue-700">Vos Cours</span>
                   </h2>
                   <CourseTabs courses={courses} loading={loading} />
                 </div>
@@ -301,40 +316,40 @@ const StudentDashboard = () => {
               {/* Right Column - 1/3 width */}
               <div className="space-y-6">
                 {/* Progression */}
-                <Card className="professional-card">
+                <Card className="bg-white border-2 border-blue-200 shadow-md">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Votre Progression
+                      <TrendingUp className="h-5 w-5 text-blue-600" />
+                      <span className="text-blue-700">Votre Progression</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span className="font-medium">Complétion des cours</span>
-                          <span className="font-bold text-primary">65%</span>
+                          <span className="font-medium text-blue-700">Complétion des cours</span>
+                          <span className="font-bold text-blue-800">65%</span>
                         </div>
-                        <Progress value={65} className="h-3 bg-muted" />
+                        <Progress value={65} className="h-3 bg-blue-100" />
                       </div>
                       <div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span className="font-medium">Défis codage</span>
-                          <span className="font-bold text-accent">42%</span>
+                          <span className="font-medium text-blue-700">Défis codage</span>
+                          <span className="font-bold text-blue-800">42%</span>
                         </div>
-                        <Progress value={42} className="h-3 bg-muted" />
+                        <Progress value={42} className="h-3 bg-blue-100" />
                       </div>
                       <div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span className="font-medium">Points gagnés</span>
-                          <span className="font-bold text-yellow-600">2,450</span>
+                          <span className="font-medium text-blue-700">Points gagnés</span>
+                          <span className="font-bold text-blue-800">2,450</span>
                         </div>
-                        <Progress value={70} className="h-3 bg-muted" />
+                        <Progress value={70} className="h-3 bg-blue-100" />
                       </div>
                     </div>
                     <Button 
                       variant="outline" 
-                      className="w-full border-primary/30 text-primary hover:bg-primary/10"
+                      className="w-full border-blue-500 text-blue-700 hover:bg-blue-50 bg-white"
                       onClick={() => navigate("/student/progress")}
                     >
                       Voir statistiques détaillées
@@ -343,29 +358,29 @@ const StudentDashboard = () => {
                 </Card>
 
                 {/* Réussites Récentes */}
-                <Card className="professional-card">
+                <Card className="bg-white border-2 border-blue-200 shadow-md">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-yellow-500" />
-                      Réussites Récentes
+                      <Trophy className="h-5 w-5 text-blue-600" />
+                      <span className="text-blue-700">Réussites Récentes</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {recentAchievements.map((achievement, i) => (
-                      <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                        <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/30 dark:to-yellow-800/30 p-2 rounded-lg">
-                          <achievement.icon className={`h-4 w-4 ${achievement.color}`} />
+                      <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                        <div className="bg-blue-100 p-2 rounded-lg">
+                          <achievement.icon className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-foreground">{achievement.title}</h4>
-                          <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                          <h4 className="font-semibold text-blue-800">{achievement.title}</h4>
+                          <p className="text-sm text-blue-600">{achievement.description}</p>
                         </div>
                       </div>
                     ))}
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full border-yellow-500/30 text-yellow-600 hover:bg-yellow-500/10"
+                      className="w-full border-blue-500 text-blue-700 hover:bg-blue-50 bg-white"
                       onClick={() => navigate("/student/achievements")}
                     >
                       Voir toutes les réussites
@@ -380,17 +395,17 @@ const StudentDashboard = () => {
           </TabsContent>
 
           <TabsContent value="progress" className="mt-6">
-            <Card className="professional-card">
+            <Card className="bg-white border-2 border-blue-200 shadow-md">
               <CardContent className="pt-6">
                 <div className="text-center py-8">
-                  <TrendingUp className="h-16 w-16 text-primary mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold font-display mb-4">Progression Détaillée</h2>
-                  <p className="text-muted-foreground mb-6">
+                  <TrendingUp className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold font-display mb-4 text-blue-700">Progression Détaillée</h2>
+                  <p className="text-blue-600 mb-6">
                     Vos statistiques détaillées de progression seront affichées ici.
                   </p>
                   <Button 
                     onClick={() => navigate("/student/progress")}
-                    className="robot-button"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
                   >
                     Voir le rapport complet
                   </Button>
@@ -400,17 +415,17 @@ const StudentDashboard = () => {
           </TabsContent>
 
           <TabsContent value="achievements" className="mt-6">
-            <Card className="professional-card">
+            <Card className="bg-white border-2 border-blue-200 shadow-md">
               <CardContent className="pt-6">
                 <div className="text-center py-8">
-                  <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold font-display mb-4">Vos Réussites</h2>
-                  <p className="text-muted-foreground mb-6">
+                  <Trophy className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold font-display mb-4 text-blue-700">Vos Réussites</h2>
+                  <p className="text-blue-600 mb-6">
                     Vos badges et récompenses seront affichés ici.
                   </p>
                   <Button 
                     onClick={() => navigate("/student/achievements")}
-                    className="robot-button"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
                   >
                     Voir toutes les réussites
                   </Button>
