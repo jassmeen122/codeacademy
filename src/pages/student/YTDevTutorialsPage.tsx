@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -41,12 +40,12 @@ const YTDevTutorialsPage = () => {
     navigate(`/student/language-summary/${languageId}`);
   };
 
-  const getLanguageIcon = (languageId: string) => {
+  function getLanguageIcon(languageId: string) {
     switch (languageId) {
       case 'python':
         return <Badge className="bg-blue-100 text-blue-800 ml-1">Python</Badge>;
       case 'javascript':
-        return <Badge className="bg-yellow-100 text-yellow-800 ml-1">JavaScript</Badge>;
+        return <Badge className="bg-green-100 text-green-800 ml-1">JavaScript</Badge>;
       case 'java':
         return <Badge className="bg-orange-100 text-orange-800 ml-1">Java</Badge>;
       case 'cpp':
@@ -60,14 +59,14 @@ const YTDevTutorialsPage = () => {
       default:
         return null;
     }
-  };
+  }
 
-  const getLanguageBgClass = (languageId: string) => {
+  function getLanguageBgClass(languageId: string) {
     switch (languageId) {
       case 'python':
         return 'from-blue-50 to-blue-100 border-blue-200';
       case 'javascript':
-        return 'from-yellow-50 to-yellow-100 border-yellow-200';
+        return 'from-green-50 to-green-100 border-green-200';
       case 'java':
         return 'from-orange-50 to-orange-100 border-orange-200';
       case 'cpp':
@@ -81,9 +80,9 @@ const YTDevTutorialsPage = () => {
       default:
         return 'from-gray-50 to-gray-100 border-gray-200';
     }
-  };
+  }
 
-  const getLanguageImageUrl = (languageId: string) => {
+  function getLanguageImageUrl(languageId: string) {
     switch (languageId) {
       case 'python':
         return 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg';
@@ -102,7 +101,7 @@ const YTDevTutorialsPage = () => {
       default:
         return 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/devicon/devicon-original.svg';
     }
-  };
+  }
 
   const filteredLanguages = Object.keys(languageVideoMap).filter(languageId => {
     const languageName = languages.find(l => l.id === languageId)?.name || languageId;
@@ -201,7 +200,7 @@ const YTDevTutorialsPage = () => {
                                   <Badge className="bg-green-100 text-green-800 ml-2">Populaire</Badge>
                                 )}
                                 {languageId === 'javascript' && (
-                                  <Badge className="bg-yellow-100 text-yellow-800 ml-2">Tendance</Badge>
+                                  <Badge className="bg-green-100 text-green-800 ml-2">Tendance</Badge>
                                 )}
                               </CardTitle>
                               <div className="text-xs text-slate-500 mt-1 flex gap-1 flex-wrap">
