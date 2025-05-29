@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UserAvatar } from "@/components/UserAvatar";
 import { UserProfile } from "@/hooks/useAuthState";
-import { User, Youtube, Settings, LogOut, ChevronRight } from "lucide-react";
+import { User, Youtube, Settings, LogOut, ChevronRight, BookOpen, GraduationCap } from "lucide-react";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -31,13 +31,19 @@ export const MobileMenu = ({
       <div className="px-4 py-6 space-y-6">
         {/* Profil utilisateur */}
         {!loading && session && user && (
-          <div className="flex items-center gap-4 p-4 bg-card/50 rounded-xl border border-border/30">
-            <UserAvatar user={user} size="md" />
-            <div className="flex-1">
-              <p className="font-semibold text-foreground">{user?.full_name || 'Utilisateur'}</p>
-              <p className="text-sm text-muted-foreground capitalize">{user?.role || 'Utilisateur'}</p>
+          <div className="education-card p-4">
+            <div className="flex items-center gap-4">
+              <UserAvatar user={user} size="md" />
+              <div className="flex-1">
+                <p className="font-semibold text-foreground">{user?.full_name || 'Utilisateur'}</p>
+                <p className="text-sm text-muted-foreground capitalize">
+                  {user?.role === 'student' ? 'Étudiant' : 
+                   user?.role === 'teacher' ? 'Enseignant' : 
+                   user?.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </div>
         )}
         
@@ -45,21 +51,31 @@ export const MobileMenu = ({
         <div className="space-y-3">
           <Link
             to="/"
-            className="flex items-center gap-3 p-3 rounded-lg text-foreground hover:bg-accent/50 transition-all duration-300 group"
+            className="flex items-center gap-3 p-3 rounded-lg text-foreground hover:bg-primary/10 transition-all duration-300 group"
           >
-            <div className="w-2 h-2 rounded-full bg-primary group-hover:scale-150 transition-transform duration-300"></div>
+            <GraduationCap className="h-5 w-5 text-primary group-hover:scale-110 transition-transform duration-200" />
             <span className="font-medium">Accueil</span>
           </Link>
           
           {/* Tutoriels pour les étudiants */}
           {!loading && session && userRole === 'student' && (
-            <Link
-              to="/student/yt-dev-tutorials"
-              className="flex items-center gap-3 p-3 rounded-lg text-red-500 hover:bg-red-500/10 transition-all duration-300 group"
-            >
-              <Youtube className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="font-medium">Tutoriels Dev</span>
-            </Link>
+            <>
+              <Link
+                to="/student/yt-dev-tutorials"
+                className="flex items-center gap-3 p-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-all duration-300 group"
+              >
+                <Youtube className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+                <span className="font-medium">Tutoriels Dev</span>
+              </Link>
+              
+              <Link
+                to="/student/courses"
+                className="flex items-center gap-3 p-3 rounded-lg text-accent hover:bg-accent/10 transition-all duration-300 group"
+              >
+                <BookOpen className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+                <span className="font-medium">Mes Cours</span>
+              </Link>
+            </>
           )}
         </div>
         
@@ -68,24 +84,23 @@ export const MobileMenu = ({
           {/* Portal Access */}
           {!loading && session && (userRole === 'teacher' || userRole === 'admin') && (
             <Button
-              variant="outline"
-              className="w-full justify-start gap-3 border-accent/30 text-accent hover:bg-accent/10 hover:border-accent/50 transition-all duration-300"
+              className="w-full justify-start gap-3 education-button-secondary"
               onClick={onPortalClick}
             >
               <Settings className="h-5 w-5" />
-              {userRole === 'admin' ? 'Admin Portal' : 'Teacher Portal'}
+              {userRole === 'admin' ? 'Administration' : 'Espace Enseignant'}
             </Button>
           )}
           
           {/* Mon Profil */}
           {!loading && session && (
             <Button
+              className="w-full justify-start gap-3 border border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-300"
               variant="outline"
-              className="w-full justify-start gap-3 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-300"
               onClick={onPortalClick}
             >
               <User className="h-5 w-5" />
-              Mon Profil
+              Mon Tableau de Bord
             </Button>
           )}
           
@@ -95,7 +110,7 @@ export const MobileMenu = ({
               className={`w-full justify-start gap-3 font-medium transition-all duration-300 ${
                 session 
                   ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground' 
-                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                  : 'education-button'
               }`}
               onClick={onAuth}
             >

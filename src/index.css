@@ -1,63 +1,36 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
  
 @layer base {
   :root {
-    /* Mode clair professionnel */
-    --background: 0 0% 98%; /* #f9fafb - Blanc cassé */
-    --foreground: 220 26% 7%; /* #111827 - Gris très foncé */
-    --card: 0 0% 100%; /* Blanc pur pour les cartes */
-    --card-foreground: 220 26% 7%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 26% 7%;
-    --primary: 213 94% 68%; /* #3b82f6 - Bleu doux */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 220 14% 96%; /* #e5e7eb - Gris clair */
-    --secondary-foreground: 220 9% 46%; /* #6b7280 - Gris moyen */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 217 91% 60%; /* #2563eb - Bleu ciel accentué */
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 220 26% 96%;
-    --border: 220 13% 91%; /* Bordures douces */
-    --input: 220 14% 96%;
-    --ring: 213 94% 68%;
-    --radius: 0.75rem;
-    
-    /* Variables pour le toggle */
-    --toggle-bg: 220 13% 91%;
-    --toggle-handle: 0 0% 100%;
-    --toggle-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark {
-    /* Mode sombre professionnel */
-    --background: 220 26% 7%; /* #111827 - Gris très foncé/noir */
-    --foreground: 220 14% 95%; /* #f3f4f6 - Gris très clair */
-    --card: 220 26% 12%; /* #1f2937 - Gris anthracite */
+    /* Thème sombre permanent et éducatif */
+    --background: 220 26% 7%; /* #111827 - Fond sombre principal */
+    --foreground: 220 14% 95%; /* #f3f4f6 - Texte clair */
+    --card: 220 26% 12%; /* #1f2937 - Cartes sombres */
     --card-foreground: 220 14% 95%;
     --popover: 220 26% 12%;
     --popover-foreground: 220 14% 95%;
-    --primary: 213 94% 68%; /* #3b82f6 - Bleu électrique */
+    --primary: 59 100% 50%; /* #ffff00 - Jaune vif pour l'éducation */
     --primary-foreground: 220 26% 7%;
-    --secondary: 220 26% 12%;
-    --secondary-foreground: 220 9% 68%; /* #9ca3af - Gris doux */
-    --muted: 220 26% 12%;
+    --secondary: 217 91% 60%; /* #2563eb - Bleu éducatif */
+    --secondary-foreground: 220 14% 95%;
+    --muted: 220 26% 18%;
     --muted-foreground: 220 9% 68%;
-    --accent: 213 94% 76%; /* #60a5fa - Bleu clair */
+    --accent: 142 76% 36%; /* #10b981 - Vert accent */
     --accent-foreground: 220 26% 7%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 220 14% 95%;
     --border: 220 26% 18%;
     --input: 220 26% 12%;
-    --ring: 213 94% 68%;
+    --ring: 59 100% 50%;
+    --radius: 0.75rem;
     
-    /* Variables pour le toggle en mode sombre */
-    --toggle-bg: 220 26% 18%;
-    --toggle-handle: 220 14% 95%;
-    --toggle-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    /* Variables éducatives */
+    --success: 142 76% 36%; /* Vert succès */
+    --warning: 38 92% 50%; /* Orange avertissement */
+    --info: 213 94% 68%; /* Bleu information */
   }
 
   * {
@@ -69,11 +42,11 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     background-image: 
-      var(--tech-grid),
-      var(--circuit-pattern);
-    background-size: 50px 50px, 200px 200px;
-    background-position: 0 0, 0 0;
-    transition: background-color 0.3s ease;
+      radial-gradient(circle at 25% 25%, hsl(var(--primary) / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(var(--secondary) / 0.1) 0%, transparent 50%),
+      linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--card)) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
 
   html {
@@ -82,167 +55,132 @@
 }
 
 @layer utilities {
-  /* Toggle amélioré */
-  .enhanced-theme-toggle {
-    @apply relative w-14 h-7 rounded-full transition-all duration-300 ease-in-out;
-    background: hsl(var(--toggle-bg));
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .enhanced-theme-toggle:hover {
-    @apply scale-105;
-    box-shadow: 
-      inset 0 2px 4px rgba(0, 0, 0, 0.1),
-      0 0 0 2px hsl(var(--primary) / 0.2);
-  }
-
-  .enhanced-theme-toggle::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 24px;
-    height: 24px;
-    background: hsl(var(--toggle-handle));
-    border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--toggle-shadow);
-  }
-
-  .dark .enhanced-theme-toggle::before {
-    transform: translateX(26px);
-  }
-
-  /* Icônes du toggle avec animations fluides */
-  .theme-icon {
-    @apply absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out;
-  }
-
-  .theme-icon.sun {
-    @apply text-amber-500;
-    transform: rotate(0deg) scale(1);
-    opacity: 1;
-  }
-
-  .dark .theme-icon.sun {
-    transform: rotate(180deg) scale(0);
-    opacity: 0;
-  }
-
-  .theme-icon.moon {
-    @apply text-slate-400;
-    transform: rotate(-180deg) scale(0);
-    opacity: 0;
-  }
-
-  .dark .theme-icon.moon {
-    @apply text-slate-300;
-    transform: rotate(0deg) scale(1);
-    opacity: 1;
-  }
-
-  /* Cards professionnelles */
-  .professional-card {
-    @apply bg-card border border-border rounded-lg shadow-tech backdrop-blur-sm;
+  /* Cards éducatives */
+  .education-card {
+    @apply bg-card border border-border rounded-xl shadow-lg backdrop-blur-sm;
     background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
   }
 
-  .professional-card::before {
+  .education-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
+    height: 3px;
+    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
   }
 
-  .professional-card:hover {
-    @apply shadow-card-hover border-primary/30;
+  .education-card:hover {
+    @apply shadow-2xl border-primary/30;
+    transform: translateY(-4px);
+    transition: all 0.3s ease;
+  }
+
+  /* Boutons éducatifs */
+  .education-button {
+    @apply relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-background font-semibold py-3 px-6 rounded-lg;
+    box-shadow: 0 4px 15px hsl(var(--primary) / 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .education-button:hover {
     transform: translateY(-2px);
-    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px hsl(var(--primary) / 0.4);
   }
 
-  /* Boutons avec nouvelles couleurs */
-  .robot-button {
-    @apply relative overflow-hidden bg-gradient-to-r from-primary to-accent text-primary-foreground font-medium py-3 px-6 rounded-lg;
-    box-shadow: 0 4px 15px hsl(var(--primary) / 0.2);
-    transition: all 0.3s ease;
+  .education-button-secondary {
+    @apply bg-secondary hover:bg-secondary/90 text-secondary-foreground border border-secondary/30;
   }
 
-  .robot-button:hover {
-    @apply shadow-robot;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px hsl(var(--primary) / 0.3);
+  .education-button-success {
+    @apply bg-green-600 hover:bg-green-700 text-white;
   }
 
-  .robot-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-  }
-
-  .robot-button:hover::before {
-    left: 100%;
-  }
-
-  /* Navigation tech avec nouvelles couleurs */
-  .tech-nav {
+  /* Navigation éducative */
+  .education-nav {
     @apply bg-background/95 border-b border-border backdrop-blur-md;
     box-shadow: 0 2px 20px hsl(var(--background) / 0.8);
     transition: all 0.3s ease;
   }
 
-  /* Sidebar professionnelle */
-  .professional-sidebar {
+  /* Sidebar éducative */
+  .education-sidebar {
     @apply bg-card/95 border-r border-border backdrop-blur-md;
-    background-image: var(--circuit-pattern);
+    background-image: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
     transition: all 0.3s ease;
   }
 
-  /* Effets de survol améliorés */
-  .tech-link {
+  /* Liens éducatifs */
+  .education-link {
     @apply relative text-foreground hover:text-primary transition-all duration-300;
   }
 
-  .tech-link::before {
+  .education-link::before {
     content: '';
     position: absolute;
     bottom: -2px;
     left: 0;
     width: 0;
     height: 2px;
-    background: hsl(var(--accent));
+    background: hsl(var(--primary));
     transition: width 0.3s ease;
   }
 
-  .tech-link:hover::before {
+  .education-link:hover::before {
     width: 100%;
   }
 
-  /* Input tech avec nouvelles couleurs */
-  .tech-input {
-    @apply bg-card border border-border rounded-lg px-4 py-3 font-mono;
+  /* Input éducatifs */
+  .education-input {
+    @apply bg-card border border-border rounded-lg px-4 py-3;
     box-shadow: inset 0 2px 4px hsl(var(--background) / 0.1);
     transition: all 0.3s ease;
   }
 
-  .tech-input:focus {
+  .education-input:focus {
     @apply border-primary ring-2 ring-primary/20;
     box-shadow: 
       inset 0 2px 4px hsl(var(--background) / 0.1),
       0 0 20px hsl(var(--primary) / 0.1);
   }
 
-  /* Scrollbar professionnelle avec nouvelles couleurs */
+  /* Progress bars éducatives */
+  .education-progress {
+    @apply bg-muted rounded-full overflow-hidden;
+    background: linear-gradient(90deg, hsl(var(--muted)), hsl(var(--card)));
+  }
+
+  .education-progress-fill {
+    @apply bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500;
+    box-shadow: 0 2px 4px hsl(var(--primary) / 0.3);
+  }
+
+  /* Badges éducatifs */
+  .education-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--secondary) / 0.2));
+    border: 1px solid hsl(var(--primary) / 0.3);
+    color: hsl(var(--primary));
+  }
+
+  .education-badge-success {
+    background: linear-gradient(135deg, hsl(var(--success) / 0.2), hsl(var(--accent) / 0.2));
+    border: 1px solid hsl(var(--success) / 0.3);
+    color: hsl(var(--success));
+  }
+
+  /* Notifications éducatives */
+  .education-notification {
+    @apply bg-card border border-border rounded-lg p-4 shadow-lg;
+    background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)));
+    border-left: 4px solid hsl(var(--primary));
+  }
+
+  /* Scrollbar éducative */
   ::-webkit-scrollbar {
     width: 8px;
   }
@@ -252,61 +190,43 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--accent) / 0.6));
+    background: linear-gradient(180deg, hsl(var(--primary) / 0.6), hsl(var(--secondary) / 0.6));
     border-radius: 4px;
     transition: background 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--accent)));
+    background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--secondary)));
   }
 
-  /* Loading spinner avec nouvelles couleurs */
-  .tech-spinner {
-    @apply border-2 border-muted border-t-primary rounded-full animate-spin;
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
+  /* Animations éducatives */
+  .education-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.1),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Tables éducatives */
+  .education-table {
+    @apply bg-card border border-border rounded-lg overflow-hidden;
+  }
+
+  .education-table th {
+    @apply bg-muted text-muted-foreground font-semibold;
+  }
+
+  .education-table tr:hover {
+    @apply bg-primary/5;
   }
 }
 
-/* Animations pour les effets fluides */
-@keyframes smooth-toggle {
-  0% {
-    transform: translateX(0) rotate(0deg);
-  }
-  50% {
-    transform: scale(0.8) rotate(180deg);
-  }
-  100% {
-    transform: translateX(26px) rotate(360deg);
-  }
-}
-
-@keyframes theme-switch {
-  0% {
-    opacity: 0;
-    transform: scale(0.5) rotate(-90deg);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(0.8) rotate(0deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-/* Animations pour les effets robotiques */
-@keyframes circuit-scan {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100vw);
-  }
-}
-
-@keyframes tech-shimmer {
+/* Animations pour les effets éducatifs */
+@keyframes shimmer {
   0% {
     background-position: -200% 0;
   }
@@ -315,30 +235,42 @@
   }
 }
 
-.circuit-animation {
-  position: relative;
-  overflow: hidden;
+@keyframes pulse-education {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
-.circuit-animation::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 2px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
-  animation: circuit-scan 3s linear infinite;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
-/* Effet shimmer pour les cards */
-.shimmer-effect {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    hsl(var(--primary) / 0.1),
-    transparent
-  );
-  background-size: 200% 100%;
-  animation: tech-shimmer 2s infinite;
+.pulse-education {
+  animation: pulse-education 2s infinite;
 }
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Effets de focus pour l'accessibilité éducative */
+*:focus-visible {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+}
+
+/* Amélioration des contrastes pour l'éducation */
+.high-contrast {
+  @apply text-foreground bg-background;
+  filter: contrast(1.2);
+}
+

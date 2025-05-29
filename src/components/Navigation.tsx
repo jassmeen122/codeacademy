@@ -1,10 +1,9 @@
 
 import { useState } from "react";
-import { Menu, X, Moon, Sun, User, Youtube, ChevronDown } from "lucide-react";
+import { Menu, X, User, Youtube, ChevronDown, BookOpen, GraduationCap } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
 import { NotificationBell } from "./navigation/NotificationBell";
 import { MobileMenu } from "./navigation/MobileMenu";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -12,14 +11,8 @@ import { UserAvatar } from "./UserAvatar";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
   const { session, user, loading, handleSignOut } = useAuthState();
-
-  useState(() => {
-    setMounted(true);
-  });
 
   const handleAuth = () => {
     if (session) {
@@ -51,38 +44,19 @@ const Navigation = () => {
     }
   };
 
-  if (!mounted) {
-    return null;
-  }
-
   return (
-    <nav className="fixed top-0 z-50 w-full tech-nav">
+    <nav className="fixed top-0 z-50 w-full education-nav">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo et Brand */}
           <div className="flex-shrink-0 flex items-center gap-6">
             <Link 
               to="/" 
-              className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+              className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200 flex items-center gap-2"
             >
+              <GraduationCap className="h-8 w-8 text-primary" />
               CodeAcademy
             </Link>
-            
-            {/* Theme Toggle Amélioré */}
-            <div className="relative">
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="enhanced-theme-toggle focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
-                aria-label="Changer le thème"
-              >
-                <div className="theme-icon sun">
-                  <Sun className="h-4 w-4" />
-                </div>
-                <div className="theme-icon moon">
-                  <Moon className="h-4 w-4" />
-                </div>
-              </button>
-            </div>
           </div>
 
           {/* Navigation Desktop */}
@@ -92,11 +66,20 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-500/10 transition-all duration-300 group"
+                  className="gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 group"
                   onClick={() => navigate('/student/yt-dev-tutorials')}
                 >
                   <Youtube className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
                   <span className="font-medium">Tutoriels Dev</span>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  className="gap-2 text-accent hover:text-accent/80 hover:bg-accent/10 transition-all duration-300 group"
+                  onClick={() => navigate('/student/courses')}
+                >
+                  <BookOpen className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="font-medium">Mes Cours</span>
                 </Button>
                 
                 <div className="w-px h-6 bg-border/50"></div>
@@ -108,22 +91,21 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-primary hover:text-accent hover:bg-primary/10 transition-all duration-300 group tech-link"
+                  className="gap-2 text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-300 group education-link"
                   onClick={goToUserDashboard}
                 >
                   <User className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="font-medium">Mon Profil</span>
+                  <span className="font-medium">Mon Tableau de Bord</span>
                 </Button>
 
                 {/* Portal Access pour les enseignants/admins */}
                 {user && (user.role === 'teacher' || user.role === 'admin') && (
                   <Button
-                    variant="outline"
-                    className="border-accent/30 text-accent hover:bg-accent/10 hover:border-accent/50 transition-all duration-300 robot-button"
+                    className="education-button-secondary"
                     onClick={() => navigate(user.role === 'admin' ? '/admin' : '/teacher')}
                   >
                     <span className="font-medium">
-                      {user.role === 'admin' ? 'Admin Portal' : 'Teacher Portal'}
+                      {user.role === 'admin' ? 'Administration' : 'Espace Enseignant'}
                     </span>
                   </Button>
                 )}
@@ -140,7 +122,9 @@ const Navigation = () => {
                     {user?.full_name || 'Utilisateur'}
                   </p>
                   <p className="text-xs text-muted-foreground capitalize mt-1">
-                    {user?.role || 'Chargement...'}
+                    {user?.role === 'student' ? 'Étudiant' : 
+                     user?.role === 'teacher' ? 'Enseignant' : 
+                     user?.role === 'admin' ? 'Administrateur' : 'Utilisateur'}
                   </p>
                 </div>
                 
@@ -148,7 +132,7 @@ const Navigation = () => {
                   <UserAvatar 
                     user={user} 
                     size="md" 
-                    className="ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 hover:scale-105" 
+                    className="ring-2 ring-transparent group-hover:ring-primary/50 transition-all duration-300 hover:scale-105" 
                   />
                 </div>
                 
@@ -159,9 +143,8 @@ const Navigation = () => {
             {/* Action Button */}
             {!loading && (
               <Button
-                variant={session ? "destructive" : "default"}
+                className={session ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "education-button"}
                 onClick={handleAuth}
-                className="font-medium px-6 hover:scale-105 transition-all duration-200 shadow-sm robot-button"
               >
                 {session ? "Se Déconnecter" : "Se Connecter"}
               </Button>
@@ -176,7 +159,7 @@ const Navigation = () => {
             <Button
               variant="ghost"
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-accent/10 transition-all duration-300"
+              className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-primary/10 transition-all duration-300"
             >
               <div className="relative w-6 h-6">
                 <Menu className={`h-6 w-6 absolute inset-0 transition-all duration-300 ${isOpen ? 'rotate-180 opacity-0' : 'rotate-0 opacity-100'}`} />
