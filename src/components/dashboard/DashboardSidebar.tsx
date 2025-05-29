@@ -4,9 +4,9 @@ import {
   GraduationCap,
   School,
   UserRound,
-  Terminal,
-  Code,
-  Cpu
+  Settings,
+  BookOpen,
+  Users
 } from "lucide-react";
 import {
   Sidebar,
@@ -43,9 +43,9 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
       case 'admin':
         return Database;
       case 'teacher':
-        return Code;
+        return BookOpen;
       case 'student':
-        return Terminal;
+        return GraduationCap;
       default:
         return UserRound;
     }
@@ -54,37 +54,54 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
   const getRoleTitle = () => {
     switch (userRole) {
       case 'admin':
-        return 'Admin Portal';
+        return 'Administration';
       case 'teacher':
-        return 'Teacher Portal';
+        return 'Espace Professeur';
       case 'student':
-        return 'Student Portal';
+        return 'Espace Étudiant';
       default:
-        return 'Loading...';
+        return 'Chargement...';
+    }
+  };
+
+  const getRoleSubtitle = () => {
+    switch (userRole) {
+      case 'admin':
+        return 'Gestion de la plateforme';
+      case 'teacher':
+        return 'Création et gestion des cours';
+      case 'student':
+        return 'Apprentissage et progression';
+      default:
+        return 'Connexion en cours...';
     }
   };
 
   const RoleIcon = getRoleIcon();
 
   return (
-    <Sidebar className="border-r border-gray-700 bg-gray-900">
-      <SidebarHeader className="border-b border-gray-700 p-4">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-gray-800 rounded-md">
-            <RoleIcon className="h-6 w-6 text-primary" />
+    <Sidebar className="border-r border-gray-200 bg-white">
+      <SidebarHeader className="border-b border-gray-200 p-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-blue-500 rounded-lg">
+            <RoleIcon className="h-6 w-6 text-white" />
           </div>
           <div>
-            <span className="font-mono font-semibold text-lg">{getRoleTitle()}</span>
-            <div className="text-xs text-gray-500 font-mono">{`> CodeAcademy`}</div>
+            <h2 className="font-semibold text-lg text-black">{getRoleTitle()}</h2>
+            <p className="text-sm text-gray-600">{getRoleSubtitle()}</p>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="bg-gray-900">
+      
+      <SidebarContent className="bg-white">
         <SidebarMenu menuItems={getMenuItems()} />
       </SidebarContent>
-      <SidebarFooter className="border-t border-gray-700 p-4 bg-gray-800">
-        <div className="text-xs text-gray-500 font-mono mb-2">{`// Toggle sidebar`}</div>
-        <SidebarTrigger />
+      
+      <SidebarFooter className="border-t border-gray-200 p-4 bg-white">
+        <div className="text-xs text-gray-500 mb-2">
+          Interface de contrôle
+        </div>
+        <SidebarTrigger className="w-full justify-center bg-black text-white hover:bg-gray-800" />
       </SidebarFooter>
     </Sidebar>
   );
