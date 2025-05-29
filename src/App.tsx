@@ -30,6 +30,7 @@ const MessagesPage = React.lazy(() => import('./pages/student/MessagesPage'));
 const ProfilePage = React.lazy(() => import('./pages/student/ProfilePage'));
 const SettingsPage = React.lazy(() => import('./pages/student/SettingsPage'));
 const ModuleContentPage = React.lazy(() => import('./pages/student/ModuleContentPage'));
+const CourseContentPage = React.lazy(() => import('./pages/student/CourseContentPage'));
 
 // Teacher pages
 const TeacherCoursesPage = React.lazy(() => import('./pages/teacher/CoursesPage'));
@@ -77,6 +78,7 @@ function App() {
                 {/* Student Routes */}
                 <Route path="/student" element={<StudentDashboard />} />
                 <Route path="/student/courses" element={<CoursesPage />} />
+                <Route path="/student/courses/:courseId/content" element={<CourseContentPage />} />
                 <Route path="/student/progress-simple" element={<SimpleProgressPage />} />
                 <Route path="/student/exercises" element={<ExercisesPage />} />
                 <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
@@ -99,7 +101,7 @@ function App() {
                 <Route path="/teacher" element={<TeacherDashboard />} />
                 <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
                 <Route path="/teacher/courses/create" element={<CreateCoursePage />} />
-                <Route path="/teacher/courses/:id/edit" element={<EditCoursePage />} />
+                <Route path="/teacher/courses/:courseId/edit" element={<EditCoursePage />} />
                 <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
                 <Route path="/teacher/exercises/create" element={<CreateExercisePage />} />
                 <Route path="/teacher/private-messages" element={<TeacherPrivateMessagesPage />} />
