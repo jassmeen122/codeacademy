@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -49,6 +48,8 @@ const PostManagementPage = React.lazy(() => import('./pages/admin/PostManagement
 const InternshipManagementPage = React.lazy(() => import('./pages/admin/InternshipManagementPage'));
 const AdminPrivateMessagesPage = React.lazy(() => import('./pages/admin/PrivateMessagesPage'));
 const AdminSettingsPage = React.lazy(() => import('./pages/admin/SettingsPage'));
+
+const ExerciseContentPage = React.lazy(() => import('./pages/teacher/ExerciseContentPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,6 +105,7 @@ function App() {
                 <Route path="/teacher/courses/:courseId/edit" element={<EditCoursePage />} />
                 <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
                 <Route path="/teacher/exercises/create" element={<CreateExercisePage />} />
+                <Route path="/teacher/exercises/content" element={<ExerciseContentPage />} />
                 <Route path="/teacher/private-messages" element={<TeacherPrivateMessagesPage />} />
                 <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
                 

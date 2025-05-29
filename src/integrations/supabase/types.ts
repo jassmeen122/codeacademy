@@ -196,6 +196,50 @@ export type Database = {
         }
         Relationships: []
       }
+      course_content: {
+        Row: {
+          content: string | null
+          content_type: string
+          course_id: string
+          created_at: string
+          id: string
+          is_published: boolean | null
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          content_type?: string
+          course_id: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          content_type?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_content_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_lessons: {
         Row: {
           content: string | null
@@ -485,6 +529,57 @@ export type Database = {
           message_type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      exercise_content: {
+        Row: {
+          content: string | null
+          created_at: string
+          description: string | null
+          difficulty: string
+          exercise_type: string
+          expected_output: string | null
+          hints: string[] | null
+          id: string
+          is_published: boolean | null
+          language: string | null
+          starter_code: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          exercise_type?: string
+          expected_output?: string | null
+          hints?: string[] | null
+          id?: string
+          is_published?: boolean | null
+          language?: string | null
+          starter_code?: string | null
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          exercise_type?: string
+          expected_output?: string | null
+          hints?: string[] | null
+          id?: string
+          is_published?: boolean | null
+          language?: string | null
+          starter_code?: string | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
