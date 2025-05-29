@@ -1,116 +1,386 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  /* Palette simplifiée : Bleu et Blanc */
-  --primary: 59 130 246; /* Bleu */
-  --primary-foreground: 255 255 255; /* Blanc */
-  --secondary: 248 250 252; /* Blanc cassé */
-  --secondary-foreground: 0 0 0; /* Noir */
-  --accent: 59 130 246; /* Bleu */
-  --accent-foreground: 255 255 255; /* Blanc */
-  --destructive: 239 68 68;
-  --destructive-foreground: 255 255 255;
-  --muted: 248 250 252; /* Blanc cassé */
-  --muted-foreground: 64 64 64; /* Gris foncé */
-  --card: 255 255 255; /* Blanc */
-  --card-foreground: 0 0 0; /* Noir */
-  --border: 229 231 235; /* Gris clair */
-  --input: 229 231 235;
-  --ring: 59 130 246; /* Bleu */
-  --radius: 0.5rem;
-  --background: 255 255 255; /* Blanc */
-  --foreground: 0 0 0; /* Noir */
-  --success: 34 197 94; /* Vert au lieu de jaune */
-  --success-foreground: 255 255 255; /* Blanc */
-}
-
-@media (prefers-color-scheme: dark) {
+ 
+@layer base {
   :root {
-    --primary: 59 130 246;
-    --primary-foreground: 255 255 255;
-    --secondary: 248 250 252;
-    --secondary-foreground: 0 0 0;
-    --accent: 59 130 246;
-    --accent-foreground: 255 255 255;
-    --destructive: 220 38 38;
-    --destructive-foreground: 255 255 255;
-    --muted: 248 250 252;
-    --muted-foreground: 64 64 64;
-    --card: 255 255 255;
-    --card-foreground: 0 0 0;
-    --border: 229 231 235;
-    --input: 229 231 235;
-    --ring: 59 130 246;
-    --background: 255 255 255;
-    --foreground: 0 0 0;
-    --success: 34 197 94; /* Vert au lieu de jaune */
-    --success-foreground: 255 255 255;
+    /* Dark theme futuriste par défaut */
+    --background: 220 13% 9%;
+    --foreground: 210 40% 95%;
+    --card: 220 13% 11%;
+    --card-foreground: 210 40% 95%;
+    --popover: 220 13% 11%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 220 13% 9%;
+    --secondary: 220 13% 14%;
+    --secondary-foreground: 210 40% 95%;
+    --muted: 220 13% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 220 13% 9%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
+    
+    /* Couleurs néon custom */
+    --neon-blue: 217 91% 60%;
+    --neon-green: 142 76% 36%;
+    --neon-purple: 271 81% 56%;
+    --neon-cyan: 180 100% 50%;
+    --terminal-green: 120 100% 50%;
+    --matrix-green: 120 60% 50%;
+  }
+
+  .dark {
+    /* Même palette en mode dark explicite */
+    --background: 220 13% 9%;
+    --foreground: 210 40% 95%;
+    --card: 220 13% 11%;
+    --card-foreground: 210 40% 95%;
+    --popover: 220 13% 11%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 220 13% 9%;
+    --secondary: 220 13% 14%;
+    --secondary-foreground: 210 40% 95%;
+    --muted: 220 13% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 220 13% 9%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 217 91% 60%;
+  }
+
+  * {
+    @apply border-border selection:bg-primary/20 selection:text-primary;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsl(var(--neon-blue) / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, hsl(var(--neon-green) / 0.1) 0%, transparent 50%);
+  }
+
+  html {
+    @apply scroll-smooth;
   }
 }
 
-* {
-  border-color: hsl(var(--border));
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Cartes avec effet glass et néon */
+  .glass-card {
+    @apply backdrop-blur-lg bg-card/90 border border-border/50 shadow-2xl hover:shadow-primary/20 transition-all duration-300;
+    background-image: linear-gradient(135deg, hsl(var(--card) / 0.9) 0%, hsl(var(--card) / 0.7) 100%);
+  }
+
+  .glass-card:hover {
+    box-shadow: 
+      0 0 20px hsl(var(--primary) / 0.3),
+      0 8px 32px hsl(var(--background) / 0.8);
+    border-color: hsl(var(--primary) / 0.5);
+  }
+
+  .neon-card {
+    @apply glass-card relative overflow-hidden;
+  }
+
+  .neon-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
+    transition: left 0.8s;
+  }
+
+  .neon-card:hover::before {
+    left: 100%;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-br from-primary via-accent to-primary bg-clip-text text-transparent;
+  }
+
+  .text-neon {
+    @apply text-primary;
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
+
+  .text-matrix {
+    @apply text-green-400;
+    text-shadow: 0 0 8px hsl(120 100% 50% / 0.6);
+  }
+
+  /* Code education theme utilities améliorées */
+  .terminal-text {
+    @apply font-mono text-terminal-green;
+    text-shadow: 0 0 5px hsl(120 100% 50% / 0.4);
+  }
+  
+  .code-block {
+    @apply bg-card/80 text-foreground p-4 rounded-lg font-mono text-sm overflow-x-auto border border-primary/20 shadow-lg backdrop-blur-sm;
+    background-image: linear-gradient(135deg, hsl(var(--card) / 0.8) 0%, hsl(var(--muted) / 0.6) 100%);
+  }
+  
+  .comment-text {
+    @apply text-muted-foreground font-mono opacity-70;
+  }
+  
+  .function-text {
+    @apply text-blue-400 font-mono;
+    text-shadow: 0 0 5px hsl(217 91% 60% / 0.4);
+  }
+  
+  .keyword-text {
+    @apply text-purple-400 font-mono;
+    text-shadow: 0 0 5px hsl(271 81% 56% / 0.4);
+  }
+  
+  .string-text {
+    @apply text-green-400 font-mono;
+    text-shadow: 0 0 5px hsl(142 76% 36% / 0.4);
+  }
+  
+  .variable-text {
+    @apply text-orange-400 font-mono;
+    text-shadow: 0 0 5px hsl(25 95% 53% / 0.4);
+  }
+  
+  .edu-card {
+    @apply neon-card hover:border-primary/50 hover:shadow-primary/10 transition-all duration-300;
+  }
+
+  /* Effets néon pour les boutons */
+  .btn-neon {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+
+  .btn-neon:hover {
+    box-shadow: 
+      0 0 20px hsl(var(--primary) / 0.5),
+      inset 0 0 20px hsl(var(--primary) / 0.1);
+  }
+
+  .btn-neon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-neon:hover::before {
+    left: 100%;
+  }
+
+  /* Animations futuristes */
+  .cyber-border {
+    position: relative;
+  }
+
+  .cyber-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
+    border-radius: inherit;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    animation: cyber-glow 2s linear infinite;
+  }
+
+  @keyframes cyber-glow {
+    0%, 100% {
+      background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
+    }
+    50% {
+      background: linear-gradient(45deg, hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
+    }
+  }
+
+  /* Effet de scan futuriste */
+  .scan-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-effect::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(var(--neon-cyan)), transparent);
+    animation: scan 3s linear infinite;
+  }
+
+  @keyframes scan {
+    0% {
+      top: -100%;
+    }
+    100% {
+      top: 100%;
+    }
+  }
 }
 
-body {
-  background: white;
-  color: black;
-  font-family: "Inter", system-ui, sans-serif;
-  line-height: 1.6;
-  min-height: 100vh;
+/* Animation pour l'assistant IA qui est en train d'écrire */
+.typing-animation {
+  display: flex;
+  align-items: center;
+  column-gap: 6px;
 }
 
-/* Styles simplifiés */
-.text-primary {
-  color: rgb(59 130 246);
+.typing-animation span {
+  height: 10px;
+  width: 10px;
+  display: block;
+  border-radius: 50%;
+  background-color: hsl(var(--primary));
+  animation: typing 1s ease-in-out infinite;
+  box-shadow: 0 0 5px hsl(var(--primary) / 0.5);
 }
 
-.bg-primary {
-  background-color: rgb(59 130 246);
+.typing-animation span:nth-child(1) {
+  animation-delay: 0s;
 }
 
-.border-primary {
-  border-color: rgb(59 130 246);
+.typing-animation span:nth-child(2) {
+  animation-delay: 0.2s;
 }
 
-/* Couleurs vertes pour remplacer le jaune */
-.text-green-500 {
-  color: rgb(34 197 94);
+.typing-animation span:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
-.bg-green-500 {
-  background-color: rgb(34 197 94);
+@keyframes typing {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+    box-shadow: 0 0 10px hsl(var(--primary));
+  }
 }
 
-.border-green-500 {
-  border-color: rgb(34 197 94);
+/* Animation pour les éléments qui apparaissent et disparaissent */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out forwards;
 }
 
-.bg-green-100 {
-  background-color: rgb(220 252 231);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.text-green-600 {
-  color: rgb(22 163 74);
+/* Terminal typing effect for educational theme */
+.terminal-cursor {
+  display: inline-block;
+  width: 10px;
+  height: 1.2em;
+  background-color: hsl(var(--terminal-green));
+  margin-left: 2px;
+  animation: cursor-blink 1.2s step-end infinite;
+  box-shadow: 0 0 5px hsl(var(--terminal-green));
 }
 
-/* Boutons noirs */
-.btn-black {
-  background-color: black;
-  color: white;
-  border: 2px solid black;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
+@keyframes cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
-.btn-black:hover {
-  background-color: white;
-  color: black;
+/* Soft highlight animation for active elements */
+.highlight-animation {
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight-animation::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0));
+  animation: highlight-fall 2s linear infinite;
+}
+
+@keyframes highlight-fall {
+  to {
+    top: 100%;
+  }
+}
+
+/* Effets de particules matricielles */
+.matrix-bg {
+  background-image: 
+    radial-gradient(circle at 20% 50%, hsl(var(--matrix-green) / 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, hsl(var(--neon-blue) / 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, hsl(var(--neon-purple) / 0.05) 0%, transparent 50%);
+}
+
+/* Glow effects */
+.glow-blue {
+  box-shadow: 0 0 20px hsl(var(--neon-blue) / 0.3);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px hsl(var(--neon-green) / 0.3);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px hsl(var(--neon-purple) / 0.3);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+  box-shadow: 0 0 10px hsl(var(--primary) / 0.5);
 }
