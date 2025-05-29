@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { Book, Users, Award, FileCode, Clock, PlusCircle, Calendar, Activity } from "lucide-react";
+import { Book, Users, Award, FileCode, Clock, PlusCircle, Calendar, Activity, Dumbbell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
@@ -127,9 +127,9 @@ const TeacherDashboard = () => {
               <PlusCircle className="h-4 w-4 mr-2" />
               New Course
             </Button>
-            <Button onClick={() => navigate("/teacher/exercises/create")}>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              New Exercise
+            <Button onClick={() => navigate("/teacher/exercises/content")}>
+              <Dumbbell className="h-4 w-4 mr-2" />
+              Manage Exercises
             </Button>
           </div>
         </div>
@@ -281,7 +281,7 @@ const TeacherDashboard = () => {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="outline" className="w-full" onClick={() => navigate("/teacher/exercises")}>
+                    <Button variant="outline" className="w-full" onClick={() => navigate("/teacher/exercises/content")}>
                       View All Exercises
                     </Button>
                   </CardFooter>
