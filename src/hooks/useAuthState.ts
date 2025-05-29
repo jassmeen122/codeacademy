@@ -66,6 +66,28 @@ export const useAuthState = () => {
     }
   };
 
+  // Redirect user based on role
+  const redirectUserByRole = (role: string) => {
+    console.log("Redirecting user with role:", role);
+    
+    setTimeout(() => {
+      switch (role) {
+        case 'admin': 
+          console.log("Navigating to /admin");
+          navigate('/admin');
+          break;
+        case 'teacher': 
+          console.log("Navigating to /teacher");
+          navigate('/teacher'); 
+          break;
+        default: 
+          console.log("Navigating to /student");
+          navigate('/student'); 
+          break;
+      }
+    }, 100);
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -85,19 +107,30 @@ export const useAuthState = () => {
           
           // Update status in background (non-blocking)
           setTimeout(() => updateUserStatusSafely(), 0);
+
+          // Auto-redirect based on role if we're on auth page
+          if (window.location.pathname === '/auth' || window.location.pathname === '/') {
+            redirectUserByRole(userProfile.role);
+          }
         } catch (error) {
           console.error("Error creating user profile:", error);
           // Still allow authentication to proceed with basic user data
-          setUser({
+          const basicProfile: UserProfile = {
             id: currentSession.user.id,
             email: currentSession.user.email || '',
             full_name: currentSession.user.user_metadata?.full_name || null,
             avatar_url: null,
             points: 0,
-            role: 'student',
+            role: (currentSession.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          });
+          };
+          setUser(basicProfile);
+
+          // Auto-redirect even with basic profile
+          if (window.location.pathname === '/auth' || window.location.pathname === '/') {
+            redirectUserByRole(basicProfile.role);
+          }
         }
         
         if (mounted) setLoading(false);
@@ -127,19 +160,30 @@ export const useAuthState = () => {
           
           // Update status in background (non-blocking)
           setTimeout(() => updateUserStatusSafely(), 0);
+
+          // Auto-redirect based on role if we're on auth page or home
+          if (window.location.pathname === '/auth' || window.location.pathname === '/') {
+            redirectUserByRole(userProfile.role);
+          }
         } catch (error) {
           console.error("Error creating initial user profile:", error);
           // Still allow authentication to proceed
-          setUser({
+          const basicProfile: UserProfile = {
             id: session.user.id,
             email: session.user.email || '',
             full_name: session.user.user_metadata?.full_name || null,
             avatar_url: null,
             points: 0,
-            role: 'student',
+            role: (session.user.user_metadata?.role || 'student') as 'admin' | 'teacher' | 'student',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          });
+          };
+          setUser(basicProfile);
+
+          // Auto-redirect even with basic profile
+          if (window.location.pathname === '/auth' || window.location.pathname === '/') {
+            redirectUserByRole(basicProfile.role);
+          }
         }
         
         if (mounted) setLoading(false);
@@ -155,7 +199,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const handleSignOut = async () => {
     try {
