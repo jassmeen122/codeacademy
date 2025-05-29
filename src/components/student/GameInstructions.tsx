@@ -17,7 +17,7 @@ export const GameInstructions = () => {
           : 10 questions fondamentales
         </li>
         <li>
-          <span className="font-medium text-yellow-600">Intermédiaire</span>
+          <span className="font-medium text-green-600">Intermédiaire</span>
           : 30 questions plus avancées
         </li>
         <li>

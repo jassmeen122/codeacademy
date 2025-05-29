@@ -6,12 +6,12 @@
 @tailwind utilities;
 
 :root {
-  /* Palette simplifiée : Bleu et Blanc */
+  /* Palette simplifiée : Bleu, Blanc, Noir et Vert */
   --primary: 59 130 246; /* Bleu */
   --primary-foreground: 255 255 255; /* Blanc */
   --secondary: 248 250 252; /* Blanc cassé */
   --secondary-foreground: 0 0 0; /* Noir */
-  --accent: 59 130 246; /* Bleu */
+  --accent: 21 128 61; /* Vert foncé */
   --accent-foreground: 255 255 255; /* Blanc */
   --destructive: 239 68 68;
   --destructive-foreground: 255 255 255;
@@ -25,7 +25,7 @@
   --radius: 0.5rem;
   --background: 255 255 255; /* Blanc */
   --foreground: 0 0 0; /* Noir */
-  --success: 21 128 61; /* Vert foncé au lieu de jaune */
+  --success: 21 128 61; /* Vert foncé */
   --success-foreground: 255 255 255; /* Blanc */
 }
 
@@ -35,7 +35,7 @@
     --primary-foreground: 255 255 255;
     --secondary: 248 250 252;
     --secondary-foreground: 0 0 0;
-    --accent: 59 130 246;
+    --accent: 21 128 61; /* Vert foncé */
     --accent-foreground: 255 255 255;
     --destructive: 220 38 38;
     --destructive-foreground: 255 255 255;
@@ -48,7 +48,7 @@
     --ring: 59 130 246;
     --background: 255 255 255;
     --foreground: 0 0 0;
-    --success: 21 128 61; /* Vert foncé au lieu de jaune */
+    --success: 21 128 61; /* Vert foncé */
     --success-foreground: 255 255 255;
   }
 }
@@ -78,66 +78,97 @@ body {
   border-color: rgb(59 130 246);
 }
 
-/* Couleurs vertes foncées pour remplacer le jaune */
-.text-green-500 {
-  color: rgb(21 128 61);
-}
+/* Couleurs vertes foncées */
+.text-green-50 { color: rgb(240 253 244); }
+.text-green-100 { color: rgb(220 252 231); }
+.text-green-200 { color: rgb(187 247 208); }
+.text-green-300 { color: rgb(134 239 172); }
+.text-green-400 { color: rgb(74 222 128); }
+.text-green-500 { color: rgb(21 128 61); }
+.text-green-600 { color: rgb(20 83 45); }
+.text-green-700 { color: rgb(22 101 52); }
+.text-green-800 { color: rgb(22 101 52); }
+.text-green-900 { color: rgb(20 83 45); }
 
-.bg-green-500 {
+.bg-green-50 { background-color: rgb(240 253 244); }
+.bg-green-100 { background-color: rgb(220 252 231); }
+.bg-green-200 { background-color: rgb(187 247 208); }
+.bg-green-300 { background-color: rgb(134 239 172); }
+.bg-green-400 { background-color: rgb(74 222 128); }
+.bg-green-500 { background-color: rgb(21 128 61); }
+.bg-green-600 { background-color: rgb(20 83 45); }
+.bg-green-700 { background-color: rgb(22 101 52); }
+.bg-green-800 { background-color: rgb(22 101 52); }
+.bg-green-900 { background-color: rgb(20 83 45); }
+
+.border-green-50 { border-color: rgb(240 253 244); }
+.border-green-100 { border-color: rgb(220 252 231); }
+.border-green-200 { border-color: rgb(187 247 208); }
+.border-green-300 { border-color: rgb(134 239 172); }
+.border-green-400 { border-color: rgb(74 222 128); }
+.border-green-500 { border-color: rgb(21 128 61); }
+.border-green-600 { border-color: rgb(20 83 45); }
+.border-green-700 { border-color: rgb(22 101 52); }
+.border-green-800 { border-color: rgb(22 101 52); }
+.border-green-900 { border-color: rgb(20 83 45); }
+
+/* Remplacement complet des classes jaunes par du vert foncé */
+.text-yellow-50 { color: rgb(240 253 244); }
+.text-yellow-100 { color: rgb(220 252 231); }
+.text-yellow-200 { color: rgb(187 247 208); }
+.text-yellow-300 { color: rgb(134 239 172); }
+.text-yellow-400 { color: rgb(74 222 128); }
+.text-yellow-500 { color: rgb(21 128 61); }
+.text-yellow-600 { color: rgb(20 83 45); }
+.text-yellow-700 { color: rgb(22 101 52); }
+.text-yellow-800 { color: rgb(22 101 52); }
+.text-yellow-900 { color: rgb(20 83 45); }
+
+.bg-yellow-50 { background-color: rgb(240 253 244); }
+.bg-yellow-100 { background-color: rgb(220 252 231); }
+.bg-yellow-200 { background-color: rgb(187 247 208); }
+.bg-yellow-300 { background-color: rgb(134 239 172); }
+.bg-yellow-400 { background-color: rgb(74 222 128); }
+.bg-yellow-500 { background-color: rgb(21 128 61); }
+.bg-yellow-600 { background-color: rgb(20 83 45); }
+.bg-yellow-700 { background-color: rgb(22 101 52); }
+.bg-yellow-800 { background-color: rgb(22 101 52); }
+.bg-yellow-900 { background-color: rgb(20 83 45); }
+
+.border-yellow-50 { border-color: rgb(240 253 244); }
+.border-yellow-100 { border-color: rgb(220 252 231); }
+.border-yellow-200 { border-color: rgb(187 247 208); }
+.border-yellow-300 { border-color: rgb(134 239 172); }
+.border-yellow-400 { border-color: rgb(74 222 128); }
+.border-yellow-500 { border-color: rgb(21 128 61); }
+.border-yellow-600 { border-color: rgb(20 83 45); }
+.border-yellow-700 { border-color: rgb(22 101 52); }
+.border-yellow-800 { border-color: rgb(22 101 52); }
+.border-yellow-900 { border-color: rgb(20 83 45); }
+
+/* Classes hover pour le vert */
+.hover\:bg-green-500:hover { background-color: rgb(21 128 61); }
+.hover\:bg-green-600:hover { background-color: rgb(20 83 45); }
+.hover\:bg-green-700:hover { background-color: rgb(22 101 52); }
+
+.hover\:text-green-500:hover { color: rgb(21 128 61); }
+.hover\:text-green-600:hover { color: rgb(20 83 45); }
+.hover\:text-green-700:hover { color: rgb(22 101 52); }
+
+/* Boutons avec thème vert */
+.btn-green {
   background-color: rgb(21 128 61);
+  color: white;
+  border: 2px solid rgb(21 128 61);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-.border-green-500 {
-  border-color: rgb(21 128 61);
-}
-
-.bg-green-100 {
-  background-color: rgb(220 252 231);
-}
-
-.text-green-600 {
-  color: rgb(20 83 45);
-}
-
-/* Remplacement des classes jaunes par du vert foncé */
-.text-yellow-500 {
-  color: rgb(21 128 61);
-}
-
-.bg-yellow-500 {
-  background-color: rgb(21 128 61);
-}
-
-.border-yellow-500 {
-  border-color: rgb(21 128 61);
-}
-
-.text-yellow-600 {
-  color: rgb(20 83 45);
-}
-
-.bg-yellow-600 {
+.btn-green:hover {
   background-color: rgb(20 83 45);
-}
-
-.text-yellow-700 {
-  color: rgb(22 101 52);
-}
-
-.bg-yellow-700 {
-  background-color: rgb(22 101 52);
-}
-
-.text-yellow-800 {
-  color: rgb(22 101 52);
-}
-
-.bg-yellow-800 {
-  background-color: rgb(22 101 52);
-}
-
-.bg-yellow-100 {
-  background-color: rgb(220 252 231);
+  border-color: rgb(20 83 45);
 }
 
 /* Boutons noirs */
