@@ -9,14 +9,14 @@ interface CallButtonProps {
   receiverId: string;
   receiverName: string;
   variant?: 'audio' | 'video';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'default' | 'lg';
 }
 
 export const CallButton: React.FC<CallButtonProps> = ({ 
   receiverId, 
   receiverName, 
   variant = 'audio',
-  size = 'md' 
+  size = 'default' 
 }) => {
   const { currentCall, initiateCall, endCall, loading } = useUserCalls();
 
