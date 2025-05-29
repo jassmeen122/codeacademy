@@ -1,584 +1,298 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Users, BookOpen, MessageSquare, Settings, Shield, Database, Activity, TrendingUp, UserPlus, FileText, AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Search, 
-  UserPlus, 
-  Edit, 
-  Trash2, 
-  RefreshCw, 
-  BookOpen, 
-  GraduationCap, 
-  Users, 
-  AlertTriangle 
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import type { UserProfile } from "@/hooks/useAuthState";
-import type { Course, CourseLevel, CoursePath, CourseCategory } from "@/types/course";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalCourses: 0,
-    teachers: 0,
-    students: 0
+    totalMessages: 0,
+    systemHealth: 'Good'
   });
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [confirmDeleteUser, setConfirmDeleteUser] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    checkUserRole();
+    fetchDashboardData();
   }, []);
 
-  const checkUserRole = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role !== 'admin') {
-        navigate('/');
-        return;
-      }
-
-      setUserRole(profile?.role);
-      fetchUsers();
-      fetchCourses();
-    } catch (error) {
-      console.error('Error checking user role:', error);
-      navigate('/auth');
+      setLoading(true);
+      
+      // Mock data for demonstration
+      setStats({
+        totalUsers: 245,
+        totalCourses: 42,
+        totalMessages: 1567,
+        systemHealth: 'Excellent'
+      });
+    } catch (error: any) {
+      toast.error("Failed to load dashboard data");
+      console.error("Error fetching admin data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchUsers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const quickStats = [
+    { label: 'Utilisateurs Total', value: stats.totalUsers.toString(), icon: Users, color: 'bg-blue-500' },
+    { label: 'Cours Actifs', value: stats.totalCourses.toString(), icon: BookOpen, color: 'bg-blue-600' },
+    { label: 'Messages Système', value: stats.totalMessages.toString(), icon: MessageSquare, color: 'bg-blue-700' },
+    { label: 'État Système', value: stats.systemHealth, icon: Shield, color: 'bg-blue-800' },
+  ];
 
-      if (error) throw error;
+  const recentActivities = [
+    { title: 'Nouvel utilisateur inscrit', description: 'Jean Dupont s\'est inscrit', icon: UserPlus, color: 'text-blue-600', time: 'Il y a 5 min' },
+    { title: 'Nouveau cours créé', description: 'Cours Python Avancé publié', icon: BookOpen, color: 'text-blue-600', time: 'Il y a 15 min' },
+    { title: 'Rapport généré', description: 'Rapport mensuel disponible', icon: FileText, color: 'text-blue-600', time: 'Il y a 1h' },
+  ];
 
-      setUsers(data as UserProfile[]);
-      
-      // Calculate stats
-      const teachers = data.filter(user => user.role === 'teacher').length;
-      const students = data.filter(user => user.role === 'student').length;
-      const admins = data.filter(user => user.role === 'admin').length;
-      
-      setStats(prev => ({
-        ...prev,
-        totalUsers: data.length,
-        teachers,
-        students
-      }));
-    } catch (error: any) {
-      toast.error(`Failed to fetch users: ${error.message}`);
-    }
-  };
-
-  const fetchCourses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select(`
-          *,
-          teacher:teacher_id (
-            full_name
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      const transformedCourses = data.map(course => ({
-        id: course.id,
-        title: course.title,
-        description: course.description || "",
-        difficulty: course.difficulty as CourseLevel,
-        path: course.path as CoursePath,
-        category: course.category as CourseCategory,
-        professor: {
-          name: course.teacher?.full_name || "Unknown",
-          title: "Course Instructor"
-        },
-        // Mock data for the rest of the fields
-        duration: "8 weeks",
-        students: 0,
-        image: "/placeholder.svg",
-        language: "JavaScript",
-        materials: {
-          videos: 0,
-          pdfs: 0,
-          presentations: 0
-        }
-      }));
-      
-      setCourses(transformedCourses);
-      setStats(prev => ({
-        ...prev,
-        totalCourses: data.length
-      }));
-    } catch (error: any) {
-      toast.error(`Failed to fetch courses: ${error.message}`);
-    }
-  };
-
-  const handleRefreshData = async () => {
-    setIsRefreshing(true);
-    await Promise.all([fetchUsers(), fetchCourses()]);
-    toast.success("Data refreshed successfully");
-    setIsRefreshing(false);
-  };
-
-  const handleUpdateUserRole = async (userId: string, newRole: 'admin' | 'teacher' | 'student') => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', userId);
-        
-      if (error) throw error;
-      
-      toast.success(`User role updated to ${newRole}`);
-      fetchUsers();
-    } catch (error: any) {
-      toast.error(`Failed to update user role: ${error.message}`);
-    }
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-    try {
-      // First, delete the user from the profiles table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-        
-      if (profileError) throw profileError;
-      
-      // Then, delete the user from the auth.users table
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-      
-      if (authError) throw authError;
-      
-      toast.success('User deleted successfully');
-      setUsers(prev => prev.filter(user => user.id !== userId));
-      setConfirmDeleteUser(null);
-    } catch (error: any) {
-      console.error('Error deleting user:', error);
-      toast.error(`Failed to delete user: ${error.message}`);
-    }
-  };
-
-  const filteredUsers = users.filter(user => 
-    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  
-  const filteredCourses = courses.filter(course => 
-    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.professor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
+  const systemAlerts = [
+    { title: 'Maintenance programmée', description: 'Maintenance serveur dimanche 3h-5h', type: 'info' },
+    { title: 'Haute utilisation CPU', description: 'Serveur principal à 85% d\'utilisation', type: 'warning' },
+    { title: 'Sauvegarde réussie', description: 'Sauvegarde quotidienne terminée', type: 'success' },
+  ];
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto py-8">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Administrator Dashboard</h1>
-            <p className="text-gray-600">Manage your platform settings and users</p>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={handleRefreshData} 
-              disabled={isRefreshing}
-              variant="outline"
-              className="gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh Data
-            </Button>
-            <Button onClick={() => navigate('/admin/settings')} className="gap-2">
-              Settings
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-medium">Total Users</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-primary mr-3" />
-                <p className="text-3xl font-bold">{stats.totalUsers}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-medium">Active Courses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <BookOpen className="h-8 w-8 text-primary mr-3" />
-                <p className="text-3xl font-bold">{stats.totalCourses}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-medium">Teachers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <GraduationCap className="h-8 w-8 text-primary mr-3" />
-                <p className="text-3xl font-bold">{stats.teachers}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-medium">Students</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-primary mr-3" />
-                <p className="text-3xl font-bold">{stats.students}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mb-6">
-          <div className="flex gap-2 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search by name, email, role, or course..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Button onClick={() => navigate('/admin/users/add')} className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              Add User
-            </Button>
-          </div>
-        </div>
-
-        <Tabs defaultValue="users" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.length > 0 ? (
-                        filteredUsers.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              <div className="font-medium">{user.full_name || "No Name"}</div>
-                            </TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  user.role === "admin"
-                                    ? "bg-purple-100 text-purple-800 hover:bg-purple-100"
-                                    : user.role === "teacher"
-                                    ? "bg-blue-100 text-blue-800 hover:bg-blue-100"
-                                    : "bg-green-100 text-green-800 hover:bg-green-100"
-                                }
-                              >
-                                {user.role}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(user.created_at).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => navigate(`/admin/users/edit/${user.id}`)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                {user.role !== "admin" && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleUpdateUserRole(user.id, "admin")}
-                                  >
-                                    Make Admin
-                                  </Button>
-                                )}
-                                {user.role !== "teacher" && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleUpdateUserRole(user.id, "teacher")}
-                                  >
-                                    Make Teacher
-                                  </Button>
-                                )}
-                                {user.role !== "student" && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleUpdateUserRole(user.id, "student")}
-                                  >
-                                    Make Student
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => setConfirmDeleteUser(user.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={5} className="h-24 text-center">
-                            No users found.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="courses">
-            <Card>
-              <CardHeader>
-                <CardTitle>Course Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={() => navigate('/admin/courses/create')} className="mb-4">
-                  Add New Course
-                </Button>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Teacher</TableHead>
-                        <TableHead>Difficulty</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredCourses.length > 0 ? (
-                        filteredCourses.map((course) => (
-                          <TableRow key={course.id}>
-                            <TableCell>
-                              <div className="font-medium">{course.title}</div>
-                            </TableCell>
-                            <TableCell>{course.professor.name}</TableCell>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  course.difficulty === "Beginner"
-                                    ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                    : course.difficulty === "Intermediate"
-                                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                                    : "bg-red-100 text-red-800 hover:bg-red-100"
-                                }
-                              >
-                                {course.difficulty}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{course.category}</TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => navigate(`/admin/courses/${course.id}`)}
-                                >
-                                  View
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => navigate(`/admin/courses/edit/${course.id}`)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="destructive" size="sm">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={5} className="h-24 text-center">
-                            No courses found.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Platform Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-6">
-                  <div>
-                    <Label htmlFor="siteName">Platform Name</Label>
-                    <Input id="siteName" defaultValue="Code Academy" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="siteDescription">Platform Description</Label>
-                    <Input
-                      id="siteDescription"
-                      defaultValue="Your Journey to Programming Excellence"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="emailContact">Contact Email</Label>
-                    <Input
-                      id="emailContact"
-                      type="email"
-                      defaultValue="contact@codeacademy.example"
-                      className="mt-1"
-                    />
-                  </div>
-                  <Button type="submit">Save Settings</Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Delete User Confirmation Dialog */}
-        <Dialog open={!!confirmDeleteUser} onOpenChange={(open) => !open && setConfirmDeleteUser(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-500" />
-                Confirm User Deletion
-              </DialogTitle>
-              <DialogDescription>
-                This action cannot be undone. This will permanently delete the user account
-                and remove all associated data.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <p className="font-semibold">Are you absolutely sure you want to delete this user?</p>
-              {confirmDeleteUser && (
-                <div className="mt-2 p-3 bg-gray-100 rounded-md">
-                  <p className="font-medium">
-                    {users.find(u => u.id === confirmDeleteUser)?.full_name || "Unknown User"}
+      <div className="min-h-screen bg-white">
+        <div className="container mx-auto px-6 py-8 space-y-8">
+          {/* Header Section */}
+          <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg">
+            <div className="p-8">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-3">
+                  <h1 className="text-4xl font-bold text-blue-800">
+                    Tableau de Bord Administrateur
+                  </h1>
+                  <p className="text-lg text-blue-600">
+                    Gérez et supervisez l'ensemble de la plateforme
                   </p>
-                  <p className="text-sm text-gray-600">
-                    {users.find(u => u.id === confirmDeleteUser)?.email}
-                  </p>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-blue-700">
+                      <Database className="h-4 w-4" />
+                      <span className="font-medium">Système Opérationnel</span>
+                    </div>
+                    <div className="w-px h-4 bg-blue-300"></div>
+                    <span className="text-blue-600">Dernière connexion: Aujourd'hui</span>
+                  </div>
                 </div>
-              )}
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/admin/settings")} 
+                    className="border-blue-500 text-blue-700 hover:bg-blue-50 bg-white"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Paramètres
+                  </Button>
+                  <Button 
+                    onClick={() => navigate("/admin/users")} 
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Gérer Utilisateurs
+                  </Button>
+                </div>
+              </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setConfirmDeleteUser(null)}>
-                Cancel
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={() => confirmDeleteUser && handleDeleteUser(confirmDeleteUser)}
+          </div>
+
+          {/* Quick Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {quickStats.map((stat, index) => (
+              <Card key={index} className="bg-white border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 shadow-md">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-blue-600 font-medium">{stat.label}</p>
+                      <p className="text-3xl font-bold text-blue-800 mt-1">{stat.value}</p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${stat.color} text-white shadow-lg`}>
+                      <stat.icon className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Main Content Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 bg-blue-50 p-1 rounded-lg border border-blue-200">
+              <TabsTrigger 
+                value="overview" 
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-blue-700"
               >
-                Delete User
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                Vue d'ensemble
+              </TabsTrigger>
+              <TabsTrigger 
+                value="users" 
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-blue-700"
+              >
+                Utilisateurs
+              </TabsTrigger>
+              <TabsTrigger 
+                value="content" 
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-blue-700"
+              >
+                Contenu
+              </TabsTrigger>
+              <TabsTrigger 
+                value="system" 
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-blue-700"
+              >
+                Système
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-6 space-y-6">
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                {/* Left Column - Activity */}
+                <Card className="xl:col-span-2 bg-white border-2 border-blue-200 shadow-md">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-blue-800">
+                      <Activity className="h-5 w-5 text-blue-600" />
+                      Activité Récente
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {recentActivities.map((activity, i) => (
+                      <div key={i} className="flex items-start gap-4 p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                        <div className="bg-blue-100 p-2 rounded-lg">
+                          <activity.icon className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-blue-800">{activity.title}</h4>
+                          <p className="text-sm text-blue-600">{activity.description}</p>
+                          <p className="text-xs text-blue-500 mt-1">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-blue-500 text-blue-700 hover:bg-blue-50 bg-white"
+                      onClick={() => navigate("/admin/activity")}
+                    >
+                      <Activity className="mr-2 h-4 w-4" />
+                      Voir toute l'activité
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Right Column - System Health */}
+                <Card className="bg-white border-2 border-blue-200 shadow-md">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-800">
+                      <Shield className="h-5 w-5 text-blue-600" />
+                      État du Système
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {systemAlerts.map((alert, i) => (
+                      <div key={i} className={`p-3 rounded-lg ${
+                        alert.type === 'success' ? 'bg-green-50 border border-green-200' :
+                        alert.type === 'warning' ? 'bg-yellow-50 border border-yellow-200' :
+                        'bg-blue-50 border border-blue-200'
+                      }`}>
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className={`h-4 w-4 mt-0.5 ${
+                            alert.type === 'success' ? 'text-green-600' :
+                            alert.type === 'warning' ? 'text-yellow-600' :
+                            'text-blue-600'
+                          }`} />
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{alert.title}</h4>
+                            <p className="text-sm text-gray-600">{alert.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-blue-500 text-blue-700 hover:bg-blue-50 bg-white"
+                      onClick={() => navigate("/admin/system-health")}
+                    >
+                      Détails du système
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="users" className="mt-6">
+              <Card className="bg-white border-2 border-blue-200 shadow-md">
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <Users className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold mb-4 text-blue-800">Gestion des Utilisateurs</h2>
+                    <p className="text-blue-600 mb-6">
+                      Gérez tous les utilisateurs de la plateforme
+                    </p>
+                    <Button 
+                      onClick={() => navigate("/admin/users")}
+                      className="bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      Accéder à la gestion
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="content" className="mt-6">
+              <Card className="bg-white border-2 border-blue-200 shadow-md">
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <BookOpen className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold mb-4 text-blue-800">Gestion du Contenu</h2>
+                    <p className="text-blue-600 mb-6">
+                      Gérez les cours, exercices et contenus
+                    </p>
+                    <Button 
+                      onClick={() => navigate("/admin/courses")}
+                      className="bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Gérer le contenu
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="system" className="mt-6">
+              <Card className="bg-white border-2 border-blue-200 shadow-md">
+                <CardContent className="pt-6">
+                  <div className="text-center py-8">
+                    <Database className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold mb-4 text-blue-800">Administration Système</h2>
+                    <p className="text-blue-600 mb-6">
+                      Paramètres système et configuration
+                    </p>
+                    <Button 
+                      onClick={() => navigate("/admin/settings")}
+                      className="bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Paramètres système
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </DashboardLayout>
   );
