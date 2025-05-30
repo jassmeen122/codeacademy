@@ -5,10 +5,10 @@ export const PythonLogo = () => (
   <div className="inline-flex items-center gap-2">
     <div className="relative w-8 h-8">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-md transform rotate-3"></div>
-      <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-md transform -rotate-3 scale-90"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-green-300 to-green-500 rounded-md transform -rotate-3 scale-90"></div>
       <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">Py</div>
     </div>
-    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-yellow-500 bg-clip-text text-transparent">Python</span>
+    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">Python</span>
   </div>
 );
 
@@ -45,10 +45,10 @@ export const JavaLogo = () => (
 export const JavaScriptLogo = () => (
   <div className="inline-flex items-center gap-2">
     <div className="relative w-8 h-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-md"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 rounded-md"></div>
       <div className="absolute inset-0 flex items-center justify-center text-black text-xs font-bold">JS</div>
     </div>
-    <span className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent">JavaScript</span>
+    <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent">JavaScript</span>
   </div>
 );
 

@@ -40,7 +40,7 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({ userBadge }) => {
       'Intermédiaire': "bg-blue-100 text-blue-800 border-blue-200",
       'Expert': "bg-purple-100 text-purple-800 border-purple-200",
       'Motivé': "bg-orange-100 text-orange-800 border-orange-200",
-      'Challengeur': "bg-yellow-100 text-yellow-800 border-yellow-200",
+      'Challengeur': "bg-green-100 text-green-800 border-green-200",
       'Pro du Debug': "bg-cyan-100 text-cyan-800 border-cyan-200",
       'Full Stack Dev': "bg-indigo-100 text-indigo-800 border-indigo-200"
     };

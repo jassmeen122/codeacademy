@@ -17,7 +17,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({ levels, onLevelClick }) => {
     if (level.completed) return 'bg-green-500 hover:bg-green-600';
     if (level.unlocked) {
       if (level.challenge.type === 'python') {
-        return 'bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500';
+        return 'bg-gradient-to-r from-blue-500 to-green-400 hover:from-blue-600 hover:to-green-500';
       } else if (level.challenge.type === 'sql') {
         return 'bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500';
       } else if (level.challenge.type === 'php') {
@@ -25,7 +25,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({ levels, onLevelClick }) => {
       } else if (level.challenge.type === 'java') {
         return 'bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-600 hover:to-orange-500';
       } else if (level.challenge.type === 'javascript') {
-        return 'bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500';
+        return 'bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500';
       } else if (level.challenge.type === 'c') {
         return 'bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900';
       } else if (level.challenge.type === 'cpp') {
@@ -43,11 +43,11 @@ export const GameMenu: React.FC<GameMenuProps> = ({ levels, onLevelClick }) => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'python': return 'bg-gradient-to-r from-blue-100 to-yellow-100 text-blue-800 border-blue-200';
+      case 'python': return 'bg-gradient-to-r from-blue-100 to-green-100 text-blue-800 border-blue-200';
       case 'sql': return 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-200';
       case 'php': return 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border-purple-200';
       case 'java': return 'bg-gradient-to-r from-red-100 to-orange-100 text-red-800 border-red-200';
-      case 'javascript': return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-200';
+      case 'javascript': return 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-200';
       case 'c': return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-200';
       case 'cpp': return 'bg-gradient-to-r from-indigo-100 to-purple-200 text-indigo-800 border-indigo-200';
       default: return 'bg-gray-100 text-gray-800';
@@ -79,11 +79,11 @@ export const GameMenu: React.FC<GameMenuProps> = ({ levels, onLevelClick }) => {
           animate={{ y: 0 }}
           className="inline-flex items-center gap-3 mb-4"
         >
-          <Trophy className="h-8 w-8 text-yellow-500" />
+          <Trophy className="h-8 w-8 text-green-500" />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
             Code Crush
           </h1>
-          <Trophy className="h-8 w-8 text-yellow-500" />
+          <Trophy className="h-8 w-8 text-green-500" />
         </motion.div>
         <div className="flex justify-center gap-6 mb-4 flex-wrap">
           <PythonLogo />
@@ -129,7 +129,7 @@ export const GameMenu: React.FC<GameMenuProps> = ({ levels, onLevelClick }) => {
                     animate={{ scale: 1 }}
                     className="mt-2"
                   >
-                    <Star className="h-5 w-5 text-yellow-500 mx-auto" />
+                    <Star className="h-5 w-5 text-green-500 mx-auto" />
                   </motion.div>
                 )}
               </CardContent>

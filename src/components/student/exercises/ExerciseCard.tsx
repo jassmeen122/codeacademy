@@ -23,19 +23,19 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
       case "completed":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case "in_progress":
-        return <Circle className="h-5 w-5 text-yellow-500" />;
+        return <Circle className="h-5 w-5 text-green-500" />;
       default:
         return <Circle className="h-5 w-5 text-gray-300" />;
     }
   };
 
   const renderStars = (count: number) => {
-    return Array(count).fill(0).map((_, i) => <Star key={i} className="h-4 w-4 inline-block text-yellow-500 fill-yellow-500" />);
+    return Array(count).fill(0).map((_, i) => <Star key={i} className="h-4 w-4 inline-block text-green-500 fill-green-500" />);
   };
 
   const difficultyClasses = {
     "easy": "bg-green-100 text-green-800",
-    "medium": "bg-yellow-100 text-yellow-800",
+    "medium": "bg-green-100 text-green-800",
     "hard": "bg-red-100 text-red-800"
   };
 

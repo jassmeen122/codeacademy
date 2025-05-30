@@ -67,7 +67,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
               <Badge className={getChallengeTypeColor(challenge.challenge.type)}>
                 {challenge.challenge.type === 'daily' ? 'Quotidien' : 'Hebdomadaire'}
               </Badge>
-              <Badge variant="outline" className="bg-amber-50">
+              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
                 {challenge.challenge.points} points
               </Badge>
               {challenge.status === 'completed' && (

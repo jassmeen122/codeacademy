@@ -149,11 +149,8 @@ body {
 /* Classes hover pour le vert */
 .hover\:bg-green-500:hover { background-color: rgb(21 128 61); }
 .hover\:bg-green-600:hover { background-color: rgb(20 83 45); }
-.hover\:bg-green-700:hover { background-color: rgb(22 101 52); }
-
 .hover\:text-green-500:hover { color: rgb(21 128 61); }
 .hover\:text-green-600:hover { color: rgb(20 83 45); }
-.hover\:text-green-700:hover { color: rgb(22 101 52); }
 
 /* Boutons avec thème vert */
 .btn-green {
