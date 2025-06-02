@@ -52,14 +52,15 @@ export const FloatingAIAssistant = () => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - toujours visible */}
       {!isOpen && (
         <Button
           onClick={() => {
             console.log("🚀 Ouverture assistant IA");
             setIsOpen(true);
           }}
-          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14 p-0 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
+          className="fixed bottom-6 right-6 rounded-full shadow-lg z-50 h-14 w-14 p-0 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 transition-all duration-300 animate-pulse hover:animate-none"
+          title="Assistant IA - Aide à la programmation"
         >
           {useLocalAI ? <Cpu className="h-6 w-6" /> : <Brain className="h-6 w-6" />}
         </Button>
