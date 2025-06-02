@@ -1,55 +1,64 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&family=Fira+Code:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Palette simplifiée : Bleu, Blanc, Noir et Vert */
-  --primary: 59 130 246; /* Bleu */
+  /* Thème éducatif moderne avec vibe informatique */
+  --primary: 26 35 126; /* #1a237e - Bleu foncé tech */
   --primary-foreground: 255 255 255; /* Blanc */
-  --secondary: 248 250 252; /* Blanc cassé */
-  --secondary-foreground: 0 0 0; /* Noir */
-  --accent: 21 128 61; /* Vert foncé */
+  --secondary: 57 73 171; /* #3949ab - Bleu moyen */
+  --secondary-foreground: 255 255 255; /* Blanc */
+  --accent: 0 203 169; /* #00cba9 - Vert menthe tech */
   --accent-foreground: 255 255 255; /* Blanc */
-  --destructive: 239 68 68;
-  --destructive-foreground: 255 255 255;
-  --muted: 248 250 252; /* Blanc cassé */
-  --muted-foreground: 64 64 64; /* Gris foncé */
-  --card: 255 255 255; /* Blanc */
-  --card-foreground: 0 0 0; /* Noir */
-  --border: 229 231 235; /* Gris clair */
-  --input: 229 231 235;
-  --ring: 59 130 246; /* Bleu */
-  --radius: 0.5rem;
-  --background: 255 255 255; /* Blanc */
-  --foreground: 0 0 0; /* Noir */
-  --success: 21 128 61; /* Vert foncé */
+  --destructive: 244 67 54; /* #f44336 - Rouge doux pour alertes */
+  --destructive-foreground: 255 255 255; /* Blanc */
+  --muted: 249 249 249; /* #f9f9f9 - Blanc cassé */
+  --muted-foreground: 107 114 126; /* #6b7280 - Gris doux */
+  --card: 255 255 255; /* Blanc pur */
+  --card-foreground: 17 24 39; /* #111827 - Noir bleuté */
+  --border: 229 231 235; /* #e5e7eb - Gris clair */
+  --input: 229 231 235; /* #e5e7eb */
+  --ring: 26 35 126; /* #1a237e - Bleu foncé */
+  --radius: 0.75rem;
+  --background: 249 249 249; /* #f9f9f9 - Blanc cassé */
+  --foreground: 17 24 39; /* #111827 - Noir bleuté */
+  --success: 0 203 169; /* #00cba9 - Vert menthe */
   --success-foreground: 255 255 255; /* Blanc */
+  --warning: 251 146 60; /* #fb923c - Orange doux */
+  --warning-foreground: 255 255 255; /* Blanc */
+  --info: 59 130 246; /* #3b82f6 - Bleu info */
+  --info-foreground: 255 255 255; /* Blanc */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary: 59 130 246;
+    /* Mode sombre adapté pour le thème éducatif */
+    --primary: 57 73 171; /* Bleu plus clair en mode sombre */
     --primary-foreground: 255 255 255;
-    --secondary: 248 250 252;
-    --secondary-foreground: 0 0 0;
-    --accent: 21 128 61; /* Vert foncé */
+    --secondary: 30 41 59; /* #1e293b - Gris bleuté */
+    --secondary-foreground: 255 255 255;
+    --accent: 0 203 169; /* Vert menthe conservé */
     --accent-foreground: 255 255 255;
-    --destructive: 220 38 38;
+    --destructive: 239 68 68; /* Rouge plus vif */
     --destructive-foreground: 255 255 255;
-    --muted: 248 250 252;
-    --muted-foreground: 64 64 64;
-    --card: 255 255 255;
-    --card-foreground: 0 0 0;
-    --border: 229 231 235;
-    --input: 229 231 235;
-    --ring: 59 130 246;
-    --background: 255 255 255;
-    --foreground: 0 0 0;
-    --success: 21 128 61; /* Vert foncé */
+    --muted: 30 41 59; /* #1e293b */
+    --muted-foreground: 148 163 184; /* #94a3b8 */
+    --card: 15 23 42; /* #0f172a - Bleu très foncé */
+    --card-foreground: 241 245 249; /* #f1f5f9 - Blanc cassé */
+    --border: 51 65 85; /* #334155 */
+    --input: 51 65 85; /* #334155 */
+    --ring: 57 73 171;
+    --background: 2 6 23; /* #020617 - Bleu très foncé */
+    --foreground: 241 245 249; /* #f1f5f9 */
+    --success: 34 197 94; /* Vert plus vif */
     --success-foreground: 255 255 255;
+    --warning: 251 146 60;
+    --warning-foreground: 255 255 255;
+    --info: 59 130 246;
+    --info-foreground: 255 255 255;
   }
 }
 
@@ -58,128 +67,243 @@
 }
 
 body {
-  background: white;
-  color: black;
-  font-family: "Inter", system-ui, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "Roboto", system-ui, sans-serif;
   line-height: 1.6;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Styles simplifiés */
-.text-primary {
-  color: rgb(59 130 246);
-}
-
-.bg-primary {
-  background-color: rgb(59 130 246);
-}
-
-.border-primary {
-  border-color: rgb(59 130 246);
-}
-
-/* Couleurs vertes foncées */
-.text-green-50 { color: rgb(240 253 244); }
-.text-green-100 { color: rgb(220 252 231); }
-.text-green-200 { color: rgb(187 247 208); }
-.text-green-300 { color: rgb(134 239 172); }
-.text-green-400 { color: rgb(74 222 128); }
-.text-green-500 { color: rgb(21 128 61); }
-.text-green-600 { color: rgb(20 83 45); }
-.text-green-700 { color: rgb(22 101 52); }
-.text-green-800 { color: rgb(22 101 52); }
-.text-green-900 { color: rgb(20 83 45); }
-
-.bg-green-50 { background-color: rgb(240 253 244); }
-.bg-green-100 { background-color: rgb(220 252 231); }
-.bg-green-200 { background-color: rgb(187 247 208); }
-.bg-green-300 { background-color: rgb(134 239 172); }
-.bg-green-400 { background-color: rgb(74 222 128); }
-.bg-green-500 { background-color: rgb(21 128 61); }
-.bg-green-600 { background-color: rgb(20 83 45); }
-.bg-green-700 { background-color: rgb(22 101 52); }
-.bg-green-800 { background-color: rgb(22 101 52); }
-.bg-green-900 { background-color: rgb(20 83 45); }
-
-.border-green-50 { border-color: rgb(240 253 244); }
-.border-green-100 { border-color: rgb(220 252 231); }
-.border-green-200 { border-color: rgb(187 247 208); }
-.border-green-300 { border-color: rgb(134 239 172); }
-.border-green-400 { border-color: rgb(74 222 128); }
-.border-green-500 { border-color: rgb(21 128 61); }
-.border-green-600 { border-color: rgb(20 83 45); }
-.border-green-700 { border-color: rgb(22 101 52); }
-.border-green-800 { border-color: rgb(22 101 52); }
-.border-green-900 { border-color: rgb(20 83 45); }
-
-/* Remplacement complet des classes jaunes par du vert foncé */
-.text-yellow-50 { color: rgb(240 253 244); }
-.text-yellow-100 { color: rgb(220 252 231); }
-.text-yellow-200 { color: rgb(187 247 208); }
-.text-yellow-300 { color: rgb(134 239 172); }
-.text-yellow-400 { color: rgb(74 222 128); }
-.text-yellow-500 { color: rgb(21 128 61); }
-.text-yellow-600 { color: rgb(20 83 45); }
-.text-yellow-700 { color: rgb(22 101 52); }
-.text-yellow-800 { color: rgb(22 101 52); }
-.text-yellow-900 { color: rgb(20 83 45); }
-
-.bg-yellow-50 { background-color: rgb(240 253 244); }
-.bg-yellow-100 { background-color: rgb(220 252 231); }
-.bg-yellow-200 { background-color: rgb(187 247 208); }
-.bg-yellow-300 { background-color: rgb(134 239 172); }
-.bg-yellow-400 { background-color: rgb(74 222 128); }
-.bg-yellow-500 { background-color: rgb(21 128 61); }
-.bg-yellow-600 { background-color: rgb(20 83 45); }
-.bg-yellow-700 { background-color: rgb(22 101 52); }
-.bg-yellow-800 { background-color: rgb(22 101 52); }
-.bg-yellow-900 { background-color: rgb(20 83 45); }
-
-.border-yellow-50 { border-color: rgb(240 253 244); }
-.border-yellow-100 { border-color: rgb(220 252 231); }
-.border-yellow-200 { border-color: rgb(187 247 208); }
-.border-yellow-300 { border-color: rgb(134 239 172); }
-.border-yellow-400 { border-color: rgb(74 222 128); }
-.border-yellow-500 { border-color: rgb(21 128 61); }
-.border-yellow-600 { border-color: rgb(20 83 45); }
-.border-yellow-700 { border-color: rgb(22 101 52); }
-.border-yellow-800 { border-color: rgb(22 101 52); }
-.border-yellow-900 { border-color: rgb(20 83 45); }
-
-/* Classes hover pour le vert */
-.hover\:bg-green-500:hover { background-color: rgb(21 128 61); }
-.hover\:bg-green-600:hover { background-color: rgb(20 83 45); }
-.hover\:text-green-500:hover { color: rgb(21 128 61); }
-.hover\:text-green-600:hover { color: rgb(20 83 45); }
-
-/* Boutons avec thème vert */
-.btn-green {
-  background-color: rgb(21 128 61);
-  color: white;
-  border: 2px solid rgb(21 128 61);
-  border-radius: 0.5rem;
-  padding: 0.75rem 1.5rem;
+/* Typographie éducative */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Poppins", system-ui, sans-serif;
   font-weight: 600;
-  transition: all 0.2s ease;
+  line-height: 1.3;
 }
 
-.btn-green:hover {
-  background-color: rgb(20 83 45);
-  border-color: rgb(20 83 45);
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
 }
 
-/* Boutons noirs */
-.btn-black {
-  background-color: black;
-  color: white;
-  border: 2px solid black;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1.5rem;
+h2 {
+  font-size: 2rem;
   font-weight: 600;
-  transition: all 0.2s ease;
 }
 
-.btn-black:hover {
-  background-color: white;
-  color: black;
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Éléments de code */
+code, pre, .font-mono {
+  font-family: "Fira Code", "Courier New", monospace;
+}
+
+/* Classes utilitaires pour le thème éducatif */
+.edu-primary {
+  color: hsl(var(--primary));
+}
+
+.edu-bg-primary {
+  background-color: hsl(var(--primary));
+}
+
+.edu-border-primary {
+  border-color: hsl(var(--primary));
+}
+
+.edu-accent {
+  color: hsl(var(--accent));
+}
+
+.edu-bg-accent {
+  background-color: hsl(var(--accent));
+}
+
+.edu-success {
+  color: hsl(var(--success));
+}
+
+.edu-bg-success {
+  background-color: hsl(var(--success));
+}
+
+/* Boutons éducatifs modernes */
+.edu-btn-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  color: hsl(var(--primary-foreground));
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.75rem 1.5rem;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px hsla(var(--primary), 0.25);
+}
+
+.edu-btn-primary:hover {
+  background: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--primary)));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px hsla(var(--primary), 0.35);
+}
+
+.edu-btn-accent {
+  background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--success)));
+  color: hsl(var(--accent-foreground));
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.75rem 1.5rem;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px hsla(var(--accent), 0.25);
+}
+
+.edu-btn-accent:hover {
+  background: linear-gradient(135deg, hsl(var(--success)), hsl(var(--accent)));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px hsla(var(--accent), 0.35);
+}
+
+/* Cartes éducatives */
+.edu-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px hsla(var(--foreground), 0.05);
+}
+
+.edu-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px hsla(var(--foreground), 0.1);
+  border-color: hsl(var(--primary));
+}
+
+/* Navigation éducative */
+.edu-nav {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid hsl(var(--border));
+  box-shadow: 0 2px 12px hsla(var(--foreground), 0.05);
+}
+
+/* Responsive design pour tous les appareils */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  .edu-card {
+    padding: 1rem;
+  }
+  
+  .edu-btn-primary,
+  .edu-btn-accent {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 0.875rem;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  .edu-card {
+    padding: 0.75rem;
+  }
+}
+
+/* Animations éducatives */
+@keyframes edu-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes edu-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.edu-animate-fade-in {
+  animation: edu-fade-in 0.6s ease-out;
+}
+
+.edu-animate-slide-in {
+  animation: edu-slide-in 0.5s ease-out;
+}
+
+/* Accessibilité améliorée */
+.edu-focus:focus {
+  outline: 2px solid hsl(var(--accent));
+  outline-offset: 2px;
+}
+
+.edu-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.edu-skip-link:focus {
+  top: 6px;
+}
+
+/* Mode haute lisibilité */
+@media (prefers-contrast: high) {
+  :root {
+    --primary: 0 0 0; /* Noir pur */
+    --primary-foreground: 255 255 255;
+    --border: 128 128 128; /* Gris moyen */
+  }
+}
+
+/* Préférences de mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

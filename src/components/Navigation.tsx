@@ -63,14 +63,14 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="fixed top-0 z-50 w-full education-nav">
+    <nav className="fixed top-0 z-50 w-full edu-nav">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo et Brand */}
           <div className="flex-shrink-0 flex items-center gap-6">
             <Link 
               to="/" 
-              className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200 flex items-center gap-2"
+              className="text-2xl font-bold font-heading bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent hover:scale-105 transition-transform duration-200 flex items-center gap-2"
             >
               <GraduationCap className="h-8 w-8 text-primary" />
               CodeAcademy
@@ -84,7 +84,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 group"
+                  className="gap-2 text-warning hover:text-warning/80 hover:bg-warning/10 transition-all duration-300 group"
                   onClick={() => navigate('/student/yt-dev-tutorials')}
                 >
                   <Youtube className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
@@ -109,7 +109,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all duration-300 group"
+                  className="gap-2 text-info hover:text-info/80 hover:bg-info/10 transition-all duration-300 group"
                   onClick={goToMeet}
                 >
                   <Video className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
@@ -125,7 +125,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-300 group education-link"
+                  className="gap-2 text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-300 group"
                   onClick={goToUserDashboard}
                 >
                   <User className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
@@ -135,7 +135,7 @@ const Navigation = () => {
                 {/* Portal Access pour les enseignants/admins */}
                 {user && (user.role === 'teacher' || user.role === 'admin') && (
                   <Button
-                    className="education-button-secondary"
+                    variant="accent"
                     onClick={() => navigate(user.role === 'admin' ? '/admin' : '/teacher')}
                   >
                     <span className="font-medium">
@@ -152,7 +152,7 @@ const Navigation = () => {
             {!loading && session && (
               <div className="flex items-center gap-4">
                 <div className="text-right hidden lg:block">
-                  <p className="font-semibold text-sm text-foreground leading-none">
+                  <p className="font-semibold text-sm text-foreground leading-none font-heading">
                     {user?.full_name || 'Utilisateur'}
                   </p>
                   <p className="text-xs text-muted-foreground capitalize mt-1">
@@ -166,7 +166,7 @@ const Navigation = () => {
                   <UserAvatar 
                     user={user} 
                     size="md" 
-                    className="ring-2 ring-transparent group-hover:ring-primary/50 transition-all duration-300 hover:scale-105" 
+                    className="ring-2 ring-transparent group-hover:ring-accent/50 transition-all duration-300 hover:scale-105" 
                   />
                 </div>
                 
@@ -177,7 +177,7 @@ const Navigation = () => {
             {/* Action Button */}
             {!loading && (
               <Button
-                className={session ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : "education-button"}
+                variant={session ? "destructive" : "default"}
                 onClick={handleAuth}
               >
                 {session ? "Se Déconnecter" : "Se Connecter"}

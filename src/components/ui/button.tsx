@@ -5,25 +5,31 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium font-heading ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-black text-white hover:bg-gray-800",
+        default: "edu-btn-primary",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          "bg-destructive text-destructive-foreground shadow-edu-sm hover:bg-destructive/90 hover:shadow-edu-md",
         outline:
-          "border border-black bg-white text-black hover:bg-black hover:text-white",
+          "border border-primary bg-background text-primary shadow-edu-sm hover:bg-primary hover:text-primary-foreground hover:shadow-edu-md",
         secondary:
-          "bg-blue-500 text-white hover:bg-blue-600",
-        ghost: "hover:bg-gray-100 hover:text-black",
-        link: "text-blue-500 underline-offset-4 hover:underline",
+          "bg-secondary text-secondary-foreground shadow-edu-sm hover:bg-secondary/80 hover:shadow-edu-md",
+        ghost: "hover:bg-accent/10 hover:text-accent transition-all duration-200",
+        link: "text-primary underline-offset-4 hover:underline font-medium",
+        accent: "edu-btn-accent",
+        success: "bg-success text-success-foreground shadow-edu-sm hover:bg-success/90 hover:shadow-edu-md",
+        warning: "bg-warning text-warning-foreground shadow-edu-sm hover:bg-warning/90 hover:shadow-edu-md",
+        info: "bg-info text-info-foreground shadow-edu-sm hover:bg-info/90 hover:shadow-edu-md",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        default: "h-11 px-6 py-2.5",
+        sm: "h-9 rounded-md px-4 text-xs",
+        lg: "h-12 rounded-lg px-8 text-base",
         icon: "h-10 w-10",
+        xs: "h-8 px-3 text-xs",
+        xl: "h-14 px-10 text-lg",
       },
     },
     defaultVariants: {
