@@ -6,7 +6,7 @@
 @tailwind utilities;
 
 :root {
-  /* Thème éducatif moderne avec vibe informatique */
+  /* Thème éducatif moderne avec vibe informatique - MODE CLAIR UNIQUEMENT */
   --primary: 26 35 126; /* #1a237e - Bleu foncé tech */
   --primary-foreground: 255 255 255; /* Blanc */
   --secondary: 57 73 171; /* #3949ab - Bleu moyen */
@@ -31,35 +31,6 @@
   --warning-foreground: 255 255 255; /* Blanc */
   --info: 59 130 246; /* #3b82f6 - Bleu info */
   --info-foreground: 255 255 255; /* Blanc */
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Mode sombre adapté pour le thème éducatif */
-    --primary: 57 73 171; /* Bleu plus clair en mode sombre */
-    --primary-foreground: 255 255 255;
-    --secondary: 30 41 59; /* #1e293b - Gris bleuté */
-    --secondary-foreground: 255 255 255;
-    --accent: 0 203 169; /* Vert menthe conservé */
-    --accent-foreground: 255 255 255;
-    --destructive: 239 68 68; /* Rouge plus vif */
-    --destructive-foreground: 255 255 255;
-    --muted: 30 41 59; /* #1e293b */
-    --muted-foreground: 148 163 184; /* #94a3b8 */
-    --card: 15 23 42; /* #0f172a - Bleu très foncé */
-    --card-foreground: 241 245 249; /* #f1f5f9 - Blanc cassé */
-    --border: 51 65 85; /* #334155 */
-    --input: 51 65 85; /* #334155 */
-    --ring: 57 73 171;
-    --background: 2 6 23; /* #020617 - Bleu très foncé */
-    --foreground: 241 245 249; /* #f1f5f9 */
-    --success: 34 197 94; /* Vert plus vif */
-    --success-foreground: 255 255 255;
-    --warning: 251 146 60;
-    --warning-foreground: 255 255 255;
-    --info: 59 130 246;
-    --info-foreground: 255 255 255;
-  }
 }
 
 * {
