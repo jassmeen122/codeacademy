@@ -70,7 +70,7 @@ export const CodeAcademyHero = () => {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/10">
                 <TrendingUp className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium text-primary">
-                  Plateforme de formation informatique #1 en France
+                  Notre plateforme de formation 100 % marocaine est spécialement conçue pour répondre aux besoins des apprenants locaux en proposant des contenus pédagogiques innovants et adaptés aux réalités du marché du travail marocain. Grâce à une technologie moderne et une interface intuitive, elle facilite l'accès à un apprentissage de qualité, accessible à tous, et encourage le développement des compétences dans divers domaines informatiques et technologiques
                 </span>
               </div>
 
