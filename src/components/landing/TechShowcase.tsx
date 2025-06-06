@@ -20,47 +20,47 @@ export const TechShowcase = () => {
       description: "Intelligence artificielle et data science",
       level: "Débutant à Expert",
       projects: "15+ projets",
-      gradient: "from-blue-500 to-blue-600"
+      gradient: "blue-gradient-1"
     },
     {
-      icon: <Code2 className="h-10 w-10 text-indigo-600" />,
+      icon: <Code2 className="h-10 w-10 text-blue-700" />,
       title: "JavaScript",
       description: "Développement web moderne",
       level: "Tous niveaux",
       projects: "20+ projets",
-      gradient: "from-indigo-500 to-indigo-600"
+      gradient: "blue-gradient-2"
     },
     {
-      icon: <Database className="h-10 w-10 text-green-600" />,
+      icon: <Database className="h-10 w-10 text-blue-800" />,
       title: "Bases de données",
       description: "SQL, NoSQL et gestion des données",
       level: "Intermédiaire",
       projects: "10+ projets",
-      gradient: "from-green-500 to-green-600"
+      gradient: "blue-gradient-3"
     },
     {
-      icon: <Globe className="h-10 w-10 text-purple-600" />,
+      icon: <Globe className="h-10 w-10 text-blue-600" />,
       title: "Développement Web",
       description: "Frontend et backend complets",
       level: "Tous niveaux",
       projects: "25+ projets",
-      gradient: "from-purple-500 to-purple-600"
+      gradient: "blue-gradient-1"
     },
     {
-      icon: <Smartphone className="h-10 w-10 text-cyan-600" />,
+      icon: <Smartphone className="h-10 w-10 text-blue-700" />,
       title: "Applications mobiles",
       description: "React Native et développement mobile",
       level: "Avancé",
       projects: "8+ projets",
-      gradient: "from-cyan-500 to-cyan-600"
+      gradient: "blue-gradient-2"
     },
     {
-      icon: <Brain className="h-10 w-10 text-orange-600" />,
+      icon: <Brain className="h-10 w-10 text-blue-800" />,
       title: "Intelligence artificielle",
       description: "Machine Learning et Deep Learning",
       level: "Expert",
       projects: "12+ projets",
-      gradient: "from-orange-500 to-orange-600"
+      gradient: "blue-gradient-3"
     }
   ];
 
@@ -71,19 +71,19 @@ export const TechShowcase = () => {
       description: "Développez des applications réelles utilisées en entreprise"
     },
     {
-      icon: <Shield className="h-8 w-8 text-success" />,
+      icon: <Shield className="h-8 w-8 text-blue-600" />,
       title: "Certification reconnue",
       description: "Obtenez des certificats valorisés par les employeurs tech"
     },
     {
-      icon: <Brain className="h-8 w-8 text-accent" />,
+      icon: <Brain className="h-8 w-8 text-blue-700" />,
       title: "Mentorat expert",
       description: "Accompagnement par des développeurs seniors expérimentés"
     }
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-50 to-white">
+    <section className="py-20 bg-gradient-to-br from-blue-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-slate-900">
@@ -98,9 +98,9 @@ export const TechShowcase = () => {
         {/* Technologies Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {technologies.map((tech, index) => (
-            <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white hover:-translate-y-2">
+            <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white hover:-translate-y-2 blue-shadow">
               <CardContent className="p-8">
-                <div className={`bg-gradient-to-r ${tech.gradient} rounded-xl p-4 w-fit mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`${tech.gradient} rounded-xl p-4 w-fit mb-6 group-hover:scale-110 transition-transform duration-300`}>
                   <div className="text-white">
                     {tech.icon}
                   </div>
@@ -130,7 +130,7 @@ export const TechShowcase = () => {
         </div>
 
         {/* Highlights Section */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-100">
+        <div className="bg-white rounded-2xl p-8 blue-shadow-lg border border-blue-100">
           <h3 className="text-2xl font-bold text-center mb-8 text-slate-900">
             Pourquoi choisir Code Academy ?
           </h3>
@@ -138,7 +138,7 @@ export const TechShowcase = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {highlights.map((highlight, index) => (
               <div key={index} className="text-center">
-                <div className="bg-slate-50 rounded-xl p-4 w-fit mx-auto mb-4">
+                <div className="bg-blue-50 rounded-xl p-4 w-fit mx-auto mb-4">
                   {highlight.icon}
                 </div>
                 <h4 className="text-lg font-semibold mb-2 text-slate-900">

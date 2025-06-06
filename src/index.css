@@ -6,23 +6,23 @@
 @tailwind utilities;
 
 :root {
-  /* Thème professionnel informatique - Code Academy */
+  /* Thème professionnel bleu et blanc uniquement */
   --background: 255 255 255; /* #ffffff - Blanc pur */
-  --foreground: 15 23 42; /* #0f172a - Bleu marine professionnel */
+  --foreground: 15 23 42; /* #0f172a - Bleu marine très foncé */
   
-  --primary: 37 99 235; /* #2563eb - Bleu moderne technologique */
+  --primary: 37 99 235; /* #2563eb - Bleu moderne principal */
   --primary-foreground: 255 255 255; /* #ffffff - Blanc */
   
-  --secondary: 241 245 249; /* #f1f5f9 - Gris bleuté très clair */
+  --secondary: 248 250 252; /* #f8fafc - Blanc cassé très léger */
   --secondary-foreground: 51 65 85; /* #334155 - Gris bleu foncé */
   
-  --accent: 79 70 229; /* #4f46e5 - Indigo tech */
+  --accent: 59 130 246; /* #3b82f6 - Bleu accent */
   --accent-foreground: 255 255 255; /* #ffffff - Blanc */
   
-  --destructive: 220 38 38; /* #dc2626 - Rouge professionnel */
+  --destructive: 239 68 68; /* #ef4444 - Rouge d'erreur (exception) */
   --destructive-foreground: 255 255 255; /* #ffffff - Blanc */
   
-  --muted: 248 250 252; /* #f8fafc - Gris très clair */
+  --muted: 241 245 249; /* #f1f5f9 - Gris bleuté très clair */
   --muted-foreground: 100 116 139; /* #64748b - Gris moyen */
   
   --card: 255 255 255; /* #ffffff - Blanc pur */
@@ -32,10 +32,10 @@
   --input: 255 255 255; /* #ffffff - Input blanc */
   --ring: 37 99 235; /* #2563eb - Bleu moderne */
   
-  --success: 34 197 94; /* #22c55e - Vert tech succès */
+  --success: 59 130 246; /* #3b82f6 - Bleu pour succès */
   --success-foreground: 255 255 255; /* #ffffff - Blanc */
   
-  --warning: 249 115 22; /* #f97316 - Orange tech professionnel */
+  --warning: 37 99 235; /* #2563eb - Bleu pour warning */
   --warning-foreground: 255 255 255; /* #ffffff - Blanc */
   
   --info: 14 165 233; /* #0ea5e9 - Bleu cyan informatique */
@@ -58,7 +58,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Typographie professionnelle informatique */
+/* Typographie professionnelle */
 h1, h2, h3, h4, h5, h6 {
   font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
@@ -90,15 +90,15 @@ code, pre, .font-mono {
   border-radius: var(--radius);
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
-  color: hsl(var(--info));
+  color: hsl(var(--primary));
 }
 
 pre {
   padding: 1rem;
   overflow-x: auto;
-  background: #1e293b;
+  background: hsl(var(--foreground));
   border: 1px solid hsl(var(--border));
-  color: #e2e8f0;
+  color: hsl(var(--background));
 }
 
 /* Cartes professionnelles */
@@ -107,7 +107,7 @@ pre {
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.1);
+  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.1);
 }
 
 .edu-card:hover {
@@ -121,10 +121,10 @@ pre {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid hsl(var(--border));
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.1);
+  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.1);
 }
 
-/* Boutons professionnels tech */
+/* Boutons professionnels */
 .pro-btn {
   display: inline-flex;
   align-items: center;
@@ -179,6 +179,21 @@ pre {
   animation: fade-in 0.3s ease-out;
 }
 
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
 /* Scrollbar moderne */
 ::-webkit-scrollbar {
   width: 8px;
@@ -197,7 +212,7 @@ pre {
   background: hsl(var(--primary) / 0.5);
 }
 
-/* Classes spécifiques Code Academy tech */
+/* Classes spécifiques Code Academy */
 .code-academy-gradient {
   background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
 }
@@ -206,7 +221,7 @@ pre {
   background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--background)) 50%, hsl(var(--muted)) 100%);
 }
 
-/* Styles informatiques avancés */
+/* Styles avancés bleu et blanc */
 .tech-border {
   border: 2px solid transparent;
   background: linear-gradient(hsl(var(--background)), hsl(var(--background))) padding-box,
@@ -216,6 +231,42 @@ pre {
 .code-highlight {
   background: linear-gradient(90deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1));
   border-left: 4px solid hsl(var(--primary));
+}
+
+/* Gradients bleu moderne */
+.blue-gradient-1 {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+.blue-gradient-2 {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+}
+
+.blue-gradient-3 {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+/* Effets bleu professionnel */
+.blue-shadow {
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.15);
+}
+
+.blue-shadow-lg {
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.2);
+}
+
+/* Animations bleu */
+@keyframes blue-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+  }
+}
+
+.animate-blue-pulse {
+  animation: blue-pulse 2s infinite;
 }
 
 /* Responsive */
