@@ -2,6 +2,8 @@
 import Navigation from "@/components/Navigation";
 import { CodeAcademyHero } from "@/components/landing/CodeAcademyHero";
 import { WhyCodeAcademy } from "@/components/landing/WhyCodeAcademy";
+import { TechShowcase } from "@/components/landing/TechShowcase";
+import { LearningPath } from "@/components/landing/LearningPath";
 import { LanguagesSection } from "@/components/landing/LanguagesSection";
 import { TechFeaturesSection } from "@/components/landing/TechFeaturesSection";
 import { Testimonials } from "@/components/landing/Testimonials";
@@ -13,6 +15,8 @@ const Index = () => {
       <Navigation />
       <main className="pt-16">
         <CodeAcademyHero />
+        <TechShowcase />
+        <LearningPath />
         <WhyCodeAcademy />
         <LanguagesSection />
         <TechFeaturesSection />
