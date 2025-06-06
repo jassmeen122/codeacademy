@@ -70,7 +70,7 @@ export const CodeAcademyHero = () => {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/10">
                 <TrendingUp className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium text-primary">
-                  Notre plateforme de formation 100 % marocaine est spécialement conçue pour répondre aux besoins des apprenants locaux en proposant des contenus pédagogiques innovants et adaptés aux réalités du marché du travail marocain. Grâce à une technologie moderne et une interface intuitive, elle facilite l'accès à un apprentissage de qualité, accessible à tous, et encourage le développement des compétences dans divers domaines informatiques et technologiques
+                  Plateforme d'apprentissage tech #1 au Maroc
                 </span>
               </div>
 
@@ -154,12 +154,12 @@ export const CodeAcademyHero = () => {
                   <div className="bg-slate-900 rounded-lg p-4 text-white font-mono text-sm">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-orange-500"></div>
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>
                       <span className="ml-4 text-slate-400">main.py</span>
                     </div>
                     <div className="space-y-2">
-                      <div><span className="text-blue-400">def</span> <span className="text-yellow-300">learn_programming</span>():</div>
+                      <div><span className="text-blue-400">def</span> <span className="text-white">learn_programming</span>():</div>
                       <div className="ml-4"><span className="text-green-400"># Votre parcours commence ici</span></div>
                       <div className="ml-4"><span className="text-purple-400">skills</span> = [<span className="text-orange-400">"Python"</span>, <span className="text-orange-400">"JavaScript"</span>]</div>
                       <div className="ml-4"><span className="text-blue-400">return</span> <span className="text-orange-400">"Carrière tech réussie!"</span></div>
@@ -216,6 +216,24 @@ export const CodeAcademyHero = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Section sur le Maroc placée en bas */}
+      <div className="mt-20 py-16 bg-gradient-to-r from-blue-50 to-white">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold text-slate-900 mb-6">
+              Plateforme 100% marocaine pour votre réussite
+            </h3>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Notre plateforme est spécialement conçue pour répondre aux besoins des apprenants locaux 
+              en proposant des contenus pédagogiques innovants et adaptés aux réalités du marché du travail marocain. 
+              Grâce à une technologie moderne et une interface intuitive, nous facilitons l'accès à un apprentissage 
+              de qualité, accessible à tous, et encourageons le développement des compétences dans divers domaines 
+              informatiques et technologiques.
+            </p>
           </div>
         </div>
       </div>
