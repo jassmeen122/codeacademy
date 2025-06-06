@@ -86,7 +86,7 @@ export const TechHeroSection = () => {
           {/* Subtitle */}
           <div className="neon-card p-6 mb-12 max-w-3xl mx-auto">
             <p className="text-2xl text-foreground mb-4 font-mono">
-              <span className="text-accent">></span> École de programmation immersive
+              <span className="text-accent">{">"}</span> École de programmation immersive
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
               Apprenez à coder comme un professionnel. Maîtrisez les langages, 
