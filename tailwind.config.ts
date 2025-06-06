@@ -25,24 +25,24 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))", // Bleu foncé
-          foreground: "hsl(var(--primary-foreground))", // Blanc
+          DEFAULT: "hsl(var(--primary))", // Bleu électrique
+          foreground: "hsl(var(--primary-foreground))", // Noir foncé
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))", // Bleu
-          foreground: "hsl(var(--secondary-foreground))", // Blanc
+          DEFAULT: "hsl(var(--secondary))", // Gris foncé
+          foreground: "hsl(var(--secondary-foreground))", // Blanc cassé
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))", // Vert
-          foreground: "hsl(var(--accent-foreground))", // Blanc
+          DEFAULT: "hsl(var(--accent))", // Vert néon
+          foreground: "hsl(var(--accent-foreground))", // Noir foncé
         },
         success: {
-          DEFAULT: "hsl(var(--success))", // Vert
-          foreground: "hsl(var(--success-foreground))", // Blanc
+          DEFAULT: "hsl(var(--success))", // Vert néon
+          foreground: "hsl(var(--success-foreground))", // Noir foncé
         },
         info: {
-          DEFAULT: "hsl(var(--info))", // Bleu
-          foreground: "hsl(var(--info-foreground))", // Blanc
+          DEFAULT: "hsl(var(--info))", // Cyan tech
+          foreground: "hsl(var(--info-foreground))", // Noir foncé
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -53,8 +53,8 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         card: {
-          DEFAULT: "hsl(var(--card))", // Blanc
-          foreground: "hsl(var(--card-foreground))", // Bleu foncé
+          DEFAULT: "hsl(var(--card))", // Carte sombre
+          foreground: "hsl(var(--card-foreground))", // Blanc cassé
         },
         warning: {
           DEFAULT: "hsl(var(--warning))",
@@ -67,9 +67,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        'heading': ['Poppins', 'system-ui', 'sans-serif'],
-        'body': ['Roboto', 'system-ui', 'sans-serif'],
-        'code': ['Fira Code', 'Courier New', 'monospace'],
+        'heading': ['Inter', 'system-ui', 'sans-serif'],
+        'body': ['Inter', 'system-ui', 'sans-serif'],
+        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
+        'code': ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       keyframes: {
         "accordion-down": {
@@ -80,21 +81,48 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "simple-fade-in": {
+        "matrix-fade": {
           "0%": {
             opacity: "0",
-            transform: "translateY(20px)"
+            transform: "translateY(20px) scale(0.95)"
           },
           "100%": {
             opacity: "1",
-            transform: "translateY(0)"
+            transform: "translateY(0) scale(1)"
           }
         },
+        "pulse-glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 20px hsla(var(--primary), 0.3)"
+          },
+          "50%": {
+            boxShadow: "0 0 30px hsla(var(--primary), 0.6)"
+          }
+        },
+        "tech-slide": {
+          "0%": {
+            transform: "translateX(-100%)",
+            opacity: "0"
+          },
+          "100%": {
+            transform: "translateX(0)",
+            opacity: "1"
+          }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "simple-fade-in": "simple-fade-in 0.6s ease-out",
+        "matrix-fade": "matrix-fade 0.6s ease-out",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "tech-slide": "tech-slide 0.5s ease-out",
+      },
+      boxShadow: {
+        'tech': '0 0 20px hsla(var(--primary), 0.3)',
+        'tech-lg': '0 0 30px hsla(var(--primary), 0.5)',
+        'accent': '0 0 20px hsla(var(--accent), 0.3)',
+        'dark': '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
+        'dark-lg': '0 20px 25px -5px rgba(0, 0, 0, 0.4)',
       },
     },
   },

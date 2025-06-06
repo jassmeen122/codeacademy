@@ -5,23 +5,23 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium font-heading ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold font-heading ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 uppercase tracking-wide",
   {
     variants: {
       variant: {
-        default: "edu-btn-primary",
+        default: "tech-btn-primary",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-edu-sm hover:bg-destructive/90 hover:shadow-edu-md",
+          "bg-destructive text-destructive-foreground shadow-dark hover:bg-destructive/90 hover:shadow-tech",
         outline:
-          "border border-primary bg-background text-primary shadow-edu-sm hover:bg-primary hover:text-primary-foreground hover:shadow-edu-md",
+          "border border-primary bg-transparent text-primary shadow-dark hover:bg-primary hover:text-primary-foreground hover:shadow-tech",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-edu-sm hover:bg-secondary/80 hover:shadow-edu-md",
-        ghost: "hover:bg-accent/10 hover:text-accent transition-all duration-200",
-        link: "text-primary underline-offset-4 hover:underline font-medium",
-        accent: "edu-btn-accent",
-        success: "bg-success text-success-foreground shadow-edu-sm hover:bg-success/90 hover:shadow-edu-md",
-        warning: "bg-warning text-warning-foreground shadow-edu-sm hover:bg-warning/90 hover:shadow-edu-md",
-        info: "bg-info text-info-foreground shadow-edu-sm hover:bg-info/90 hover:shadow-edu-md",
+          "tech-btn-secondary",
+        ghost: "hover:bg-secondary/80 hover:text-accent transition-all duration-300 hover:shadow-accent",
+        link: "text-primary underline-offset-4 hover:underline font-medium hover:text-accent transition-colors",
+        accent: "bg-accent text-accent-foreground shadow-accent hover:bg-accent/90 hover:shadow-tech transform hover:-translate-y-0.5",
+        success: "bg-success text-success-foreground shadow-accent hover:bg-success/90 hover:shadow-tech transform hover:-translate-y-0.5",
+        warning: "bg-warning text-warning-foreground shadow-dark hover:bg-warning/90 hover:shadow-tech",
+        info: "bg-info text-info-foreground shadow-tech hover:bg-info/90 hover:shadow-tech-lg",
       },
       size: {
         default: "h-11 px-6 py-2.5",
