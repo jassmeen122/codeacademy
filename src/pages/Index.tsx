@@ -1,8 +1,10 @@
 
 import Navigation from "@/components/Navigation";
-import { HeroSection } from "@/components/landing/HeroSection";
+import { CodeAcademyHero } from "@/components/landing/CodeAcademyHero";
+import { WhyCodeAcademy } from "@/components/landing/WhyCodeAcademy";
 import { LanguagesSection } from "@/components/landing/LanguagesSection";
 import { TechFeaturesSection } from "@/components/landing/TechFeaturesSection";
+import { Testimonials } from "@/components/landing/Testimonials";
 import { Footer } from "@/components/landing/Footer";
 
 const Index = () => {
@@ -10,9 +12,11 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Navigation />
       <main className="pt-16">
-        <HeroSection />
+        <CodeAcademyHero />
+        <WhyCodeAcademy />
         <LanguagesSection />
         <TechFeaturesSection />
+        <Testimonials />
       </main>
       <Footer />
     </div>
