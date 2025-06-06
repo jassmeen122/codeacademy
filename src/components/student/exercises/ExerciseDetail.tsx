@@ -54,7 +54,9 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
   difficulties
 }) => {
   const renderStars = (count: number) => {
-    return Array(count).fill(0).map((_, i) => <Star key={i} className="h-4 w-4 inline-block text-yellow-500 fill-yellow-500" />);
+    return Array(count).fill(0).map((_, i) => (
+      <Star key={i} className="h-4 w-4 inline-block text-primary fill-primary star-filled" />
+    ));
   };
 
   return (
@@ -114,8 +116,8 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
         </div>
         
         {showHint && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-sm text-yellow-800">
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-blue-800">
               <strong>Indice:</strong> Pensez à utiliser une boucle pour parcourir la chaîne de caractères et une approche pour inverser l'ordre des éléments.
             </p>
           </div>

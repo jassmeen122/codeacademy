@@ -60,6 +60,25 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        // Professional blue palette only
+        'blue-professional': {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+          950: '#172554',
+        },
+        // Remove any yellow references and replace with blue alternatives
+        'star': {
+          DEFAULT: '#2563eb', // Blue instead of yellow
+          foreground: '#ffffff',
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -99,6 +118,14 @@ export default {
             transform: "translateY(0)",
             opacity: "1"
           }
+        },
+        "blue-pulse": {
+          "0%, 100%": {
+            boxShadow: "0 0 0 0 rgba(37, 99, 235, 0.4)"
+          },
+          "50%": {
+            boxShadow: "0 0 0 10px rgba(37, 99, 235, 0)"
+          }
         }
       },
       animation: {
@@ -106,10 +133,14 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         "slide-up": "slide-up 0.4s ease-out",
+        "blue-pulse": "blue-pulse 2s infinite",
       },
       boxShadow: {
-        'professional': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-        'professional-lg': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'professional': '0 1px 3px 0 rgba(37, 99, 235, 0.1), 0 1px 2px 0 rgba(37, 99, 235, 0.06)',
+        'professional-lg': '0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06)',
+        'blue': '0 4px 20px rgba(37, 99, 235, 0.15)',
+        'blue-lg': '0 8px 32px rgba(37, 99, 235, 0.2)',
+        'blue-xl': '0 12px 40px rgba(37, 99, 235, 0.25)',
       }
     },
   },
