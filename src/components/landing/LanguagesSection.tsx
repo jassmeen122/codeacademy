@@ -10,126 +10,96 @@ export const LanguagesSection: React.FC = () => {
   const languages = [
     { 
       name: "Python", 
-      icon: <Terminal className="h-8 w-8 text-blue-400" />,
+      icon: <Terminal className="h-8 w-8 text-blue-600" />,
       description: "IA & Data Science",
-      color: "from-blue-500/20 to-blue-600/20"
+      students: "2.5k+ étudiants",
+      level: "Débutant à Expert"
     },
     { 
       name: "JavaScript", 
-      icon: <Braces className="h-8 w-8 text-yellow-400" />,
-      description: "Web Development",
-      color: "from-yellow-500/20 to-yellow-600/20"
+      icon: <Braces className="h-8 w-8 text-green-600" />,
+      description: "Développement Web",
+      students: "3.2k+ étudiants",
+      level: "Tous niveaux"
     },
     { 
       name: "Java", 
-      icon: <Cpu className="h-8 w-8 text-red-400" />,
+      icon: <Cpu className="h-8 w-8 text-red-600" />,
       description: "Applications Enterprise",
-      color: "from-red-500/20 to-red-600/20"
+      students: "1.8k+ étudiants",
+      level: "Intermédiaire"
     },
     { 
       name: "PHP", 
-      icon: <Globe className="h-8 w-8 text-purple-400" />,
+      icon: <Globe className="h-8 w-8 text-purple-600" />,
       description: "Backend Web",
-      color: "from-purple-500/20 to-purple-600/20"
+      students: "1.5k+ étudiants",
+      level: "Débutant"
     },
     { 
       name: "C++", 
-      icon: <Code className="h-8 w-8 text-green-400" />,
+      icon: <Code className="h-8 w-8 text-gray-700" />,
       description: "Systèmes & Performance",
-      color: "from-green-500/20 to-green-600/20"
+      students: "900+ étudiants",
+      level: "Avancé"
     },
     { 
       name: "SQL", 
-      icon: <Database className="h-8 w-8 text-orange-400" />,
+      icon: <Database className="h-8 w-8 text-orange-600" />,
       description: "Bases de données",
-      color: "from-orange-500/20 to-orange-600/20"
+      students: "2.1k+ étudiants",
+      level: "Essentiel"
     }
   ];
   
   return (
-    <section className="py-20 relative overflow-hidden">
-      {/* Background Matrix Effect */}
-      <div className="absolute inset-0 matrix-bg opacity-40" />
-      <div className="absolute inset-0 bg-gradient-to-br from-background/90 to-background/80" />
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col md:flex-row items-center gap-12 mb-16">
-          <div className="relative group">
-            {/* Animated tech icons */}
-            <div className="absolute -top-6 -left-6 animate-pulse opacity-60">
-              <Terminal className="h-10 w-10 text-neon-blue animate-matrix-rain" />
-            </div>
-            
-            <div className="neon-card p-8 hover:scale-110 transition-all duration-500 cyber-border">
-              <Code className="h-20 w-20 text-primary group-hover:animate-neon-pulse" />
-            </div>
-            
-            <div className="absolute -bottom-6 -right-6 animate-pulse animation-delay-1000">
-              <Braces className="h-10 w-10 text-neon-green animate-data-flow" />
-            </div>
-          </div>
-          
-          <div className="flex-1">
-            <h2 className="text-4xl font-bold mb-6 text-gradient">
-              Langages de Programmation
-              <span className="terminal-cursor ml-2"></span>
-            </h2>
-            <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
-              Maîtrisez les technologies qui façonnent l'avenir. Nos cours couvrent tous les langages 
-              essentiels de l'industrie tech, de l'intelligence artificielle au développement web.
-            </p>
-            <div className="code-block">
-              <span className="comment-text">// Votre parcours commence ici</span><br/>
-              <span className="keyword-text">for</span> (<span className="variable-text">language</span> <span className="keyword-text">of</span> <span className="variable-text">availableCourses</span>) {"{"}
-              <br/>
-              &nbsp;&nbsp;<span className="function-text">learn</span>(<span className="variable-text">language</span>);
-              <br/>
-              &nbsp;&nbsp;<span className="function-text">practice</span>(<span className="variable-text">projects</span>);
-              <br/>
-              &nbsp;&nbsp;<span className="function-text">master</span>(<span className="variable-text">skills</span>);
-              <br/>
-              {"}"}
-            </div>
-          </div>
+    <section className="py-20 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Langages de Programmation
+          </h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Choisissez parmi notre sélection de langages modernes et apprenez avec des cours structurés, 
+            des exercices pratiques et des projets concrets.
+          </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {languages.map((lang, i) => (
             <Card key={i} 
-              className={`edu-card cursor-pointer group relative overflow-hidden bg-gradient-to-br ${lang.color} hover:scale-105 transition-all duration-500`}
+              className="edu-card cursor-pointer group bg-white border-gray-200 hover:border-blue-300 transition-all duration-300"
               onClick={() => navigate("/auth")}
             >
-              {/* Scan line effect */}
-              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-scan-line" />
-              
-              <CardContent className="p-6 text-center relative z-10">
-                <div className="mb-4 group-hover:animate-hologram transition-all duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="mb-6 group-hover:scale-110 transition-transform duration-300">
                   {lang.icon}
                 </div>
-                <div className="font-mono font-bold text-lg mb-2 text-neon group-hover:animate-terminal-typing">
+                <h3 className="font-bold text-xl mb-3 text-gray-900 group-hover:text-blue-600 transition-colors">
                   {lang.name}
-                </div>
-                <div className="text-xs text-muted-foreground group-hover:text-foreground/80 transition-colors">
+                </h3>
+                <p className="text-gray-600 mb-4 font-medium">
                   {lang.description}
+                </p>
+                <div className="space-y-2 text-sm text-gray-500">
+                  <div className="flex items-center justify-between">
+                    <span>Étudiants:</span>
+                    <span className="font-medium text-blue-600">{lang.students}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Niveau:</span>
+                    <span className="font-medium text-green-600">{lang.level}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <span className="text-blue-600 font-medium text-sm group-hover:text-blue-700 transition-colors">
+                    Commencer le cours →
+                  </span>
                 </div>
               </CardContent>
-              
-              {/* Hover glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </Card>
           ))}
-        </div>
-        
-        {/* Matrix code rain effect */}
-        <div className="absolute top-0 right-10 opacity-20">
-          <div className="text-matrix text-xs font-mono animate-matrix-rain">
-            01010011<br/>
-            01100101<br/>
-            01100001<br/>
-            01110010<br/>
-            01100011<br/>
-            01101000
-          </div>
         </div>
       </div>
     </section>
