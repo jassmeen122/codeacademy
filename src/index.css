@@ -7,7 +7,7 @@
 
 :root {
   /* Blue and white theme only */
-  --background: 255 255 255; /* #ffffff - Pure white */
+  --background: 135 206 235; /* #87ceeb - Sky blue background */
   --foreground: 0 0 0; /* #000000 - Pure black */
   
   --primary: 0 0 0; /* #000000 - Black for buttons */
@@ -35,7 +35,7 @@
   --success: 37 99 235; /* #2563eb - Blue for success */
   --success-foreground: 255 255 255; /* #ffffff - White */
   
-  --warning: 37 99 235; /* #2563eb - Blue for warning */
+  --warning: 37 99 235; /* #2563eb - Blue for warning (no yellow) */
   --warning-foreground: 255 255 255; /* #ffffff - White */
   
   --info: 59 130 246; /* #3b82f6 - Blue for info */

@@ -79,14 +79,14 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
         <Button variant="outline" onClick={onBack}>Retour à la liste</Button>
       </div>
       
-      <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+      <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
         <h3 className="font-medium mb-2">Description:</h3>
         <p className="text-gray-700">{exercise.description}</p>
         
         {exercise.tests && exercise.tests.length > 0 && (
           <div className="mt-4">
             <h3 className="font-medium mb-2">Exemples:</h3>
-            <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto">
+            <pre className="bg-blue-100 p-3 rounded text-sm overflow-auto">
               {exercise.tests.map((test, idx) => (
                 <div key={idx}>
                   Input: {test.input} → Output: {test.output}
@@ -116,17 +116,17 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
         </div>
         
         {showHint && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm text-blue-800">
+          <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-md">
+            <p className="text-sm text-blue-900">
               <strong>Indice:</strong> Pensez à utiliser une boucle pour parcourir la chaîne de caractères et une approche pour inverser l'ordre des éléments.
             </p>
           </div>
         )}
         
         {showSolution && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-md">
             <p className="font-medium text-sm mb-2">Solution:</p>
-            <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto">
+            <pre className="bg-blue-200 p-3 rounded text-sm overflow-auto">
 {`// Solution en JavaScript
 function solution(str) {
   return str.split('').reverse().join('');
@@ -221,21 +221,21 @@ def solution(s):
         </Tabs>
       </div>
       
-      <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-        <h3 className="font-medium flex items-center gap-2 text-blue-800">
+      <div className="bg-blue-100 p-4 rounded-md border border-blue-200">
+        <h3 className="font-medium flex items-center gap-2 text-blue-900">
           <Info className="h-4 w-4" />
           Progression
         </h3>
         <div className="mt-2 space-y-2">
           <div>
-            <div className="flex justify-between mb-1 text-sm text-blue-800">
+            <div className="flex justify-between mb-1 text-sm text-blue-900">
               <span>Algorithmes</span>
               <span>40%</span>
             </div>
             <Progress value={40} className="h-2" />
           </div>
           <div>
-            <div className="flex justify-between mb-1 text-sm text-blue-800">
+            <div className="flex justify-between mb-1 text-sm text-blue-900">
               <span>Syntaxe</span>
               <span>60%</span>
             </div>
