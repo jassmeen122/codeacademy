@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -48,8 +47,12 @@ const LanguageCoursePage = () => {
 
   const handleViewSummary = () => {
     console.log('Navigating to summary for language:', languageId);
+    console.log('Current route before navigation:', window.location.pathname);
+    
     if (languageId) {
-      navigate(`/student/language-summary/${languageId}`);
+      const summaryRoute = `/student/language-summary/${languageId}`;
+      console.log('Attempting to navigate to:', summaryRoute);
+      navigate(summaryRoute);
     } else {
       console.error('Language ID is undefined');
     }
@@ -137,7 +140,7 @@ const LanguageCoursePage = () => {
                 onClick={handleViewSummary}
               >
                 <Book className="mr-2 h-4 w-4" />
-                Voir le Résumé
+                Voir le Résumé Détaillé
               </Button>
             </CardContent>
           </Card>
