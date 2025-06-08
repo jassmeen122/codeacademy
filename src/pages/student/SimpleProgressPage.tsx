@@ -89,7 +89,7 @@ const SimpleProgressPage = () => {
     name: badge.name,
     description: badge.description,
     icon: badge.icon,
-    points: badge.points || 0,
+    points: 10, // Valeur par défaut pour les points
     earned: stats.badges.some(earnedBadge => earnedBadge.id === badge.id),
     progress: Math.floor(Math.random() * 100), // Simulation de progression
     category: (
