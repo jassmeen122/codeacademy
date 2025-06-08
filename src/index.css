@@ -6,40 +6,40 @@
 @tailwind utilities;
 
 :root {
-  /* Thème professionnel bleu et blanc uniquement */
-  --background: 255 255 255; /* #ffffff - Blanc pur */
-  --foreground: 15 23 42; /* #0f172a - Bleu marine très foncé */
+  /* Blue and white theme only */
+  --background: 255 255 255; /* #ffffff - Pure white */
+  --foreground: 0 0 0; /* #000000 - Pure black */
   
-  --primary: 37 99 235; /* #2563eb - Bleu moderne principal */
-  --primary-foreground: 255 255 255; /* #ffffff - Blanc */
+  --primary: 0 0 0; /* #000000 - Black for buttons */
+  --primary-foreground: 255 255 255; /* #ffffff - White text on black */
   
-  --secondary: 248 250 252; /* #f8fafc - Blanc cassé très léger */
-  --secondary-foreground: 51 65 85; /* #334155 - Gris bleu foncé */
+  --secondary: 239 246 255; /* #eff6ff - Very light blue */
+  --secondary-foreground: 0 0 0; /* #000000 - Black text */
   
-  --accent: 59 130 246; /* #3b82f6 - Bleu accent */
-  --accent-foreground: 255 255 255; /* #ffffff - Blanc */
+  --accent: 59 130 246; /* #3b82f6 - Blue accent */
+  --accent-foreground: 255 255 255; /* #ffffff - White text */
   
-  --destructive: 239 68 68; /* #ef4444 - Rouge d'erreur (exception) */
-  --destructive-foreground: 255 255 255; /* #ffffff - Blanc */
+  --destructive: 220 38 38; /* #dc2626 - Red for errors (exception) */
+  --destructive-foreground: 255 255 255; /* #ffffff - White */
   
-  --muted: 241 245 249; /* #f1f5f9 - Gris bleuté très clair */
-  --muted-foreground: 100 116 139; /* #64748b - Gris moyen */
+  --muted: 248 250 252; /* #f8fafc - Very light gray-blue */
+  --muted-foreground: 71 85 105; /* #475569 - Medium gray for muted text */
   
-  --card: 255 255 255; /* #ffffff - Blanc pur */
-  --card-foreground: 15 23 42; /* #0f172a - Bleu marine */
+  --card: 255 255 255; /* #ffffff - White cards */
+  --card-foreground: 0 0 0; /* #000000 - Black text */
   
-  --border: 226 232 240; /* #e2e8f0 - Bordure gris clair */
-  --input: 255 255 255; /* #ffffff - Input blanc */
-  --ring: 37 99 235; /* #2563eb - Bleu moderne */
+  --border: 226 232 240; /* #e2e8f0 - Light border */
+  --input: 255 255 255; /* #ffffff - White inputs */
+  --ring: 0 0 0; /* #000000 - Black focus ring */
   
-  --success: 59 130 246; /* #3b82f6 - Bleu pour succès */
-  --success-foreground: 255 255 255; /* #ffffff - Blanc */
+  --success: 37 99 235; /* #2563eb - Blue for success */
+  --success-foreground: 255 255 255; /* #ffffff - White */
   
-  --warning: 37 99 235; /* #2563eb - Bleu pour warning */
-  --warning-foreground: 255 255 255; /* #ffffff - Blanc */
+  --warning: 37 99 235; /* #2563eb - Blue for warning */
+  --warning-foreground: 255 255 255; /* #ffffff - White */
   
-  --info: 14 165 233; /* #0ea5e9 - Bleu cyan informatique */
-  --info-foreground: 255 255 255; /* #ffffff - Blanc */
+  --info: 59 130 246; /* #3b82f6 - Blue for info */
+  --info-foreground: 255 255 255; /* #ffffff - White */
   
   --radius: 0.5rem;
 }
@@ -58,7 +58,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Typographie professionnelle */
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
@@ -82,7 +82,7 @@ h3 {
   font-weight: 600;
 }
 
-/* Éléments de code */
+/* Code elements */
 code, pre, .font-mono {
   font-family: "JetBrains Mono", monospace;
   background: hsl(var(--muted));
@@ -90,7 +90,7 @@ code, pre, .font-mono {
   border-radius: var(--radius);
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
-  color: hsl(var(--primary));
+  color: hsl(var(--accent));
 }
 
 pre {
@@ -101,30 +101,30 @@ pre {
   color: hsl(var(--background));
 }
 
-/* Cartes professionnelles */
+/* Cards */
 .edu-card {
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   transition: all 0.3s ease;
-  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.1);
+  box-shadow: 0 1px 3px 0 rgba(59, 130, 246, 0.1);
 }
 
 .edu-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px 0 rgba(37, 99, 235, 0.15);
-  border-color: hsl(var(--primary));
+  box-shadow: 0 4px 12px 0 rgba(59, 130, 246, 0.15);
+  border-color: hsl(var(--accent));
 }
 
-/* Navigation professionnelle */
+/* Navigation */
 .pro-nav {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid hsl(var(--border));
-  box-shadow: 0 1px 3px 0 rgba(37, 99, 235, 0.1);
+  box-shadow: 0 1px 3px 0 rgba(59, 130, 246, 0.1);
 }
 
-/* Boutons professionnels */
+/* Buttons */
 .pro-btn {
   display: inline-flex;
   align-items: center;
@@ -156,14 +156,14 @@ pre {
   background: hsl(var(--secondary) / 0.8);
 }
 
-/* Layout grille */
+/* Layout grid */
 .grid-container {
   display: grid;
   gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
-/* Animations subtiles */
+/* Animations */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -194,7 +194,7 @@ pre {
   animation: slide-up 0.4s ease-out;
 }
 
-/* Scrollbar moderne */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -204,42 +204,42 @@ pre {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.3);
+  background: hsl(var(--accent) / 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.5);
+  background: hsl(var(--accent) / 0.5);
 }
 
-/* Classes spécifiques Code Academy */
+/* Code Academy specific classes */
 .code-academy-gradient {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--primary)) 100%);
 }
 
 .code-academy-hero {
   background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--background)) 50%, hsl(var(--muted)) 100%);
 }
 
-/* Styles avancés bleu et blanc */
+/* Tech borders */
 .tech-border {
   border: 2px solid transparent;
   background: linear-gradient(hsl(var(--background)), hsl(var(--background))) padding-box,
-              linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent))) border-box;
+              linear-gradient(90deg, hsl(var(--accent)), hsl(var(--primary))) border-box;
 }
 
 .code-highlight {
-  background: linear-gradient(90deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1));
-  border-left: 4px solid hsl(var(--primary));
+  background: linear-gradient(90deg, hsl(var(--accent) / 0.1), hsl(var(--primary) / 0.1));
+  border-left: 4px solid hsl(var(--accent));
 }
 
-/* Gradients bleu moderne */
+/* Blue gradients */
 .blue-gradient-1 {
-  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #000000 100%);
 }
 
 .blue-gradient-2 {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #000000 100%);
 }
 
 .blue-gradient-3 {
@@ -247,33 +247,33 @@ pre {
 }
 
 .blue-gradient-4 {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #000000 100%);
 }
 
 .blue-gradient-5 {
-  background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 50%, #1e3a8a 100%);
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #000000 100%);
 }
 
-/* Effets bleu professionnel */
+/* Effects */
 .blue-shadow {
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
 }
 
 .blue-shadow-lg {
-  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
 }
 
 .blue-shadow-xl {
-  box-shadow: 0 12px 40px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.25);
 }
 
-/* Animations bleu */
+/* Animations */
 @keyframes blue-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
   }
 }
 
@@ -294,32 +294,32 @@ pre {
 }
 
 .animate-blue-wave {
-  background: linear-gradient(-45deg, #2563eb, #3b82f6, #1d4ed8, #60a5fa);
+  background: linear-gradient(-45deg, #3b82f6, #2563eb, #000000, #60a5fa);
   background-size: 400% 400%;
   animation: blue-wave 4s ease-in-out infinite;
 }
 
-/* Nouveaux éléments développés pour le thème */
+/* Professional cards */
 .professional-card {
   background: hsl(var(--card));
   border: 2px solid hsl(var(--border));
   border-radius: calc(var(--radius) * 1.5);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
 
 .professional-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.2);
-  border-color: hsl(var(--primary));
+  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
+  border-color: hsl(var(--accent));
 }
 
 .tech-feature {
   background: linear-gradient(135deg, 
-    rgba(37, 99, 235, 0.05) 0%, 
-    rgba(59, 130, 246, 0.05) 50%, 
-    rgba(147, 197, 253, 0.05) 100%);
-  border: 1px solid rgba(37, 99, 235, 0.1);
+    rgba(59, 130, 246, 0.05) 0%, 
+    rgba(147, 197, 253, 0.05) 50%, 
+    rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -358,14 +358,14 @@ pre {
   }
 }
 
-/* Styles spéciaux pour les étoiles (remplacer jaune par bleu) */
+/* Special styles */
 .star-rating {
-  color: hsl(var(--primary));
+  color: hsl(var(--accent));
 }
 
 .star-filled {
-  color: hsl(var(--primary));
-  fill: hsl(var(--primary));
+  color: hsl(var(--accent));
+  fill: hsl(var(--accent));
 }
 
 .star-empty {
@@ -373,21 +373,21 @@ pre {
   fill: none;
 }
 
-/* Badges et indicateurs */
+/* Badges */
 .success-badge {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--primary)) 100%);
   color: white;
 }
 
 .info-badge {
-  background: hsl(var(--info) / 0.1);
-  color: hsl(var(--info));
-  border: 1px solid hsl(var(--info) / 0.2);
+  background: hsl(var(--accent) / 0.1);
+  color: hsl(var(--accent));
+  border: 1px solid hsl(var(--accent) / 0.2);
 }
 
 /* Progress bars */
 .progress-primary {
-  background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  background: linear-gradient(90deg, hsl(var(--accent)) 0%, hsl(var(--primary)) 100%);
 }
 
 .progress-secondary {

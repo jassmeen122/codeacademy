@@ -60,8 +60,8 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
-        // Professional blue palette only
-        'blue-professional': {
+        // Blue palette only
+        'blue-theme': {
           50: '#eff6ff',
           100: '#dbeafe',
           200: '#bfdbfe',
@@ -74,9 +74,9 @@ export default {
           900: '#1e3a8a',
           950: '#172554',
         },
-        // Remove any yellow references and replace with blue alternatives
-        'star': {
-          DEFAULT: '#2563eb', // Blue instead of yellow
+        // Black for buttons
+        'button': {
+          DEFAULT: '#000000',
           foreground: '#ffffff',
         }
       },
@@ -121,10 +121,10 @@ export default {
         },
         "blue-pulse": {
           "0%, 100%": {
-            boxShadow: "0 0 0 0 rgba(37, 99, 235, 0.4)"
+            boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.4)"
           },
           "50%": {
-            boxShadow: "0 0 0 10px rgba(37, 99, 235, 0)"
+            boxShadow: "0 0 0 10px rgba(59, 130, 246, 0)"
           }
         }
       },
@@ -136,11 +136,9 @@ export default {
         "blue-pulse": "blue-pulse 2s infinite",
       },
       boxShadow: {
-        'professional': '0 1px 3px 0 rgba(37, 99, 235, 0.1), 0 1px 2px 0 rgba(37, 99, 235, 0.06)',
-        'professional-lg': '0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06)',
-        'blue': '0 4px 20px rgba(37, 99, 235, 0.15)',
-        'blue-lg': '0 8px 32px rgba(37, 99, 235, 0.2)',
-        'blue-xl': '0 12px 40px rgba(37, 99, 235, 0.25)',
+        'blue': '0 4px 20px rgba(59, 130, 246, 0.15)',
+        'blue-lg': '0 8px 32px rgba(59, 130, 246, 0.2)',
+        'blue-xl': '0 12px 40px rgba(59, 130, 246, 0.25)',
       }
     },
   },
