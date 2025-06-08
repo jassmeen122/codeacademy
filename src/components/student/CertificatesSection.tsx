@@ -6,6 +6,7 @@ import { useCertificates } from '@/hooks/useCertificates';
 import { useExerciseProgress } from '@/hooks/useExerciseProgress';
 import { CertificateDialog } from './CertificateDialog';
 import { ConditionalCertificate } from './ConditionalCertificate';
+import { ProgrammingLanguagesCertificate } from './ProgrammingLanguagesCertificate';
 import { Download, Award, CheckCircle, Calendar, Shield, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -18,6 +19,19 @@ export const CertificatesSection = () => {
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // Données simulées pour les langages de programmation
+  const programmingLanguages = [
+    { name: 'HTML', status: 'completed' as const, progress: 100 },
+    { name: 'CSS', status: 'completed' as const, progress: 100 },
+    { name: 'JavaScript', status: 'completed' as const, progress: 100 },
+    { name: 'PHP', status: 'in_progress' as const, progress: 65 },
+    { name: 'SQL', status: 'locked' as const, progress: 0 }
+  ];
+
+  const completedLanguages = programmingLanguages.filter(lang => lang.status === 'completed').length;
+  const totalLanguages = programmingLanguages.length;
+  const isLanguagesCertificateUnlocked = completedLanguages === totalLanguages;
+
   const handleViewCertificate = (certificate) => {
     setSelectedCertificate(certificate);
     setDialogOpen(true);
@@ -28,7 +42,7 @@ export const CertificatesSection = () => {
     const blob = new Blob(['Certificat PDF simulé'], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     link.href = url;
-    link.download = `certificat-${certificate?.verification_code || 'parcours-complet'}.pdf`;
+    link.download = `certificat-${certificate?.verification_code || 'langages-programmation'}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -37,6 +51,12 @@ export const CertificatesSection = () => {
 
   const handleDownloadConditionalCertificate = () => {
     if (exerciseProgress.isAllCompleted) {
+      handleDownloadCertificate(null);
+    }
+  };
+
+  const handleDownloadLanguagesCertificate = () => {
+    if (isLanguagesCertificateUnlocked) {
       handleDownloadCertificate(null);
     }
   };
@@ -53,6 +73,25 @@ export const CertificatesSection = () => {
         certificate_type: 'full_journey' as const,
         description: `Ce certificat atteste que ${user?.full_name || 'l\'étudiant'} a complété avec succès son parcours d'apprentissage en programmation.`,
         skills_covered: ['JavaScript', 'Python', 'Algorithmes'],
+        total_badges_earned: 5,
+        completion_percentage: 100
+      };
+      setSelectedCertificate(tempCertificate);
+      setDialogOpen(true);
+    }
+  };
+
+  const handleViewLanguagesCertificate = () => {
+    if (isLanguagesCertificateUnlocked) {
+      const tempCertificate = {
+        id: 'temp-languages-cert',
+        title: 'Certificat de Maîtrise en Langages de Programmation',
+        verification_code: `LANG-${Date.now()}`,
+        issued_date: new Date().toISOString(),
+        user_id: user?.id || '',
+        certificate_type: 'skill_mastery' as const,
+        description: `Ce certificat atteste que ${user?.full_name || 'l\'étudiant'} a maîtrisé les langages de programmation suivants : HTML, CSS, JavaScript, PHP, SQL.`,
+        skills_covered: ['HTML', 'CSS', 'JavaScript', 'PHP', 'SQL'],
         total_badges_earned: 5,
         completion_percentage: 100
       };
@@ -83,6 +122,15 @@ export const CertificatesSection = () => {
   return (
     <>
       <div className="space-y-6">
+        {/* Certificat de maîtrise en langages de programmation */}
+        <ProgrammingLanguagesCertificate
+          userFullName={user?.full_name || 'Étudiant'}
+          languages={programmingLanguages}
+          isUnlocked={isLanguagesCertificateUnlocked}
+          onDownload={handleDownloadLanguagesCertificate}
+          onView={handleViewLanguagesCertificate}
+        />
+
         {/* Certificat conditionnel principal */}
         <ConditionalCertificate
           userFullName={user?.full_name || 'Étudiant'}
