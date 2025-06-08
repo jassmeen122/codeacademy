@@ -32,6 +32,8 @@ const ProfilePage = React.lazy(() => import('./pages/student/ProfilePage'));
 const SettingsPage = React.lazy(() => import('./pages/student/SettingsPage'));
 const ModuleContentPage = React.lazy(() => import('./pages/student/ModuleContentPage'));
 const CourseContentPage = React.lazy(() => import('./pages/student/CourseContentPage'));
+const LanguageCoursePage = React.lazy(() => import('./pages/student/LanguageCoursePage'));
+const LanguageSummaryPage = React.lazy(() => import('./pages/student/LanguageSummaryPage'));
 
 // Teacher pages
 const TeacherCoursesPage = React.lazy(() => import('./pages/teacher/CoursesPage'));
@@ -85,6 +87,8 @@ function App() {
                 <Route path="/student/progress-simple" element={<SimpleProgressPage />} />
                 <Route path="/student/exercises" element={<ExercisesPage />} />
                 <Route path="/student/yt-dev-tutorials" element={<YTDevTutorialsPage />} />
+                <Route path="/student/language-courses/:languageId" element={<LanguageCoursePage />} />
+                <Route path="/student/language-summary/:languageId" element={<LanguageSummaryPage />} />
                 <Route path="/student/private-messages" element={<PrivateMessagesPage />} />
                 <Route path="/student/projects" element={<ProjectsPage />} />
                 <Route path="/student/internships" element={<InternshipOpportunitiesPage />} />
