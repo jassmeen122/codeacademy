@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -46,17 +45,17 @@ const YTDevTutorialsPage = () => {
       case 'python':
         return <Badge className="bg-blue-100 text-blue-800 ml-1">Python</Badge>;
       case 'javascript':
-        return <Badge className="bg-blue-100 text-blue-800 ml-1">JavaScript</Badge>;
+        return <Badge className="bg-green-100 text-green-800 ml-1">JavaScript</Badge>;
       case 'java':
-        return <Badge className="bg-blue-100 text-blue-800 ml-1">Java</Badge>;
+        return <Badge className="bg-orange-100 text-orange-800 ml-1">Java</Badge>;
       case 'cpp':
-        return <Badge className="bg-blue-100 text-blue-800 ml-1">C++</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800 ml-1">C++</Badge>;
       case 'c':
-        return <Badge className="bg-blue-100 text-blue-800 ml-1">C</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800 ml-1">C</Badge>;
       case 'php':
-        return <Badge className="bg-blue-100 text-blue-800 ml-1">PHP</Badge>;
+        return <Badge className="bg-indigo-100 text-indigo-800 ml-1">PHP</Badge>;
       case 'sql':
-        return <Badge className="bg-blue-100 text-blue-800 ml-1">SQL</Badge>;
+        return <Badge className="bg-green-100 text-green-800 ml-1">SQL</Badge>;
       default:
         return null;
     }
@@ -67,19 +66,19 @@ const YTDevTutorialsPage = () => {
       case 'python':
         return 'from-blue-50 to-blue-100 border-blue-200';
       case 'javascript':
-        return 'from-blue-50 to-blue-100 border-blue-200';
+        return 'from-green-50 to-green-100 border-green-200';
       case 'java':
-        return 'from-blue-50 to-blue-100 border-blue-200';
+        return 'from-orange-50 to-orange-100 border-orange-200';
       case 'cpp':
-        return 'from-blue-50 to-blue-100 border-blue-200';
+        return 'from-purple-50 to-purple-100 border-purple-200';
       case 'c':
-        return 'from-blue-50 to-blue-100 border-blue-200';
+        return 'from-gray-50 to-gray-100 border-gray-200';
       case 'php':
-        return 'from-blue-50 to-blue-100 border-blue-200';
+        return 'from-indigo-50 to-indigo-100 border-indigo-200';
       case 'sql':
-        return 'from-blue-50 to-blue-100 border-blue-200';
+        return 'from-green-50 to-green-100 border-green-200';
       default:
-        return 'from-blue-50 to-blue-100 border-blue-200';
+        return 'from-gray-50 to-gray-100 border-gray-200';
     }
   }
 
@@ -112,7 +111,7 @@ const YTDevTutorialsPage = () => {
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-xl p-8 mb-8 shadow-lg">
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl p-8 mb-8 shadow-lg">
           <h1 className="text-4xl font-bold mb-3 flex items-center">
             <Youtube className="mr-3 h-8 w-8 text-red-500" />
             Développeur Tutorials
@@ -126,7 +125,7 @@ const YTDevTutorialsPage = () => {
             <div className="relative w-full md:w-96 flex-shrink-0">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
               <Input 
-                className="pl-10 bg-blue-700 border-blue-600 text-white placeholder:text-blue-300 focus:ring-2 focus:ring-primary w-full"
+                className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary w-full"
                 placeholder="Rechercher un langage..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -157,16 +156,16 @@ const YTDevTutorialsPage = () => {
         
         <Tabs defaultValue="allLanguages" className="mb-6" onValueChange={setSelectedTab}>
           <div className="flex items-center justify-between mb-4">
-            <TabsList className="bg-blue-100 dark:bg-blue-800">
-              <TabsTrigger value="allLanguages" className="data-[state=active]:bg-white dark:data-[state=active]:bg-blue-700">
+            <TabsList className="bg-slate-100 dark:bg-slate-800">
+              <TabsTrigger value="allLanguages" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">
                 <Tag className="mr-2 h-4 w-4" />
                 Tous les langages
               </TabsTrigger>
-              <TabsTrigger value="beginner" className="data-[state=active]:bg-white dark:data-[state=active]:bg-blue-700">
+              <TabsTrigger value="beginner" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Débutant
               </TabsTrigger>
-              <TabsTrigger value="advanced" className="data-[state=active]:bg-white dark:data-[state=active]:bg-blue-700">
+              <TabsTrigger value="advanced" className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">
                 <Code className="mr-2 h-4 w-4" />
                 Avancé
               </TabsTrigger>
@@ -198,10 +197,10 @@ const YTDevTutorialsPage = () => {
                               <CardTitle className="flex items-center text-xl font-bold">
                                 {languageName.charAt(0).toUpperCase() + languageName.slice(1)}
                                 {languageId === 'python' && (
-                                  <Badge className="bg-blue-100 text-blue-800 ml-2">Populaire</Badge>
+                                  <Badge className="bg-green-100 text-green-800 ml-2">Populaire</Badge>
                                 )}
                                 {languageId === 'javascript' && (
-                                  <Badge className="bg-blue-100 text-blue-800 ml-2">Tendance</Badge>
+                                  <Badge className="bg-green-100 text-green-800 ml-2">Tendance</Badge>
                                 )}
                               </CardTitle>
                               <div className="text-xs text-slate-500 mt-1 flex gap-1 flex-wrap">
