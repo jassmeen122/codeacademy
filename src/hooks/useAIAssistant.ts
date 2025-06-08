@@ -39,8 +39,11 @@ export const useAIAssistant = () => {
       const userMessage: Message = { role: "user", content: userContent };
       addMessage(userMessage);
 
+      // Ensure messages is an array before spreading
+      const currentMessages = Array.isArray(messages) ? messages : [];
+      
       // Send to AI and get response
-      const aiResponse = await sendToAI(userInput, code, language, [...messages, userMessage]);
+      const aiResponse = await sendToAI(userInput, code, language, [...currentMessages, userMessage]);
       addMessage(aiResponse);
 
     } catch (error: any) {

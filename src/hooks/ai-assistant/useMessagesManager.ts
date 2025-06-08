@@ -5,12 +5,23 @@ import { intelligentAI } from "@/services/intelligentAIService";
 
 export const useMessagesManager = (useLocalAI: boolean) => {
   const [messages, setMessages] = useState<Message[]>(() => {
-    const savedMessages = localStorage.getItem("ai-assistant-messages");
-    return savedMessages 
-      ? JSON.parse(savedMessages) 
-      : [{ 
-          role: "assistant", 
-          content: `🤖 **Assistant IA Local Activé !**
+    try {
+      const savedMessages = localStorage.getItem("ai-assistant-messages");
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages);
+        // Ensure the parsed data is an array
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing saved messages:", error);
+    }
+    
+    // Return default messages if localStorage is empty, invalid, or parsing fails
+    return [{ 
+      role: "assistant", 
+      content: `🤖 **Assistant IA Local Activé !**
 
 Salut ! Les services IA externes sont temporairement indisponibles, mais j'ai activé mon **système d'IA locale** pour t'aider !
 
@@ -27,26 +38,36 @@ Salut ! Les services IA externes sont temporairement indisponibles, mais j'ai ac
 - "J'ai une erreur de syntaxe"
 
 Pose-moi ta question !`,
-          suggestions: [
-            "🐛 J'ai un bug dans mon code",
-            "🐍 Apprendre Python",
-            "🟨 Apprendre JavaScript",
-            "📚 Expliquer les fonctions"
-          ],
-          isLocal: true
-        }];
+      suggestions: [
+        "🐛 J'ai un bug dans mon code",
+        "🐍 Apprendre Python",
+        "🟨 Apprendre JavaScript",
+        "📚 Expliquer les fonctions"
+      ],
+      isLocal: true
+    }];
   });
 
   useEffect(() => {
-    localStorage.setItem("ai-assistant-messages", JSON.stringify(messages));
+    // Only save to localStorage if messages is a valid array
+    if (Array.isArray(messages)) {
+      localStorage.setItem("ai-assistant-messages", JSON.stringify(messages));
+    }
   }, [messages]);
 
   const addMessage = (message: Message) => {
-    setMessages(prev => [...prev, message]);
+    setMessages(prev => {
+      // Safety check to ensure prev is always an array
+      if (!Array.isArray(prev)) {
+        console.warn("Previous messages state was not an array, resetting to empty array");
+        return [message];
+      }
+      return [...prev, message];
+    });
   };
 
   const clearMessages = () => {
-    setMessages([{ 
+    const defaultMessage = { 
       role: "assistant", 
       content: useLocalAI ? `🤖 **IA Locale Active**\n\nSalut ! Comment puis-je t'aider avec la programmation ?` : intelligentAI.getWelcomeMessage(),
       suggestions: [
@@ -56,10 +77,16 @@ Pose-moi ta question !`,
         "📚 Expliquer les fonctions"
       ],
       isLocal: useLocalAI
-    }]);
+    };
+    setMessages([defaultMessage]);
   };
 
   const getLastUserMessage = (): Message | null => {
+    // Safety check to ensure messages is an array
+    if (!Array.isArray(messages)) {
+      return null;
+    }
+    
     const lastUserMessageIndex = [...messages].reverse().findIndex(msg => msg.role === "user");
     if (lastUserMessageIndex !== -1) {
       return messages[messages.length - 1 - lastUserMessageIndex];
