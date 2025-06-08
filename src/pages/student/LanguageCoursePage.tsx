@@ -46,6 +46,15 @@ const LanguageCoursePage = () => {
   const languageName = getLanguageName(languageId);
   const videos = getLanguageVideos(languageId);
 
+  const handleViewSummary = () => {
+    console.log('Navigating to summary for language:', languageId);
+    if (languageId) {
+      navigate(`/student/language-summary/${languageId}`);
+    } else {
+      console.error('Language ID is undefined');
+    }
+  };
+
   // If language not found
   if (!videos.courseVideo) {
     return (
@@ -112,7 +121,6 @@ const LanguageCoursePage = () => {
             </CardContent>
           </Card>
 
-          {/* Card for detailed summary */}
           <Card className="overflow-hidden">
             <CardHeader className="bg-primary/10">
               <CardTitle className="flex items-center">
@@ -126,10 +134,7 @@ const LanguageCoursePage = () => {
               </p>
               <Button 
                 className="w-full"
-                onClick={() => {
-                  console.log('Navigation vers:', `/student/language-summary/${languageId}`);
-                  navigate(`/student/language-summary/${languageId}`);
-                }}
+                onClick={handleViewSummary}
               >
                 <Book className="mr-2 h-4 w-4" />
                 Voir le Résumé
