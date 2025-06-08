@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,13 +20,15 @@ export const CertificatesSection = () => {
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Données simulées pour les langages de programmation
+  // Liste étendue des langages de programmation selon les spécifications
   const programmingLanguages = [
-    { name: 'HTML', status: 'completed' as const, progress: 100 },
-    { name: 'CSS', status: 'completed' as const, progress: 100 },
+    { name: 'Python', status: 'completed' as const, progress: 100 },
+    { name: 'Java', status: 'completed' as const, progress: 100 },
     { name: 'JavaScript', status: 'completed' as const, progress: 100 },
-    { name: 'PHP', status: 'in_progress' as const, progress: 65 },
-    { name: 'SQL', status: 'locked' as const, progress: 0 }
+    { name: 'C', status: 'in_progress' as const, progress: 65 },
+    { name: 'C++', status: 'locked' as const, progress: 0 },
+    { name: 'PHP', status: 'locked' as const, progress: 0 },
+    { name: 'SQL', status: 'in_progress' as const, progress: 40 }
   ];
 
   const completedLanguages = programmingLanguages.filter(lang => lang.status === 'completed').length;
@@ -125,6 +128,8 @@ export const CertificatesSection = () => {
         {/* Certificat de maîtrise en langages de programmation */}
         <ProgrammingLanguagesCertificate
           userFullName={user?.full_name || 'Étudiant'}
+          userBirthDate="15 mars 1995"
+          platformName="CodeAcademy"
           languages={programmingLanguages}
           isUnlocked={isLanguagesCertificateUnlocked}
           onDownload={handleDownloadLanguagesCertificate}
