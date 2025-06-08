@@ -20,7 +20,7 @@ export const useMessagesManager = (useLocalAI: boolean) => {
     
     // Return default messages if localStorage is empty, invalid, or parsing fails
     return [{ 
-      role: "assistant", 
+      role: "assistant" as const, 
       content: `🤖 **Assistant IA Local Activé !**
 
 Salut ! Les services IA externes sont temporairement indisponibles, mais j'ai activé mon **système d'IA locale** pour t'aider !
@@ -67,8 +67,8 @@ Pose-moi ta question !`,
   };
 
   const clearMessages = () => {
-    const defaultMessage = { 
-      role: "assistant", 
+    const defaultMessage: Message = { 
+      role: "assistant" as const, 
       content: useLocalAI ? `🤖 **IA Locale Active**\n\nSalut ! Comment puis-je t'aider avec la programmation ?` : intelligentAI.getWelcomeMessage(),
       suggestions: [
         "🐛 J'ai un bug dans mon code",
