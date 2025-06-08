@@ -1512,42 +1512,60 @@ export type Database = {
       user_leaderboard: {
         Row: {
           badges_earned: number
+          best_monthly_score: number | null
+          best_weekly_score: number | null
           challenges_completed: number
           current_streak: number
+          favorite_language: string | null
           id: string
           last_activity: string | null
           longest_streak: number
           monthly_points: number
+          monthly_rank: number | null
           total_points: number
+          total_study_time: number | null
           updated_at: string
           user_id: string
           weekly_points: number
+          weekly_rank: number | null
         }
         Insert: {
           badges_earned?: number
+          best_monthly_score?: number | null
+          best_weekly_score?: number | null
           challenges_completed?: number
           current_streak?: number
+          favorite_language?: string | null
           id?: string
           last_activity?: string | null
           longest_streak?: number
           monthly_points?: number
+          monthly_rank?: number | null
           total_points?: number
+          total_study_time?: number | null
           updated_at?: string
           user_id: string
           weekly_points?: number
+          weekly_rank?: number | null
         }
         Update: {
           badges_earned?: number
+          best_monthly_score?: number | null
+          best_weekly_score?: number | null
           challenges_completed?: number
           current_streak?: number
+          favorite_language?: string | null
           id?: string
           last_activity?: string | null
           longest_streak?: number
           monthly_points?: number
+          monthly_rank?: number | null
           total_points?: number
+          total_study_time?: number | null
           updated_at?: string
           user_id?: string
           weekly_points?: number
+          weekly_rank?: number | null
         }
         Relationships: []
       }
@@ -1580,6 +1598,45 @@ export type Database = {
           last_login?: string | null
           total_time_spent?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_monthly_stats: {
+        Row: {
+          badges_earned: number | null
+          courses_completed: number | null
+          created_at: string | null
+          exercises_completed: number | null
+          id: string
+          max_streak: number | null
+          month_start: string
+          points_earned: number | null
+          time_spent_hours: number | null
+          user_id: string
+        }
+        Insert: {
+          badges_earned?: number | null
+          courses_completed?: number | null
+          created_at?: string | null
+          exercises_completed?: number | null
+          id?: string
+          max_streak?: number | null
+          month_start: string
+          points_earned?: number | null
+          time_spent_hours?: number | null
+          user_id: string
+        }
+        Update: {
+          badges_earned?: number | null
+          courses_completed?: number | null
+          created_at?: string | null
+          exercises_completed?: number | null
+          id?: string
+          max_streak?: number | null
+          month_start?: string
+          points_earned?: number | null
+          time_spent_hours?: number | null
           user_id?: string
         }
         Relationships: []
@@ -1840,6 +1897,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_weekly_stats: {
+        Row: {
+          created_at: string | null
+          exercises_completed: number | null
+          id: string
+          languages_practiced: string[] | null
+          points_earned: number | null
+          streak_days: number | null
+          time_spent_minutes: number | null
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string | null
+          exercises_completed?: number | null
+          id?: string
+          languages_practiced?: string[] | null
+          points_earned?: number | null
+          streak_days?: number | null
+          time_spent_minutes?: number | null
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string | null
+          exercises_completed?: number | null
+          id?: string
+          languages_practiced?: string[] | null
+          points_earned?: number | null
+          streak_days?: number | null
+          time_spent_minutes?: number | null
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       voice_messages: {
         Row: {
           audio_url: string
@@ -1924,6 +2017,10 @@ export type Database = {
       update_user_status_safe: {
         Args: { status_value?: string }
         Returns: undefined
+      }
+      update_user_streak: {
+        Args: { user_uuid: string }
+        Returns: number
       }
       upsert_custom_resource: {
         Args: {
