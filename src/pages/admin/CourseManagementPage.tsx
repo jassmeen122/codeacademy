@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -10,20 +9,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { BookOpen, Search, Eye, Edit, Trash2, CheckCircle, XCircle, Users } from 'lucide-react';
+import type { BaseCourse } from '@/types/course';
 
-interface CourseManagement {
+interface CourseManagement extends BaseCourse {
+  teacher_name: string;
+  total_chapters: number;
+  enrolled_students: number;
+}
+
+interface DatabaseCourseResponse {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   difficulty: string;
   path: string;
   category: string;
-  teacher_name: string;
   teacher_id: string;
   is_published: boolean;
   created_at: string;
-  total_chapters: number;
-  enrolled_students: number;
+  profiles?: {
+    full_name?: string;
+  };
+  course_content?: Array<{
+    id: string;
+    is_published: boolean;
+  }>;
 }
 
 const CourseManagementPage = () => {
@@ -52,13 +62,13 @@ const CourseManagementPage = () => {
 
       if (error) throw error;
 
-      const coursesData = (data || []).map((course: any) => ({
+      const coursesData = (data as DatabaseCourseResponse[] || []).map((course) => ({
         id: course.id,
         title: course.title,
         description: course.description || '',
-        difficulty: course.difficulty,
-        path: course.path,
-        category: course.category,
+        difficulty: course.difficulty as any,
+        path: course.path as any,
+        category: course.category as any,
         teacher_name: course.profiles?.full_name || 'Enseignant inconnu',
         teacher_id: course.teacher_id,
         is_published: course.is_published || false,

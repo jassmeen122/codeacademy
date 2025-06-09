@@ -3,7 +3,18 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
-import type { PublishedCourse } from '@/types/course';
+import type { PublishedCourse, BaseCourse } from '@/types/course';
+
+interface DatabaseCourse extends BaseCourse {
+  profiles?: {
+    full_name?: string;
+  };
+  course_content?: Array<{
+    id: string;
+    title: string;
+    is_published: boolean;
+  }>;
+}
 
 export const usePublishedCourses = () => {
   const [courses, setCourses] = useState<PublishedCourse[]>([]);
@@ -35,9 +46,9 @@ export const usePublishedCourses = () => {
 
       // Pour chaque cours, vérifier si l'utilisateur est inscrit et calculer la progression
       const coursesWithProgress = await Promise.all(
-        (publishedCourses || []).map(async (course: any) => {
+        (publishedCourses || []).map(async (course: DatabaseCourse) => {
           // Compter le nombre total de chapitres publiés
-          const totalChapters = course.course_content?.filter((content: any) => content.is_published).length || 0;
+          const totalChapters = course.course_content?.filter((content) => content.is_published).length || 0;
 
           let isEnrolled = false;
           let completedChapters = 0;

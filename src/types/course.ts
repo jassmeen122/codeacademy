@@ -1,4 +1,3 @@
-
 export type CourseResourceType = "pdf" | "video" | "presentation" | "youtube";
 
 export interface CourseResource {
@@ -53,6 +52,21 @@ export interface CourseModule {
   updated_at?: string;
 }
 
+// Base course interface from database
+export interface BaseCourse {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: CourseLevel;
+  path: CoursePath;
+  category: CourseCategory;
+  teacher_id: string;
+  is_published?: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+// Extended course interface for UI display
 export interface Course {
   id: string;
   title: string;
