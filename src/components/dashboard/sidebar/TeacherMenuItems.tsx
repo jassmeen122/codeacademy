@@ -4,7 +4,8 @@ import {
   PlusCircle, 
   FileEdit, 
   Settings,
-  MessageSquare
+  MessageSquare,
+  Users
 } from "lucide-react";
 import { MenuItem } from "@/types/sidebar";
 
@@ -17,7 +18,7 @@ export const teacherMenuItems: MenuItem[] = [
   },
   {
     title: "Créer un Cours",
-    href: "/teacher/create-course",
+    href: "/teacher/courses/create",
     icon: PlusCircle,
     description: "Créer un nouveau cours"
   },
@@ -26,6 +27,12 @@ export const teacherMenuItems: MenuItem[] = [
     href: "/teacher/exercises",
     icon: FileEdit,
     description: "Gérer vos exercices"
+  },
+  {
+    title: "Feed Social",
+    href: "/teacher/social",
+    icon: Users,
+    description: "Voir et partager avec la communauté"
   },
   {
     title: "Messages Privés",

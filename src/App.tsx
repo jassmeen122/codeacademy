@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -43,6 +42,7 @@ const CreateExercisePage = React.lazy(() => import('./pages/teacher/CreateExerci
 const EditCoursePage = React.lazy(() => import('./pages/teacher/EditCoursePage'));
 const TeacherPrivateMessagesPage = React.lazy(() => import('./pages/teacher/PrivateMessagesPage'));
 const TeacherSettingsPage = React.lazy(() => import('./pages/teacher/SettingsPage'));
+const TeacherSocialFeedPage = React.lazy(() => import('./pages/teacher/SocialFeedPage'));
 
 // Admin pages
 const UserManagementPage = React.lazy(() => import('./pages/admin/UserManagementPage'));
@@ -112,6 +112,7 @@ function App() {
                 <Route path="/teacher/exercises" element={<TeacherExercisesPage />} />
                 <Route path="/teacher/exercises/create" element={<CreateExercisePage />} />
                 <Route path="/teacher/exercises/content" element={<ExerciseContentPage />} />
+                <Route path="/teacher/social" element={<TeacherSocialFeedPage />} />
                 <Route path="/teacher/private-messages" element={<TeacherPrivateMessagesPage />} />
                 <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
                 
