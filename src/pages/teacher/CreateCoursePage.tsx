@@ -53,7 +53,7 @@ const CreateCoursePage = () => {
     try {
       setLoading(true);
       
-      // Créer le cours avec le statut de publication corrigé
+      // Créer le cours - si isDraft est false, alors le cours est publié
       const courseData = {
         title,
         description,
@@ -61,8 +61,10 @@ const CreateCoursePage = () => {
         path,
         category,
         teacher_id: user?.id,
-        is_published: !isDraft  // Si ce n'est pas un brouillon, alors c'est publié
+        is_published: !isDraft  // true quand on veut publier (isDraft=false), false pour brouillon (isDraft=true)
       };
+      
+      console.log('Course data being sent:', courseData); // Debug log
       
       const { data: course, error: courseError } = await supabase
         .from('courses')
@@ -71,6 +73,8 @@ const CreateCoursePage = () => {
         .single();
 
       if (courseError) throw courseError;
+      
+      console.log('Course created:', course); // Debug log
       
       // Ajouter les modules/chapitres
       if (modules.length > 0) {
