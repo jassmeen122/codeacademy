@@ -52,7 +52,7 @@ const CourseManagementPage = () => {
 
       if (error) throw error;
 
-      const coursesData = data.map(course => ({
+      const coursesData = (data || []).map((course: any) => ({
         id: course.id,
         title: course.title,
         description: course.description || '',

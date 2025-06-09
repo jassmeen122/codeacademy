@@ -3,24 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
-
-export interface PublishedCourse {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  path: string;
-  category: string;
-  duration: string;
-  teacher_name: string;
-  teacher_id: string;
-  total_chapters: number;
-  completed_chapters: number;
-  progress_percentage: number;
-  is_enrolled: boolean;
-  created_at: string;
-  is_published: boolean;
-}
+import type { PublishedCourse } from '@/types/course';
 
 export const usePublishedCourses = () => {
   const [courses, setCourses] = useState<PublishedCourse[]>([]);
@@ -52,9 +35,9 @@ export const usePublishedCourses = () => {
 
       // Pour chaque cours, vérifier si l'utilisateur est inscrit et calculer la progression
       const coursesWithProgress = await Promise.all(
-        publishedCourses.map(async (course) => {
+        (publishedCourses || []).map(async (course: any) => {
           // Compter le nombre total de chapitres publiés
-          const totalChapters = course.course_content?.filter(content => content.is_published).length || 0;
+          const totalChapters = course.course_content?.filter((content: any) => content.is_published).length || 0;
 
           let isEnrolled = false;
           let completedChapters = 0;
@@ -62,7 +45,6 @@ export const usePublishedCourses = () => {
 
           if (user) {
             // Vérifier si l'utilisateur est inscrit (simulé pour l'instant)
-            // Dans un vrai système, il y aurait une table student_enrollments
             isEnrolled = Math.random() > 0.5; // Simulation
 
             if (isEnrolled) {
@@ -88,7 +70,7 @@ export const usePublishedCourses = () => {
             is_enrolled: isEnrolled,
             created_at: course.created_at,
             is_published: course.is_published || false
-          };
+          } as PublishedCourse;
         })
       );
 

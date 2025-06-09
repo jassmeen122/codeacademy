@@ -6,16 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { BookOpen, Clock, User, PlayCircle, FileText } from 'lucide-react';
-import type { Course } from '@/types/course';
+import type { PublishedCourse } from '@/types/course';
 
 interface PublishedCourseCardProps {
-  course: Course & {
-    teacher_name?: string;
-    progress_percentage?: number;
-    total_chapters?: number;
-    completed_chapters?: number;
-    is_enrolled?: boolean;
-  };
+  course: PublishedCourse;
   onEnroll?: (courseId: string) => void;
   onContinue?: (courseId: string) => void;
 }

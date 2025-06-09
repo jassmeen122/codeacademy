@@ -22,12 +22,9 @@ export interface ProgrammingLanguage {
 }
 
 export type CourseLevel = "Beginner" | "Intermediate" | "Advanced";
-// Update CoursePath to match what Supabase expects
 export type CoursePath = "Web Development" | "Data Science" | "Artificial Intelligence";
-// Update to match the exact values in the Supabase enum course_category
 export type CourseCategory = "Programming Fundamentals" | "Frontend Development" | "Backend Development" | "Data Analysis" | "Machine Learning" | "AI Applications";
 export type ExerciseStatus = "pending" | "approved" | "rejected" | "archived" | "draft" | "published";
-// Update to match the exact values in the Supabase database
 export type DatabaseExerciseStatus = "draft" | "published";
 
 export interface CourseLesson {
@@ -80,6 +77,28 @@ export interface Course {
   isPremium?: boolean;
   modules?: CourseModule[];
   is_published?: boolean;
+  teacher_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Interface spécifique pour les cours publiés venant de la base de données
+export interface PublishedCourse {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: CourseLevel;
+  path: CoursePath;
+  category: CourseCategory;
+  duration: string;
+  teacher_name: string;
+  teacher_id: string;
+  total_chapters: number;
+  completed_chapters: number;
+  progress_percentage: number;
+  is_enrolled: boolean;
+  created_at: string;
+  is_published: boolean;
 }
 
 export interface CourseLearnResponse {
@@ -94,7 +113,6 @@ export interface CourseLearnResponse {
   completed: boolean;
 }
 
-// Add the CodingQuiz interface for our new mini-game
 export interface CodingQuiz {
   id: string;
   question: string;
@@ -109,7 +127,6 @@ export interface CodingQuiz {
   created_at?: string;
 }
 
-// Add the UserGamification interface for tracking user points and badges
 export interface UserGamification {
   id: string;
   user_id: string;
@@ -119,7 +136,6 @@ export interface UserGamification {
   last_played_at: string;
 }
 
-// Add Quiz interface for the quizzes
 export interface Quiz {
   id: string;
   module_id: string;
@@ -132,7 +148,6 @@ export interface Quiz {
   created_at: string;
 }
 
-// Add CodingExercise interface for the exercises
 export interface CodingExercise {
   id: string;
   module_id: string;
@@ -145,7 +160,6 @@ export interface CodingExercise {
   created_at: string;
 }
 
-// Add UserProgress interface for tracking progress
 export interface UserProgress {
   id: string;
   user_id: string;

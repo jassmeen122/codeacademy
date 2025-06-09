@@ -31,7 +31,7 @@ const TeacherSocialFeedPage = () => {
 
         {/* Formulaire de création de post */}
         <div className="mb-8">
-          <CreatePostForm onCreate={createPost} />
+          <CreatePostForm onSubmit={createPost} />
         </div>
 
         {/* Liste des posts */}
@@ -50,8 +50,9 @@ const TeacherSocialFeedPage = () => {
                 key={post.id}
                 post={post}
                 onAddComment={addComment}
-                onAddReaction={addReaction}
+                onReaction={addReaction}
                 onDelete={deletePost}
+                onToggleFollow={() => Promise.resolve(false)}
               />
             ))
           )}
