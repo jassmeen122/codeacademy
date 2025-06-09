@@ -18,6 +18,7 @@ import {
   Download,
   ExternalLink 
 } from 'lucide-react';
+import type { CourseLevel, CoursePath, CourseCategory } from '@/types/course';
 
 interface CoursePublication {
   id: string;
@@ -26,9 +27,9 @@ interface CoursePublication {
   content: string;
   chapters: string[];
   teacher_name: string;
-  difficulty: string;
-  path: string;
-  category: string;
+  difficulty: CourseLevel;
+  path: CoursePath;
+  category: CourseCategory;
   created_at: string;
   file_url?: string;
   video_url?: string;
@@ -72,9 +73,9 @@ const CoursePublicationViewPage = () => {
           content: data.content || '',
           chapters: data.chapters || [],
           teacher_name: data.profiles?.full_name || 'Enseignant inconnu',
-          difficulty: data.difficulty,
-          path: data.path,
-          category: data.category,
+          difficulty: data.difficulty as CourseLevel,
+          path: data.path as CoursePath,
+          category: data.category as CourseCategory,
           created_at: data.created_at,
           file_url: data.file_url,
           video_url: data.video_url

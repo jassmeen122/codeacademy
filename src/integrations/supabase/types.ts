@@ -413,39 +413,51 @@ export type Database = {
       courses: {
         Row: {
           category: Database["public"]["Enums"]["course_category"]
+          chapters: string[] | null
+          content: string | null
           created_at: string
           description: string | null
           difficulty: Database["public"]["Enums"]["course_difficulty"]
+          file_url: string | null
           id: string
           is_published: boolean | null
           path: Database["public"]["Enums"]["course_path"]
           teacher_id: string
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           category: Database["public"]["Enums"]["course_category"]
+          chapters?: string[] | null
+          content?: string | null
           created_at?: string
           description?: string | null
           difficulty: Database["public"]["Enums"]["course_difficulty"]
+          file_url?: string | null
           id?: string
           is_published?: boolean | null
           path: Database["public"]["Enums"]["course_path"]
           teacher_id: string
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["course_category"]
+          chapters?: string[] | null
+          content?: string | null
           created_at?: string
           description?: string | null
           difficulty?: Database["public"]["Enums"]["course_difficulty"]
+          file_url?: string | null
           id?: string
           is_published?: boolean | null
           path?: Database["public"]["Enums"]["course_path"]
           teacher_id?: string
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: [
           {

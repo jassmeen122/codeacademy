@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
+import type { CourseLevel, CoursePath, CourseCategory } from '@/types/course';
 
 interface CoursePublication {
   id: string;
@@ -14,9 +15,9 @@ interface CoursePublication {
   video_url?: string;
   teacher_id: string;
   teacher_name: string;
-  difficulty: string;
-  path: string;
-  category: string;
+  difficulty: CourseLevel;
+  path: CoursePath;
+  category: CourseCategory;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -29,9 +30,9 @@ interface CreateCourseData {
   content: string;
   file_url?: string;
   video_url?: string;
-  difficulty: string;
-  path: string;
-  category: string;
+  difficulty: CourseLevel;
+  path: CoursePath;
+  category: CourseCategory;
 }
 
 export const useCoursePublications = () => {
@@ -66,9 +67,9 @@ export const useCoursePublications = () => {
         video_url: course.video_url,
         teacher_id: course.teacher_id,
         teacher_name: course.profiles?.full_name || 'Enseignant inconnu',
-        difficulty: course.difficulty,
-        path: course.path,
-        category: course.category,
+        difficulty: course.difficulty as CourseLevel,
+        path: course.path as CoursePath,
+        category: course.category as CourseCategory,
         is_published: course.is_published,
         created_at: course.created_at,
         updated_at: course.updated_at
@@ -110,9 +111,9 @@ export const useCoursePublications = () => {
         video_url: course.video_url,
         teacher_id: course.teacher_id,
         teacher_name: course.profiles?.full_name || 'Enseignant inconnu',
-        difficulty: course.difficulty,
-        path: course.path,
-        category: course.category,
+        difficulty: course.difficulty as CourseLevel,
+        path: course.path as CoursePath,
+        category: course.category as CourseCategory,
         is_published: course.is_published,
         created_at: course.created_at,
         updated_at: course.updated_at
@@ -137,7 +138,15 @@ export const useCoursePublications = () => {
       const { data, error } = await supabase
         .from('courses')
         .insert({
-          ...courseData,
+          title: courseData.title,
+          description: courseData.description,
+          content: courseData.content,
+          chapters: courseData.chapters,
+          file_url: courseData.file_url,
+          video_url: courseData.video_url,
+          difficulty: courseData.difficulty,
+          path: courseData.path,
+          category: courseData.category,
           teacher_id: user.id,
           is_published: true
         })
@@ -160,7 +169,17 @@ export const useCoursePublications = () => {
     try {
       const { error } = await supabase
         .from('courses')
-        .update(updates)
+        .update({
+          title: updates.title,
+          description: updates.description,
+          content: updates.content,
+          chapters: updates.chapters,
+          file_url: updates.file_url,
+          video_url: updates.video_url,
+          difficulty: updates.difficulty,
+          path: updates.path,
+          category: updates.category
+        })
         .eq('id', courseId);
 
       if (error) throw error;
