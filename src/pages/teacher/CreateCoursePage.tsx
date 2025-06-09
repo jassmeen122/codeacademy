@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -53,14 +52,15 @@ const CreateCoursePage = () => {
     try {
       setLoading(true);
       
-      // Créer le cours
+      // Créer le cours avec le statut de publication
       const courseData = {
         title,
         description,
         difficulty,
         path,
         category,
-        teacher_id: user?.id
+        teacher_id: user?.id,
+        is_published: !isDraft  // Publié si ce n'est pas un brouillon
       };
       
       const { data: course, error: courseError } = await supabase
@@ -94,7 +94,12 @@ const CreateCoursePage = () => {
         }
       }
       
-      toast.success(isDraft ? "Cours sauvegardé comme brouillon" : "Cours publié avec succès");
+      if (isDraft) {
+        toast.success("Cours sauvegardé comme brouillon");
+      } else {
+        toast.success("Cours publié avec succès ! Il apparaîtra automatiquement dans l'espace étudiant.");
+      }
+      
       navigate("/teacher/courses");
     } catch (error: any) {
       toast.error(`Erreur: ${error.message}`);

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -10,9 +9,10 @@ import { toast } from "sonner";
 import type { Course } from "@/types/course";
 import { FeaturedCourses } from "@/components/student/FeaturedCourses";
 import { PremiumCourses } from "@/components/student/PremiumCourses";
-import { EnrolledCourses } from "@/components/student/EnrolledCourses";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PublishedCourseCard } from "@/components/courses/PublishedCourseCard";
+import { usePublishedCourses } from "@/hooks/usePublishedCourses";
 
 // Collection of programming language courses with YouTube links
 const programmingCourses = [
@@ -63,12 +63,19 @@ const programmingCourses = [
 ];
 
 const CoursesPage = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
   const [premiumCourses, setPremiumCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  
+  // Utiliser le hook pour les cours publiés
+  const { 
+    courses: publishedCourses, 
+    loading: publishedLoading, 
+    enrollInCourse, 
+    continueCourse 
+  } = usePublishedCourses();
 
   useEffect(() => {
     fetchCourses();
@@ -77,45 +84,6 @@ const CoursesPage = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      
-      const { data: enrolledCourses, error } = await supabase
-        .from('courses')
-        .select(`
-          *,
-          teacher:teacher_id (
-            name:full_name
-          ),
-          course_materials (
-            id,
-            type,
-            title
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const transformedCourses: Course[] = enrolledCourses.map(course => ({
-        id: course.id,
-        title: course.title,
-        description: course.description || "",
-        duration: "8 weeks",
-        students: 0,
-        image: "/placeholder.svg",
-        difficulty: course.difficulty,
-        path: course.path,
-        category: course.category,
-        language: "JavaScript", // Default language if not provided
-        professor: {
-          name: course.teacher?.name || "Unknown Professor",
-          title: "Course Instructor"
-        },
-        materials: {
-          videos: course.course_materials?.filter(m => m.type === 'video' || m.type === 'youtube').length || 0,
-          pdfs: course.course_materials?.filter(m => m.type === 'pdf').length || 0,
-          presentations: course.course_materials?.filter(m => m.type === 'presentation').length || 0
-        }
-      }));
       
       // Convert the programming language videos to featured courses
       const featuredProgrammingCourses: Course[] = programmingCourses.map((course, index) => ({
@@ -216,7 +184,6 @@ const CoursesPage = () => {
       ];
       
       setPremiumCourses(artificialIntelligenceCourses);
-      setCourses(transformedCourses);
     } catch (error: any) {
       toast.error("Failed to fetch courses");
       console.error("Error fetching courses:", error);
@@ -240,12 +207,13 @@ const CoursesPage = () => {
       )
     : premiumCourses;
 
-  const filteredEnrolledCourses = searchTerm
-    ? courses.filter(course => 
+  const filteredPublishedCourses = searchTerm
+    ? publishedCourses.filter(course => 
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase())
+        course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.teacher_name.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : courses;
+    : publishedCourses;
 
   return (
     <DashboardLayout>
@@ -281,11 +249,11 @@ const CoursesPage = () => {
           </div>
         </div>
         
-        <Tabs defaultValue="all" className="mb-8">
+        <Tabs defaultValue="published" className="mb-8">
           <TabsList className="bg-gray-100 p-1">
-            <TabsTrigger value="all" className="data-[state=active]:bg-white">
-              <Code className="mr-2 h-4 w-4" />
-              Tous les cours
+            <TabsTrigger value="published" className="data-[state=active]:bg-white">
+              <BookOpen className="mr-2 h-4 w-4" />
+              Cours Publiés
             </TabsTrigger>
             <TabsTrigger value="featured" className="data-[state=active]:bg-white">
               <Terminal className="mr-2 h-4 w-4" />
@@ -297,25 +265,45 @@ const CoursesPage = () => {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="all" className="mt-6">
-            <div className="space-y-12">
-              <FeaturedCourses courses={filteredFeaturedCourses} />
-              
-              <PremiumCourses courses={filteredPremiumCourses} />
-              
-              <div>
-                <div className="flex items-center mb-6">
-                  <BookOpen className="text-primary mr-2 h-5 w-5" />
-                  <h2 className="text-2xl font-bold">Cours Inscrits</h2>
-                </div>
-                <EnrolledCourses courses={filteredEnrolledCourses} loading={loading} />
+          <TabsContent value="published" className="mt-6">
+            <div>
+              <div className="flex items-center mb-6">
+                <BookOpen className="text-primary mr-2 h-5 w-5" />
+                <h2 className="text-2xl font-bold">Cours Disponibles sur la Plateforme</h2>
               </div>
               
-              {courses.length > 4 && (
-                <div className="text-center">
-                  <Button variant="outline" onClick={() => navigate("/student/courses/all")}>
-                    Voir tous les cours ({courses.length})
-                  </Button>
+              {publishedLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array(6).fill(0).map((_, i) => (
+                    <Card key={i} className="animate-pulse">
+                      <div className="h-48 bg-gray-200" />
+                      <CardContent className="p-4">
+                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : filteredPublishedCourses.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Aucun cours publié</h3>
+                    <p className="text-muted-foreground">
+                      Aucun cours n'a encore été publié par les enseignants.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredPublishedCourses.map((course) => (
+                    <PublishedCourseCard
+                      key={course.id}
+                      course={course}
+                      onEnroll={enrollInCourse}
+                      onContinue={continueCourse}
+                    />
+                  ))}
                 </div>
               )}
             </div>

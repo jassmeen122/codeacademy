@@ -31,7 +31,7 @@ const TeacherSocialFeedPage = () => {
 
         {/* Formulaire de création de post */}
         <div className="mb-8">
-          <CreatePostForm onPostCreated={createPost} />
+          <CreatePostForm onCreate={createPost} />
         </div>
 
         {/* Liste des posts */}
@@ -49,8 +49,8 @@ const TeacherSocialFeedPage = () => {
               <PostCard
                 key={post.id}
                 post={post}
-                onComment={addComment}
-                onReaction={addReaction}
+                onAddComment={addComment}
+                onAddReaction={addReaction}
                 onDelete={deletePost}
               />
             ))
