@@ -3,9 +3,18 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
-import type { PublishedCourse, BaseCourse } from '@/types/course';
+import type { PublishedCourse } from '@/types/course';
 
-interface DatabaseCourse extends BaseCourse {
+interface DatabaseCourseResponse {
+  id: string;
+  title: string;
+  description: string | null;
+  difficulty: string;
+  path: string;
+  category: string;
+  teacher_id: string;
+  is_published: boolean;
+  created_at: string;
   profiles?: {
     full_name?: string;
   };
@@ -46,7 +55,7 @@ export const usePublishedCourses = () => {
 
       // Pour chaque cours, vérifier si l'utilisateur est inscrit et calculer la progression
       const coursesWithProgress = await Promise.all(
-        (publishedCourses || []).map(async (course: DatabaseCourse) => {
+        (publishedCourses || []).map(async (course: DatabaseCourseResponse) => {
           // Compter le nombre total de chapitres publiés
           const totalChapters = course.course_content?.filter((content) => content.is_published).length || 0;
 
@@ -69,9 +78,9 @@ export const usePublishedCourses = () => {
             id: course.id,
             title: course.title,
             description: course.description || "",
-            difficulty: course.difficulty,
-            path: course.path,
-            category: course.category,
+            difficulty: course.difficulty as any,
+            path: course.path as any,
+            category: course.category as any,
             duration: "8 semaines", // Durée par défaut
             teacher_name: course.profiles?.full_name || "Enseignant",
             teacher_id: course.teacher_id,

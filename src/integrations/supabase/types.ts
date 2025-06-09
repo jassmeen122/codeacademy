@@ -417,6 +417,7 @@ export type Database = {
           description: string | null
           difficulty: Database["public"]["Enums"]["course_difficulty"]
           id: string
+          is_published: boolean | null
           path: Database["public"]["Enums"]["course_path"]
           teacher_id: string
           title: string
@@ -428,6 +429,7 @@ export type Database = {
           description?: string | null
           difficulty: Database["public"]["Enums"]["course_difficulty"]
           id?: string
+          is_published?: boolean | null
           path: Database["public"]["Enums"]["course_path"]
           teacher_id: string
           title: string
@@ -439,6 +441,7 @@ export type Database = {
           description?: string | null
           difficulty?: Database["public"]["Enums"]["course_difficulty"]
           id?: string
+          is_published?: boolean | null
           path?: Database["public"]["Enums"]["course_path"]
           teacher_id?: string
           title?: string
