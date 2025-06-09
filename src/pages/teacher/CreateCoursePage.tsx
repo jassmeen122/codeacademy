@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -52,7 +53,7 @@ const CreateCoursePage = () => {
     try {
       setLoading(true);
       
-      // Créer le cours avec le statut de publication
+      // Créer le cours avec le statut de publication corrigé
       const courseData = {
         title,
         description,
@@ -60,7 +61,7 @@ const CreateCoursePage = () => {
         path,
         category,
         teacher_id: user?.id,
-        is_published: !isDraft  // Publié si ce n'est pas un brouillon
+        is_published: !isDraft  // Si ce n'est pas un brouillon, alors c'est publié
       };
       
       const { data: course, error: courseError } = await supabase
@@ -83,7 +84,7 @@ const CreateCoursePage = () => {
                 content: module.content,
                 content_type: 'chapter',
                 order_index: index,
-                is_published: !isDraft
+                is_published: !isDraft  // Publier les chapitres si le cours est publié
               });
           }
           return null;
