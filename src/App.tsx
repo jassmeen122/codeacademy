@@ -55,6 +55,10 @@ const AdminSettingsPage = React.lazy(() => import('./pages/admin/SettingsPage'))
 
 const ExerciseContentPage = React.lazy(() => import('./pages/teacher/ExerciseContentPage'));
 
+const PublishCoursePage = React.lazy(() => import('./pages/teacher/PublishCoursePage'));
+const CoursePublicationsPage = React.lazy(() => import('./pages/student/CoursePublicationsPage'));
+const CoursePublicationViewPage = React.lazy(() => import('./pages/student/CoursePublicationViewPage'));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -115,6 +119,11 @@ function App() {
                 <Route path="/teacher/social" element={<TeacherSocialFeedPage />} />
                 <Route path="/teacher/private-messages" element={<TeacherPrivateMessagesPage />} />
                 <Route path="/teacher/settings" element={<TeacherSettingsPage />} />
+                <Route path="/teacher/publish-course" element={<PublishCoursePage />} />
+                
+                {/* Student Routes */}
+                <Route path="/student/course-publications" element={<CoursePublicationsPage />} />
+                <Route path="/course-publication/:courseId" element={<CoursePublicationViewPage />} />
                 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminDashboard />} />

@@ -184,3 +184,34 @@ export interface UserProgress {
   last_accessed: string;
   created_at: string;
 }
+
+// Interface pour les publications de cours
+export interface CoursePublication {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  chapters: string[];
+  file_url?: string;
+  video_url?: string;
+  teacher_id: string;
+  teacher_name: string;
+  difficulty: CourseLevel;
+  path: CoursePath;
+  category: CourseCategory;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCoursePublicationData {
+  title: string;
+  description: string;
+  content: string;
+  chapters: string[];
+  file_url?: string;
+  video_url?: string;
+  difficulty: CourseLevel;
+  path: CoursePath;
+  category: CourseCategory;
+}
