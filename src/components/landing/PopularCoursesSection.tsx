@@ -28,14 +28,14 @@ export const PopularCoursesSection: React.FC<PopularCoursesSectionProps> = ({
   });
 
   const renderAuthPrompt = () => (
-    <div className="text-center p-8 bg-primary/5 rounded-lg">
+    <div className="text-center p-8 bg-blue-50 rounded-lg">
       <h3 className="text-2xl font-bold mb-4">Sign In to Access All Courses</h3>
       <p className="text-gray-600 mb-6">
         Please sign in or create an account to view our complete course catalog and start learning.
       </p>
       <Button 
         size="lg"
-        className="bg-primary hover:bg-primary/90"
+        className="bg-blue-600 hover:bg-blue-700"
         onClick={() => navigate("/auth")}
       >
         Get Started Now

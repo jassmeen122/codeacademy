@@ -37,15 +37,15 @@ export const Testimonials = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
+            <Card key={index} className="hover:shadow-md transition-shadow border-blue-200">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
-                  <Avatar className="h-10 w-10 mr-4">
-                    <AvatarFallback>{testimonial.avatar}</AvatarFallback>
+                  <Avatar className="h-10 w-10 mr-4 border-2 border-blue-200">
+                    <AvatarFallback className="bg-blue-100 text-blue-600">{testimonial.avatar}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                    <p className="font-medium text-gray-900">{testimonial.name}</p>
+                    <p className="text-sm text-green-600">{testimonial.role}</p>
                   </div>
                 </div>
                 <p className="text-gray-600 italic">"{testimonial.content}"</p>

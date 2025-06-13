@@ -38,7 +38,7 @@ export const HeroSection = () => {
                 <Code2 className="h-4 w-4" />
                 Python
               </div>
-              <div className="flex items-center gap-2 text-blue-600 font-medium">
+              <div className="flex items-center gap-2 text-green-600 font-medium">
                 <Code2 className="h-4 w-4" />
                 JavaScript
               </div>
@@ -46,7 +46,7 @@ export const HeroSection = () => {
                 <Code2 className="h-4 w-4" />
                 Java
               </div>
-              <div className="flex items-center gap-2 text-blue-600 font-medium">
+              <div className="flex items-center gap-2 text-green-600 font-medium">
                 <Code2 className="h-4 w-4" />
                 Bases de données
               </div>
