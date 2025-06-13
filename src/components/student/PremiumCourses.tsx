@@ -17,7 +17,7 @@ export const PremiumCourses = ({ courses }: PremiumCoursesProps) => {
   return (
     <div className="mb-12">
       <div className="flex items-center mb-6">
-        <Sparkles className="text-yellow-500 mr-2 h-5 w-5" />
+        <Sparkles className="text-green-500 mr-2 h-5 w-5" />
         <h2 className="text-2xl font-bold">Premium AI Courses</h2>
       </div>
       
@@ -30,7 +30,7 @@ export const PremiumCourses = ({ courses }: PremiumCoursesProps) => {
                 alt={course.title} 
                 className="w-full h-48 object-cover"
               />
-              <Badge className="absolute top-4 right-4 bg-yellow-500 hover:bg-yellow-600">
+              <Badge className="absolute top-4 right-4 bg-green-500 hover:bg-green-600">
                 Premium
               </Badge>
             </div>

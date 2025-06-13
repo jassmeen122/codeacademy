@@ -17,7 +17,7 @@ export const FeaturedCourses = ({ courses }: FeaturedCoursesProps) => {
   return (
     <div className="mb-12">
       <div className="flex items-center mb-6">
-        <Book className="text-primary mr-2 h-5 w-5" />
+        <Book className="text-blue-500 mr-2 h-5 w-5" />
         <h2 className="text-2xl font-bold">Featured Programming Courses</h2>
       </div>
       
@@ -46,7 +46,7 @@ export const FeaturedCourses = ({ courses }: FeaturedCoursesProps) => {
               </p>
               <div className="flex items-center space-x-2 text-sm font-medium">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-primary">Estimated Time: {course.duration}</span>
+                <span className="text-green-600">Estimated Time: {course.duration}</span>
               </div>
             </CardContent>
             <CardFooter>

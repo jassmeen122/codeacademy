@@ -77,13 +77,26 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
     }
   };
 
+  const getRoleColor = () => {
+    switch (userRole) {
+      case 'admin':
+        return 'bg-green-500';
+      case 'teacher':
+        return 'bg-blue-500';
+      case 'student':
+        return 'bg-green-600';
+      default:
+        return 'bg-blue-500';
+    }
+  };
+
   const RoleIcon = getRoleIcon();
 
   return (
     <Sidebar className="border-r border-gray-200 bg-white">
       <SidebarHeader className="border-b border-gray-200 p-6">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-500 rounded-lg">
+          <div className={`p-3 ${getRoleColor()} rounded-lg`}>
             <RoleIcon className="h-6 w-6 text-white" />
           </div>
           <div>

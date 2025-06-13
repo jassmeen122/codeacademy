@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Menu, X, User, Youtube, ChevronDown, BookOpen, GraduationCap, Video, Terminal, Code2, Code } from "lucide-react";
 import { Button } from "./ui/button";
@@ -73,7 +74,7 @@ const Navigation = () => {
             >
               <div className="relative">
                 <Code className="h-8 w-8 text-primary" />
-                <BookOpen className="h-4 w-4 text-accent absolute -bottom-1 -right-1" />
+                <BookOpen className="h-4 w-4 text-green-500 absolute -bottom-1 -right-1" />
               </div>
               <span className="tracking-wider">CODE ACADEMY</span>
             </Link>
@@ -86,7 +87,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-warning hover:text-warning/80 hover:bg-warning/10 transition-all duration-300 group"
+                  className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-300 group"
                   onClick={() => navigate('/student/yt-dev-tutorials')}
                 >
                   <Youtube className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
@@ -95,7 +96,7 @@ const Navigation = () => {
                 
                 <Button
                   variant="ghost"
-                  className="gap-2 text-accent hover:text-accent/80 hover:bg-accent/10 transition-all duration-300 group"
+                  className="gap-2 text-green-600 hover:text-green-700 hover:bg-green-50 transition-all duration-300 group"
                   onClick={() => navigate('/student/courses')}
                 >
                   <BookOpen className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
@@ -111,7 +112,7 @@ const Navigation = () => {
               <div className="flex items-center space-x-4">
                 <Button
                   variant="ghost"
-                  className="gap-2 text-info hover:text-info/80 hover:bg-info/10 transition-all duration-300 group"
+                  className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-300 group"
                   onClick={goToMeet}
                 >
                   <Video className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
@@ -139,6 +140,7 @@ const Navigation = () => {
                   <Button
                     variant="accent"
                     onClick={() => navigate(user.role === 'admin' ? '/admin' : '/teacher')}
+                    className={user.role === 'admin' ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'}
                   >
                     <span className="font-medium">
                       {user.role === 'admin' ? 'Administration' : 'Enseignement'}
@@ -168,7 +170,7 @@ const Navigation = () => {
                   <UserAvatar 
                     user={user} 
                     size="md" 
-                    className="ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300 hover:scale-105" 
+                    className="ring-2 ring-transparent group-hover:ring-green-500/30 transition-all duration-300 hover:scale-105" 
                   />
                 </div>
                 
