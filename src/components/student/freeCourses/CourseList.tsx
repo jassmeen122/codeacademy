@@ -19,7 +19,7 @@ export const CourseList = ({ courses, userProgress, onProgressUpdate, onResetFil
         <p className="text-gray-600 mb-6">
           No courses match your current filter. Try changing your filter options.
         </p>
-        <Button onClick={onResetFilter}>
+        <Button onClick={onResetFilter} className="bg-blue-500 hover:bg-blue-600">
           Show All Courses
         </Button>
       </div>

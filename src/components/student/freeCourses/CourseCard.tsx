@@ -150,7 +150,7 @@ export const CourseCard = ({ course, progress, onProgressUpdate }: CourseCardPro
       
       <CardFooter className="flex gap-2 pt-2">
         <Button 
-          className="flex-1"
+          className="flex-1 bg-blue-500 hover:bg-blue-600"
           onClick={handleWatchCourse}
         >
           Watch Course

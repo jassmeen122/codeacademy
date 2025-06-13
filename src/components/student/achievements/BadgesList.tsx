@@ -21,10 +21,10 @@ interface BadgesListProps {
 
 export const BadgesList: React.FC<BadgesListProps> = ({ badges }) => {
   return (
-    <Card className="border-t-4 border-t-purple-500 shadow-md">
+    <Card className="border-t-4 border-t-green-500 shadow-md">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
-          <Award className="h-5 w-5 text-purple-500" />
+          <Award className="h-5 w-5 text-green-500" />
           Badges Débloqués
         </CardTitle>
         <CardDescription>

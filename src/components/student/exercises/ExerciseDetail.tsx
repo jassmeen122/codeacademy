@@ -73,7 +73,7 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
                 {exercise.language}
               </Badge>
             )}
-            {exercise.theme && <Badge className="bg-blue-100 text-blue-800 border-none">{exercise.theme}</Badge>}
+            {exercise.theme && <Badge className="bg-blue-500 text-white border-none hover:bg-blue-600">{exercise.theme}</Badge>}
           </div>
         </div>
         <Button variant="outline" onClick={onBack}>Retour à la liste</Button>
@@ -124,7 +124,7 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
         )}
         
         {showSolution && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
             <p className="font-medium text-sm mb-2">Solution:</p>
             <pre className="bg-gray-100 p-3 rounded text-sm overflow-auto">
 {`// Solution en JavaScript
@@ -151,7 +151,7 @@ def solution(s):
             <Button 
               onClick={runCode} 
               disabled={isRunning}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-green-500 hover:bg-green-600"
             >
               {isRunning ? (
                 <>
@@ -194,6 +194,7 @@ def solution(s):
               size="sm" 
               onClick={handleGetAIFeedback}
               disabled={isAnalyzing}
+              className="hover:bg-blue-50"
             >
               {isAnalyzing ? "Analyse en cours..." : "Obtenir une analyse IA"}
             </Button>
