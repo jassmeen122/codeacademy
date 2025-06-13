@@ -27,7 +27,7 @@ export const GameSuccess: React.FC<GameSuccessProps> = ({
         animate={{ y: 0 }}
         transition={{ type: "spring", bounce: 0.5 }}
       >
-        <Trophy className="h-24 w-24 text-yellow-500 mx-auto mb-4" />
+        <Trophy className="h-24 w-24 text-green-500 mx-auto mb-4" />
       </motion.div>
       <h2 className="text-3xl font-bold text-green-600 mb-4">Excellent ! 🎉</h2>
       <p className="text-lg mb-6">
@@ -53,7 +53,7 @@ export const GameSuccess: React.FC<GameSuccessProps> = ({
       </motion.div>
       <Button onClick={onBackToMenu} size="lg" className={
         currentLevelData?.challenge.type === 'python' 
-          ? "bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
+          ? "bg-gradient-to-r from-blue-500 to-green-400 hover:from-blue-600 hover:to-green-500"
           : currentLevelData?.challenge.type === 'sql'
           ? "bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
           : currentLevelData?.challenge.type === 'php'
@@ -64,7 +64,7 @@ export const GameSuccess: React.FC<GameSuccessProps> = ({
           ? "bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900"
           : currentLevelData?.challenge.type === 'cpp'
           ? "bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800"
-          : "bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500"
+          : "bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500"
       }>
         Continuer vers le menu
       </Button>

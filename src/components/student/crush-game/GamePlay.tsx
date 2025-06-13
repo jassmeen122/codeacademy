@@ -32,11 +32,11 @@ export const GamePlay: React.FC<GamePlayProps> = ({
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'python': return 'bg-gradient-to-r from-blue-100 to-yellow-100 text-blue-800 border-blue-200';
+      case 'python': return 'bg-gradient-to-r from-blue-100 to-green-100 text-blue-800 border-blue-200';
       case 'sql': return 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-200';
       case 'php': return 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border-purple-200';
       case 'java': return 'bg-gradient-to-r from-red-100 to-orange-100 text-red-800 border-red-200';
-      case 'javascript': return 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-200';
+      case 'javascript': return 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-200';
       case 'c': return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-200';
       case 'cpp': return 'bg-gradient-to-r from-indigo-100 to-purple-200 text-indigo-800 border-indigo-200';
       default: return 'bg-gray-100 text-gray-800';
@@ -75,7 +75,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
             {currentLevelData.challenge.type === 'python' ? (
               <>
                 <div className="w-4 h-4 bg-blue-500 rounded-sm"></div>
-                <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                <div className="w-4 h-4 bg-green-400 rounded-sm"></div>
               </>
             ) : currentLevelData.challenge.type === 'sql' ? (
               <>
@@ -104,8 +104,8 @@ export const GamePlay: React.FC<GamePlayProps> = ({
               </>
             ) : (
               <>
-                <div className="w-4 h-4 bg-yellow-500 rounded-sm"></div>
-                <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                <div className="w-4 h-4 bg-green-500 rounded-sm"></div>
+                <div className="w-4 h-4 bg-green-400 rounded-sm"></div>
               </>
             )}
           </div>
@@ -116,7 +116,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
           currentLevelData.challenge.type === 'php' ? 'text-purple-600' :
           currentLevelData.challenge.type === 'java' ? 'text-red-600' : 
           currentLevelData.challenge.type === 'c' ? 'text-blue-700' :
-          currentLevelData.challenge.type === 'cpp' ? 'text-indigo-700' : 'text-yellow-600'
+          currentLevelData.challenge.type === 'cpp' ? 'text-indigo-700' : 'text-green-600'
         }`}>
           {currentLevelData.challenge.title}
         </h3>
@@ -136,7 +136,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
               placeholder="Explique ce qui se passe..."
-              className={`w-full p-3 border rounded-lg focus:border-blue-400 ${
+              className={`w-full p-3 border rounded-lg focus:border-green-400 ${
                 currentLevelData.challenge.type === 'python' 
                   ? 'border-blue-200' 
                   : currentLevelData.challenge.type === 'sql' 
@@ -149,7 +149,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                   ? 'border-blue-300'
                   : currentLevelData.challenge.type === 'cpp'
                   ? 'border-indigo-300'
-                  : 'border-yellow-200'
+                  : 'border-green-200'
               }`}
               disabled={showResult}
             />
@@ -160,7 +160,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                 disabled={!userAnswer.trim()}
                 className={
                   currentLevelData.challenge.type === 'python'
-                    ? "w-full bg-gradient-to-r from-blue-500 to-yellow-400 hover:from-blue-600 hover:to-yellow-500"
+                    ? "w-full bg-gradient-to-r from-blue-500 to-green-400 hover:from-blue-600 hover:to-green-500"
                     : currentLevelData.challenge.type === 'sql'
                     ? "w-full bg-gradient-to-r from-orange-500 to-red-400 hover:from-orange-600 hover:to-red-500"
                     : currentLevelData.challenge.type === 'php'
@@ -171,7 +171,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                     ? "w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900"
                     : currentLevelData.challenge.type === 'cpp'
                     ? "w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800"
-                    : "w-full bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-600 hover:to-yellow-500"
+                    : "w-full bg-gradient-to-r from-green-500 to-green-400 hover:from-green-600 hover:to-green-500"
                 }
               >
                 Vérifier ma réponse
